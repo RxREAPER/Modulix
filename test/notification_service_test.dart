@@ -17,6 +17,7 @@ void main() {
       expect(NotificationService.idStudyReminder, 1001);
       expect(NotificationService.idStreakReminder, 1002);
       expect(NotificationService.idModuleTasksBriefing, 1003);
+      expect(NotificationService.idFocusTimerRunning, 2000);
       expect(NotificationService.idFocusTimerEnd, 2001);
       expect(NotificationService.idTaskCompleteInstant, 3001);
       expect(NotificationService.idTestNotification, 9999);

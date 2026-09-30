@@ -288,7 +288,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> {
           if (timer.mode == TimerMode.pomodoro) ...[
             const SizedBox(height: 10),
             Row(mainAxisAlignment: MainAxisAlignment.center,
-              children: [15, 25, 45, 60].map((mins) {
+              children: [1, 15, 25, 45, 60].map((mins) {
                 final sel = timer.pomodoroPresetMins == mins;
                 return Padding(padding: const EdgeInsets.symmetric(horizontal: 5),
                   child: GestureDetector(

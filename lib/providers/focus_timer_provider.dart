@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/timer_theme.dart';
 import '../models/time_log.dart';
 import 'time_log_provider.dart';
+import 'app_state_provider.dart';
 import '../services/notification_service.dart';
 
 enum TimerMode { pomodoro, countUp, moduleLinked }
@@ -145,25 +146,45 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState> {
   }
 
   void startOrPause() {
+    final alertsEnabled =
+        _ref.read(appStateProvider).valueOrNull?.focusTimerAlertsEnabled ?? true;
     if (state.isRunning) {
       _ticker?.cancel();
       NotificationService.instance.cancelFocusTimerEnd();
+      NotificationService.instance.cancelFocusTimerRunning();
       state = state.copyWith(isRunning: false);
     } else {
       final newPhase = state.phase == TimerPhase.idle ? TimerPhase.focusing : state.phase;
       state = state.copyWith(isRunning: true, sessionActive: true, phase: newPhase);
-      if (state.mode != TimerMode.countUp && state.remainingSeconds > 0) {
-        NotificationService.instance.scheduleFocusTimerEnd(
-          duration: Duration(seconds: state.remainingSeconds),
-          topicTitle: state.topicTitle,
-          isBreak: newPhase == TimerPhase.onBreak,
-        );
+
+      if (alertsEnabled) {
+        final int remainingMins = (state.remainingSeconds / 60).ceil();
+        if (newPhase == TimerPhase.focusing) {
+          NotificationService.instance.showFocusTimerStarted(
+            topicTitle: state.topicTitle,
+            minutes: remainingMins,
+          );
+        } else if (newPhase == TimerPhase.onBreak) {
+          NotificationService.instance.showBreakStarted(
+            minutes: remainingMins,
+          );
+        }
+
+        if (state.mode != TimerMode.countUp && state.remainingSeconds > 0) {
+          NotificationService.instance.scheduleFocusTimerEnd(
+            duration: Duration(seconds: state.remainingSeconds),
+            topicTitle: state.topicTitle,
+            isBreak: newPhase == TimerPhase.onBreak,
+          );
+        }
       }
       _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
     }
   }
 
   void toggleBreak() {
+    final alertsEnabled =
+        _ref.read(appStateProvider).valueOrNull?.focusTimerAlertsEnabled ?? true;
     final willBeBreak = state.phase != TimerPhase.onBreak;
     final int nextSeconds;
     if (willBeBreak) {
@@ -180,12 +201,24 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState> {
       );
     }
 
-    if (state.isRunning && state.mode != TimerMode.countUp && nextSeconds > 0) {
-      NotificationService.instance.scheduleFocusTimerEnd(
-        duration: Duration(seconds: nextSeconds),
-        topicTitle: state.topicTitle,
-        isBreak: willBeBreak,
-      );
+    if (alertsEnabled) {
+      final int nextMins = (nextSeconds / 60).ceil();
+      if (willBeBreak) {
+        NotificationService.instance.showBreakStarted(minutes: nextMins);
+      } else {
+        NotificationService.instance.showFocusTimerStarted(
+          topicTitle: state.topicTitle,
+          minutes: nextMins,
+        );
+      }
+
+      if (state.isRunning && state.mode != TimerMode.countUp && nextSeconds > 0) {
+        NotificationService.instance.scheduleFocusTimerEnd(
+          duration: Duration(seconds: nextSeconds),
+          topicTitle: state.topicTitle,
+          isBreak: willBeBreak,
+        );
+      }
     }
   }
 
@@ -200,6 +233,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState> {
   Future<TimeLog?> finishSession() async {
     _ticker?.cancel();
     NotificationService.instance.cancelFocusTimerEnd();
+    NotificationService.instance.cancelFocusTimerRunning();
     if (state.focusSecondsElapsed == 0) {
       reset();
       return null;
@@ -223,6 +257,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState> {
   void reset() {
     _ticker?.cancel();
     NotificationService.instance.cancelFocusTimerEnd();
+    NotificationService.instance.cancelFocusTimerRunning();
     state = FocusTimerState(
       theme: state.theme,
       activeSoundId: state.activeSoundId,
@@ -231,12 +266,27 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState> {
   }
 
   void _tick() {
+    final alertsEnabled =
+        _ref.read(appStateProvider).valueOrNull?.focusTimerAlertsEnabled ?? true;
     final s = state;
     if (s.phase == TimerPhase.onBreak) {
       final newBreak = s.breakSecondsElapsed + 1;
-      if (s.mode != TimerMode.countUp && s.remainingSeconds > 0) {
+      if (s.mode != TimerMode.countUp && s.remainingSeconds > 1) {
         state = s.copyWith(
             breakSecondsElapsed: newBreak, remainingSeconds: s.remainingSeconds - 1);
+      } else if (s.mode != TimerMode.countUp && s.remainingSeconds <= 1) {
+        // Break countdown complete
+        _ticker?.cancel();
+        NotificationService.instance.cancelFocusTimerEnd();
+        NotificationService.instance.cancelFocusTimerRunning();
+        if (alertsEnabled) {
+          NotificationService.instance.showBreakCompleted(topicTitle: s.topicTitle);
+        }
+        state = s.copyWith(
+          isRunning: false,
+          breakSecondsElapsed: newBreak,
+          remainingSeconds: 0,
+        );
       } else {
         state = s.copyWith(breakSecondsElapsed: newBreak);
       }
@@ -250,9 +300,13 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState> {
           state = s.copyWith(
               focusSecondsElapsed: newFocus, remainingSeconds: s.remainingSeconds - 1);
         } else {
-          // Auto-finish on countdown completion
+          // Focus session countdown complete
           _ticker?.cancel();
           NotificationService.instance.cancelFocusTimerEnd();
+          NotificationService.instance.cancelFocusTimerRunning();
+          if (alertsEnabled) {
+            NotificationService.instance.showFocusTimerCompleted(topicTitle: s.topicTitle);
+          }
           state = s.copyWith(
             isRunning: false,
             focusSecondsElapsed: newFocus,
@@ -278,6 +332,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState> {
   @override
   void dispose() {
     _ticker?.cancel();
+    NotificationService.instance.cancelFocusTimerRunning();
     super.dispose();
   }
 }

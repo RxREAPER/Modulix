@@ -18,6 +18,7 @@ class NotificationService {
   static const int idStudyReminder = 1001;
   static const int idStreakReminder = 1002;
   static const int idModuleTasksBriefing = 1003;
+  static const int idFocusTimerRunning = 2000;
   static const int idFocusTimerEnd = 2001;
   static const int idTaskCompleteInstant = 3001;
   static const int idTestNotification = 9999;
@@ -122,6 +123,9 @@ class NotificationService {
         final androidImpl = _plugin.resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
         final granted = await androidImpl?.requestNotificationsPermission() ?? false;
+        try {
+          await androidImpl?.requestExactAlarmsPermission();
+        } catch (_) {}
         return granted;
       } else if (Platform.isIOS || Platform.isMacOS) {
         final iosImpl = _plugin.resolvePlatformSpecificImplementation<
@@ -321,25 +325,19 @@ class NotificationService {
     }
   }
 
-  /// Schedule Focus Timer Completion Notification
-  Future<void> scheduleFocusTimerEnd({
-    required Duration duration,
+  /// Instant notification when a focus timer starts
+  Future<void> showFocusTimerStarted({
     required String topicTitle,
-    required bool isBreak,
+    required int minutes,
   }) async {
     if (!_initialized) await init();
     try {
-      final scheduledDate = tz.TZDateTime.now(tz.local).add(duration);
-      final title = isBreak ? 'Break Finished!' : 'Focus Session Complete!';
-      final body = isBreak
-          ? 'Ready to get back to "$topicTitle"? Tap to resume study.'
-          : 'Great focus on "$topicTitle"! Time for a well-deserved 5-minute break.';
-
-      await _plugin.zonedSchedule(
-        idFocusTimerEnd,
-        title,
-        body,
-        scheduledDate,
+      final title = topicTitle.trim().isNotEmpty ? topicTitle.trim() : 'Study Session';
+      final minTxt = minutes > 0 ? '$minutes min' : 'active';
+      await _plugin.show(
+        idFocusTimerRunning,
+        'Focus Session Started',
+        'Focusing on "$title" ($minTxt). Stay locked in!',
         const NotificationDetails(
           android: AndroidNotificationDetails(
             channelFocusTimer,
@@ -357,10 +355,179 @@ class NotificationService {
             presentSound: true,
           ),
         ),
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
       );
+    } catch (e) {
+      debugPrint('[NotificationService] showFocusTimerStarted error: $e');
+    }
+  }
+
+  /// Instant notification when a break starts
+  Future<void> showBreakStarted({
+    required int minutes,
+  }) async {
+    if (!_initialized) await init();
+    try {
+      final minTxt = minutes > 0 ? '$minutes min' : '5 min';
+      await _plugin.show(
+        idFocusTimerRunning,
+        'Break Started',
+        'Your $minTxt break has started. Step away from your desk and recharge.',
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            channelFocusTimer,
+            'Focus Timer & Breaks',
+            channelDescription: 'High-priority alerts when focus sessions and breaks finish',
+            importance: Importance.max,
+            priority: Priority.high,
+            playSound: true,
+            enableVibration: true,
+            icon: '@mipmap/ic_launcher',
+          ),
+          iOS: DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint('[NotificationService] showBreakStarted error: $e');
+    }
+  }
+
+  /// Instant notification when a focus timer session completes
+  Future<void> showFocusTimerCompleted({
+    required String topicTitle,
+  }) async {
+    if (!_initialized) await init();
+    try {
+      final title = topicTitle.trim().isNotEmpty ? topicTitle.trim() : 'Study Session';
+      await _plugin.show(
+        idFocusTimerEnd,
+        'Focus Session Complete!',
+        'Great focus on "$title"! Time for a well-deserved break.',
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            channelFocusTimer,
+            'Focus Timer & Breaks',
+            channelDescription: 'High-priority alerts when focus sessions and breaks finish',
+            importance: Importance.max,
+            priority: Priority.high,
+            playSound: true,
+            enableVibration: true,
+            icon: '@mipmap/ic_launcher',
+          ),
+          iOS: DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint('[NotificationService] showFocusTimerCompleted error: $e');
+    }
+  }
+
+  /// Instant notification when a break finishes
+  Future<void> showBreakCompleted({
+    required String topicTitle,
+  }) async {
+    if (!_initialized) await init();
+    try {
+      final title = topicTitle.trim().isNotEmpty ? topicTitle.trim() : 'Study Session';
+      await _plugin.show(
+        idFocusTimerEnd,
+        'Break Finished!',
+        'Break time is over. Ready to resume studying "$title"?',
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            channelFocusTimer,
+            'Focus Timer & Breaks',
+            channelDescription: 'High-priority alerts when focus sessions and breaks finish',
+            importance: Importance.max,
+            priority: Priority.high,
+            playSound: true,
+            enableVibration: true,
+            icon: '@mipmap/ic_launcher',
+          ),
+          iOS: DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint('[NotificationService] showBreakCompleted error: $e');
+    }
+  }
+
+  /// Cancel running focus timer notification
+  Future<void> cancelFocusTimerRunning() async {
+    try {
+      await _plugin.cancel(idFocusTimerRunning);
+    } catch (e) {
+      debugPrint('[NotificationService] cancelFocusTimerRunning error: $e');
+    }
+  }
+
+  /// Schedule Focus Timer Completion Notification
+  Future<void> scheduleFocusTimerEnd({
+    required Duration duration,
+    required String topicTitle,
+    required bool isBreak,
+  }) async {
+    if (!_initialized) await init();
+    try {
+      final scheduledDate = tz.TZDateTime.now(tz.local).add(duration);
+      final title = isBreak ? 'Break Finished!' : 'Focus Session Complete!';
+      final body = isBreak
+          ? 'Ready to get back to "$topicTitle"? Tap to resume study.'
+          : 'Great focus on "$topicTitle"! Time for a well-deserved 5-minute break.';
+
+      const details = NotificationDetails(
+        android: AndroidNotificationDetails(
+          channelFocusTimer,
+          'Focus Timer & Breaks',
+          channelDescription: 'High-priority alerts when focus sessions and breaks finish',
+          importance: Importance.max,
+          priority: Priority.high,
+          playSound: true,
+          enableVibration: true,
+          icon: '@mipmap/ic_launcher',
+        ),
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      );
+
+      try {
+        await _plugin.zonedSchedule(
+          idFocusTimerEnd,
+          title,
+          body,
+          scheduledDate,
+          details,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+        );
+      } catch (e) {
+        debugPrint('[NotificationService] exact schedule error, falling back to inexact: $e');
+        await _plugin.zonedSchedule(
+          idFocusTimerEnd,
+          title,
+          body,
+          scheduledDate,
+          details,
+          androidScheduleMode: AndroidScheduleMode.inexact,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+        );
+      }
     } catch (e) {
       debugPrint('[NotificationService] scheduleFocusTimerEnd error: $e');
     }
