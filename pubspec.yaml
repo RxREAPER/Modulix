@@ -41,6 +41,10 @@ dependencies:
   widgetbook: ^3.8.0
   audioplayers: ^6.8.1
   rive: ^0.14.11
+  # Notifications
+  flutter_local_notifications: ^17.2.2
+  timezone: ^0.9.4
+  flutter_timezone: ^5.1.0
 
 dev_dependencies:
   flutter_test:

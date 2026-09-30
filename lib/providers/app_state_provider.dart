@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../models/app_state.dart';
 import '../services/storage_service.dart';
+import '../services/notification_service.dart';
 
 // ─── App State ───────────────────────────────────────────────────────────────
 
@@ -11,7 +12,9 @@ final appStateProvider =
 class AppStateNotifier extends AsyncNotifier<AppState> {
   @override
   Future<AppState> build() async {
-    return StorageService.instance.load();
+    final loaded = StorageService.instance.load();
+    NotificationService.instance.syncAllReminders(loaded);
+    return loaded;
   }
 
   Future<void> _update(AppState Function(AppState) updater) async {
@@ -52,9 +55,43 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
   Future<void> setDayStartHour(int hour) =>
       _update((s) => s.copyWith(dayStartHour: hour));
 
-  // Notifications toggle
-  Future<void> setDailyReminder(bool enabled) =>
-      _update((s) => s.copyWith(dailyReminderEnabled: enabled));
+  // Notifications toggles and schedules
+  Future<void> setDailyReminder(bool enabled) async {
+    await _update((s) => s.copyWith(dailyReminderEnabled: enabled));
+    if (state.value != null) {
+      await NotificationService.instance.syncAllReminders(state.value!);
+    }
+  }
+
+  Future<void> setStudyReminderTime(String time) async {
+    await _update((s) => s.copyWith(studyReminderTime: time));
+    if (state.value != null) {
+      await NotificationService.instance.syncAllReminders(state.value!);
+    }
+  }
+
+  Future<void> setStreakReminder(bool enabled, [String? time]) async {
+    await _update((s) => s.copyWith(
+          streakReminderEnabled: enabled,
+          streakReminderTime: time ?? s.streakReminderTime,
+        ));
+    if (state.value != null) {
+      await NotificationService.instance.syncAllReminders(state.value!);
+    }
+  }
+
+  Future<void> setModuleTasksReminder(bool enabled, [String? time]) async {
+    await _update((s) => s.copyWith(
+          moduleTasksReminderEnabled: enabled,
+          moduleTasksReminderTime: time ?? s.moduleTasksReminderTime,
+        ));
+    if (state.value != null) {
+      await NotificationService.instance.syncAllReminders(state.value!);
+    }
+  }
+
+  Future<void> setFocusTimerAlerts(bool enabled) =>
+      _update((s) => s.copyWith(focusTimerAlertsEnabled: enabled));
 
   // Nori Props & Interactions
   Future<void> setNoriProp(String propId) =>
@@ -87,7 +124,20 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
           // Also update daily history
           final today = _todayKey();
           final history = Map<String, int>.from(e.dailyHistory);
-          history[today] = (history[today] ?? 0) + 1;
+          final newCount = (history[today] ?? 0) + 1;
+          history[today] = newCount;
+
+          // Check if today's module task goal is crushed
+          final target = e.plan.videosPerDay;
+          if (target != null && target > 0 && newCount == target) {
+            NotificationService.instance.showModuleTaskCompletedNotification(
+              subjectName: e.plan.targetSubject.isNotEmpty
+                  ? e.plan.targetSubject
+                  : 'today\'s module',
+              count: newCount,
+            );
+          }
+
           return e.copyWith(completedVideos: updated, dailyHistory: history);
         }));
   }

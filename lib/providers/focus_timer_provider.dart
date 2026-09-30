@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/timer_theme.dart';
 import '../models/time_log.dart';
 import 'time_log_provider.dart';
+import '../services/notification_service.dart';
 
 enum TimerMode { pomodoro, countUp, moduleLinked }
 enum TimerPhase { idle, focusing, onBreak }
@@ -146,23 +147,44 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState> {
   void startOrPause() {
     if (state.isRunning) {
       _ticker?.cancel();
+      NotificationService.instance.cancelFocusTimerEnd();
       state = state.copyWith(isRunning: false);
     } else {
-      state = state.copyWith(isRunning: true, sessionActive: true, phase: TimerPhase.focusing);
+      final newPhase = state.phase == TimerPhase.idle ? TimerPhase.focusing : state.phase;
+      state = state.copyWith(isRunning: true, sessionActive: true, phase: newPhase);
+      if (state.mode != TimerMode.countUp && state.remainingSeconds > 0) {
+        NotificationService.instance.scheduleFocusTimerEnd(
+          duration: Duration(seconds: state.remainingSeconds),
+          topicTitle: state.topicTitle,
+          isBreak: newPhase == TimerPhase.onBreak,
+        );
+      }
       _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
     }
   }
 
   void toggleBreak() {
-    if (state.phase == TimerPhase.onBreak) {
-      state = state.copyWith(
-        phase: TimerPhase.focusing,
-        remainingSeconds: _computeRemaining(),
-      );
-    } else {
+    final willBeBreak = state.phase != TimerPhase.onBreak;
+    final int nextSeconds;
+    if (willBeBreak) {
+      nextSeconds = state.mode == TimerMode.pomodoro ? 5 * 60 : state.remainingSeconds;
       state = state.copyWith(
         phase: TimerPhase.onBreak,
-        remainingSeconds: state.mode == TimerMode.pomodoro ? 5 * 60 : state.remainingSeconds,
+        remainingSeconds: nextSeconds,
+      );
+    } else {
+      nextSeconds = _computeRemaining();
+      state = state.copyWith(
+        phase: TimerPhase.focusing,
+        remainingSeconds: nextSeconds,
+      );
+    }
+
+    if (state.isRunning && state.mode != TimerMode.countUp && nextSeconds > 0) {
+      NotificationService.instance.scheduleFocusTimerEnd(
+        duration: Duration(seconds: nextSeconds),
+        topicTitle: state.topicTitle,
+        isBreak: willBeBreak,
       );
     }
   }
@@ -177,6 +199,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState> {
 
   Future<TimeLog?> finishSession() async {
     _ticker?.cancel();
+    NotificationService.instance.cancelFocusTimerEnd();
     if (state.focusSecondsElapsed == 0) {
       reset();
       return null;
@@ -199,6 +222,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState> {
 
   void reset() {
     _ticker?.cancel();
+    NotificationService.instance.cancelFocusTimerEnd();
     state = FocusTimerState(
       theme: state.theme,
       activeSoundId: state.activeSoundId,
@@ -222,13 +246,18 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState> {
         state = s.copyWith(
             focusSecondsElapsed: newFocus, remainingSeconds: s.remainingSeconds + 1);
       } else {
-        if (s.remainingSeconds > 0) {
+        if (s.remainingSeconds > 1) {
           state = s.copyWith(
               focusSecondsElapsed: newFocus, remainingSeconds: s.remainingSeconds - 1);
         } else {
           // Auto-finish on countdown completion
           _ticker?.cancel();
-          state = s.copyWith(isRunning: false, focusSecondsElapsed: newFocus);
+          NotificationService.instance.cancelFocusTimerEnd();
+          state = s.copyWith(
+            isRunning: false,
+            focusSecondsElapsed: newFocus,
+            remainingSeconds: 0,
+          );
         }
       }
     }

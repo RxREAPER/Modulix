@@ -170,6 +170,12 @@ class AppState {
   final String accentColorId;   // 'indigo' | 'coral' | 'emerald' | 'amber' | 'violet' | 'rose'
   final int dayStartHour;       // e.g. 5 for 5:00 AM
   final bool dailyReminderEnabled;
+  final String studyReminderTime;     // e.g. '09:00'
+  final bool streakReminderEnabled;
+  final String streakReminderTime;    // e.g. '20:00'
+  final bool moduleTasksReminderEnabled;
+  final String moduleTasksReminderTime; // e.g. '08:00'
+  final bool focusTimerAlertsEnabled;
   final String noriPropId; // 'none' | 'stethoscope' | 'glasses' | 'coffee' | 'headphones' | 'nightcap' | 'crown'
   final int noriInteractions; // total times petted/tapped
   final Map<String, EditionState> editions; // keyed by edition id
@@ -182,6 +188,12 @@ class AppState {
     this.accentColorId = 'indigo',
     this.dayStartHour = 5,
     this.dailyReminderEnabled = true,
+    this.studyReminderTime = '09:00',
+    this.streakReminderEnabled = true,
+    this.streakReminderTime = '20:00',
+    this.moduleTasksReminderEnabled = true,
+    this.moduleTasksReminderTime = '08:00',
+    this.focusTimerAlertsEnabled = true,
     this.noriPropId = 'stethoscope',
     this.noriInteractions = 0,
     this.editions = const {},
@@ -198,6 +210,12 @@ class AppState {
     String? accentColorId,
     int? dayStartHour,
     bool? dailyReminderEnabled,
+    String? studyReminderTime,
+    bool? streakReminderEnabled,
+    String? streakReminderTime,
+    bool? moduleTasksReminderEnabled,
+    String? moduleTasksReminderTime,
+    bool? focusTimerAlertsEnabled,
     String? noriPropId,
     int? noriInteractions,
     Map<String, EditionState>? editions,
@@ -210,6 +228,15 @@ class AppState {
       accentColorId: accentColorId ?? this.accentColorId,
       dayStartHour: dayStartHour ?? this.dayStartHour,
       dailyReminderEnabled: dailyReminderEnabled ?? this.dailyReminderEnabled,
+      studyReminderTime: studyReminderTime ?? this.studyReminderTime,
+      streakReminderEnabled: streakReminderEnabled ?? this.streakReminderEnabled,
+      streakReminderTime: streakReminderTime ?? this.streakReminderTime,
+      moduleTasksReminderEnabled:
+          moduleTasksReminderEnabled ?? this.moduleTasksReminderEnabled,
+      moduleTasksReminderTime:
+          moduleTasksReminderTime ?? this.moduleTasksReminderTime,
+      focusTimerAlertsEnabled:
+          focusTimerAlertsEnabled ?? this.focusTimerAlertsEnabled,
       noriPropId: noriPropId ?? this.noriPropId,
       noriInteractions: noriInteractions ?? this.noriInteractions,
       editions: editions ?? this.editions,
@@ -233,6 +260,12 @@ class AppState {
         'accentColorId': accentColorId,
         'dayStartHour': dayStartHour,
         'dailyReminderEnabled': dailyReminderEnabled,
+        'studyReminderTime': studyReminderTime,
+        'streakReminderEnabled': streakReminderEnabled,
+        'streakReminderTime': streakReminderTime,
+        'moduleTasksReminderEnabled': moduleTasksReminderEnabled,
+        'moduleTasksReminderTime': moduleTasksReminderTime,
+        'focusTimerAlertsEnabled': focusTimerAlertsEnabled,
         'noriPropId': noriPropId,
         'noriInteractions': noriInteractions,
         'editions': editions.map((k, v) => MapEntry(k, v.toJson())),
@@ -249,11 +282,21 @@ class AppState {
         accentColorId: json['accentColorId'] as String? ?? 'indigo',
         dayStartHour: json['dayStartHour'] as int? ?? 5,
         dailyReminderEnabled: json['dailyReminderEnabled'] as bool? ?? true,
+        studyReminderTime: json['studyReminderTime'] as String? ?? '09:00',
+        streakReminderEnabled: json['streakReminderEnabled'] as bool? ?? true,
+        streakReminderTime: json['streakReminderTime'] as String? ?? '20:00',
+        moduleTasksReminderEnabled:
+            json['moduleTasksReminderEnabled'] as bool? ?? true,
+        moduleTasksReminderTime:
+            json['moduleTasksReminderTime'] as String? ?? '08:00',
+        focusTimerAlertsEnabled:
+            json['focusTimerAlertsEnabled'] as bool? ?? true,
         noriPropId: json['noriPropId'] as String? ?? 'stethoscope',
         noriInteractions: json['noriInteractions'] as int? ?? 0,
-        editions: (json['editions'] as Map<String, dynamic>?)?.map(
+        editions: (json['editions'] as Map?)?.map(
               (k, v) => MapEntry(
-                  k, EditionState.fromJson(v as Map<String, dynamic>)),
+                  k as String,
+                  EditionState.fromJson(Map<String, dynamic>.from(v as Map))),
             ) ??
             {},
       );

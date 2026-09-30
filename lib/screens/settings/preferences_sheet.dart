@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../models/app_state.dart';
+import 'package:intl/intl.dart';
 import '../../providers/app_state_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../services/notification_service.dart';
 
 class PreferencesSheet extends ConsumerWidget {
   const PreferencesSheet({super.key});
@@ -358,51 +359,357 @@ class PreferencesSheet extends ConsumerWidget {
                   ),
                   child: Column(
                     children: [
-                      SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text(
-                          'Daily Study Reminder',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: AppTheme.inkForeground,
-                          ),
-                        ),
-                        subtitle: const Text(
-                          'Prompt to open FlowMD and hit your targets',
-                          style: TextStyle(
-                              fontSize: 11, color: AppTheme.mutedText),
-                        ),
-                        activeColor: AppTheme.primaryBlue,
-                        value: appState.dailyReminderEnabled,
-                        onChanged: (val) => notifier.setDailyReminder(val),
-                      ),
-                      const Divider(height: 1, color: AppTheme.borderLight),
-                      SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text(
-                          'Streak at Risk Alert',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: AppTheme.inkForeground,
-                          ),
-                        ),
-                        subtitle: const Text(
-                          'Heads-up alert at 8:00 PM if no progress made',
-                          style: TextStyle(
-                              fontSize: 11, color: AppTheme.mutedText),
-                        ),
-                        activeColor: Colors.orange,
-                        value: true,
-                        onChanged: (val) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Streak alerts active! More notification settings arriving in next release.'),
-                              duration: Duration(seconds: 2),
+                      // Permission banner
+                      FutureBuilder<bool>(
+                        future: NotificationService.instance.hasPermission(),
+                        builder: (ctx, snap) {
+                          final hasPerm = snap.data ?? false;
+                          if (hasPerm) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.check_circle_rounded,
+                                      color: Colors.green, size: 18),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Notifications Enabled',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  TextButton.icon(
+                                    style: TextButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
+                                      minimumSize: Size.zero,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    onPressed: () async {
+                                      await NotificationService.instance
+                                          .sendTestNotification(
+                                              doctorName: appState.doctorName);
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                'Test notification sent!'),
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    icon: const Icon(Icons.notifications_active,
+                                        size: 14, color: AppTheme.primaryBlue),
+                                    label: const Text(
+                                      'Test',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppTheme.primaryBlue,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                          return InkWell(
+                            onTap: () async {
+                              final granted = await NotificationService.instance
+                                  .requestPermissions();
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(granted
+                                        ? 'Notification permissions granted!'
+                                        : 'Notification permission requested.'),
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              }
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.amber.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: Colors.amber.shade700, width: 1),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.warning_amber_rounded,
+                                      color: Colors.amber.shade800, size: 18),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Tap to enable system notifications',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.amber.shade900,
+                                      ),
+                                    ),
+                                  ),
+                                  const Icon(Icons.chevron_right, size: 16),
+                                ],
+                              ),
                             ),
                           );
                         },
+                      ),
+
+                      // 1. Daily Study Reminder
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Daily Study Reminder',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppTheme.inkForeground,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Prompt to start your syllabus goals',
+                                  style: TextStyle(
+                                      fontSize: 11, color: AppTheme.mutedText),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (appState.dailyReminderEnabled)
+                            InkWell(
+                              onTap: () => _pickTime(
+                                context,
+                                appState.studyReminderTime,
+                                (t) => notifier.setStudyReminderTime(t),
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryBlue.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                      color: AppTheme.primaryBlue.withOpacity(0.3)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.access_time_rounded,
+                                        size: 14, color: AppTheme.primaryBlue),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      _formatTimeStr(appState.studyReminderTime),
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppTheme.primaryBlue,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          const SizedBox(width: 8),
+                          Switch(
+                            activeColor: AppTheme.primaryBlue,
+                            value: appState.dailyReminderEnabled,
+                            onChanged: (val) => notifier.setDailyReminder(val),
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 16, color: AppTheme.borderLight),
+
+                      // 2. Streak at Risk Alert
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Streak at Risk Alert',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppTheme.inkForeground,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Evening alert if no progress made today',
+                                  style: TextStyle(
+                                      fontSize: 11, color: AppTheme.mutedText),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (appState.streakReminderEnabled)
+                            InkWell(
+                              onTap: () => _pickTime(
+                                context,
+                                appState.streakReminderTime,
+                                (t) => notifier.setStreakReminder(true, t),
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                      color: Colors.orange.withOpacity(0.3)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.access_time_rounded,
+                                        size: 14, color: Colors.orange),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      _formatTimeStr(appState.streakReminderTime),
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.orange,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          const SizedBox(width: 8),
+                          Switch(
+                            activeColor: Colors.orange,
+                            value: appState.streakReminderEnabled,
+                            onChanged: (val) => notifier.setStreakReminder(val),
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 16, color: AppTheme.borderLight),
+
+                      // 3. Module Daily Tasks Reminder
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Module Daily Tasks',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppTheme.inkForeground,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Morning queue briefing & goal completion',
+                                  style: TextStyle(
+                                      fontSize: 11, color: AppTheme.mutedText),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (appState.moduleTasksReminderEnabled)
+                            InkWell(
+                              onTap: () => _pickTime(
+                                context,
+                                appState.moduleTasksReminderTime,
+                                (t) => notifier.setModuleTasksReminder(true, t),
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.teal.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                      color: Colors.teal.withOpacity(0.3)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.access_time_rounded,
+                                        size: 14, color: Colors.teal),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      _formatTimeStr(appState.moduleTasksReminderTime),
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.teal,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          const SizedBox(width: 8),
+                          Switch(
+                            activeColor: Colors.teal,
+                            value: appState.moduleTasksReminderEnabled,
+                            onChanged: (val) =>
+                                notifier.setModuleTasksReminder(val),
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 16, color: AppTheme.borderLight),
+
+                      // 4. Focus Timer Alerts
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Focus Timer Alerts & Sound',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppTheme.inkForeground,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Background alerts for session & break finishes',
+                                  style: TextStyle(
+                                      fontSize: 11, color: AppTheme.mutedText),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Switch(
+                            activeColor: AppTheme.primaryBlue,
+                            value: appState.focusTimerAlertsEnabled,
+                            onChanged: (val) =>
+                                notifier.setFocusTimerAlerts(val),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -492,5 +799,41 @@ class PreferencesSheet extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  String _formatTimeStr(String timeStr) {
+    try {
+      final parts = timeStr.split(':');
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+      final dt = DateTime(2026, 1, 1, hour, minute);
+      return DateFormat('hh:mm a').format(dt);
+    } catch (_) {
+      return timeStr;
+    }
+  }
+
+  Future<void> _pickTime(
+    BuildContext context,
+    String currentTimeStr,
+    ValueChanged<String> onSelected,
+  ) async {
+    int initialHour = 9;
+    int initialMinute = 0;
+    try {
+      final parts = currentTimeStr.split(':');
+      initialHour = int.parse(parts[0]);
+      initialMinute = int.parse(parts[1]);
+    } catch (_) {}
+
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: initialHour, minute: initialMinute),
+    );
+    if (picked != null) {
+      final h = picked.hour.toString().padLeft(2, '0');
+      final m = picked.minute.toString().padLeft(2, '0');
+      onSelected('$h:$m');
+    }
   }
 }
