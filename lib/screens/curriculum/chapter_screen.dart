@@ -1,0 +1,161 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../providers/app_state_provider.dart';
+import '../../providers/syllabus_provider.dart';
+import '../../data/subjects_metadata.dart';
+import '../../widgets/video_tile.dart';
+
+class ChapterScreen extends ConsumerWidget {
+  final String subjectId;
+  final int chapterIndex;
+
+  const ChapterScreen({
+    super.key,
+    required this.subjectId,
+    required this.chapterIndex,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final subjectAsync = ref.watch(subjectProvider(subjectId));
+    final appState = ref.watch(appStateProvider).value;
+    final meta = subjectMeta(subjectId);
+
+    return subjectAsync.when(
+      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (e, _) => Scaffold(body: Center(child: Text('Error: $e'))),
+      data: (subject) {
+        if (subject == null || chapterIndex >= subject.chapters.length) {
+          return const Scaffold(body: Center(child: Text('Chapter not found')));
+        }
+        final chapter = subject.chapters[chapterIndex];
+        final completedVideos = appState?.currentEdition.completedVideos ?? {};
+
+        final done = chapter.videos
+            .where((v) => completedVideos.containsKey(v.id))
+            .length;
+
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, _) {
+            if (didPop) return;
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/curriculum/$subjectId');
+            }
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go('/curriculum/$subjectId');
+                  }
+                },
+              ),
+              title: Text(chapter.name, overflow: TextOverflow.ellipsis),
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(4),
+              child: LinearProgressIndicator(
+                value: chapter.totalVideos == 0
+                    ? 0
+                    : done / chapter.totalVideos,
+                backgroundColor: meta.accent.withOpacity(0.1),
+                valueColor: AlwaysStoppedAnimation(meta.accent),
+                minHeight: 3,
+              ),
+            ),
+          ),
+          body: Column(
+            children: [
+              // Stats row
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                child: Row(
+                  children: [
+                    _StatChip(
+                        label: '$done / ${chapter.totalVideos} done',
+                        icon: Icons.check_circle_outline_rounded,
+                        color: meta.accent),
+                    const SizedBox(width: 8),
+                    _StatChip(
+                        label: '${chapter.totalVideos - done} remaining',
+                        icon: Icons.radio_button_unchecked_rounded,
+                        color: Colors.grey),
+                  ],
+                ),
+              ),
+              // Video list
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
+                  itemCount: chapter.videos.length,
+                  itemBuilder: (context, i) {
+                    final video = chapter.videos[i];
+                    final isCompleted =
+                        completedVideos.containsKey(video.id);
+                    final completedAt = completedVideos[video.id];
+
+                    return VideoTile(
+                      video: video,
+                      serialNumber: i + 1,
+                      isCompleted: isCompleted,
+                      completedAt: completedAt is String ? completedAt : null,
+                      accentColor: meta.accent,
+                      onToggle: () {
+                        if (isCompleted) {
+                          ref.read(appStateProvider.notifier)
+                              .markVideoIncomplete(video.id);
+                        } else {
+                          ref.read(appStateProvider.notifier)
+                              .markVideoComplete(video.id);
+                        }
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  const _StatChip(
+      {required this.label, required this.icon, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 5),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 12, fontWeight: FontWeight.w600, color: color)),
+        ],
+      ),
+    );
+  }
+}

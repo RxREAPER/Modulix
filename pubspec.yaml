@@ -1,0 +1,62 @@
+name: flowmd_flutter
+description: FlowMD – Advanced NEET-PG Study Planner
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Navigation
+  go_router: ^14.2.7
+
+  # Persistence
+  shared_preferences: ^2.3.2
+
+  # Charts
+  fl_chart: ^0.69.0
+
+  # File I/O & sharing
+  file_picker: ^8.1.2
+  share_plus: ^10.0.2
+  path_provider: ^2.1.4
+
+  # SVG
+  flutter_svg: ^2.0.10+1
+
+  # Animations
+  lottie: ^3.1.2
+
+  # Utilities
+  intl: ^0.19.0
+  collection: ^1.18.0
+  # UI Component Catalog (Storybook)
+  widgetbook: ^3.8.0
+  audioplayers: ^6.8.1
+  rive: ^0.14.11
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.12
+  riverpod_generator: ^2.4.3
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/illustrations/
+    - assets/icons/
+    - assets/icons/navbar/
+    - assets/audio/
+    - assets/images/
+    - assets/rive/
+    - assets/sprites/cat/
+    - assets/lottie/
