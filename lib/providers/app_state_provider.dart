@@ -14,6 +14,13 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
   Future<AppState> build() async {
     final loaded = StorageService.instance.load();
     NotificationService.instance.syncAllReminders(loaded);
+    // Trigger standard system permission popup ("Allow FlowMD to send you notifications?")
+    if (loaded.dailyReminderEnabled ||
+        loaded.streakReminderEnabled ||
+        loaded.moduleTasksReminderEnabled ||
+        loaded.focusTimerAlertsEnabled) {
+      Future.microtask(() => NotificationService.instance.requestPermissions());
+    }
     return loaded;
   }
 

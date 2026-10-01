@@ -9,10 +9,10 @@ void main() {
 
   group('NotificationService configuration & channel tests', () {
     test('Notification channels and IDs are defined correctly', () {
-      expect(NotificationService.channelStudyReminders, 'flowmd_study_reminders');
-      expect(NotificationService.channelStreakReminders, 'flowmd_streak_reminders');
-      expect(NotificationService.channelModuleTasks, 'flowmd_module_tasks');
-      expect(NotificationService.channelFocusTimer, 'flowmd_focus_timer');
+      expect(NotificationService.channelStudyReminders, 'flowmd_study_reminders_v2');
+      expect(NotificationService.channelStreakReminders, 'flowmd_streak_reminders_v2');
+      expect(NotificationService.channelModuleTasks, 'flowmd_module_tasks_v2');
+      expect(NotificationService.channelFocusTimer, 'flowmd_focus_timer_v2');
 
       expect(NotificationService.idStudyReminder, 1001);
       expect(NotificationService.idStreakReminder, 1002);

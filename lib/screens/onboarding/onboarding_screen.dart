@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/app_state_provider.dart';
+import '../../services/notification_service.dart';
 import 'onboarding_pages.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -68,6 +69,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
           doctorName: _nameController.text,
           activeEdition: _selectedEdition,
         );
+    try {
+      await NotificationService.instance.requestPermissions();
+    } catch (_) {}
     if (mounted) context.go('/');
   }
 

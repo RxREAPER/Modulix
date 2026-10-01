@@ -23,11 +23,11 @@ class NotificationService {
   static const int idTaskCompleteInstant = 3001;
   static const int idTestNotification = 9999;
 
-  // Channel IDs
-  static const String channelStudyReminders = 'flowmd_study_reminders';
-  static const String channelStreakReminders = 'flowmd_streak_reminders';
-  static const String channelModuleTasks = 'flowmd_module_tasks';
-  static const String channelFocusTimer = 'flowmd_focus_timer';
+  // Channel IDs (bumped to _v2 to ensure max importance & vibration on updated devices)
+  static const String channelStudyReminders = 'flowmd_study_reminders_v2';
+  static const String channelStreakReminders = 'flowmd_streak_reminders_v2';
+  static const String channelModuleTasks = 'flowmd_module_tasks_v2';
+  static const String channelFocusTimer = 'flowmd_focus_timer_v2';
 
   Future<void> init() async {
     if (_initialized) return;
@@ -35,8 +35,12 @@ class NotificationService {
     try {
       tz.initializeTimeZones();
       if (!kIsWeb) {
-        final timeZoneInfo = await FlutterTimezone.getLocalTimezone();
-        tz.setLocalLocation(tz.getLocation(timeZoneInfo.identifier));
+        try {
+          final timeZoneInfo = await FlutterTimezone.getLocalTimezone();
+          tz.setLocalLocation(tz.getLocation(timeZoneInfo.identifier));
+        } catch (tzError) {
+          debugPrint('[NotificationService] Timezone lookup error: $tzError');
+        }
       }
     } catch (e) {
       debugPrint('[NotificationService] Timezone init error: $e');
@@ -72,12 +76,22 @@ class NotificationService {
         final androidImpl = _plugin.resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
         if (androidImpl != null) {
+          // Remove legacy v1 channels so system resets to new max priority and sound
+          try {
+            await androidImpl.deleteNotificationChannel('flowmd_study_reminders');
+            await androidImpl.deleteNotificationChannel('flowmd_streak_reminders');
+            await androidImpl.deleteNotificationChannel('flowmd_module_tasks');
+            await androidImpl.deleteNotificationChannel('flowmd_focus_timer');
+          } catch (_) {}
+
           await androidImpl.createNotificationChannel(
             const AndroidNotificationChannel(
               channelStudyReminders,
               'Daily Study Reminders',
               description: 'Reminders to start your scheduled NEET-PG study blocks',
-              importance: Importance.high,
+              importance: Importance.max,
+              playSound: true,
+              enableVibration: true,
             ),
           );
           await androidImpl.createNotificationChannel(
@@ -85,7 +99,9 @@ class NotificationService {
               channelStreakReminders,
               'Streak at Risk Alerts',
               description: 'Evening warnings when your study streak is about to reset',
-              importance: Importance.high,
+              importance: Importance.max,
+              playSound: true,
+              enableVibration: true,
             ),
           );
           await androidImpl.createNotificationChannel(
@@ -93,7 +109,9 @@ class NotificationService {
               channelModuleTasks,
               'Module Daily Tasks',
               description: 'Morning curriculum task queue and milestone celebrations',
-              importance: Importance.defaultImportance,
+              importance: Importance.max,
+              playSound: true,
+              enableVibration: true,
             ),
           );
           await androidImpl.createNotificationChannel(
@@ -158,6 +176,50 @@ class NotificationService {
     return true;
   }
 
+  /// Safely schedule an alarm with exact mode first, and resilient fallback to inexact mode.
+  /// Guarantees that notifications are scheduled across all Android versions (8 through 16) and OEM policies.
+  Future<void> _safeZonedSchedule({
+    required int id,
+    required String title,
+    required String body,
+    required tz.TZDateTime scheduledDate,
+    required NotificationDetails details,
+    DateTimeComponents? matchDateTimeComponents,
+  }) async {
+    try {
+      await _plugin.zonedSchedule(
+        id,
+        title,
+        body,
+        scheduledDate,
+        details,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: matchDateTimeComponents,
+      );
+      debugPrint('[NotificationService] Scheduled notification $id (exact) for $scheduledDate');
+    } catch (e) {
+      debugPrint('[NotificationService] Exact schedule failed for $id, falling back to inexact: $e');
+      try {
+        await _plugin.zonedSchedule(
+          id,
+          title,
+          body,
+          scheduledDate,
+          details,
+          androidScheduleMode: AndroidScheduleMode.inexact,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          matchDateTimeComponents: matchDateTimeComponents,
+        );
+        debugPrint('[NotificationService] Scheduled notification $id (inexact fallback) for $scheduledDate');
+      } catch (fallbackError) {
+        debugPrint('[NotificationService] Inexact schedule failed for $id: $fallbackError');
+      }
+    }
+  }
+
   /// Helper to calculate next scheduled instance of a given time (e.g. 09:00)
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
@@ -181,29 +243,30 @@ class NotificationService {
       final docTitle = doctorName.isEmpty ? 'Doctor' : doctorName;
       final subjectTxt = subjectName.isNotEmpty ? subjectName : 'today\'s curriculum';
 
-      await _plugin.zonedSchedule(
-        idStudyReminder,
-        'Time to Study, $docTitle',
-        'Your daily targets for $subjectTxt are waiting. Let\'s make today count!',
-        scheduledDate,
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            channelStudyReminders,
-            'Daily Study Reminders',
-            channelDescription: 'Reminders to start your scheduled NEET-PG study blocks',
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-          ),
-          iOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          ),
+      const details = NotificationDetails(
+        android: AndroidNotificationDetails(
+          channelStudyReminders,
+          'Daily Study Reminders',
+          channelDescription: 'Reminders to start your scheduled NEET-PG study blocks',
+          importance: Importance.max,
+          priority: Priority.high,
+          playSound: true,
+          enableVibration: true,
+          icon: '@mipmap/ic_launcher',
         ),
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      );
+
+      await _safeZonedSchedule(
+        id: idStudyReminder,
+        title: 'Time to Study, $docTitle',
+        body: 'Your daily targets for $subjectTxt are waiting. Let\'s make today count!',
+        scheduledDate: scheduledDate,
+        details: details,
         matchDateTimeComponents: DateTimeComponents.time,
       );
     } catch (e) {
@@ -221,29 +284,30 @@ class NotificationService {
       final scheduledDate = _nextInstanceOfTime(time.hour, time.minute);
       final streakTxt = currentStreak > 0 ? '$currentStreak-day streak' : 'study momentum';
 
-      await _plugin.zonedSchedule(
-        idStreakReminder,
-        'Don\'t break your $streakTxt!',
-        'You haven\'t logged study progress today. Complete a topic before midnight to keep your flame burning!',
-        scheduledDate,
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            channelStreakReminders,
-            'Streak at Risk Alerts',
-            channelDescription: 'Evening warnings when your study streak is about to reset',
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-          ),
-          iOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          ),
+      const details = NotificationDetails(
+        android: AndroidNotificationDetails(
+          channelStreakReminders,
+          'Streak at Risk Alerts',
+          channelDescription: 'Evening warnings when your study streak is about to reset',
+          importance: Importance.max,
+          priority: Priority.high,
+          playSound: true,
+          enableVibration: true,
+          icon: '@mipmap/ic_launcher',
         ),
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      );
+
+      await _safeZonedSchedule(
+        id: idStreakReminder,
+        title: 'Don\'t break your $streakTxt!',
+        body: 'You haven\'t logged study progress today. Complete a topic before midnight to keep your flame burning!',
+        scheduledDate: scheduledDate,
+        details: details,
         matchDateTimeComponents: DateTimeComponents.time,
       );
     } catch (e) {
@@ -263,29 +327,30 @@ class NotificationService {
       final countTxt = taskCount > 0 ? '$taskCount topics' : 'new targets';
       final subjTxt = subjectName.isNotEmpty ? ' in $subjectName' : '';
 
-      await _plugin.zonedSchedule(
-        idModuleTasksBriefing,
-        'Today\'s Study Queue is Ready',
-        'You have $countTxt scheduled$subjTxt. Tap to review your desk.',
-        scheduledDate,
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            channelModuleTasks,
-            'Module Daily Tasks',
-            channelDescription: 'Morning curriculum task queue and milestone celebrations',
-            importance: Importance.defaultImportance,
-            priority: Priority.defaultPriority,
-            icon: '@mipmap/ic_launcher',
-          ),
-          iOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          ),
+      const details = NotificationDetails(
+        android: AndroidNotificationDetails(
+          channelModuleTasks,
+          'Module Daily Tasks',
+          channelDescription: 'Morning curriculum task queue and milestone celebrations',
+          importance: Importance.max,
+          priority: Priority.high,
+          playSound: true,
+          enableVibration: true,
+          icon: '@mipmap/ic_launcher',
         ),
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      );
+
+      await _safeZonedSchedule(
+        id: idModuleTasksBriefing,
+        title: 'Today\'s Study Queue is Ready',
+        body: 'You have $countTxt scheduled$subjTxt. Tap to review your desk.',
+        scheduledDate: scheduledDate,
+        details: details,
         matchDateTimeComponents: DateTimeComponents.time,
       );
     } catch (e) {
@@ -309,8 +374,10 @@ class NotificationService {
             channelModuleTasks,
             'Module Daily Tasks',
             channelDescription: 'Morning curriculum task queue and milestone celebrations',
-            importance: Importance.high,
+            importance: Importance.max,
             priority: Priority.high,
+            playSound: true,
+            enableVibration: true,
             icon: '@mipmap/ic_launcher',
           ),
           iOS: DarwinNotificationDetails(
@@ -504,30 +571,13 @@ class NotificationService {
         ),
       );
 
-      try {
-        await _plugin.zonedSchedule(
-          idFocusTimerEnd,
-          title,
-          body,
-          scheduledDate,
-          details,
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
-        );
-      } catch (e) {
-        debugPrint('[NotificationService] exact schedule error, falling back to inexact: $e');
-        await _plugin.zonedSchedule(
-          idFocusTimerEnd,
-          title,
-          body,
-          scheduledDate,
-          details,
-          androidScheduleMode: AndroidScheduleMode.inexact,
-          uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
-        );
-      }
+      await _safeZonedSchedule(
+        id: idFocusTimerEnd,
+        title: title,
+        body: body,
+        scheduledDate: scheduledDate,
+        details: details,
+      );
     } catch (e) {
       debugPrint('[NotificationService] scheduleFocusTimerEnd error: $e');
     }
