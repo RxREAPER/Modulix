@@ -224,7 +224,9 @@ class DataPrivacySheet extends ConsumerWidget {
                     borderRadius: 18,
                     shadowOffset: 3,
                   ),
-                  child: Column(
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: Column(
                     children: [
                       ListTile(
                         contentPadding: EdgeInsets.zero,
@@ -275,6 +277,7 @@ class DataPrivacySheet extends ConsumerWidget {
                       ),
                     ],
                   ),
+                  ),
                 ),
 
                 const SizedBox(height: 24),
@@ -303,7 +306,9 @@ class DataPrivacySheet extends ConsumerWidget {
                     borderRadius: 18,
                     shadowOffset: 3,
                   ),
-                  child: Column(
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: Column(
                     children: [
                       ListTile(
                         contentPadding: EdgeInsets.zero,
@@ -349,6 +354,7 @@ class DataPrivacySheet extends ConsumerWidget {
                         onTap: () => _confirmClearTasks(context, ref),
                       ),
                     ],
+                  ),
                   ),
                 ),
               ],

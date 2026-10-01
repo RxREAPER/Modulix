@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../providers/app_state_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../services/notification_service.dart';
+import '../../widgets/profile/profile_customization.dart';
 import 'learn_the_app_sheet.dart';
 import 'data_privacy_sheet.dart';
 import 'about_support_sheet.dart';
@@ -236,8 +237,6 @@ class _DoctorProfileCard extends ConsumerWidget {
     if (appState == null) return const SizedBox.shrink();
 
     final doctorName = appState.doctorName.isNotEmpty ? appState.doctorName : 'Doctor';
-    final initialLetter = doctorName.replaceAll(RegExp(r'^(Dr\.?|Dr\s+)', caseSensitive: false), '').trim();
-    final avatarLetter = initialLetter.isNotEmpty ? initialLetter[0].toUpperCase() : 'D';
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -248,30 +247,12 @@ class _DoctorProfileCard extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: AppTheme.inkForeground,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x181C1C1C),
-                  offset: Offset(0, 3),
-                  blurRadius: 6,
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                avatarLetter,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                ),
-              ),
-            ),
+          ProfileAvatar(
+            size: 58,
+            colorId: appState.avatarColorId,
+            iconId: appState.avatarIconId,
+            doctorName: doctorName,
+            onTap: () => ProfileCustomizeSheet.show(context),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -280,6 +261,8 @@ class _DoctorProfileCard extends ConsumerWidget {
               children: [
                 Text(
                   doctorName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
@@ -330,12 +313,69 @@ class _DoctorProfileCard extends ConsumerWidget {
               ],
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.edit_rounded,
-                size: 20, color: AppTheme.primaryBlue),
-            onPressed: () => SettingsScreen.editDoctorName(context, ref.read(appStateProvider.notifier), appState.doctorName),
+          const SizedBox(width: 4),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _ProfileCardAction(
+                icon: Icons.tune_rounded,
+                label: 'Customize',
+                onTap: () => ProfileCustomizeSheet.show(context),
+              ),
+              const SizedBox(height: 4),
+              _ProfileCardAction(
+                icon: Icons.edit_rounded,
+                label: 'Rename',
+                onTap: () => SettingsScreen.editDoctorName(
+                    context, ref.read(appStateProvider.notifier), appState.doctorName),
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+// Small stacked action chip used in the profile card
+class _ProfileCardAction extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _ProfileCardAction({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppTheme.borderLight, width: 1.2),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: AppTheme.primaryBlue),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.inkForeground,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

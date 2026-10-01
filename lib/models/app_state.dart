@@ -168,6 +168,8 @@ class AppState {
   final String activeEdition;   // 'marrow_8' | 'marrow_6_5'
   final ThemePref themePref;
   final String accentColorId;   // 'indigo' | 'coral' | 'emerald' | 'amber' | 'violet' | 'rose'
+  final String avatarColorId;   // profile avatar palette id (see profile_customization.dart)
+  final String avatarIconId;    // profile avatar icon id ('letter' = show initial)
   final int dayStartHour;       // e.g. 5 for 5:00 AM
   final bool dailyReminderEnabled;
   final String studyReminderTime;     // e.g. '09:00'
@@ -186,6 +188,8 @@ class AppState {
     this.activeEdition = 'marrow_8',
     this.themePref = ThemePref.system,
     this.accentColorId = 'indigo',
+    this.avatarColorId = 'indigo',
+    this.avatarIconId = 'letter',
     this.dayStartHour = 5,
     this.dailyReminderEnabled = true,
     this.studyReminderTime = '09:00',
@@ -208,6 +212,8 @@ class AppState {
     String? activeEdition,
     ThemePref? themePref,
     String? accentColorId,
+    String? avatarColorId,
+    String? avatarIconId,
     int? dayStartHour,
     bool? dailyReminderEnabled,
     String? studyReminderTime,
@@ -226,6 +232,8 @@ class AppState {
       activeEdition: activeEdition ?? this.activeEdition,
       themePref: themePref ?? this.themePref,
       accentColorId: accentColorId ?? this.accentColorId,
+      avatarColorId: avatarColorId ?? this.avatarColorId,
+      avatarIconId: avatarIconId ?? this.avatarIconId,
       dayStartHour: dayStartHour ?? this.dayStartHour,
       dailyReminderEnabled: dailyReminderEnabled ?? this.dailyReminderEnabled,
       studyReminderTime: studyReminderTime ?? this.studyReminderTime,
@@ -258,6 +266,8 @@ class AppState {
         'activeEdition': activeEdition,
         'themePref': themePref.name,
         'accentColorId': accentColorId,
+        'avatarColorId': avatarColorId,
+        'avatarIconId': avatarIconId,
         'dayStartHour': dayStartHour,
         'dailyReminderEnabled': dailyReminderEnabled,
         'studyReminderTime': studyReminderTime,
@@ -280,6 +290,8 @@ class AppState {
           orElse: () => ThemePref.system,
         ),
         accentColorId: json['accentColorId'] as String? ?? 'indigo',
+        avatarColorId: json['avatarColorId'] as String? ?? 'indigo',
+        avatarIconId: json['avatarIconId'] as String? ?? 'letter',
         dayStartHour: json['dayStartHour'] as int? ?? 5,
         dailyReminderEnabled: json['dailyReminderEnabled'] as bool? ?? true,
         studyReminderTime: json['studyReminderTime'] as String? ?? '09:00',

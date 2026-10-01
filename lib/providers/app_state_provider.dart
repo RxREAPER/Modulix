@@ -51,6 +51,13 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
   Future<void> setAccentColor(String accentId) =>
       _update((s) => s.copyWith(accentColorId: accentId));
 
+  // Profile avatar customization
+  Future<void> setAvatarColor(String colorId) =>
+      _update((s) => s.copyWith(avatarColorId: colorId));
+
+  Future<void> setAvatarIcon(String iconId) =>
+      _update((s) => s.copyWith(avatarIconId: iconId));
+
   // Day start hour
   Future<void> setDayStartHour(int hour) =>
       _update((s) => s.copyWith(dayStartHour: hour));

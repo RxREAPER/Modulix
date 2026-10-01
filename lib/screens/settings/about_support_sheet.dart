@@ -162,7 +162,9 @@ class AboutSupportSheet extends StatelessWidget {
                     borderRadius: 18,
                     shadowOffset: 3,
                   ),
-                  child: Column(
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: Column(
                     children: [
                       ListTile(
                         contentPadding: EdgeInsets.zero,
@@ -230,6 +232,7 @@ class AboutSupportSheet extends StatelessWidget {
                         },
                       ),
                     ],
+                  ),
                   ),
                 ),
 
