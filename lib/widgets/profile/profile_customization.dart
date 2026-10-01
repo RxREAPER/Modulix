@@ -359,11 +359,16 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                   child: TextField(
                     controller: _nameCtrl,
                     textCapitalization: TextCapitalization.words,
-                    onChanged: (v) => _nameDirty = true,
+                    onChanged: (v) {
+                      final isDirty = v.trim().isNotEmpty && v.trim() != name;
+                      if (isDirty != _nameDirty) {
+                        setState(() => _nameDirty = isDirty);
+                      }
+                    },
                     onSubmitted: (v) {
                       final text = v.trim();
                       if (text.isNotEmpty) notifier.setDoctorName(text);
-                      _nameDirty = false;
+                      setState(() => _nameDirty = false);
                     },
                     style: const TextStyle(
                       fontSize: 15,
@@ -575,7 +580,13 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () {
+                  final text = _nameCtrl.text.trim();
+                  if (text.isNotEmpty && text != appState.doctorName) {
+                    notifier.setDoctorName(text);
+                  }
+                  Navigator.of(context).pop();
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.inkForeground,
                   foregroundColor: Colors.white,
