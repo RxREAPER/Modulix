@@ -39,7 +39,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - **Domain 6 (Analytics Hub & Sheets):** Wrapped top banner card in `RepaintBoundary` for render isolation in `SubjectAnalyticsScreen`. Created `domain6_analytics_sheets_test.dart` verifying log aggregation by topic type, 5 AM study day attribution, and progress bounds clamping.
   - **Domain 7 (Settings, Privacy & Warning Elimination):** Cleaned up 8 unused imports, removed unused `appState` variable, accelerated sheet animations to 200ms/150ms, and migrated all deprecated `withOpacity` to `withValues(alpha: ...)` in `DataPrivacySheet`. Removed unused `appearance_theme_sheet.dart` in `SettingsScreen` and unused `dart:async` in `OnboardingIllustrations`. Created `domain7_backup_privacy_test.dart` verifying backup schema integrity.
 - **Verification:** `flutter analyze lib/` passed with **0 errors and 0 warnings** (100% clean); all 43 test suites passed (**227/227 tests green**).
-- **Build Status:** Pending APK Build (Ready for commit & push)
+- **Build Status:** ✅ Included in Build v1.2.2 (Commit ea080b1, app-debug.apk built in 137.9s, installed & verified on OnePlus 13R ba009d81)
 
 ---
 
