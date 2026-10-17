@@ -30,8 +30,8 @@ First off, thank you for considering contributing to Modulix! Medical education 
 ### Getting Started
 ```bash
 # 1. Clone repository
-git clone https://github.com/RxREAPER/flowmd_flutter.git
-cd flowmd_flutter
+git clone https://github.com/RxREAPER/Modulix.git
+cd Modulix
 
 # 2. Install dependencies
 flutter pub get

@@ -3,7 +3,7 @@
 # 🩺 Modulix
 ### Clinical-Grade MBBS & NEET-PG Medical Education Companion
 
-[![Flutter CI](https://github.com/RxREAPER/flowmd_flutter/actions/workflows/ci.yml/badge.svg)](https://github.com/RxREAPER/flowmd_flutter/actions/workflows/ci.yml)
+[![Flutter CI](https://github.com/RxREAPER/Modulix/actions/workflows/ci.yml/badge.svg)](https://github.com/RxREAPER/Modulix/actions/workflows/ci.yml)
 [![Flutter](https://img.shields.io/badge/Flutter-3.24+-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.5+-0175C2?logo=dart&logoColor=white)](https://dart.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -78,8 +78,8 @@ graph TD
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/RxREAPER/flowmd_flutter.git
-   cd flowmd_flutter
+   git clone https://github.com/RxREAPER/Modulix.git
+   cd Modulix
    ```
 
 2. **Install project dependencies:**
@@ -124,7 +124,7 @@ flutter analyze
 ## 📂 Project Directory Structure
 
 ```
-flowmd_flutter/
+Modulix/
 ├── .github/                 # CI/CD Workflows, PR & Issue Templates
 │   ├── workflows/           # GitHub Actions (CI & APK build)
 │   └── ISSUE_TEMPLATE/      # Bug Report & Feature Request templates
