@@ -37,8 +37,8 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - **Plan Setup Text Pruning:** Removed redundant, verbose instructional paragraphs from Steps 1, 2, and 3 in `PlanScreen`, streamlining the interface to intuitive, common-sense controls.
   - **Discovery Pulses (Breathing Glow Rings):** Created `DiscoveryPulse` widget that renders a subtle, pulsating visual cue around high-utility features until interacted with (applied to Landscape Flip Clock on Focus Timer and Chapter Bulk Complete in Chapter Screen).
   - **Reference & Guide Repurposing:** Renamed "Learn the App" to "App Guide & Reference" for replayable tour, core mechanics, and medico FAQs.
-- **Verification:** `flutter analyze lib/` passed with **0 errors and 0 warnings**; unit tests passed (`test/discovery_pulse_test.dart` and `test/in_situ_hint_pill_test.dart`).
-- **Build Status:** ⏳ Pending APK Build
+- **Verification:** `flutter analyze lib/` passed with **0 errors and 0 warnings**; unit tests passed (`test/discovery_pulse_test.dart`, `test/in_situ_hint_pill_test.dart`, and `test/chapter_screen_test.dart`).
+- **Build Status:** ✅ Included in Build v1.2.3 (Commit aed66c1, app-debug.apk built in 149.9s, installed & physically verified on OnePlus 13R ba009d81)
 
 ---
 
