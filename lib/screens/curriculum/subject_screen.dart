@@ -13,6 +13,8 @@ import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/curriculum/subject_header_card.dart';
 import '../../widgets/curriculum/module_timeline.dart';
 import '../../widgets/in_situ_hint_pill.dart';
+import '../../widgets/errors/app_error_state_view.dart';
+import '../../widgets/loading/app_shimmer.dart';
 
 
 class SubjectScrollHelper {
@@ -479,17 +481,34 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
     return subjectAsync.when(
       loading: () => Scaffold(
         backgroundColor: AppTheme.paperBackground,
-        body: const Center(child: CircularProgressIndicator()),
+        body: const SafeArea(child: ModuleTimelineSkeletonView()),
       ),
-      error: (e, _) => Scaffold(
+      error: (e, st) => Scaffold(
         backgroundColor: AppTheme.paperBackground,
-        body: Center(child: Text('Error: $e')),
+        body: SafeArea(
+          child: AppErrorStateView(
+            error: e,
+            stackTrace: st,
+            onRetry: () => ref.refresh(subjectProvider(widget.subjectId)),
+          ),
+        ),
       ),
       data: (subject) {
         if (subject == null) {
           return Scaffold(
             backgroundColor: AppTheme.paperBackground,
-            body: const Center(child: Text('Subject not found')),
+            appBar: AppBar(
+              backgroundColor: AppTheme.paperBackground,
+              elevation: 0,
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back_rounded, color: AppTheme.inkForeground),
+                onPressed: () => context.pop(),
+              ),
+            ),
+            body: AppErrorStateView(
+              error: RangeError('Subject not found: ${widget.subjectId}'),
+              onPrimaryAction: () => context.pop(),
+            ),
           );
         }
 

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,10 +10,26 @@ import 'services/database_service.dart';
 import 'services/analytics_service.dart';
 import 'services/crash_reporting_service.dart';
 import 'services/auth_service.dart';
+import 'widgets/errors/modulix_error_scaffold.dart';
 import 'app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Install Doctor Crash Shield to replace default grey/red error screens
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    return ModulixErrorScaffold(details: details);
+  };
+
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    CrashReportingService.instance.recordError(details.exception, details.stack);
+  };
+
+  PlatformDispatcher.instance.onError = (error, stack) {
+    CrashReportingService.instance.recordError(error, stack);
+    return true; // handled
+  };
 
   // Initialize critical local storage & native renderers in parallel
   await Future.wait([

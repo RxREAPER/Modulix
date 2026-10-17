@@ -109,7 +109,7 @@ void main() {
 
     expect(find.text('Module Based Tasks'), findsOneWidget);
     expect(find.text('Tap to setup daily curriculum pace'), findsOneWidget);
-    expect(find.text('Set up module plan'), findsOneWidget);
+    expect(find.text('Calibrate Study Plan & Pace'), findsOneWidget);
   });
 
   testWidgets('AutomatedModuleTracker renders card matching Day resets at layout with inner Open Queue action', (tester) async {

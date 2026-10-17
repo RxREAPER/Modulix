@@ -20,6 +20,7 @@ import 'theme/app_theme.dart';
 import 'widgets/lovable_nav_bar.dart';
 import 'widgets/timer/mini_timer_overlay.dart';
 import 'widgets/tour/tour_spotlight_overlay.dart';
+import 'widgets/errors/route_error_view.dart';
 
 /// Provider for coordinating the iOS modal sheet background recess effect
 final modalSheetRecessProvider = StateProvider<bool>((ref) => false);
@@ -43,6 +44,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     navigatorKey: _rootNavigatorKey,
     refreshListenable: listenable,
     initialLocation: '/',
+    errorBuilder: (context, state) => RouteErrorView(
+      uri: state.uri,
+      error: state.error,
+    ),
     redirect: (context, state) {
       final appState = ref.read(appStateProvider).valueOrNull;
       if (appState == null) return null;

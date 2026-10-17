@@ -10,6 +10,8 @@ import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/curriculum/subject_sketch_icon.dart';
 import '../../widgets/focus_timer_sheet.dart';
 import '../../widgets/in_situ_hint_pill.dart';
+import '../../widgets/errors/app_error_state_view.dart';
+import '../../widgets/loading/app_shimmer.dart';
 
 class SubjectAnalyticsScreen extends ConsumerWidget {
   final String subjectId;
@@ -25,17 +27,34 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
     return subjectAsync.when(
       loading: () => Scaffold(
         backgroundColor: AppTheme.paperBackground,
-        body: const Center(child: CircularProgressIndicator()),
+        body: const SafeArea(child: AnalyticsSkeletonView()),
       ),
-      error: (e, _) => Scaffold(
+      error: (e, st) => Scaffold(
         backgroundColor: AppTheme.paperBackground,
-        body: Center(child: Text('Error: $e')),
+        body: SafeArea(
+          child: AppErrorStateView(
+            error: e,
+            stackTrace: st,
+            onRetry: () => ref.refresh(subjectProvider(subjectId)),
+          ),
+        ),
       ),
       data: (subject) {
         if (subject == null) {
           return Scaffold(
             backgroundColor: AppTheme.paperBackground,
-            body: const Center(child: Text('Subject not found')),
+            appBar: AppBar(
+              backgroundColor: AppTheme.paperBackground,
+              elevation: 0,
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back_rounded, color: AppTheme.inkForeground),
+                onPressed: () => context.pop(),
+              ),
+            ),
+            body: AppErrorStateView(
+              error: RangeError('Subject not found: $subjectId'),
+              onPrimaryAction: () => context.pop(),
+            ),
           );
         }
 

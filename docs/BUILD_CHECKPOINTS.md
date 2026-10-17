@@ -8,6 +8,53 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-018] Centralized Error Translation Engine, Crash Shield, Route 404, Shimmer Skeletons & Desk Bubble Prompt
+- **Timestamp:** 2026-10-18 03:50 UTC
+- **Category:** Architecture / Error Handling / Crash Shield / Shimmer Skeletons / UX Polish
+- **Files Modified:**
+  - `lib/services/error_translator_service.dart` (NEW)
+  - `lib/widgets/errors/diagnostic_telemetry_drawer.dart` (NEW)
+  - `lib/widgets/errors/modulix_error_scaffold.dart` (NEW)
+  - `lib/widgets/errors/route_error_view.dart` (NEW)
+  - `lib/widgets/errors/app_error_state_view.dart` (NEW)
+  - `lib/widgets/loading/app_shimmer.dart` (NEW)
+  - `test/error_translator_service_test.dart` (NEW)
+  - `test/error_widgets_test.dart` (NEW)
+  - `test/home_bubble_prompt_test.dart` (NEW)
+  - `lib/main.dart`
+  - `lib/app.dart`
+  - `lib/screens/home/home_screen.dart`
+  - `lib/screens/curriculum/curriculum_screen.dart`
+  - `lib/screens/curriculum/chapter_screen.dart`
+  - `lib/screens/curriculum/subject_screen.dart`
+  - `lib/screens/curriculum/subject_analytics_screen.dart`
+  - `lib/screens/curriculum/module_tasks_screen.dart`
+  - `lib/screens/plan/plan_screen.dart`
+  - `lib/screens/analytics/analytics_screen.dart`
+  - `test/study_desk_test.dart`
+- **Summary:** Complete production error handling system, professional shimmer loading skeletons, and first-time desk prompt overhaul:
+  - **Doctor-Facing Error Translation Catalog (Domains A through E):**
+    - Built `ErrorTranslatorService` translating technical raw exceptions across 5 distinct domains into reassuring, actionable doctor-facing headlines and explanations.
+    - Zero raw exceptions, error codes, or stack traces shown in UI body copy.
+    - Collapsible `DiagnosticTelemetryDrawer` with copy-to-clipboard button cleanly stores technical debug details.
+  - **Global Crash Shield & Route 404:**
+    - Replaced Flutter's red/grey screen of death with `ModulixErrorScaffold` via `ErrorWidget.builder`, reassuring doctors that local SQLite cache is intact and offering "Reopen App" and "Copy Error Report".
+    - Handled GoRouter unknown routes via `RouteErrorView` ("Destination Not in Syllabus").
+  - **Component-Level Shimmer Skeletons:**
+    - Created `AppShimmer` with paper/parchment matching linear gradients: `CurriculumSkeletonView`, `ModuleTimelineSkeletonView`, `DeskTasksSkeletonView`, `AnalyticsSkeletonView`.
+    - Integrated throughout Curriculum, Subject, Chapter, Tasks, Plan, Analytics, and Home Desk.
+  - **Desk Bubble Prompt Overhaul:**
+    - Replaced oversized stationery card with sleek, compact speech-bubble prompt hugging Today's Tasks header.
+    - Two-line clinical copy: *"Isolate 3–4 high-yield objectives for today."* / *"Streaks hold until 5:00 AM post-duty."*
+    - Direct `[+ Plan]` action and one-tap dismissal `(X)` with persistence (`seen_first_desk_intro`).
+- **Verification:**
+  - `flutter analyze lib/` passed with **0 errors and 0 warnings**.
+  - All unit & widget tests passed 100% (`test/error_translator_service_test.dart`, `test/error_widgets_test.dart`, `test/home_bubble_prompt_test.dart`, `test/chapter_screen_test.dart`, `test/study_desk_test.dart`).
+  - Full debug APK built in 123.5s, installed, and physically verified with screenshot on OnePlus 13R (`ba009d81`).
+- **Build Status:** ✅ Included in Build v1.2.4 (app-debug.apk installed & verified on OnePlus 13R ba009d81)
+
+---
+
 ### [CKPT-017] In-Situ Hint Pills, First-Session Desk Card, Redundant Text Removal & Discovery Pulses
 - **Timestamp:** 2026-10-18 02:30 UTC
 - **Category:** UX / First-Time Experience / In-Situ Hint Pills / Discovery Pulses

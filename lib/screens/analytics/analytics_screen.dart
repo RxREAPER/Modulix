@@ -18,7 +18,8 @@ import '../../widgets/animations/rolling_digit_text.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../services/tour/app_tour_controller.dart';
 import '../../widgets/in_situ_hint_pill.dart';
-
+import '../../widgets/errors/app_error_state_view.dart';
+import '../../widgets/loading/app_shimmer.dart';
 
 class AnalyticsScreen extends ConsumerWidget {
   const AnalyticsScreen({super.key});
@@ -42,10 +43,30 @@ class AnalyticsScreen extends ConsumerWidget {
     final appState = appStateAsync.value;
     final subjects = syllabusAsync.value ?? [];
 
+    if (appStateAsync.isLoading) {
+      return Scaffold(
+        backgroundColor: AppTheme.paperBackground,
+        body: const SafeArea(child: AnalyticsSkeletonView()),
+      );
+    }
+
+    if (appStateAsync.hasError) {
+      return Scaffold(
+        backgroundColor: AppTheme.paperBackground,
+        body: SafeArea(
+          child: AppErrorStateView(
+            error: appStateAsync.error,
+            stackTrace: appStateAsync.stackTrace,
+            onRetry: () => ref.refresh(appStateProvider),
+          ),
+        ),
+      );
+    }
+
     if (appState == null) {
       return Scaffold(
         backgroundColor: AppTheme.paperBackground,
-        body: const Center(child: CircularProgressIndicator()),
+        body: const SafeArea(child: AnalyticsSkeletonView()),
       );
     }
 

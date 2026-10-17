@@ -14,6 +14,8 @@ import '../../widgets/animations/elastic_ink_pill.dart';
 import '../../widgets/animations/rolling_digit_text.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/curriculum/subject_sketch_icon.dart';
+import '../../widgets/errors/app_error_state_view.dart';
+import '../../widgets/loading/app_shimmer.dart';
 
 class PlanScreen extends ConsumerStatefulWidget {
   const PlanScreen({super.key});
@@ -177,10 +179,12 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
           ),
         ),
         body: syllabusAsync.when(
-          loading: () => Center(
-            child: CircularProgressIndicator(color: AppTheme.primaryBlue),
+          loading: () => const ModuleTimelineSkeletonView(),
+          error: (e, st) => AppErrorStateView(
+            error: e,
+            stackTrace: st,
+            onRetry: () => ref.refresh(activeSyllabusProvider),
           ),
-          error: (e, _) => Center(child: Text('Error loading syllabus: $e')),
           data: (subjectsList) => ListView(
             cacheExtent: 450.0,
             physics: const BouncingScrollPhysics(

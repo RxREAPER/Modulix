@@ -11,6 +11,8 @@ import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/discovery_pulse.dart';
 import '../../widgets/video_tile.dart';
+import '../../widgets/errors/app_error_state_view.dart';
+import '../../widgets/loading/app_shimmer.dart';
 
 class ChapterScreen extends ConsumerWidget {
   final String subjectId;
@@ -29,13 +31,40 @@ class ChapterScreen extends ConsumerWidget {
     final meta = subjectMeta(subjectId);
 
     return subjectAsync.when(
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (e, _) => Scaffold(body: Center(child: Text('Error: $e'))),
+      loading: () => Scaffold(
+        backgroundColor: AppTheme.paperBackground,
+        body: const SafeArea(child: ModuleTimelineSkeletonView()),
+      ),
+      error: (e, st) => Scaffold(
+        backgroundColor: AppTheme.paperBackground,
+        body: SafeArea(
+          child: AppErrorStateView(
+            error: e,
+            stackTrace: st,
+            onRetry: () => ref.refresh(subjectProvider(subjectId)),
+          ),
+        ),
+      ),
       data: (subject) {
         if (subject == null ||
             chapterIndex < 0 ||
             chapterIndex >= subject.chapters.length) {
-          return const Scaffold(body: Center(child: Text('Chapter not found')));
+          return Scaffold(
+            backgroundColor: AppTheme.paperBackground,
+            appBar: AppBar(
+              backgroundColor: AppTheme.paperBackground,
+              elevation: 0,
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back_rounded, color: AppTheme.inkForeground),
+                onPressed: () => context.pop(),
+              ),
+            ),
+            body: AppErrorStateView(
+              headline: 'Chapter not found',
+              error: RangeError('Chapter index $chapterIndex out of bounds'),
+              onPrimaryAction: () => context.pop(),
+            ),
+          );
         }
         final chapter = subject.chapters[chapterIndex];
         final completedVideos = appState?.currentEdition.completedVideos ?? {};

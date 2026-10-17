@@ -17,6 +17,8 @@ import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/animations/animated_strike_text.dart';
 import '../../widgets/animations/animated_check_stroke.dart';
 import '../../widgets/animations/page_entrance.dart';
+import '../../widgets/errors/app_error_state_view.dart';
+import '../../widgets/loading/app_shimmer.dart';
 
 class ModuleTasksScreen extends ConsumerWidget {
   static String? _lastCheckedKey;
@@ -112,17 +114,15 @@ class ModuleTasksScreen extends ConsumerWidget {
         ),
       ),
       body: appStateAsync.when(
-        loading: () => Center(
-          child: CircularProgressIndicator(color: AppTheme.primaryBlue),
-        ),
-        error: (err, _) => Center(
-          child: Text('Error loading modules: $err'),
+        loading: () => const ModuleTimelineSkeletonView(),
+        error: (err, st) => AppErrorStateView(
+          error: err,
+          stackTrace: st,
+          onRetry: () => ref.refresh(appStateProvider),
         ),
         data: (appState) {
           if (subjectsAsync.isLoading) {
-            return Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryBlue),
-            );
+            return const ModuleTimelineSkeletonView();
           }
 
           final subjects = subjectsAsync.valueOrNull ?? [];

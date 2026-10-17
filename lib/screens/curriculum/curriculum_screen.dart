@@ -12,6 +12,8 @@ import '../../widgets/curriculum/square_subject_card.dart';
 import '../../widgets/profile/profile_customization.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../services/tour/app_tour_controller.dart';
+import '../../widgets/errors/app_error_state_view.dart';
+import '../../widgets/loading/app_shimmer.dart';
 
 class CurriculumScreen extends ConsumerWidget {
   const CurriculumScreen({super.key});
@@ -73,8 +75,12 @@ class CurriculumScreen extends ConsumerWidget {
         ],
       ),
       body: syllabus.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const CurriculumSkeletonView(),
+        error: (e, st) => AppErrorStateView(
+          error: e,
+          stackTrace: st,
+          onRetry: () => ref.refresh(activeSyllabusProvider),
+        ),
         data: (subjects) {
           final plan = appState?.currentEdition.plan;
 
