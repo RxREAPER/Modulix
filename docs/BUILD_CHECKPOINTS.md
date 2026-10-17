@@ -8,6 +8,27 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-010] Performance & Latency Restoration: Zero-Lag Interactions, Root Clip Removal & Painter Optimization
+- **Timestamp:** 2026-10-17 10:05 UTC
+- **Category:** Performance / Graphics / Touch Latency
+- **Files Modified:**
+  - `lib/widgets/animations/apple_pressable.dart`
+  - `lib/widgets/animations/animated_strike_text.dart`
+  - `lib/widgets/animations/page_entrance.dart`
+  - `lib/widgets/curriculum/subject_sketch_icon.dart`
+  - `lib/widgets/study_desk_clock.dart`
+  - `lib/app.dart`
+- **Summary:** Resolved pervasive device lag, click delay, and navigation stutter:
+  - **Zero-Latency Touch Response:** Eliminated `HitTestBehavior.opaque` blocking and offscreen `ClipRRect` inside `ApplePressable`. Immediate callback invocation prior to haptic dispatch prevents gesture arena stalls.
+  - **Zero-Layout in Paint:** Replaced `_StrikeLinePainter` inside `AnimatedStrikeText` (which was executing `TextPainter.layout()` inside `paint()`) with native C++ `TextDecoration.lineThrough` smooth color interpolation.
+  - **Eliminated Whole-App Viewport Clip:** Removed `ModalSheetRecessWrapper`'s whole-app `ClipRRect` and `AnimatedScale` from the root shell, eliminating persistent offscreen `saveLayer` render passes across the application.
+  - **Removed GPU Opacity Buffers:** Converted `PageEntrance` from raw `Opacity` layers to compositor-backed `FadeTransition`.
+  - **RAM & VRAM Optimization:** Added `cacheWidth: 80` to `SubjectSketchIcon` (decoding 512x512 images directly to thumbnail size, saving ~95% RAM) and `cacheWidth: 1080` to `StudyDeskClock` ornate sketch frame.
+- **Verification:** `flutter analyze` 0 errors on modified files; comprehensive test suite passed (44/44 tests green across `apple_pressable_test.dart`, `tab_persistence_test.dart`, `plan_screen_test.dart`, `chapter_screen_test.dart`, `curriculum_sort_test.dart`, `theme_system_test.dart`, `lovable_nav_bar_test.dart`, `animated_strike_text_test.dart`, `animated_check_stroke_test.dart`).
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### [CKPT-009] Fix StatefulShellBranch Back Navigation Pop Stack & Eliminate Touch-Down GPU Rasterizer Overhead
 - **Timestamp:** 2026-10-17 08:45 UTC
 - **Category:** Navigation / Performance / Graphics

@@ -121,32 +121,25 @@ class _ApplePressableState extends State<ApplePressable>
       child: widget.child,
     );
 
-    if (widget.borderRadius != null) {
-      content = ClipRRect(
-        borderRadius: widget.borderRadius!,
-        child: content,
-      );
-    }
-
     return Listener(
       onPointerDown: _onPointerDown,
       onPointerUp: _onPointerUp,
       onPointerCancel: _onPointerCancel,
       child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
+        behavior: HitTestBehavior.translucent,
         onTapCancel: () {
           if (_isPressed) {
             _isPressed = false;
-            _ctrl.animateTo(0.0, duration: const Duration(milliseconds: 150), curve: Curves.easeOut);
+            _ctrl.animateTo(0.0, duration: const Duration(milliseconds: 100), curve: Curves.easeOut);
           }
         },
         onTap: () {
-          _triggerHaptic(widget.hapticStyle);
           effectiveTap?.call();
+          _triggerHaptic(widget.hapticStyle);
         },
         onLongPress: widget.onLongPress != null ? () {
-          _triggerHaptic(HapticStyle.medium);
           widget.onLongPress!();
+          _triggerHaptic(HapticStyle.medium);
         } : null,
         child: content,
       ),

@@ -299,31 +299,15 @@ class ModulixApp extends ConsumerWidget {
 /// Backward compatibility alias for FlowMDApp
 typedef FlowMDApp = ModulixApp;
 
-/// ModalSheetRecessWrapper scales down the main viewport ($0.94x$, $22px$ corners)
-/// when modal bottom sheets are open, providing authentic iOS recess depth.
-class ModalSheetRecessWrapper extends ConsumerWidget {
+/// ModalSheetRecessWrapper passthrough (eliminated whole-app scale & ClipRRect for 120Hz performance)
+class ModalSheetRecessWrapper extends StatelessWidget {
   final Widget child;
 
   const ModalSheetRecessWrapper({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isRecessed = ref.watch(modalSheetRecessProvider);
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 280),
-      curve: Curves.easeOutCubic,
-      color: isRecessed ? Colors.black : Colors.transparent,
-      child: AnimatedScale(
-        scale: isRecessed ? 0.94 : 1.0,
-        duration: const Duration(milliseconds: 280),
-        curve: Curves.easeOutCubic,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(isRecessed ? 22.0 : 0.0),
-          child: child,
-        ),
-      ),
-    );
+  Widget build(BuildContext context) {
+    return child;
   }
 }
 

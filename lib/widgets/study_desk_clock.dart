@@ -33,6 +33,7 @@ class StudyDeskClock extends StatelessWidget {
             Image.asset(
               frameAsset,
               fit: BoxFit.fill,
+              cacheWidth: 1080,
               filterQuality: FilterQuality.medium,
             ),
 
