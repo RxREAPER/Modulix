@@ -15,6 +15,7 @@ import 'screens/analytics/analytics_screen.dart';
 import 'screens/plan/plan_screen.dart';
 import 'screens/auth/auth_screen.dart';
 import 'screens/settings/syllabus_edition_screen.dart';
+import 'screens/settings/notifications_preferences_screen.dart';
 import 'screens/settings/settings_screen.dart';
 import 'screens/settings/theme_studio_screen.dart';
 import 'screens/timer/focus_timer_screen.dart';
@@ -226,6 +227,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
           state: state,
           child: const SyllabusEditionScreen(),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/notifications-preferences',
+        pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+          state: state,
+          child: const NotificationsPreferencesScreen(),
         ),
       ),
     ],

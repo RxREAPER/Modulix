@@ -40,60 +40,6 @@ class SyllabusEditionScreen extends ConsumerWidget {
             parent: AlwaysScrollableScrollPhysics()),
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 40),
         children: [
-          // Clinical Info Banner
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppTheme.parchmentSurface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.borderLight, width: 1.3),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryBlue.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.layers_outlined,
-                    size: 20,
-                    color: AppTheme.primaryBlue,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Progress Isolation Guarantee',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.inkForeground,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Your video completion marks, notes, and study desk tasks are preserved independently for each edition. You can switch between editions at any time without losing progress.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppTheme.mutedText,
-                          height: 1.4,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
           Text(
             'AVAILABLE EDITIONS',
             style: TextStyle(
@@ -103,7 +49,6 @@ class SyllabusEditionScreen extends ConsumerWidget {
               color: AppTheme.mutedText,
             ),
           ),
-
           const SizedBox(height: 12),
 
           // Edition 8 Card
@@ -111,8 +56,6 @@ class SyllabusEditionScreen extends ConsumerWidget {
             editionId: 'marrow_8',
             title: 'Marrow Edition 8',
             editionTag: 'CURRENT STANDARD (2024–2026)',
-            summary:
-                '19 MBBS subjects, 848 comprehensive lectures, updated clinical case discussions, and integrated Next-Gen NEET-PG syllabus mapping.',
             subjectsCount: 19,
             videosCount: 848,
             isActive: activeEdition == 'marrow_8',
@@ -137,8 +80,6 @@ class SyllabusEditionScreen extends ConsumerWidget {
             editionId: 'marrow_6_5',
             title: 'Marrow Edition 6.5',
             editionTag: 'CLASSIC FOUNDATION',
-            summary:
-                '19 MBBS subjects, high-yield classic core video lectures, streamlined foundation topics, and rapid revision curriculum.',
             subjectsCount: 19,
             videosCount: 792,
             isActive: activeEdition == 'marrow_6_5',
@@ -166,7 +107,6 @@ class _EditionCard extends StatelessWidget {
   final String editionId;
   final String title;
   final String editionTag;
-  final String summary;
   final int subjectsCount;
   final int videosCount;
   final bool isActive;
@@ -177,7 +117,6 @@ class _EditionCard extends StatelessWidget {
     required this.editionId,
     required this.title,
     required this.editionTag,
-    required this.summary,
     required this.subjectsCount,
     required this.videosCount,
     required this.isActive,
@@ -279,16 +218,7 @@ class _EditionCard extends StatelessWidget {
                 letterSpacing: -0.2,
               ),
             ),
-            const SizedBox(height: 6),
-            Text(
-              summary,
-              style: TextStyle(
-                fontSize: 12.5,
-                color: AppTheme.mutedText,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             Wrap(
               spacing: 8,
               runSpacing: 8,

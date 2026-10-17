@@ -8,6 +8,44 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-020] Minimalist Settings Cards, Full Customize Persona Text, Creative Theme Swatches, Clean Theme Studio & Dedicated Notifications Page
+- **Timestamp:** 2026-10-18 05:20 UTC
+- **Category:** UI Polish / Settings UX / Theme Studio / Syllabus Edition / Notifications Architecture
+- **Files Modified:**
+  - `lib/screens/settings/notifications_preferences_screen.dart` (NEW)
+  - `lib/screens/settings/settings_screen.dart`
+  - `lib/screens/settings/theme_studio_screen.dart`
+  - `lib/screens/settings/syllabus_edition_screen.dart`
+  - `lib/app.dart`
+- **Summary:** Addressed 8-point refinement to the Settings screen, Theme Studio, and Syllabus Edition:
+  - **Doctor Profile Card:**
+    - Removed redundant text (`NEET-PG Aspirant • Physician`) and syllabus tag pill from the profile card.
+    - Preserved large physician name typography and avatar with customize tap.
+  - **Customize Persona Button:**
+    - Fixed truncation by assigning responsive `flex: 3` to "Customize Persona" and `flex: 2` to "Edit Name", ensuring full text renders without ellipsis.
+  - **Minimalist Cloud Sync Card:**
+    - Converted into a clean, minimalist 1-row box matching all other standard cards on the page.
+    - Eliminated verbose explanation essays and oversized buttons; displays current status ("Guest Mode • Local only" or user email) with clean "Sign In >" action.
+  - **Creative & Minimalist Theme Appearance Card:**
+    - Created an artistic, overlapping 3-disc palette swatch cluster showing the active atmosphere's scaffold, accent, and secondary accent colors with subtle drop-shadows.
+    - Shows preset title, subtitle ("Active Atmosphere • Tap to customize"), and clean "Studio >" action navigating to `/theme-studio`.
+  - **Theme Studio Simplification:**
+    - Removed top banner (`"Calibrated for extended medical reading..."`).
+    - Stripped simulated mini-app live preview canvas from theme cards; converted to minimalist layout showing title, description, circular selection indicator, and palette swatches.
+  - **Syllabus Edition Streamlining:**
+    - Removed `"Progress Isolation Guarantee"` banner and multi-line descriptions from syllabus switching.
+    - Simplified cards strictly for fast switching between Marrow Edition 8 and Edition 6.5 with concise subject and lecture badges.
+  - **Dedicated Notifications & Preferences Screen:**
+    - Relocated 250-line inline duty rollover boundary (3:00–7:00 AM chips) and reminder toggles out of Settings into dedicated sub-page (`/notifications-preferences`).
+    - Represented on Settings by a uniform standard card titled "Notifications & Preferences" with direct route navigation.
+- **Verification:**
+  - Static analysis (`flutter analyze`) on all 5 files passed with **0 errors and 0 warnings**.
+  - Unit test suite passed 100% (`test/theme_system_test.dart`, `test/auth_screen_test.dart`, `test/theme_enhancements_verification_test.dart`).
+  - Debug APK built cleanly in 134.8s (`build/app/outputs/flutter-apk/app-debug.apk`).
+- **Build Status:** ✅ Included in Build v1.2.6
+
+---
+
 ### [CKPT-019] Settings Redesign, Full-Page Artsy Auth Screen, Dedicated Syllabus Edition Screen & Danger Zone Relocation
 - **Timestamp:** 2026-10-18 04:45 UTC
 - **Category:** UI / Redesign / Auth Architecture / Syllabus Management / Settings
