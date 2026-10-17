@@ -5,6 +5,7 @@ import '../../providers/app_state_provider.dart';
 import '../../providers/syllabus_provider.dart';
 import '../../data/subjects_metadata.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/video_tile.dart';
 
 class ChapterScreen extends ConsumerWidget {
@@ -86,67 +87,72 @@ class ChapterScreen extends ConsumerWidget {
               ),
             ),
           ),
-          body: Column(
-            children: [
-              // Stats row
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                child: Row(
-                  children: [
-                    _StatChip(
-                        label: '$done / ${chapter.totalVideos} done',
-                        icon: Icons.check_circle_outline_rounded,
-                        color: meta.accent),
-                    const SizedBox(width: 8),
-                    _StatChip(
-                        label: '${chapter.totalVideos - done} remaining',
-                        icon: Icons.radio_button_unchecked_rounded,
-                        color: Colors.grey),
-                    if (chapter.durationLabel.isNotEmpty) ...[
+          body: FadeSlideEntrance(
+            durationMs: 180,
+            slideY: 10.0,
+            child: Column(
+              children: [
+                // Stats row
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  child: Row(
+                    children: [
+                      _StatChip(
+                          label: '$done / ${chapter.totalVideos} done',
+                          icon: Icons.check_circle_outline_rounded,
+                          color: meta.accent),
                       const SizedBox(width: 8),
                       _StatChip(
-                          label: chapter.durationLabel,
-                          icon: Icons.schedule_rounded,
-                          color: AppTheme.inkForeground),
+                          label: '${chapter.totalVideos - done} remaining',
+                          icon: Icons.radio_button_unchecked_rounded,
+                          color: Colors.grey),
+                      if (chapter.durationLabel.isNotEmpty) ...[
+                        const SizedBox(width: 8),
+                        _StatChip(
+                            label: chapter.durationLabel,
+                            icon: Icons.schedule_rounded,
+                            color: AppTheme.inkForeground),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-              // Video list
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
-                  itemCount: chapter.videos.length,
-                  itemBuilder: (context, i) {
-                    final video = chapter.videos[i];
-                    final isCompleted =
-                        completedVideos.containsKey(video.id);
-                    final completedAt = completedVideos[video.id];
+                // Video list
+                Expanded(
+                  child: ListView.builder(
+                    cacheExtent: 450.0,
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
+                    itemCount: chapter.videos.length,
+                    itemBuilder: (context, i) {
+                      final video = chapter.videos[i];
+                      final isCompleted =
+                          completedVideos.containsKey(video.id);
+                      final completedAt = completedVideos[video.id];
 
-                    final globalNumber = video.serialNumber > 0
-                        ? video.serialNumber
-                        : (subject.allVideos.indexWhere((v) => v.id == video.id) + 1);
+                      final globalNumber = video.serialNumber > 0
+                          ? video.serialNumber
+                          : (subject.allVideos.indexWhere((v) => v.id == video.id) + 1);
 
-                    return VideoTile(
-                      video: video,
-                      serialNumber: globalNumber > 0 ? globalNumber : (i + 1),
-                      isCompleted: isCompleted,
-                      completedAt: completedAt is String ? completedAt : null,
-                      accentColor: meta.accent,
-                      onToggle: () {
-                        if (isCompleted) {
-                          ref.read(appStateProvider.notifier)
-                              .markVideoIncomplete(video.id);
-                        } else {
-                          ref.read(appStateProvider.notifier)
-                              .markVideoComplete(video.id);
-                        }
-                      },
-                    );
-                  },
+                      return VideoTile(
+                        video: video,
+                        serialNumber: globalNumber > 0 ? globalNumber : (i + 1),
+                        isCompleted: isCompleted,
+                        completedAt: completedAt is String ? completedAt : null,
+                        accentColor: meta.accent,
+                        onToggle: () {
+                          if (isCompleted) {
+                            ref.read(appStateProvider.notifier)
+                                .markVideoIncomplete(video.id);
+                          } else {
+                            ref.read(appStateProvider.notifier)
+                                .markVideoComplete(video.id);
+                          }
+                        },
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       );

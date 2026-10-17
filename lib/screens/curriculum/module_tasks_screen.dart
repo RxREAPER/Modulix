@@ -16,6 +16,7 @@ import '../../services/tour/app_tour_controller.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/animations/animated_strike_text.dart';
 import '../../widgets/animations/animated_check_stroke.dart';
+import '../../widgets/animations/page_entrance.dart';
 
 class ModuleTasksScreen extends ConsumerWidget {
   const ModuleTasksScreen({super.key});
@@ -252,9 +253,13 @@ class ModuleTasksScreen extends ConsumerWidget {
             } catch (_) {}
           }
 
-          return ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            children: [
+          return FadeSlideEntrance(
+            durationMs: 180,
+            slideY: 10.0,
+            child: ListView(
+              cacheExtent: 450.0,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              children: [
               // PART 1: The New Top Banner
               _buildTopBanner(
                 context: context,
@@ -371,8 +376,9 @@ class ModuleTasksScreen extends ConsumerWidget {
               ],
               const SizedBox(height: 32),
             ],
-          );
-        },
+          ),
+        );
+      },
       ),
     ),
   );

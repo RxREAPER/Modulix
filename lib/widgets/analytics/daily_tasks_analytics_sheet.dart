@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/daily_tasks_provider.dart';
 import '../../theme/app_theme.dart';
+import '../animations/apple_pressable.dart';
+import '../animations/page_entrance.dart';
 import 'analytics_progress_hero_card.dart';
 
 class DailyTasksAnalyticsSheet extends ConsumerWidget {
@@ -15,8 +17,8 @@ class DailyTasksAnalyticsSheet extends ConsumerWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       sheetAnimationStyle: const AnimationStyle(
-        duration: Duration(milliseconds: 280),
-        reverseDuration: Duration(milliseconds: 220),
+        duration: Duration(milliseconds: 200),
+        reverseDuration: Duration(milliseconds: 150),
       ),
       builder: (_) => const DailyTasksAnalyticsSheet(),
     );
@@ -65,7 +67,7 @@ class DailyTasksAnalyticsSheet extends ConsumerWidget {
       ),
       decoration: BoxDecoration(
         color: AppTheme.paperBackground,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         border: Border(
           top: BorderSide(color: AppTheme.sketchBorderColor, width: 2),
           left: BorderSide(color: AppTheme.sketchBorderColor, width: 2),
@@ -135,9 +137,12 @@ class DailyTasksAnalyticsSheet extends ConsumerWidget {
           Divider(height: 1, color: AppTheme.borderLight),
 
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-              children: [
+            child: FadeSlideEntrance(
+              durationMs: 180,
+              slideY: 10.0,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                children: [
                 // Today's Completion Card
                 AnalyticsProgressHeroCard(
                   progress: completionPct,
@@ -267,45 +272,48 @@ class DailyTasksAnalyticsSheet extends ConsumerWidget {
                     final t = tasks[i];
                     final isDone = completedIds.contains('task_$i');
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: AppTheme.cardWhite,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isDone ? AppTheme.accentPrimary.withValues(alpha: 0.35) : AppTheme.borderLight,
-                          width: 1.2,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            isDone
-                                ? Icons.check_circle_rounded
-                                : Icons.radio_button_unchecked_rounded,
-                            color: isDone ? AppTheme.accentPrimary : Colors.grey.shade400,
-                            size: 20,
+                    return ApplePressable(
+                      pressedScale: 0.98,
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: AppTheme.cardWhite,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: isDone ? AppTheme.accentPrimary.withValues(alpha: 0.35) : AppTheme.borderLight,
+                            width: 1.2,
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              t.title,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight:
-                                    isDone ? FontWeight.w600 : FontWeight.w700,
-                                decoration: isDone
-                                    ? TextDecoration.lineThrough
-                                    : TextDecoration.none,
-                                color: isDone
-                                    ? AppTheme.mutedText
-                                    : AppTheme.inkForeground,
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              isDone
+                                  ? Icons.check_circle_rounded
+                                  : Icons.radio_button_unchecked_rounded,
+                              color: isDone ? AppTheme.accentPrimary : Colors.grey.shade400,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                t.title,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight:
+                                      isDone ? FontWeight.w600 : FontWeight.w700,
+                                  decoration: isDone
+                                      ? TextDecoration.lineThrough
+                                      : TextDecoration.none,
+                                  color: isDone
+                                      ? AppTheme.mutedText
+                                      : AppTheme.inkForeground,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   }),
@@ -313,6 +321,7 @@ class DailyTasksAnalyticsSheet extends ConsumerWidget {
               ],
             ),
           ),
+        ),
         ],
       ),
     );

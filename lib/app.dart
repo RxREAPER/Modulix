@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -175,16 +174,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
         path: '/theme-studio',
-        pageBuilder: (context, state) => CupertinoPage(
-          key: state.pageKey,
+        pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+          state: state,
           child: const ThemeStudioScreen(),
         ),
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
         path: '/module-tasks',
-        pageBuilder: (context, state) => CupertinoPage(
-          key: state.pageKey,
+        pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+          state: state,
           child: const ModuleTasksScreen(),
         ),
       ),
@@ -218,8 +217,8 @@ CustomTransitionPage<void> _buildFadeTransitionPage({
   return CustomTransitionPage<void>(
     key: state.pageKey,
     child: child,
-    transitionDuration: const Duration(milliseconds: 260),
-    reverseTransitionDuration: const Duration(milliseconds: 200),
+    transitionDuration: const Duration(milliseconds: 180),
+    reverseTransitionDuration: const Duration(milliseconds: 140),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       final curved = CurvedAnimation(
         parent: animation,
@@ -229,7 +228,7 @@ CustomTransitionPage<void> _buildFadeTransitionPage({
       return FadeTransition(
         opacity: curved,
         child: ScaleTransition(
-          scale: Tween<double>(begin: 0.96, end: 1.0).animate(curved),
+          scale: Tween<double>(begin: 0.97, end: 1.0).animate(curved),
           child: child,
         ),
       );
@@ -244,12 +243,12 @@ CustomTransitionPage<void> _buildSlideUpTransitionPage({
   return CustomTransitionPage<void>(
     key: state.pageKey,
     child: child,
-    transitionDuration: const Duration(milliseconds: 320),
-    reverseTransitionDuration: const Duration(milliseconds: 220),
+    transitionDuration: const Duration(milliseconds: 200),
+    reverseTransitionDuration: const Duration(milliseconds: 160),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       final curved = CurvedAnimation(
         parent: animation,
-        curve: Curves.easeOutBack,
+        curve: Curves.easeOutCubic,
         reverseCurve: Curves.easeInCubic,
       );
       final fadeCurved = CurvedAnimation(
@@ -259,7 +258,7 @@ CustomTransitionPage<void> _buildSlideUpTransitionPage({
       );
       return SlideTransition(
         position: Tween<Offset>(
-          begin: const Offset(0, 0.06),
+          begin: const Offset(0, 0.05),
           end: Offset.zero,
         ).animate(curved),
         child: FadeTransition(
@@ -278,8 +277,8 @@ CustomTransitionPage<void> _buildSlideHorizontalTransitionPage({
   return CustomTransitionPage<void>(
     key: state.pageKey,
     child: child,
-    transitionDuration: const Duration(milliseconds: 240),
-    reverseTransitionDuration: const Duration(milliseconds: 180),
+    transitionDuration: const Duration(milliseconds: 190),
+    reverseTransitionDuration: const Duration(milliseconds: 150),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       final curved = CurvedAnimation(
         parent: animation,
@@ -288,7 +287,7 @@ CustomTransitionPage<void> _buildSlideHorizontalTransitionPage({
       );
       return SlideTransition(
         position: Tween<Offset>(
-          begin: const Offset(0.08, 0),
+          begin: const Offset(0.06, 0),
           end: Offset.zero,
         ).animate(curved),
         child: FadeTransition(

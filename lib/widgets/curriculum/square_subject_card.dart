@@ -128,15 +128,22 @@ class SquareSubjectCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(color: AppTheme.borderLight, width: 1.2),
               ),
-              child: FractionallySizedBox(
-                alignment: Alignment.centerLeft,
-                widthFactor: completion.clamp(0.0, 1.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: meta.accent,
-                    borderRadius: BorderRadius.circular(2.5),
-                  ),
-                ),
+              child: TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0.0, end: completion.clamp(0.0, 1.0)),
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.easeOutCubic,
+                builder: (context, animValue, _) {
+                  return FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: animValue,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: meta.accent,
+                        borderRadius: BorderRadius.circular(2.5),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ],

@@ -6,6 +6,8 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../models/time_log.dart';
 import '../../providers/time_log_provider.dart';
 import '../../theme/app_theme.dart';
+import '../animations/apple_pressable.dart';
+import '../animations/page_entrance.dart';
 
 class FocusTimerAnalyticsSheet extends ConsumerStatefulWidget {
   const FocusTimerAnalyticsSheet({super.key});
@@ -16,8 +18,8 @@ class FocusTimerAnalyticsSheet extends ConsumerStatefulWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       sheetAnimationStyle: const AnimationStyle(
-        duration: Duration(milliseconds: 280),
-        reverseDuration: Duration(milliseconds: 220),
+        duration: Duration(milliseconds: 200),
+        reverseDuration: Duration(milliseconds: 150),
       ),
       builder: (_) => const FocusTimerAnalyticsSheet(),
     );
@@ -205,9 +207,12 @@ class _FocusTimerAnalyticsSheetState extends ConsumerState<FocusTimerAnalyticsSh
           Divider(height: 1, color: AppTheme.borderLight),
 
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-              children: [
+            child: FadeSlideEntrance(
+              durationMs: 180,
+              slideY: 10.0,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                children: [
                 // Today's Hero Card
                 Container(
                   padding: const EdgeInsets.all(20),
@@ -314,8 +319,9 @@ class _FocusTimerAnalyticsSheetState extends ConsumerState<FocusTimerAnalyticsSh
                           duration: const Duration(milliseconds: 700),
                           curve: Curves.easeOutCubic,
                           builder: (context, animValue, _) {
-                            return BarChart(
-                              BarChartData(
+                            return RepaintBoundary(
+                              child: BarChart(
+                                BarChartData(
                                 alignment: BarChartAlignment.spaceAround,
                                 maxY: maxChartY,
                                 minY: 0,
@@ -499,8 +505,9 @@ class _FocusTimerAnalyticsSheetState extends ConsumerState<FocusTimerAnalyticsSh
                               ),
                               duration: const Duration(milliseconds: 650),
                               curve: Curves.easeOutCubic,
-                            );
-                          },
+                            ),
+                          );
+                        },
                         ),
                       ),
                       const SizedBox(height: 14),
@@ -645,9 +652,10 @@ class _FocusTimerAnalyticsSheetState extends ConsumerState<FocusTimerAnalyticsSh
               ],
             ),
           ),
-        ],
-      ),
-    );
+        ),
+      ],
+    ),
+  );
   }
 
   static Widget _buildSessionLogsSection(List<TimeLog> logs) {
@@ -768,87 +776,90 @@ class _FocusTimerAnalyticsSheetState extends ConsumerState<FocusTimerAnalyticsSh
     final formattedDate = DateFormat('MMM d, h:mm a').format(log.timestamp);
     final formattedDuration = _formatDuration(log.durationSecs);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppTheme.cardWhite,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderLight, width: 1.2),
-      ),
-      child: Row(
-        children: [
-          // Type Indicator Icon
-          Container(
-            padding: const EdgeInsets.all(7),
-            decoration: BoxDecoration(
-              color: typeColor.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
+    return ApplePressable(
+      pressedScale: 0.98,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppTheme.cardWhite,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.borderLight, width: 1.2),
+        ),
+        child: Row(
+          children: [
+            // Type Indicator Icon
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: typeColor.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(typeIcon, color: typeColor, size: 14),
             ),
-            child: Icon(typeIcon, color: typeColor, size: 14),
-          ),
-          const SizedBox(width: 10),
+            const SizedBox(width: 10),
 
-          // Title & Date
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  log.topicTitle.isNotEmpty ? log.topicTitle : 'Focus Session',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.inkForeground,
+            // Title & Date
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    log.topicTitle.isNotEmpty ? log.topicTitle : 'Focus Session',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.inkForeground,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Text(
-                      typeLabel,
-                      style: TextStyle(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w800,
-                        color: typeColor,
-                        letterSpacing: 0.3,
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Text(
+                        typeLabel,
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          color: typeColor,
+                          letterSpacing: 0.3,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      '• $formattedDate',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade500,
+                      const SizedBox(width: 5),
+                      Text(
+                        '• $formattedDate',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade500,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Duration Badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF3F1EA),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
-            ),
-            child: Text(
-              formattedDuration,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w900,
-                fontFamily: 'monospace',
-                color: AppTheme.inkForeground,
+                    ],
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+
+            // Duration Badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3F1EA),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
+              ),
+              child: Text(
+                formattedDuration,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: 'monospace',
+                  color: AppTheme.inkForeground,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

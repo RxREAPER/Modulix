@@ -8,6 +8,35 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-014] High-Speed App Animations, Apple Spring Physics & Sheet Optimizations
+- **Timestamp:** 2026-10-17 16:55 UTC
+- **Category:** Animation / Performance / Apple Spring Physics / Package Integration
+- **Files Modified:**
+  - `pubspec.yaml` & `pubspec.lock`
+  - `lib/widgets/animations/apple_pressable.dart`
+  - `lib/widgets/animations/page_entrance.dart`
+  - `lib/app.dart`
+  - `lib/screens/analytics/analytics_screen.dart`
+  - `lib/widgets/analytics/study_plan_analytics_sheet.dart`
+  - `lib/widgets/analytics/focus_timer_analytics_sheet.dart`
+  - `lib/widgets/analytics/daily_tasks_analytics_sheet.dart`
+  - `lib/screens/curriculum/subject_analytics_screen.dart`
+  - `lib/screens/curriculum/curriculum_screen.dart`
+  - `lib/widgets/curriculum/square_subject_card.dart`
+  - `lib/widgets/curriculum/module_timeline.dart`
+  - `lib/screens/curriculum/chapter_screen.dart`
+  - `lib/screens/curriculum/module_tasks_screen.dart`
+- **Summary:** Deep application-wide animation acceleration and physics calibration:
+  - **Dependency Additions:** Integrated `sprung: ^3.0.1`, `sliver_tools: ^0.2.12`, `flutter_animate: ^4.5.2` for native spring curves, sliver toolkits, and declarative animations.
+  - **Apple-Calibrated Spring Curves:** Upgraded `ApplePressable` with `Sprung.underDamped` curves on touch release and ultra-responsive 70ms touch-down compression for an authentic iOS/OxygenOS mechanical tactile rebound.
+  - **Snappy Transitions (180–200ms):** Accelerated page routing transitions (`_buildFadeTransitionPage` to 180ms/140ms, `_buildSlideUpTransitionPage` to 200ms/160ms, `_buildSlideHorizontalTransitionPage` to 190ms/150ms). Replaced heavy `CupertinoPage` modal transitions with customized slide-horizontal transitions.
+  - **Subpage Analytics Sheets:** Accelerated bottom sheet animation styles (`sheetAnimationStyle` duration 200ms, reverseDuration 150ms) across Study Plan, Focus Timer, and Daily Tasks analytics sheets. Wrapped all sheet content in `FadeSlideEntrance(180ms)`, wrapped fl_chart `BarChart` in `RepaintBoundary`, and wrapped session log cards and task rows in `ApplePressable(pressedScale: 0.98)`.
+  - **Curriculum & Module Views:** Accelerated timeline unit expansion and tab slide durations in `ModuleTimeline` from 260ms to snappy 180ms. Added animated progress bar width (`TweenAnimationBuilder`) to `SquareSubjectCard`. Wrapped `ChapterScreen` and `ModuleTasksScreen` bodies in `FadeSlideEntrance(180ms)` with 450px cache extent for smooth 120 FPS scrolling.
+- **Verification:** `flutter analyze` passed with 0 compile errors/warnings across all 13 modified files; test suite passed (14/14 tests green across `study_desk_test.dart` and `m2_regression_test.dart`).
+- **Build Status:** ⏳ Pending APK Build / Verified Live
+
+---
+
 ### [CKPT-013] Curriculum Scroll Animations, Sub-Page Popups & Immediate Click Feedback
 - **Timestamp:** 2026-10-17 15:15 UTC
 - **Category:** Animation / Performance / Tactile Feedback / GitHub Repo Setup

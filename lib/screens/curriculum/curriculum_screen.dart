@@ -343,6 +343,7 @@ class CurriculumScreen extends ConsumerWidget {
           return CustomScrollView(
             physics: const BouncingScrollPhysics(
                 parent: AlwaysScrollableScrollPhysics()),
+            cacheExtent: 450.0,
             slivers: slivers,
           );
         },

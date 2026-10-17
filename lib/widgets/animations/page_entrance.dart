@@ -20,9 +20,9 @@ class PageEntrance extends StatefulWidget {
   const PageEntrance({
     super.key,
     required this.children,
-    this.staggerMs = 60,
-    this.durationMs = 420,
-    this.slideY = 18.0,
+    this.staggerMs = 28,
+    this.durationMs = 220,
+    this.slideY = 12.0,
   });
 
   @override
@@ -97,9 +97,9 @@ class FadeSlideEntrance extends StatefulWidget {
   const FadeSlideEntrance({
     super.key,
     required this.child,
-    this.durationMs = 280,
-    this.slideY = 14.0,
-    this.curve = const Cubic(0.16, 1.0, 0.3, 1.0),
+    this.durationMs = 180,
+    this.slideY = 10.0,
+    this.curve = Curves.easeOutCubic,
   });
 
   @override

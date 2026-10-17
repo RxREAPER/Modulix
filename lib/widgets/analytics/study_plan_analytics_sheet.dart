@@ -8,6 +8,8 @@ import '../../providers/syllabus_provider.dart';
 import '../../services/metrics_service.dart';
 import '../../theme/app_theme.dart';
 import 'analytics_progress_hero_card.dart';
+import '../animations/apple_pressable.dart';
+import '../animations/page_entrance.dart';
 
 class StudyPlanAnalyticsSheet extends ConsumerWidget {
   const StudyPlanAnalyticsSheet({super.key});
@@ -18,8 +20,8 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       sheetAnimationStyle: const AnimationStyle(
-        duration: Duration(milliseconds: 280),
-        reverseDuration: Duration(milliseconds: 220),
+        duration: Duration(milliseconds: 200),
+        reverseDuration: Duration(milliseconds: 150),
       ),
       builder: (_) => const StudyPlanAnalyticsSheet(),
     );
@@ -223,9 +225,13 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
           ),
           Divider(height: 1, color: AppTheme.borderLight),
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-              children: [
+            child: FadeSlideEntrance(
+              durationMs: 180,
+              slideY: 10.0,
+              child: ListView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                children: [
                 if (!plan.isConfigured) ...[
                   Container(
                     padding: const EdgeInsets.all(24),
@@ -485,70 +491,75 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
                     final double pct = ch['percent'] as double;
                     final bool isComplete = done == total && total > 0;
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: AppTheme.cardWhite,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                            color: AppTheme.borderLight, width: 1.2),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  ch['name'] as String,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: isComplete
-                                        ? FontWeight.w800
-                                        : FontWeight.w700,
-                                    color: AppTheme.inkForeground,
+                    return ApplePressable(
+                      pressedScale: 0.98,
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: AppTheme.cardWhite,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                              color: AppTheme.borderLight, width: 1.2),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    ch['name'] as String,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: isComplete
+                                          ? FontWeight.w800
+                                          : FontWeight.w700,
+                                      color: AppTheme.inkForeground,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Text(
-                                '$done / $total',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w800,
-                                  fontFamily: 'monospace',
-                                  color: isComplete
+                                Text(
+                                  '$done / $total',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                    fontFamily: 'monospace',
+                                    color: isComplete
+                                        ? Colors.green
+                                        : AppTheme.mutedText,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: pct,
+                                minHeight: 5,
+                                backgroundColor: AppTheme.borderLight,
+                                valueColor: AlwaysStoppedAnimation(
+                                  isComplete
                                       ? Colors.green
-                                      : AppTheme.mutedText,
+                                      : AppTheme.accentPrimary,
                                 ),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: LinearProgressIndicator(
-                              value: pct,
-                              minHeight: 5,
-                              backgroundColor: AppTheme.borderLight,
-                              valueColor: AlwaysStoppedAnimation(
-                                isComplete
-                                    ? Colors.green
-                                    : AppTheme.accentPrimary,
-                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   }),
                 ],
               ],
             ),
+          ),
           ),
         ],
       ),

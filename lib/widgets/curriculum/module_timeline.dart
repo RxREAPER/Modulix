@@ -143,7 +143,7 @@ class _TimelineChapterSectionState extends State<_TimelineChapterSection>
     super.initState();
     _expandController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 260),
+      duration: const Duration(milliseconds: 180),
       value: 1.0,
     );
     _expandAnimation = CurvedAnimation(
@@ -373,7 +373,7 @@ class _TimelineChapterSectionState extends State<_TimelineChapterSection>
                       const SizedBox(width: 4),
                       AnimatedRotation(
                         turns: isExpanded ? 0.0 : -0.25,
-                        duration: const Duration(milliseconds: 260),
+                        duration: const Duration(milliseconds: 180),
                         curve: Curves.easeOutCubic,
                         child: Icon(
                           Icons.keyboard_arrow_down_rounded,
@@ -616,7 +616,7 @@ class DirectionalSlideFade extends StatelessWidget {
   Widget build(BuildContext context) {
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 260),
+      duration: const Duration(milliseconds: 180),
       curve: Curves.easeOutCubic,
       builder: (context, value, animChild) {
         final offsetX = (1.0 - value) * (direction >= 0 ? 22.0 : -22.0);

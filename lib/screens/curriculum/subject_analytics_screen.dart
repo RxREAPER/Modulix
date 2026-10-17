@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../../models/syllabus.dart';
-import '../../models/time_log.dart';
 import '../../providers/syllabus_provider.dart';
 import '../../providers/time_log_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../data/subjects_metadata.dart';
+import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/curriculum/subject_sketch_icon.dart';
 import '../../widgets/focus_timer_sheet.dart';
 
@@ -25,7 +24,7 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
     return subjectAsync.when(
       loading: () => Scaffold(
         backgroundColor: AppTheme.paperBackground,
-        body: Center(child: CircularProgressIndicator()),
+        body: const Center(child: CircularProgressIndicator()),
       ),
       error: (e, _) => Scaffold(
         backgroundColor: AppTheme.paperBackground,
@@ -35,7 +34,7 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
         if (subject == null) {
           return Scaffold(
             backgroundColor: AppTheme.paperBackground,
-            body: Center(child: Text('Subject not found')),
+            body: const Center(child: Text('Subject not found')),
           );
         }
 
@@ -64,7 +63,6 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
         }
 
         final totalSecs = videoSecs + qbankSecs + notesSecs + standaloneSecs;
-        final totalHoursDouble = totalSecs / 3600.0;
 
         final canPop = ModalRoute.of(context)?.canPop ?? false;
         return PopScope(
@@ -115,9 +113,12 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
               type: 'standalone',
             ),
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(18, 12, 18, 120),
-            child: Column(
+          body: FadeSlideEntrance(
+            durationMs: 190,
+            slideY: 10.0,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(18, 12, 18, 120),
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Top Banner Card
@@ -128,7 +129,7 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
                     gradient: LinearGradient(
                       colors: [
                         meta.accent,
-                        meta.accent.withOpacity(0.85),
+                        meta.accent.withValues(alpha: 0.85),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -184,7 +185,7 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
                         'Across ${subjectLogs.length} logged study sessions',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.white.withOpacity(0.85),
+                          color: Colors.white.withValues(alpha: 0.85),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -327,7 +328,7 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
                         width: 34,
                         height: 34,
                         decoration: BoxDecoration(
-                          color: meta.accent.withOpacity(0.12),
+                          color: meta.accent.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Center(
@@ -378,10 +379,11 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
             ),
           ),
         ),
-      );
-    },
+      ),
     );
-  }
+  },
+);
+}
 
   Widget _legendItem(String label, String value, Color color) {
     return Row(

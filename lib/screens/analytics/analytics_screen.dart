@@ -127,8 +127,8 @@ class AnalyticsScreen extends ConsumerWidget {
         ],
       ),
       body: FadeSlideEntrance(
-        durationMs: 320,
-        slideY: 14.0,
+        durationMs: 180,
+        slideY: 10.0,
         child: ListView(
         physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),

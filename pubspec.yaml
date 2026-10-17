@@ -56,6 +56,9 @@ dependencies:
   firebase_core: ^4.15.0
   firebase_analytics: ^12.6.0
   firebase_crashlytics: ^5.4.0
+  flutter_animate: ^4.5.2
+  sprung: ^3.0.1
+  sliver_tools: ^0.2.12
 
 dev_dependencies:
   flutter_test:
