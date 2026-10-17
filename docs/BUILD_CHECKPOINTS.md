@@ -32,7 +32,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - **Scroll Physics & Page Transitions:** Tuned `scrollCacheExtent` to `const ScrollCacheExtent.pixels(450.0)` in `SubjectScreen`. Deferred `recordVisit` Riverpod invalidation by 350ms so push animations maintain 120 FPS. Replaced heavy `CupertinoPage` transitions with high-performance 240ms cubic slide-fade transitions across curriculum sub-routes.
   - **Professional GitHub Repository:** Created production-grade `README.md`, `LICENSE`, `CONTRIBUTING.md`, `CHANGELOG.md`, GitHub Actions CI and build workflows, PR and Issue templates, clean `.gitignore`, and tracked all project files.
 - **Verification:** `flutter analyze` passed with 0 issues across all modified files; test suites passed (23/23 tests green across `subject_unit_index_test.dart` and `chapter_screen_test.dart`).
-- **Build Status:** Pending APK Build
+- **Build Status:** ✅ Included in Build v1.2.0 (Commit 2f08f9f, app-debug.apk installed & verified on OnePlus 13R)
 
 ---
 
@@ -51,7 +51,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - **Zero-Dead-Zone Pressable:** Set `ApplePressable`'s `HitTestBehavior` from `translucent` to `opaque`, ensuring touch-down scale feedback triggers immediately even when tapping transparent padding.
   - **Module Tasks Hit Expansion:** Added tap handling to the circular number bubble in `ModuleTasksScreen` and removed redundant nested `ApplePressable` on the internal checkbox.
 - **Verification:** `flutter analyze` passed with 0 issues on all modified files; test suite passed (28/28 tests green across `apple_pressable_test.dart`, `chapter_screen_test.dart`, `subject_unit_index_test.dart`).
-- **Build Status:** Pending APK Build
+- **Build Status:** ✅ Included in Build v1.2.0 (Commit 2f08f9f, app-debug.apk installed & verified on OnePlus 13R)
 
 ---
 
