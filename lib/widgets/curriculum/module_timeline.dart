@@ -43,14 +43,7 @@ class ModuleTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // If used as a standalone widget in normal widget tree
-    return CustomScrollView(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      slivers: [
-        buildSliver(context),
-      ],
-    );
+    return buildSliver(context);
   }
 
   Widget buildSliver(BuildContext context) {
@@ -636,69 +629,73 @@ class TimelineCheckBubble extends StatelessWidget {
         onTap();
       },
       behavior: HitTestBehavior.opaque,
-      child: TweenAnimationBuilder<double>(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutBack,
-        tween: Tween<double>(begin: 1.0, end: isDone ? 1.05 : 1.0),
-        builder: (context, scale, child) => Transform.scale(
-          scale: scale,
-          child: child,
-        ),
-        child: Container(
-          width: 28,
-          height: 28,
-          decoration: BoxDecoration(
-            color: isDone ? AppTheme.accentPrimary : AppTheme.cardWhite,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: isDone ? AppTheme.accentPrimary : AppTheme.sketchBorderColor,
-              width: 1.8,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: isDone
-                    ? AppTheme.accentPrimary.withValues(alpha: 0.35)
-                    : AppTheme.inkForeground.withValues(alpha: 0.12),
-                offset: const Offset(1.5, 2),
-                blurRadius: isDone ? 4 : 0,
-              ),
-            ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+        color: Colors.transparent,
+        child: TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutBack,
+          tween: Tween<double>(begin: 1.0, end: isDone ? 1.05 : 1.0),
+          builder: (context, scale, child) => Transform.scale(
+            scale: scale,
+            child: child,
           ),
-          child: Center(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                AnimatedOpacity(
-                  opacity: isDone ? 0.0 : 1.0,
-                  duration: const Duration(milliseconds: 160),
-                  child: Text(
-                    '$number',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      fontFamily: 'monospace',
-                      color: AppTheme.inkForeground,
-                    ),
-                  ),
+          child: Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: isDone ? AppTheme.accentPrimary : AppTheme.cardWhite,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isDone ? AppTheme.accentPrimary : AppTheme.sketchBorderColor,
+                width: 1.8,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: isDone
+                      ? AppTheme.accentPrimary.withValues(alpha: 0.35)
+                      : AppTheme.inkForeground.withValues(alpha: 0.12),
+                  offset: const Offset(1.5, 2),
+                  blurRadius: isDone ? 4 : 0,
                 ),
-                AnimatedOpacity(
-                  opacity: isDone ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 160),
-                  child: AnimatedCheckStroke(
-                    checked: isDone,
-                    size: 16,
-                    color: AppTheme.onAccent,
-                  ),
-                ),
-                if (isDone)
-                  const Opacity(
-                    opacity: 0.0,
-                    child: Icon(
-                      Icons.check_rounded,
-                      size: 16,
-                    ),
-                  ),
               ],
+            ),
+            child: Center(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  AnimatedOpacity(
+                    opacity: isDone ? 0.0 : 1.0,
+                    duration: const Duration(milliseconds: 160),
+                    child: Text(
+                      '$number',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        fontFamily: 'monospace',
+                        color: AppTheme.inkForeground,
+                      ),
+                    ),
+                  ),
+                  AnimatedOpacity(
+                    opacity: isDone ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 160),
+                    child: AnimatedCheckStroke(
+                      checked: isDone,
+                      size: 16,
+                      color: AppTheme.onAccent,
+                    ),
+                  ),
+                  if (isDone)
+                    const Opacity(
+                      opacity: 0.0,
+                      child: Icon(
+                        Icons.check_rounded,
+                        size: 16,
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -751,59 +748,73 @@ class _TimelineCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Row(
           children: [
-            // Animated Checkbox
-            _AnimatedCardCheckbox(
-              isDone: isDone,
-              onTap: onToggle,
-            ),
-            const SizedBox(width: 10),
-
-            // Topic Title & Detail
+            // Entire Card Body is Tappable to Toggle Done/Incomplete
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AnimatedStrikeText(
-                    text: title,
-                    isStruck: isDone,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.inkForeground,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  onToggle();
+                },
+                child: Row(
+                  children: [
+                    // Animated Checkbox
+                    _AnimatedCardCheckbox(
+                      isDone: isDone,
+                      onTap: onToggle,
                     ),
-                  ),
-                  const SizedBox(height: 3),
-                  Row(
-                    children: [
-                      Text(
-                        detail,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          fontFamily: 'monospace',
-                          color: AppTheme.mutedText,
-                        ),
-                      ),
-                      if (secondaryDetail != null && secondaryDetail!.isNotEmpty) ...[
-                        const SizedBox(width: 8),
-                        Text(
-                          '• Completed $secondaryDetail',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                            color: AppTheme.accentPrimary,
+                    const SizedBox(width: 10),
+
+                    // Topic Title & Detail
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AnimatedStrikeText(
+                            text: title,
+                            isStruck: isDone,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.inkForeground,
+                            ),
                           ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
+                          const SizedBox(height: 3),
+                          Row(
+                            children: [
+                              Text(
+                                detail,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  fontFamily: 'monospace',
+                                  color: AppTheme.mutedText,
+                                ),
+                              ),
+                              if (secondaryDetail != null && secondaryDetail!.isNotEmpty) ...[
+                                const SizedBox(width: 8),
+                                Text(
+                                  '• Completed $secondaryDetail',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppTheme.accentPrimary,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
 
-            // Focus Timer Trigger Icon
+            // Focus Timer Trigger Icon (Isolated gesture target)
             IconButton(
               icon: const Icon(Icons.timer_outlined, size: 18),
               tooltip: 'Focus on this module',
@@ -835,31 +846,35 @@ class _AnimatedCardCheckbox extends StatelessWidget {
         onTap();
       },
       behavior: HitTestBehavior.opaque,
-      child: TweenAnimationBuilder<double>(
-        duration: const Duration(milliseconds: 160),
-        curve: Curves.easeOutBack,
-        tween: Tween<double>(begin: 1.0, end: isDone ? 1.08 : 1.0),
-        builder: (context, scale, child) => Transform.scale(
-          scale: scale,
-          child: child,
-        ),
-        child: Container(
-          width: 22,
-          height: 22,
-          decoration: BoxDecoration(
-            color: isDone ? AppTheme.accentPrimary : AppTheme.cardWhite,
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(
-              color: isDone ? AppTheme.accentPrimary : AppTheme.sketchBorderColor,
-              width: 1.8,
-            ),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        color: Colors.transparent,
+        child: TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 160),
+          curve: Curves.easeOutBack,
+          tween: Tween<double>(begin: 1.0, end: isDone ? 1.08 : 1.0),
+          builder: (context, scale, child) => Transform.scale(
+            scale: scale,
+            child: child,
           ),
-          child: Center(
-            child: AnimatedCheckStroke(
-              checked: isDone,
-              size: 14,
-              strokeWidth: 2.0,
-              color: AppTheme.onAccent,
+          child: Container(
+            width: 22,
+            height: 22,
+            decoration: BoxDecoration(
+              color: isDone ? AppTheme.accentPrimary : AppTheme.cardWhite,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: isDone ? AppTheme.accentPrimary : AppTheme.sketchBorderColor,
+                width: 1.8,
+              ),
+            ),
+            child: Center(
+              child: AnimatedCheckStroke(
+                checked: isDone,
+                size: 14,
+                strokeWidth: 2.0,
+                color: AppTheme.onAccent,
+              ),
             ),
           ),
         ),

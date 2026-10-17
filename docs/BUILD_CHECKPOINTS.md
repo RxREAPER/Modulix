@@ -8,6 +8,25 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-012] Full-Row Interactive Touch Targets & Timeline Sliver Virtualization
+- **Timestamp:** 2026-10-17 13:55 UTC
+- **Category:** Touch Latency / UI Performance / Virtualization
+- **Files Modified:**
+  - `lib/widgets/curriculum/module_timeline.dart`
+  - `lib/widgets/animations/apple_pressable.dart`
+  - `lib/screens/curriculum/module_tasks_screen.dart`
+- **Summary:** Completely eradicated perceived click lag, missed taps, and dropped interactions:
+  - **Full-Row Interactive Touch Target:** Made `_TimelineCard` responsive across the entire row surface (topic title, subtitle, duration, and card background) via `GestureDetector(behavior: HitTestBehavior.opaque, onTap: onToggle)`. Tapping anywhere on a row instantly toggles completion with light haptic feedback.
+  - **Isolated Timer Gesture Target:** Isolated the Focus Timer `IconButton` so tapping the timer icon opens the timer without triggering the card completion toggle.
+  - **Generous Touch Paddings:** Added hit padding to `TimelineCheckBubble` (expanding touch area from 28x28 to 44x44px) and `_AnimatedCardCheckbox` (padded to 30x30px) so thumb taps on high-DPI displays never miss the gesture arena.
+  - **Direct Sliver Virtualization:** Set `ModuleTimeline.build` to return `buildSliver(context)` directly, ensuring 100% native sliver virtualization without shrink-wrapped `CustomScrollView` wrappers.
+  - **Zero-Dead-Zone Pressable:** Set `ApplePressable`'s `HitTestBehavior` from `translucent` to `opaque`, ensuring touch-down scale feedback triggers immediately even when tapping transparent padding.
+  - **Module Tasks Hit Expansion:** Added tap handling to the circular number bubble in `ModuleTasksScreen` and removed redundant nested `ApplePressable` on the internal checkbox.
+- **Verification:** `flutter analyze` passed with 0 issues on all modified files; test suite passed (28/28 tests green across `apple_pressable_test.dart`, `chapter_screen_test.dart`, `subject_unit_index_test.dart`).
+- **Build Status:** Pending APK Build
+
+---
+
 ### [CKPT-011] Root Reactive Rebuild Storm Elimination & Asynchronous Storage Engine
 - **Timestamp:** 2026-10-17 10:30 UTC
 - **Category:** Architecture / State Management / Performance

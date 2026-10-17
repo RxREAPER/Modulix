@@ -69,7 +69,7 @@ class _ApplePressableState extends State<ApplePressable> {
     }
 
     return GestureDetector(
-      behavior: HitTestBehavior.translucent,
+      behavior: HitTestBehavior.opaque,
       onTapDown: (_) {
         if (!_isPressed) {
           setState(() => _isPressed = true);

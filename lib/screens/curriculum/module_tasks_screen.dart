@@ -817,42 +817,69 @@ class ModuleTasksScreen extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Center(
-                child: Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: isDone ? AppTheme.accentPrimary : AppTheme.cardWhite,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isDone ? AppTheme.accentPrimary : AppTheme.sketchBorderColor,
-                      width: 1.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: isDone
-                            ? AppTheme.accentPrimary.withValues(alpha: 0.35)
-                            : const Color(0x101C1C1C),
-                        offset: const Offset(1, 1.5),
-                        blurRadius: isDone ? 3 : 0,
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: isDone
-                        ? AnimatedCheckStroke(
-                            checked: true,
-                            size: 14,
-                            color: AppTheme.onAccent,
-                          )
-                        : Text(
-                            displayNum,
-                            style: TextStyle(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w800,
-                              fontFamily: 'monospace',
-                              color: AppTheme.inkForeground,
-                            ),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    if (isDone) {
+                      ref.read(appStateProvider.notifier).markVideoIncomplete(video.id);
+                    } else {
+                      ref.read(appStateProvider.notifier).markVideoComplete(video.id);
+                    }
+
+                    final deskTasks = ref.read(dailyTasksProvider).tasks;
+                    final matching = deskTasks.where((t) => t.id == 'vid_${video.id}').toList();
+                    if (matching.isNotEmpty) {
+                      final deskCompleted = ref.read(dailyTasksProvider).completedIds;
+                      final isDeskDone = deskCompleted.contains('vid_${video.id}');
+                      if (isDone && isDeskDone) {
+                        ref.read(dailyTasksProvider.notifier).toggleTask('vid_${video.id}');
+                      } else if (!isDone && !isDeskDone) {
+                        ref.read(dailyTasksProvider.notifier).toggleTask('vid_${video.id}');
+                      }
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+                    color: Colors.transparent,
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: isDone ? AppTheme.accentPrimary : AppTheme.cardWhite,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isDone ? AppTheme.accentPrimary : AppTheme.sketchBorderColor,
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isDone
+                                ? AppTheme.accentPrimary.withValues(alpha: 0.35)
+                                : const Color(0x101C1C1C),
+                            offset: const Offset(1, 1.5),
+                            blurRadius: isDone ? 3 : 0,
                           ),
+                        ],
+                      ),
+                      child: Center(
+                        child: isDone
+                            ? AnimatedCheckStroke(
+                                checked: true,
+                                size: 14,
+                                color: AppTheme.onAccent,
+                              )
+                            : Text(
+                                displayNum,
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w800,
+                                  fontFamily: 'monospace',
+                                  color: AppTheme.inkForeground,
+                                ),
+                              ),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -897,47 +924,23 @@ class ModuleTasksScreen extends ConsumerWidget {
                   child: Row(
                     children: [
                       // Custom Animated Checkbox
-                      ApplePressable(
-                        pressedScale: 0.88,
-                        onPressed: () {
-                          HapticFeedback.selectionClick();
-                          if (isDone) {
-                            ref.read(appStateProvider.notifier).markVideoIncomplete(video.id);
-                          } else {
-                            ref.read(appStateProvider.notifier).markVideoComplete(video.id);
-                          }
-
-                          // Sync with daily tasks if matching
-                          final deskTasks = ref.read(dailyTasksProvider).tasks;
-                          final matching = deskTasks.where((t) => t.id == 'vid_${video.id}').toList();
-                          if (matching.isNotEmpty) {
-                            final deskCompleted = ref.read(dailyTasksProvider).completedIds;
-                            final isDeskDone = deskCompleted.contains('vid_${video.id}');
-                            if (isDone && isDeskDone) {
-                              ref.read(dailyTasksProvider.notifier).toggleTask('vid_${video.id}');
-                            } else if (!isDone && !isDeskDone) {
-                              ref.read(dailyTasksProvider.notifier).toggleTask('vid_${video.id}');
-                            }
-                          }
-                        },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          width: 22,
-                          height: 22,
-                          decoration: BoxDecoration(
-                            color: isDone ? AppTheme.accentPrimary : AppTheme.cardWhite,
-                            borderRadius: BorderRadius.circular(6.5),
-                            border: Border.all(
-                              color: isDone ? AppTheme.accentPrimary : AppTheme.sketchBorderColor,
-                              width: 1.5,
-                            ),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          color: isDone ? AppTheme.accentPrimary : AppTheme.cardWhite,
+                          borderRadius: BorderRadius.circular(6.5),
+                          border: Border.all(
+                            color: isDone ? AppTheme.accentPrimary : AppTheme.sketchBorderColor,
+                            width: 1.5,
                           ),
-                          child: Center(
-                            child: AnimatedCheckStroke(
-                              checked: isDone,
-                              size: 15,
-                              color: AppTheme.onAccent,
-                            ),
+                        ),
+                        child: Center(
+                          child: AnimatedCheckStroke(
+                            checked: isDone,
+                            size: 15,
+                            color: AppTheme.onAccent,
                           ),
                         ),
                       ),
