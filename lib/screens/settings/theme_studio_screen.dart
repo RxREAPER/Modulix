@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../models/app_state.dart';
 import '../../providers/app_state_provider.dart';
-import '../../theme/app_theme.dart';
 import '../../theme/modulix_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
 
@@ -18,20 +18,33 @@ class ThemeStudioScreen extends ConsumerWidget {
     final appState = appStateAsync.value ?? AppState.empty;
     final selectedPreset = PalettePreset.fromId(appState.palettePresetId);
 
-    return Scaffold(
-      backgroundColor: activeTheme.scaffoldBackground,
-      appBar: AppBar(
+    final canPop = ModalRoute.of(context)?.canPop ?? false;
+    return PopScope(
+      canPop: canPop,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        try {
+          context.go('/settings');
+        } catch (_) {}
+      },
+      child: Scaffold(
         backgroundColor: activeTheme.scaffoldBackground,
-        elevation: 0,
-        centerTitle: false,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: activeTheme.inkForeground),
-          onPressed: () {
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-            }
-          },
-        ),
+        appBar: AppBar(
+          backgroundColor: activeTheme.scaffoldBackground,
+          elevation: 0,
+          centerTitle: false,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_rounded, color: activeTheme.inkForeground),
+            onPressed: () {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              } else {
+                try {
+                  context.go('/settings');
+                } catch (_) {}
+              }
+            },
+          ),
         title: Text(
           'Theme Studio',
           style: TextStyle(
@@ -139,8 +152,9 @@ class ThemeStudioScreen extends ConsumerWidget {
           ],
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class _VisualThemeCard extends StatelessWidget {

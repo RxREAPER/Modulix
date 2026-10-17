@@ -8,6 +8,34 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-008] Fix Navigation Pop Traps, Enable Android Predictive Back & Eliminate Idle Ticker Loops
+- **Timestamp:** 2026-10-17 08:15 UTC
+- **Category:** Performance / Navigation / Android
+- **Files Modified:**
+  - `android/app/src/main/AndroidManifest.xml`
+  - `lib/app.dart`
+  - `lib/screens/settings/theme_studio_screen.dart`
+  - `lib/screens/plan/plan_screen.dart`
+  - `lib/screens/curriculum/chapter_screen.dart`
+  - `lib/screens/curriculum/subject_analytics_screen.dart`
+  - `lib/screens/curriculum/module_tasks_screen.dart`
+  - `lib/screens/curriculum/subject_screen.dart`
+  - `lib/screens/timer/focus_timer_screen.dart`
+  - `lib/screens/timer/fullscreen_timer_screen.dart`
+  - `lib/screens/home/home_screen.dart`
+  - `lib/widgets/curriculum/study_plan_banner.dart`
+  - `lib/screens/analytics/analytics_screen.dart`
+- **Summary:** Resolved pervasive debug lag and screen-closing failure:
+  - Fixed `PopScope` blocking traps across 8 sub-screens (`theme_studio_screen`, `plan_screen`, `chapter_screen`, `subject_analytics_screen`, `module_tasks_screen`, `subject_screen`, `focus_timer_screen`, `fullscreen_timer_screen`) by switching from `canPop: false` to dynamic `ModalRoute.of(context)?.canPop ?? false` with resilient parent route fallbacks.
+  - Added `android:enableOnBackInvokedCallback="true"` to `AndroidManifest.xml` so OxygenOS 15 forwards predictive back gestures directly to Flutter.
+  - Converted `_FloatingBreath` and `StudyPlanBanner` 120Hz continuous repeating tickers to lightweight stateless widgets, and moved `_HomeTasksSection.checkDayRollover()` out of `build()` into `initState`.
+  - Replaced continuous `ShaderMask` and ticker shimmer loops on badges in `AnalyticsScreen` with lightweight static styling.
+  - Wrapped `LovableNavBar` with a `RepaintBoundary` to prevent full sketch dock repainting on tab scrolls.
+- **Verification:** `flutter analyze` 0 errors, `flutter test test/theme_system_test.dart test/lovable_nav_bar_test.dart` passed (11/11 tests green), compiled `app-debug.apk` in 106.9s, installed to OnePlus 13R (`ba009d81`), idle CPU measured at 0.0%.
+- **Build Status:** ✅ Included in Build (Debug APK Installed on OnePlus 13R)
+
+---
+
 ### [CKPT-007] Native Package ID Migration to com.modulix.app & Clean Cloud Sync Foundation
 - **Timestamp:** 2026-10-17 05:41 UTC
 - **Category:** Architecture / Native Android / Cloud

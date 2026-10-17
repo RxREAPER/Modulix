@@ -310,15 +310,14 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
             ? timer.focusSecondsElapsed
             : timer.remainingSeconds);
 
+    final canPop = ModalRoute.of(context)?.canPop ?? false;
     return PopScope(
-      canPop: false,
+      canPop: canPop,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
-        if (context.canPop()) {
-          context.pop();
-        } else {
+        try {
           context.go('/');
-        }
+        } catch (_) {}
       },
       child: Scaffold(
         backgroundColor: theme.backgroundColor,

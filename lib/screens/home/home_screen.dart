@@ -185,15 +185,26 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-class _HomeTasksSection extends ConsumerWidget {
+class _HomeTasksSection extends ConsumerStatefulWidget {
   const _HomeTasksSection();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(dailyTasksProvider.notifier).checkDayRollover();
-    });
+  ConsumerState<_HomeTasksSection> createState() => _HomeTasksSectionState();
+}
 
+class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(dailyTasksProvider.notifier).checkDayRollover();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final dailyTasksState = ref.watch(dailyTasksProvider);
     final deskTasks = dailyTasksState.tasks;
     final completedTaskIds = dailyTasksState.completedIds;
@@ -474,65 +485,12 @@ class _HomeModuleTrackerSection extends ConsumerWidget {
   }
 }
 
-class _FloatingBreath extends StatefulWidget {
+class _FloatingBreath extends StatelessWidget {
   final Widget child;
   const _FloatingBreath({required this.child});
 
   @override
-  State<_FloatingBreath> createState() => _FloatingBreathState();
-}
-
-class _FloatingBreathState extends State<_FloatingBreath>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _translateAnimation;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2600),
-    )..repeat(reverse: true);
-
-    _translateAnimation = Tween<double>(begin: 0.0, end: -5.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOutSine,
-      ),
-    );
-
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.025).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOutSine,
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(0, _translateAnimation.value),
-          child: Transform.scale(
-            scale: _scaleAnimation.value,
-            child: child,
-          ),
-        );
-      },
-      child: widget.child,
-    );
-  }
+  Widget build(BuildContext context) => child;
 }
 
 

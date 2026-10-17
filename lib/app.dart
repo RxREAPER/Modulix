@@ -376,10 +376,14 @@ class _MainShellState extends ConsumerState<MainShell> {
     final showMiniOverlay = timerState.sessionActive;
 
     return PopScope(
-      canPop: currentIndex == 0 && !context.canPop(),
+      canPop: currentIndex == 0 &&
+          !(_rootNavigatorKey.currentState?.canPop() ?? false) &&
+          !context.canPop(),
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
-        if (context.canPop()) {
+        if (_rootNavigatorKey.currentState?.canPop() ?? false) {
+          _rootNavigatorKey.currentState?.pop();
+        } else if (context.canPop()) {
           context.pop();
         } else if (currentIndex != 0) {
           widget.navigationShell.goBranch(0);
@@ -397,30 +401,32 @@ class _MainShellState extends ConsumerState<MainShell> {
                 ],
               ),
             ),
-            bottomNavigationBar: LovableNavBar(
-              currentIndex: currentIndex,
-              isSessionActive: timerState.sessionActive,
-              onTap: (index) {
-                widget.navigationShell.goBranch(
-                  index,
-                  initialLocation: index == currentIndex,
-                );
-              },
-              onReTap: (index) {
-                // Re-tapping active tab returns to root of branch
-                widget.navigationShell.goBranch(index, initialLocation: true);
-              },
-              onTimerTap: () {
-                context.push('/timer');
-              },
-              items: _tabs
-                  .map((tab) => LovableNavItem(
-                        icon: tab.icon,
-                        activeIcon: tab.activeIcon,
-                        label: tab.label,
-                        sketchType: tab.sketchType,
-                      ))
-                  .toList(),
+            bottomNavigationBar: RepaintBoundary(
+              child: LovableNavBar(
+                currentIndex: currentIndex,
+                isSessionActive: timerState.sessionActive,
+                onTap: (index) {
+                  widget.navigationShell.goBranch(
+                    index,
+                    initialLocation: index == currentIndex,
+                  );
+                },
+                onReTap: (index) {
+                  // Re-tapping active tab returns to root of branch
+                  widget.navigationShell.goBranch(index, initialLocation: true);
+                },
+                onTimerTap: () {
+                  context.push('/timer');
+                },
+                items: _tabs
+                    .map((tab) => LovableNavItem(
+                          icon: tab.icon,
+                          activeIcon: tab.activeIcon,
+                          label: tab.label,
+                          sketchType: tab.sketchType,
+                        ))
+                    .toList(),
+              ),
             ),
           ),
           const TourSpotlightOverlay(),

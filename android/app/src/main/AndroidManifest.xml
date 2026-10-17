@@ -11,7 +11,8 @@
         android:label="Modulix"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:allowBackup="false">
+        android:allowBackup="false"
+        android:enableOnBackInvokedCallback="true">
         <activity
             android:name="com.modulix.app.MainActivity"
             android:exported="true"

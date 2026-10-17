@@ -494,15 +494,14 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
           _unitKeys.putIfAbsent(i, () => GlobalKey());
         }
 
+        final canPop = ModalRoute.of(context)?.canPop ?? false;
         return PopScope(
-          canPop: false,
+          canPop: canPop,
           onPopInvokedWithResult: (didPop, _) {
             if (didPop) return;
-            if (context.canPop()) {
-              context.pop();
-            } else {
+            try {
               context.go('/curriculum');
-            }
+            } catch (_) {}
           },
           child: Scaffold(
             backgroundColor: AppTheme.paperBackground,
@@ -511,10 +510,12 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
               leading: IconButton(
                 icon: Icon(Icons.arrow_back_rounded, color: AppTheme.inkForeground),
                 onPressed: () {
-                  if (context.canPop()) {
-                    context.pop();
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.of(context).pop();
                   } else {
-                    context.go('/curriculum');
+                    try {
+                      context.go('/curriculum');
+                    } catch (_) {}
                   }
                 },
               ),

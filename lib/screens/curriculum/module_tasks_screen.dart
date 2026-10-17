@@ -25,15 +25,14 @@ class ModuleTasksScreen extends ConsumerWidget {
     final appStateAsync = ref.watch(appStateProvider);
     final subjectsAsync = ref.watch(activeSyllabusProvider);
 
+    final canPop = ModalRoute.of(context)?.canPop ?? false;
     return PopScope(
-      canPop: false,
+      canPop: canPop,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
-          if (context.canPop()) {
-            context.pop();
-          } else {
+          try {
             context.go('/');
-          }
+          } catch (_) {}
         }
       },
       child: Scaffold(
@@ -46,10 +45,12 @@ class ModuleTasksScreen extends ConsumerWidget {
           leading: IconButton(
             icon: Icon(Icons.arrow_back_rounded, color: AppTheme.inkForeground),
             onPressed: () {
-              if (context.canPop()) {
-                context.pop();
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
               } else {
-                context.go('/');
+                try {
+                  context.go('/');
+                } catch (_) {}
               }
             },
           ),

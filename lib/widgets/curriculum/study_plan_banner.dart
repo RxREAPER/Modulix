@@ -1,104 +1,67 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/app_state.dart';
 import '../../theme/app_theme.dart';
 import '../animations/apple_pressable.dart';
 
-class StudyPlanBanner extends StatefulWidget {
+class StudyPlanBanner extends StatelessWidget {
   final StudyPlan plan;
 
   const StudyPlanBanner({super.key, required this.plan});
 
   @override
-  State<StudyPlanBanner> createState() => _StudyPlanBannerState();
-}
-
-class _StudyPlanBannerState extends State<StudyPlanBanner>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _sparkleController;
-
-  @override
-  void initState() {
-    super.initState();
-    _sparkleController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 4),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _sparkleController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final isConfigured = widget.plan.isConfigured;
+    final isConfigured = plan.isConfigured;
 
     return ApplePressable(
       onTap: () => context.push('/plan'),
       pressedScale: 0.97,
       borderRadius: BorderRadius.circular(20),
-      child: AnimatedBuilder(
-        animation: _sparkleController,
-        builder: (context, child) {
-          final t = _sparkleController.value;
-          final angle = math.sin(t * math.pi * 2) * 0.12;
-          final pulse = 1.0 + math.sin(t * math.pi * 2) * 0.03;
-
-          return Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [
-                  Color(0xFF3B82F6), // Vibrant Blue
-                  Color(0xFF6366F1), // Indigo
-                  Color(0xFF8B5CF6), // Purple
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppTheme.sketchBorderColor, width: 2.0),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x301C1C1C),
-                  offset: Offset(3.5, 4.5),
-                  blurRadius: 0,
-                ),
-              ],
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF3B82F6), // Vibrant Blue
+              Color(0xFF6366F1), // Indigo
+              Color(0xFF8B5CF6), // Purple
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppTheme.sketchBorderColor, width: 2.0),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x301C1C1C),
+              offset: Offset(3.5, 4.5),
+              blurRadius: 0,
             ),
-            child: Row(
-              children: [
-                // Animated Sparkle Badge
-                Transform.scale(
-                  scale: pulse,
-                  child: Transform.rotate(
-                    angle: angle,
-                    child: Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.22),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.45),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.auto_awesome_rounded,
-                          color: Color(0xFFFFDF7D),
-                          size: 22,
-                        ),
-                      ),
-                    ),
-                  ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Sparkle Badge
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.22),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.45),
+                  width: 1.5,
                 ),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.auto_awesome_rounded,
+                  color: Color(0xFFFFDF7D),
+                  size: 22,
+                ),
+              ),
+            ),
                 const SizedBox(width: 10),
 
                 // Text Content - full rendering without text clipping
@@ -181,9 +144,7 @@ class _StudyPlanBannerState extends State<StudyPlanBanner>
                 ),
               ],
             ),
-          );
-        },
-      ),
-    );
-  }
-}
+          ),
+        );
+      }
+    }

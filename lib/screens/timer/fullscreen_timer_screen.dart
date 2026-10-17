@@ -61,11 +61,7 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen>
     final bg = t.theme.id == 'paper' ? const Color(0xFF181818) : t.theme.backgroundColor;
 
     return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop) return;
-        Navigator.pop(context);
-      },
+      canPop: true,
       child: Scaffold(
         backgroundColor: bg,
       body: Stack(

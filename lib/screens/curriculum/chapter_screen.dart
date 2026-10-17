@@ -39,15 +39,14 @@ class ChapterScreen extends ConsumerWidget {
             .where((v) => completedVideos.containsKey(v.id))
             .length;
 
+        final canPop = ModalRoute.of(context)?.canPop ?? false;
         return PopScope(
-          canPop: false,
+          canPop: canPop,
           onPopInvokedWithResult: (didPop, _) {
             if (didPop) return;
-            if (context.canPop()) {
-              context.pop();
-            } else {
+            try {
               context.go('/curriculum/$subjectId');
-            }
+            } catch (_) {}
           },
           child: Scaffold(
             backgroundColor: AppTheme.paperBackground,
@@ -58,10 +57,12 @@ class ChapterScreen extends ConsumerWidget {
               leading: IconButton(
                 icon: Icon(Icons.arrow_back_rounded, color: AppTheme.inkForeground),
                 onPressed: () {
-                  if (context.canPop()) {
-                    context.pop();
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.of(context).pop();
                   } else {
-                    context.go('/curriculum/$subjectId');
+                    try {
+                      context.go('/curriculum/$subjectId');
+                    } catch (_) {}
                   }
                 },
               ),

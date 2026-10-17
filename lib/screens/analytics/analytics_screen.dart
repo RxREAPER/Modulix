@@ -403,7 +403,7 @@ class _HeroStreakCard extends StatelessWidget {
   }
 }
 
-class _LiveFlameBadge extends StatefulWidget {
+class _LiveFlameBadge extends StatelessWidget {
   final Color color;
   final double size;
 
@@ -413,71 +413,30 @@ class _LiveFlameBadge extends StatefulWidget {
   });
 
   @override
-  State<_LiveFlameBadge> createState() => _LiveFlameBadgeState();
-}
-
-class _LiveFlameBadgeState extends State<_LiveFlameBadge>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _scaleAnimation;
-  late final Animation<double> _glowAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1300),
-    )..repeat(reverse: true);
-
-    _scaleAnimation = Tween<double>(begin: 0.92, end: 1.14).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOutSine),
-    );
-
-    _glowAnimation = Tween<double>(begin: 0.12, end: 0.42).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: widget.color.withValues(alpha: _glowAnimation.value * 0.4),
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: widget.color.withValues(alpha: _glowAnimation.value),
-                blurRadius: 8,
-                spreadRadius: 1,
-              ),
-            ],
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.2),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.3),
+            blurRadius: 6,
+            spreadRadius: 1,
           ),
-          child: Transform.scale(
-            scale: _scaleAnimation.value,
-            child: Icon(
-              Icons.local_fire_department_rounded,
-              color: widget.color,
-              size: widget.size,
-            ),
-          ),
-        );
-      },
+        ],
+      ),
+      child: Icon(
+        Icons.local_fire_department_rounded,
+        color: color,
+        size: size,
+      ),
     );
   }
 }
 
-class _ShiningMedalBadge extends StatefulWidget {
+class _ShiningMedalBadge extends StatelessWidget {
   final Color color;
   final double size;
 
@@ -487,80 +446,29 @@ class _ShiningMedalBadge extends StatefulWidget {
   });
 
   @override
-  State<_ShiningMedalBadge> createState() => _ShiningMedalBadgeState();
-}
-
-class _ShiningMedalBadgeState extends State<_ShiningMedalBadge>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _shimmerAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2400),
-    )..repeat();
-
-    _shimmerAnimation = Tween<double>(begin: -1.0, end: 2.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOutSine),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: widget.color.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: widget.color.withValues(alpha: 0.35),
-              width: 1.2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: widget.color.withValues(alpha: 0.15),
-                blurRadius: 6,
-                spreadRadius: 0.5,
-              ),
-            ],
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: color.withValues(alpha: 0.35),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.15),
+            blurRadius: 6,
+            spreadRadius: 0.5,
           ),
-          child: ShaderMask(
-            shaderCallback: (bounds) {
-              return LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                stops: [
-                  (_shimmerAnimation.value - 0.25).clamp(0.0, 1.0),
-                  _shimmerAnimation.value.clamp(0.0, 1.0),
-                  (_shimmerAnimation.value + 0.25).clamp(0.0, 1.0),
-                ],
-                colors: [
-                  widget.color,
-                  const Color(0xFFFDE047), // Gold shining gleam
-                  widget.color,
-                ],
-              ).createShader(bounds);
-            },
-            child: Icon(
-              Icons.military_tech_rounded,
-              color: Colors.white,
-              size: widget.size,
-            ),
-          ),
-        );
-      },
+        ],
+      ),
+      child: Icon(
+        Icons.military_tech_rounded,
+        color: color,
+        size: size,
+      ),
     );
   }
 }
