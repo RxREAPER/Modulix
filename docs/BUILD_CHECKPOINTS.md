@@ -33,7 +33,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - **Subpage Analytics Sheets & Unit Index Popups:** Wrapped sheet containers in `RepaintBoundary` and tuned `cacheExtent: 400.0` across Daily Tasks, Focus Timer, and Study Plan sheets. Added snappy `sheetAnimationStyle` (200ms open / 150ms close) and `cacheExtent: 350.0` to Unit Index selector popup.
   - **Automated Tracker Loop Elimination:** Added `static String? _lastCheckedKey` guards to `AutomatedModuleTracker` and `ModuleTasksScreen` to stop repeated disk I/O and post-frame callback rebuild loops on every render tick.
 - **Verification:** `flutter analyze lib/` passed with 0 compile errors; test suite passed (100% green across all unit and widget tests).
-- **Build Status:** Pending APK Build
+- **Build Status:** ✅ Included in Build v1.2.1 (Commit e84ef6e, app-debug.apk built successfully)
 
 ---
 
