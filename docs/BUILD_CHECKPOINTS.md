@@ -24,6 +24,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - `lib/screens/settings/settings_screen.dart`
   - `lib/screens/settings/learn_the_app_sheet.dart`
   - `lib/screens/timer/focus_timer_screen.dart`
+  - `lib/widgets/in_situ_hint_pill.dart`
 - **Summary:** Replaced passive onboarding reading with contextual, professional first-use guidance mechanisms:
   - **In-Situ Hint Pills:** Added minimalist, professional hint pills across major pages with `SharedPreferences` persistence and one-tap dismissal:
     - Subject Curriculum: concise 1-line prompt explaining swipe-to-complete videos.

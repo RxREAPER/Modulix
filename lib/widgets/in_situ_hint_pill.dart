@@ -7,6 +7,9 @@ class InSituHintPill extends StatefulWidget {
   final String message;
   final IconData icon;
   final EdgeInsetsGeometry? margin;
+  final Color? textColor;
+  final Color? backgroundColor;
+  final Color? borderColor;
 
   const InSituHintPill({
     super.key,
@@ -14,6 +17,9 @@ class InSituHintPill extends StatefulWidget {
     required this.message,
     required this.icon,
     this.margin,
+    this.textColor,
+    this.backgroundColor,
+    this.borderColor,
   });
 
   @override
@@ -108,6 +114,10 @@ class _InSituHintPillState extends State<InSituHintPill>
       return const SizedBox.shrink();
     }
 
+    final bg = widget.backgroundColor ?? AppTheme.primaryBlue.withValues(alpha: 0.08);
+    final border = widget.borderColor ?? AppTheme.primaryBlue.withValues(alpha: 0.25);
+    final text = widget.textColor ?? AppTheme.primaryBlue;
+
     return GestureDetector(
       onTap: _dismiss,
       behavior: HitTestBehavior.opaque,
@@ -127,17 +137,17 @@ class _InSituHintPillState extends State<InSituHintPill>
           margin: widget.margin ?? const EdgeInsets.symmetric(vertical: 6),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7.5),
           decoration: BoxDecoration(
-            color: AppTheme.primaryBlue.withValues(alpha: 0.08),
+            color: bg,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: AppTheme.primaryBlue.withValues(alpha: 0.25),
+              color: border,
               width: 1,
             ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(widget.icon, size: 14, color: AppTheme.primaryBlue),
+              Icon(widget.icon, size: 14, color: text),
               const SizedBox(width: 6),
               Flexible(
                 child: Text(
@@ -145,7 +155,7 @@ class _InSituHintPillState extends State<InSituHintPill>
                   style: TextStyle(
                     fontSize: 12.0,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.primaryBlue,
+                    color: text,
                   ),
                 ),
               ),
@@ -153,7 +163,7 @@ class _InSituHintPillState extends State<InSituHintPill>
               Icon(
                 Icons.close_rounded,
                 size: 13,
-                color: AppTheme.primaryBlue.withValues(alpha: 0.6),
+                color: text.withValues(alpha: 0.6),
               ),
             ],
           ),
