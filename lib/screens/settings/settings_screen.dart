@@ -1357,13 +1357,13 @@ class _ResourceHubsSection extends ConsumerWidget {
 
         const SizedBox(height: 10),
 
-        // Learn the App Card
+        // App Guide & Reference Card
         _SleekHubCard(
-          title: 'Learn the App',
+          title: 'App Guide & Reference',
           subtitle:
-              'Interactive guide & tips for module tracking & timer modes',
-          tag: 'GUIDE & TIPS',
-          icon: Icons.lightbulb_outline_rounded,
+              'Replay spotlight tour, core mechanics & medico FAQs',
+          tag: 'REFERENCE',
+          icon: Icons.menu_book_rounded,
           iconColor: Colors.purple,
           iconBg: Colors.purple.withValues(alpha: 0.12),
           onTap: () => LearnTheAppSheet.show(context),

@@ -193,7 +193,6 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
               _sectionHeader(
                 '1. Target Subject',
                 Icons.menu_book_rounded,
-                'Select the primary subject to pace in your curriculum',
               ),
               const SizedBox(height: 10),
               SizedBox(
@@ -327,7 +326,6 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
               _sectionHeader(
                 '2. Deadline Date',
                 Icons.event_available_rounded,
-                'Set your deadline date and daily module pace',
               ),
               const SizedBox(height: 10),
               RepaintBoundary(
@@ -623,15 +621,14 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                           const SizedBox(height: 10),
                           Text(
                             (_videosPerDay ?? 0) >= neededPerDay
-                                ? 'Your current pace of $_videosPerDay modules/day comfortably finishes all $totalVids selected modules before your deadline ($daysRemaining days remaining).'
-                                : 'To complete all $totalVids modules within $daysRemaining days, you need at least ~$neededPerDay modules/day. Consider dialing up your daily target.',
+                                ? '$daysRemaining days remaining • Projected to finish on time'
+                                : '$daysRemaining days remaining • Dial up daily target to meet deadline',
                             style: TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w600,
                               color: (_videosPerDay ?? 0) >= neededPerDay
                                   ? const Color(0xFF166534)
                                   : const Color(0xFF78350F),
-                              height: 1.35,
                             ),
                           ),
                         ],
@@ -654,9 +651,6 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                       child: _sectionHeader(
                         '3. Unit Scope',
                         Icons.filter_list_rounded,
-                        _isMultipleMode
-                            ? 'Select custom sequence of units (1..2..3)'
-                            : 'All units selected in standard curriculum order',
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -998,7 +992,7 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
     );
   }
 
-  Widget _sectionHeader(String title, IconData icon, String subtitle) {
+  Widget _sectionHeader(String title, IconData icon, [String? subtitle]) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1017,14 +1011,16 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 2),
-        Text(
-          subtitle,
-          style: TextStyle(
-            fontSize: 11,
-            color: AppTheme.mutedText,
+        if (subtitle != null && subtitle.isNotEmpty) ...[
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 11,
+              color: AppTheme.mutedText,
+            ),
           ),
-        ),
+        ],
       ],
     );
   }

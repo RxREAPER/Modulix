@@ -740,7 +740,7 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
                           const SizedBox(height: 6),
                           const InSituHintPill(
                             prefKey: 'hint_swipe_video_seen',
-                            message: 'Swipe a video left to mark it complete',
+                            message: 'Swipe any video to mark complete, or switch to Q-Bank for recall',
                             icon: Icons.swipe_left_alt_rounded,
                           ),
                         ],

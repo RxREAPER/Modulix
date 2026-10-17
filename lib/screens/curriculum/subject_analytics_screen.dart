@@ -9,6 +9,7 @@ import '../../data/subjects_metadata.dart';
 import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/curriculum/subject_sketch_icon.dart';
 import '../../widgets/focus_timer_sheet.dart';
+import '../../widgets/in_situ_hint_pill.dart';
 
 class SubjectAnalyticsScreen extends ConsumerWidget {
   final String subjectId;
@@ -195,7 +196,14 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const InSituHintPill(
+                  prefKey: 'hint_subject_analytics_breakdown_seen',
+                  message: 'Focus timer sessions automatically categorize into Videos, Q-Bank, and Notes telemetry',
+                  icon: Icons.insights_rounded,
+                  margin: EdgeInsets.only(top: 14),
+                ),
+
+                const SizedBox(height: 18),
 
                 // Distribution Chart
                 Text(

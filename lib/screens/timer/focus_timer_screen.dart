@@ -17,6 +17,8 @@ import '../../theme/app_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../services/tour/app_tour_controller.dart';
 import '../../widgets/tour/tour_spotlight_overlay.dart';
+import '../../widgets/in_situ_hint_pill.dart';
+import '../../widgets/discovery_pulse.dart';
 
 class FocusTimerScreen extends ConsumerStatefulWidget {
   final String? initialSubjectId;
@@ -635,28 +637,33 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                             const SizedBox(height: 10),
 
                             // 4. Fullscreen Flip Clock Button (below Sound)
-                            _GlassBtn(
-                              icon: Icons.fullscreen_rounded,
-                              isLight: isLight,
-                              color: isLight ? const Color(0xFF0F172A) : theme.inkColor,
-                              onTap: () => Navigator.push(
-                                context,
-                                PageRouteBuilder(
-                                  opaque: true,
-                                  transitionDuration: const Duration(milliseconds: 340),
-                                  reverseTransitionDuration: const Duration(milliseconds: 240),
-                                  pageBuilder: (_, __, ___) => const FullscreenTimerScreen(),
-                                  transitionsBuilder: (_, anim, __, child) {
-                                    final curved = CurvedAnimation(
-                                      parent: anim,
-                                      curve: Curves.easeOutCubic,
-                                      reverseCurve: Curves.easeInCubic,
-                                    );
-                                    return ScaleTransition(
-                                      scale: Tween<double>(begin: 0.88, end: 1.0).animate(curved),
-                                      child: FadeTransition(opacity: curved, child: child),
-                                    );
-                                  },
+                            DiscoveryPulse(
+                              prefKey: 'pulse_flip_clock_seen',
+                              pulseColor: isLight ? AppTheme.primaryBlue : theme.accentColor,
+                              borderRadius: 14,
+                              child: _GlassBtn(
+                                icon: Icons.fullscreen_rounded,
+                                isLight: isLight,
+                                color: isLight ? const Color(0xFF0F172A) : theme.inkColor,
+                                onTap: () => Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                    opaque: true,
+                                    transitionDuration: const Duration(milliseconds: 340),
+                                    reverseTransitionDuration: const Duration(milliseconds: 240),
+                                    pageBuilder: (_, __, ___) => const FullscreenTimerScreen(),
+                                    transitionsBuilder: (_, anim, __, child) {
+                                      final curved = CurvedAnimation(
+                                        parent: anim,
+                                        curve: Curves.easeOutCubic,
+                                        reverseCurve: Curves.easeInCubic,
+                                      );
+                                      return ScaleTransition(
+                                        scale: Tween<double>(begin: 0.88, end: 1.0).animate(curved),
+                                        child: FadeTransition(opacity: curved, child: child),
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
                             ),
@@ -665,6 +672,20 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                       ),
                     ],
                   ),
+                ),
+              ),
+            ),
+
+            // ── IN-SITU HINT PILL: DOCKING & FLIP CLOCK ───────────────────
+            Positioned(
+              bottom: 84,
+              left: 20,
+              right: 20,
+              child: Center(
+                child: InSituHintPill(
+                  prefKey: 'hint_focus_timer_dock_seen',
+                  message: 'Tap (X) to dock into a floating mini-timer, or tap Fullscreen for bedside flip clock',
+                  icon: Icons.picture_in_picture_alt_rounded,
                 ),
               ),
             ),
@@ -901,7 +922,14 @@ class _SessionConfigSheet extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+
+          const InSituHintPill(
+            prefKey: 'hint_timer_session_setup_seen',
+            message: 'Anchor to a curriculum lecture to auto-sync runtime and check it off',
+            icon: Icons.link_rounded,
+            margin: EdgeInsets.only(bottom: 12),
+          ),
 
           // ── SECTION 1: Topic ──────────────────────────────────────────────
           _sectionLabel('TOPIC', secondary),

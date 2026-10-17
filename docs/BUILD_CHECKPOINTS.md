@@ -8,6 +8,39 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-017] In-Situ Hint Pills, First-Session Desk Card, Redundant Text Removal & Discovery Pulses
+- **Timestamp:** 2026-10-18 02:30 UTC
+- **Category:** UX / First-Time Experience / In-Situ Hint Pills / Discovery Pulses
+- **Files Modified:**
+  - `lib/widgets/discovery_pulse.dart` (NEW)
+  - `test/discovery_pulse_test.dart` (NEW)
+  - `lib/screens/home/home_screen.dart`
+  - `lib/widgets/automated_module_tracker.dart`
+  - `lib/screens/plan/plan_screen.dart`
+  - `lib/screens/curriculum/chapter_screen.dart`
+  - `lib/screens/curriculum/subject_screen.dart`
+  - `lib/screens/curriculum/subject_analytics_screen.dart`
+  - `lib/screens/analytics/analytics_screen.dart`
+  - `lib/screens/settings/settings_screen.dart`
+  - `lib/screens/settings/learn_the_app_sheet.dart`
+  - `lib/screens/timer/focus_timer_screen.dart`
+- **Summary:** Replaced passive onboarding reading with contextual, professional first-use guidance mechanisms:
+  - **In-Situ Hint Pills:** Added minimalist, professional hint pills across major pages with `SharedPreferences` persistence and one-tap dismissal:
+    - Subject Curriculum: concise 1-line prompt explaining swipe-to-complete videos.
+    - Subject Analytics: in-situ pill explaining automated classification into Videos, Q-Bank, and Notes.
+    - Main Analytics: in-situ pill highlighting Performance Hubs.
+    - Focus Timer main dock: in-situ pill explaining mini-timer docking and flip clock mode.
+    - Focus Timer setup sheet: in-situ pill explaining target focus vs open stopwatch modes.
+  - **First Study Session Quick-Start Card:** Redesigned empty module plan tracker on Home Desk with clean 3-step engine pills (Exam Date, Daily Quota, Auto Batches) and direct link to Plan Setup.
+  - **Stationery Intro Desk Pad:** One-time introductory stationery state for new doctors explaining the 3–4 high-yield daily objective model, with 5:00 AM reset note and primary action button; subsequent days automatically render the compact quiet state.
+  - **Plan Setup Text Pruning:** Removed redundant, verbose instructional paragraphs from Steps 1, 2, and 3 in `PlanScreen`, streamlining the interface to intuitive, common-sense controls.
+  - **Discovery Pulses (Breathing Glow Rings):** Created `DiscoveryPulse` widget that renders a subtle, pulsating visual cue around high-utility features until interacted with (applied to Landscape Flip Clock on Focus Timer and Chapter Bulk Complete in Chapter Screen).
+  - **Reference & Guide Repurposing:** Renamed "Learn the App" to "App Guide & Reference" for replayable tour, core mechanics, and medico FAQs.
+- **Verification:** `flutter analyze lib/` passed with **0 errors and 0 warnings**; unit tests passed (`test/discovery_pulse_test.dart` and `test/in_situ_hint_pill_test.dart`).
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### [CKPT-016] Systematic Bug Testing, 7 Domain Test Suites & Complete Warning Eradication
 - **Timestamp:** 2026-10-17 19:45 UTC
 - **Category:** Bug Testing / Quality Assurance / Code Health / Zero Warnings

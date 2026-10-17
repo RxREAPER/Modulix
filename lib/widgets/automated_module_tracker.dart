@@ -217,129 +217,160 @@ class AutomatedModuleTracker extends ConsumerWidget {
       borderRadius: BorderRadius.circular(18),
       child: Container(
         width: double.infinity,
-          decoration: AppTheme.sketchDecoration(
-            backgroundColor: AppTheme.cardWhite,
-            borderRadius: 18,
-            shadowOffset: 3,
-          ),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top Row: Icon + Title on left, Status Pill on right (Day resets at style)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryBlue.withValues(alpha: 0.12),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Icon(
-                            Icons.auto_stories_rounded,
-                            size: 18,
-                            color: AppTheme.primaryBlue,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Study Plan Pace',
-                            style: TextStyle(
-                              fontSize: 15.5,
-                              fontWeight: FontWeight.w900,
-                              color: AppTheme.inkForeground,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'No active plan configured',
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.mutedText,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppTheme.parchmentSurface,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppTheme.borderLight, width: 1.2),
-                    ),
-                    child: Text(
-                      'NOT SET',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.5,
-                        color: AppTheme.mutedText,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const Divider(height: 24, thickness: 1, color: Color(0xFFF4F4F5)),
-              Text(
-                'Set your target deadline date, daily modules pace, and unit scope to pace your curriculum lectures.',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: AppTheme.mutedText,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 14),
-              // Inner action bar (integrated into the card itself)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryBlue.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppTheme.primaryBlue.withValues(alpha: 0.2),
-                    width: 1.0,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        decoration: AppTheme.sketchDecoration(
+          backgroundColor: AppTheme.cardWhite,
+          borderRadius: 18,
+          shadowOffset: 3,
+        ),
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
                   children: [
-                    Row(
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4F46E5).withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.auto_graph_rounded,
+                          size: 19,
+                          color: Color(0xFF4F46E5),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.tune_rounded, size: 16, color: AppTheme.primaryBlue),
-                        const SizedBox(width: 8),
                         Text(
-                          'Set up module plan',
+                          'Calibrate Study Plan & Pace',
                           style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: AppTheme.primaryBlue,
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.w900,
+                            color: AppTheme.inkForeground,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'First Study Session Setup',
+                          style: TextStyle(
+                            fontSize: 11.0,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF4F46E5),
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ],
                     ),
-                    Icon(Icons.arrow_forward_rounded, size: 14, color: AppTheme.primaryBlue),
                   ],
                 ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 9, vertical: 3.5),
+                  decoration: BoxDecoration(
+                    color: AppTheme.parchmentSurface,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppTheme.borderLight, width: 1.0),
+                  ),
+                  child: Text(
+                    'STEP 1 OF 3',
+                    style: TextStyle(
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                      color: AppTheme.mutedText,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 22, thickness: 1, color: Color(0xFFF4F4F5)),
+            Text(
+              'Set your target exam date to activate automated daily video pacing and queue progression.',
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.inkForeground,
+                height: 1.35,
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                _quickFeaturePill(Icons.event_available_rounded, 'Exam Date'),
+                const SizedBox(width: 6),
+                _quickFeaturePill(Icons.speed_rounded, 'Daily Quota'),
+                const SizedBox(width: 6),
+                _quickFeaturePill(Icons.playlist_play_rounded, 'Auto Batches'),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppTheme.inkForeground,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.tune_rounded, size: 16, color: AppTheme.paperBackground),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Configure Study Plan',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.paperBackground,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Icon(Icons.arrow_forward_rounded, size: 15, color: AppTheme.paperBackground),
+                ],
+              ),
+            ),
+          ],
         ),
-      );
-    }
+      ),
+    );
+  }
+
+  static Widget _quickFeaturePill(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+      decoration: BoxDecoration(
+        color: AppTheme.parchmentSurface,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: AppTheme.mutedText),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.mutedText,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildConfiguredModuleCard({
     required BuildContext context,

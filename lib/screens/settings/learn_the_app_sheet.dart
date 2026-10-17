@@ -77,7 +77,7 @@ class LearnTheAppSheet extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'MODULIX MASTERCLASS',
+                        'MODULIX REFERENCE',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
@@ -86,7 +86,7 @@ class LearnTheAppSheet extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'Learn the App',
+                        'App Guide & Reference',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w900,

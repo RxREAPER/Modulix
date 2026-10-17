@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../models/syllabus.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/syllabus_provider.dart';
 import '../../data/subjects_metadata.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/animations/page_entrance.dart';
+import '../../widgets/discovery_pulse.dart';
 import '../../widgets/video_tile.dart';
 
 class ChapterScreen extends ConsumerWidget {
@@ -75,6 +79,48 @@ class ChapterScreen extends ConsumerWidget {
                   fontWeight: FontWeight.w800,
                 ),
               ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Center(
+                    child: DiscoveryPulse(
+                      prefKey: 'pulse_bulk_complete_seen',
+                      pulseColor: meta.accent,
+                      borderRadius: 10,
+                      child: ApplePressable(
+                        pressedScale: 0.94,
+                        onPressed: () => _confirmBulkComplete(context, ref, subjectId, chapter),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: meta.accent.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: meta.accent.withValues(alpha: 0.35),
+                              width: 1.0,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.done_all_rounded, size: 15, color: meta.accent),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Bulk',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: meta.accent,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(4),
               child: LinearProgressIndicator(
@@ -157,6 +203,82 @@ class ChapterScreen extends ConsumerWidget {
         ),
       );
     },
+    );
+  }
+
+  void _confirmBulkComplete(
+    BuildContext context,
+    WidgetRef ref,
+    String subjectId,
+    Chapter chapter,
+  ) {
+    HapticFeedback.lightImpact();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.cardWhite,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: AppTheme.sketchBorderColor, width: 1.5),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.done_all_rounded, color: AppTheme.primaryBlue, size: 22),
+            const SizedBox(width: 10),
+            Text(
+              'Bulk Complete',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                color: AppTheme.inkForeground,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Mark all ${chapter.videos.length} lectures in "${chapter.name}" as completed?',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey.shade800,
+            height: 1.35,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: AppTheme.mutedText,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.inkForeground,
+              foregroundColor: AppTheme.paperBackground,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              HapticFeedback.heavyImpact();
+              final videoIds = chapter.videos.map((v) => v.id).toList();
+              ref.read(appStateProvider.notifier).bulkCompleteChapter(
+                    chapter.name,
+                    videoIds,
+                  );
+            },
+            child: const Text(
+              'Mark Complete',
+              style: TextStyle(fontWeight: FontWeight.w800),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

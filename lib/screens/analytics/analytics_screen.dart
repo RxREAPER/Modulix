@@ -17,6 +17,7 @@ import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/animations/rolling_digit_text.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../services/tour/app_tour_controller.dart';
+import '../../widgets/in_situ_hint_pill.dart';
 
 
 class AnalyticsScreen extends ConsumerWidget {
@@ -171,7 +172,14 @@ class AnalyticsScreen extends ConsumerWidget {
               color: AppTheme.mutedText,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
+
+          const InSituHintPill(
+            prefKey: 'hint_analytics_hubs_seen',
+            message: 'Tap any performance hub to inspect detailed pace distribution and study streaks',
+            icon: Icons.donut_small_rounded,
+            margin: EdgeInsets.only(bottom: 12),
+          ),
 
           // ── Hub Card 1: Module Plan Progress ─────────────────────────────
           _HubCard(

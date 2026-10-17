@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/daily_desk_task.dart';
 import '../../providers/app_state_provider.dart';
@@ -193,14 +194,37 @@ class _HomeTasksSection extends ConsumerStatefulWidget {
 }
 
 class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
+  bool _seenFirstDeskIntro = true;
+
   @override
   void initState() {
     super.initState();
+    _checkFirstIntroPreference();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ref.read(dailyTasksProvider.notifier).checkDayRollover();
       }
     });
+  }
+
+  Future<void> _checkFirstIntroPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    final seen = prefs.getBool('seen_first_desk_intro') ?? false;
+    final dailyTasksState = ref.read(dailyTasksProvider);
+    final hasHistory = dailyTasksState.dateHistory.isNotEmpty || dailyTasksState.tasks.isNotEmpty;
+
+    if (!mounted) return;
+    setState(() {
+      _seenFirstDeskIntro = seen || hasHistory;
+    });
+  }
+
+  Future<void> _markFirstDeskIntroSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('seen_first_desk_intro', true);
+    if (mounted) {
+      setState(() => _seenFirstDeskIntro = true);
+    }
   }
 
   @override
@@ -367,6 +391,153 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
     WidgetRef ref,
     List<DailyDeskTask> currentTasks,
   ) {
+    if (!_seenFirstDeskIntro) {
+      return _buildFirstTimeStationeryCard(context, ref, currentTasks);
+    }
+    return _buildQuietDeskCard(context, ref, currentTasks);
+  }
+
+  Widget _buildFirstTimeStationeryCard(
+    BuildContext context,
+    WidgetRef ref,
+    List<DailyDeskTask> currentTasks,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: AppTheme.sketchDecoration(
+        backgroundColor: AppTheme.cardWhite,
+        borderRadius: 20,
+        borderWidth: 1.6,
+        shadowOffset: 3.0,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryBlue.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.primaryBlue.withValues(alpha: 0.25),
+                    width: 1.0,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.edit_note_rounded, size: 14, color: AppTheme.primaryBlue),
+                    const SizedBox(width: 5),
+                    Text(
+                      'DAILY DESK PAD',
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.8,
+                        color: AppTheme.primaryBlue,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppTheme.parchmentSurface,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '5:00 AM Reset',
+                  style: TextStyle(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.mutedText,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Your daily desk pad helps you isolate 3 to 4 high-yield objectives per day. Ready to plan today?',
+            style: TextStyle(
+              fontSize: 15.5,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.inkForeground,
+              height: 1.35,
+              letterSpacing: -0.2,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Streaks are preserved until 5:00 AM, keeping late-night post-duty sessions intact.',
+            style: TextStyle(
+              fontSize: 12.0,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade600,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ApplePressable(
+              pressedScale: 0.96,
+              onPressed: () {
+                _markFirstDeskIntroSeen();
+                _openTaskSheet(context, ref, currentTasks);
+              },
+              child: Container(
+                key: TourTargetRegistry.keyFor(TourTargetId.todaysTasksTarget),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppTheme.inkForeground,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.inkForeground.withValues(alpha: 0.2),
+                      offset: const Offset(0, 3),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.add_task_rounded,
+                      size: 18,
+                      color: AppTheme.paperBackground,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Write First Task',
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.paperBackground,
+                        letterSpacing: 0.1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuietDeskCard(
+    BuildContext context,
+    WidgetRef ref,
+    List<DailyDeskTask> currentTasks,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
@@ -423,28 +594,28 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
                   ),
                 ],
               ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.playlist_add_check_rounded,
-                      size: 18,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.playlist_add_check_rounded,
+                    size: 18,
+                    color: AppTheme.paperBackground,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    "Set up today's tasks",
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
                       color: AppTheme.paperBackground,
+                      letterSpacing: 0.1,
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      "Set up today's tasks",
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.paperBackground,
-                        letterSpacing: 0.1,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
+          ),
         ],
       ),
     );
