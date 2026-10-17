@@ -24,9 +24,12 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - **Removed Redundant Card Tap I/O:** Removed synchronous `recordVisit()` from `SquareSubjectCard.onTap` which was triggering disk I/O and grid re-sorting during push transitions.
   - **Zero-Ticker Pressable:** Replaced `AnimationController` and `Listener` in `ApplePressable` with native `GestureDetector` and compositor `AnimatedScale`.
 - **Verification:** `flutter analyze` passed with 0 issues on all modified files; test suite passed (37/37 tests green across `apple_pressable_test.dart`, `tab_persistence_test.dart`, `theme_system_test.dart`, `curriculum_sort_test.dart`, `chapter_screen_test.dart`, `lovable_nav_bar_test.dart`).
-- **Build Status:** ⏳ Pending APK Build
+- **Build Status:** ✅ Included in Build (Commit 1d498c9, app-debug.apk compiled in 79.1s)
 
 ---
+
+### [CKPT-010] Performance & Latency Restoration: Zero-Lag Interactions, Root Clip Removal & Painter Optimization
+- **Timestamp:** 2026-10-17 10:05 UTC
 - **Category:** Performance / Graphics / Touch Latency
 - **Files Modified:**
   - `lib/widgets/animations/apple_pressable.dart`
