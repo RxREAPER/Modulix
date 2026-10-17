@@ -375,16 +375,25 @@ class _MainShellState extends ConsumerState<MainShell> {
     final currentIndex = widget.navigationShell.currentIndex;
     final showMiniOverlay = timerState.sessionActive;
 
+    final currentBranchNavKey = switch (currentIndex) {
+      0 => _shellNavigatorKeyHome,
+      1 => _shellNavigatorKeyCurriculum,
+      2 => _shellNavigatorKeyAnalytics,
+      3 => _shellNavigatorKeySettings,
+      _ => null,
+    };
+
+    final canBranchPop = currentBranchNavKey?.currentState?.canPop() ?? false;
+    final canRootPop = _rootNavigatorKey.currentState?.canPop() ?? false;
+
     return PopScope(
-      canPop: currentIndex == 0 &&
-          !(_rootNavigatorKey.currentState?.canPop() ?? false) &&
-          !context.canPop(),
+      canPop: currentIndex == 0 && !canRootPop && !canBranchPop,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
         if (_rootNavigatorKey.currentState?.canPop() ?? false) {
           _rootNavigatorKey.currentState?.pop();
-        } else if (context.canPop()) {
-          context.pop();
+        } else if (currentBranchNavKey?.currentState?.canPop() ?? false) {
+          currentBranchNavKey?.currentState?.pop();
         } else if (currentIndex != 0) {
           widget.navigationShell.goBranch(0);
         }

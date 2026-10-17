@@ -8,6 +8,21 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-009] Fix StatefulShellBranch Back Navigation Pop Stack & Eliminate Touch-Down GPU Rasterizer Overhead
+- **Timestamp:** 2026-10-17 08:45 UTC
+- **Category:** Navigation / Performance / Graphics
+- **Files Modified:**
+  - `lib/app.dart`
+  - `lib/widgets/animations/apple_pressable.dart`
+- **Summary:** Completely resolved branch escape bug and touch-down click lag:
+  - Fixed `MainShell`'s `PopScope` which previously intercepted sub-screen pops inside `StatefulShellBranch` (Curriculum -> Subject -> Chapter) and prematurely redirected to `goBranch(0)`. It now queries the active branch navigator key (`_shellNavigatorKeyCurriculum`, etc.) and pops branch routes properly before tab switching.
+  - Eliminated the expensive `Opacity` widget offscreen pass (`saveLayerAlpha`) inside `ApplePressable`. Interactive taps now use zero-copy GPU matrix scaling (`Transform.scale`) without creating intermediate offscreen buffers on 120Hz displays.
+  - Added `onTapCancel` handling in `ApplePressable` so scrolling lists with buttons immediately cancels compression without remaining stuck down.
+- **Verification:** `flutter analyze lib/app.dart lib/widgets/animations/apple_pressable.dart` passed with 0 issues; all unit tests in `apple_pressable_test.dart`, `tab_persistence_test.dart`, `plan_screen_test.dart`, `chapter_screen_test.dart`, `database_service_test.dart`, `curriculum_sort_test.dart` passed (29/29 tests green).
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### [CKPT-008] Fix Navigation Pop Traps, Enable Android Predictive Back & Eliminate Idle Ticker Loops
 - **Timestamp:** 2026-10-17 08:15 UTC
 - **Category:** Performance / Navigation / Android
