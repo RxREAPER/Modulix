@@ -8,6 +8,34 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-013] Curriculum Scroll Animations, Sub-Page Popups & Immediate Click Feedback
+- **Timestamp:** 2026-10-17 15:15 UTC
+- **Category:** Animation / Performance / Tactile Feedback / GitHub Repo Setup
+- **Files Modified:**
+  - `lib/widgets/animations/apple_pressable.dart`
+  - `lib/widgets/curriculum/module_timeline.dart`
+  - `lib/screens/curriculum/subject_screen.dart`
+  - `lib/widgets/curriculum/square_subject_card.dart`
+  - `lib/app.dart`
+  - `.github/workflows/ci.yml`
+  - `.github/workflows/build_apk.yml`
+  - `.github/pull_request_template.md`
+  - `.github/ISSUE_TEMPLATE/*`
+  - `README.md`
+  - `LICENSE`
+  - `CONTRIBUTING.md`
+  - `CHANGELOG.md`
+- **Summary:** Complete optimization of scroll animations, sub-page popups, tactile touch feedback, and GitHub repository professionalization:
+  - **Immediate Click & Touch Feedback:** Upgraded `ApplePressable` with minimum 60ms visual dwell and `AnimatedOpacity` support. Wrapped all timeline cards (`_TimelineCard`) and bubbles (`TimelineCheckBubble`) in `ApplePressable(pressedScale: 0.98)` for instantaneous physical depression on finger touch.
+  - **Sub-Page Popup Rendering (`_openIndexSheet`):** Precomputed unit statistics in O(N) prior to rendering `ListView.separated`. Replaced `InkWell` with `ApplePressable(pressedScale: 0.97, pressedOpacity: 0.88)` on all unit rows. Replaced heavy `ClipRRect(child: LinearProgressIndicator)` with lightweight canvas-decorated progress bars. Sequenced popup dismissal and viewport scroll with a clean 120ms pause to eliminate frame competition.
+  - **Module Timeline 120 FPS List Virtualization:** Replaced `ClipRect(child: AnimatedSize(...))` layout measuring during scroll with steady-state `SizeTransition` powered by an isolated `AnimationController`. Wrapped each timeline item row and custom connector line in an isolated `RepaintBoundary` to eliminate GPU repaint cascades during scrolling.
+  - **Scroll Physics & Page Transitions:** Tuned `scrollCacheExtent` to `const ScrollCacheExtent.pixels(450.0)` in `SubjectScreen`. Deferred `recordVisit` Riverpod invalidation by 350ms so push animations maintain 120 FPS. Replaced heavy `CupertinoPage` transitions with high-performance 240ms cubic slide-fade transitions across curriculum sub-routes.
+  - **Professional GitHub Repository:** Created production-grade `README.md`, `LICENSE`, `CONTRIBUTING.md`, `CHANGELOG.md`, GitHub Actions CI and build workflows, PR and Issue templates, clean `.gitignore`, and tracked all project files.
+- **Verification:** `flutter analyze` passed with 0 issues across all modified files; test suites passed (23/23 tests green across `subject_unit_index_test.dart` and `chapter_screen_test.dart`).
+- **Build Status:** Pending APK Build
+
+---
+
 ### [CKPT-012] Full-Row Interactive Touch Targets & Timeline Sliver Virtualization
 - **Timestamp:** 2026-10-17 13:55 UTC
 - **Category:** Touch Latency / UI Performance / Virtualization

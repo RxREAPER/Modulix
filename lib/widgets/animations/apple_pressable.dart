@@ -43,6 +43,7 @@ class ApplePressable extends StatefulWidget {
 
 class _ApplePressableState extends State<ApplePressable> {
   bool _isPressed = false;
+  DateTime? _tapDownTime;
 
   void _triggerHaptic(HapticStyle style) {
     if (!widget.enableHaptic) return;
@@ -61,6 +62,24 @@ class _ApplePressableState extends State<ApplePressable> {
     }
   }
 
+  void _releasePress() {
+    if (!_isPressed) return;
+    final elapsed = _tapDownTime == null
+        ? 0
+        : DateTime.now().difference(_tapDownTime!).inMilliseconds;
+    if (elapsed < 60) {
+      Future.delayed(Duration(milliseconds: 60 - elapsed), () {
+        if (mounted && _isPressed) {
+          setState(() => _isPressed = false);
+        }
+      });
+    } else {
+      if (mounted) {
+        setState(() => _isPressed = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final effectiveTap = widget.effectiveTap;
@@ -71,20 +90,13 @@ class _ApplePressableState extends State<ApplePressable> {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTapDown: (_) {
+        _tapDownTime = DateTime.now();
         if (!_isPressed) {
           setState(() => _isPressed = true);
         }
       },
-      onTapUp: (_) {
-        if (_isPressed) {
-          setState(() => _isPressed = false);
-        }
-      },
-      onTapCancel: () {
-        if (_isPressed) {
-          setState(() => _isPressed = false);
-        }
-      },
+      onTapUp: (_) => _releasePress(),
+      onTapCancel: () => _releasePress(),
       onTap: () {
         effectiveTap?.call();
         _triggerHaptic(widget.hapticStyle);
@@ -97,9 +109,13 @@ class _ApplePressableState extends State<ApplePressable> {
           : null,
       child: AnimatedScale(
         scale: _isPressed ? widget.pressedScale : 1.0,
-        duration: Duration(milliseconds: _isPressed ? 100 : 200),
+        duration: Duration(milliseconds: _isPressed ? 80 : 180),
         curve: _isPressed ? Curves.easeInOut : const Cubic(0.175, 0.885, 0.32, 1.275),
-        child: widget.child,
+        child: AnimatedOpacity(
+          opacity: _isPressed ? widget.pressedOpacity : 1.0,
+          duration: Duration(milliseconds: _isPressed ? 80 : 180),
+          child: widget.child,
+        ),
       ),
     );
   }

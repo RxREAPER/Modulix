@@ -132,8 +132,31 @@ class _TimelineChapterSection extends StatefulWidget {
   State<_TimelineChapterSection> createState() => _TimelineChapterSectionState();
 }
 
-class _TimelineChapterSectionState extends State<_TimelineChapterSection> {
+class _TimelineChapterSectionState extends State<_TimelineChapterSection>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _expandController;
+  late final Animation<double> _expandAnimation;
   bool _isExpanded = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _expandController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 260),
+      value: 1.0,
+    );
+    _expandAnimation = CurvedAnimation(
+      parent: _expandController,
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  @override
+  void dispose() {
+    _expandController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -281,20 +304,20 @@ class _TimelineChapterSectionState extends State<_TimelineChapterSection> {
             HapticFeedback.lightImpact();
             setState(() {
               _isExpanded = !_isExpanded;
+              if (_isExpanded) {
+                _expandController.forward();
+              } else {
+                _expandController.reverse();
+              }
             });
           },
         ),
-        ClipRect(
-          child: AnimatedSize(
-            duration: const Duration(milliseconds: 320),
-            curve: Curves.easeOutCubic,
-            alignment: Alignment.topCenter,
-            child: _isExpanded
-                ? Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: rowWidgets,
-                  )
-                : const SizedBox.shrink(),
+        SizeTransition(
+          sizeFactor: _expandAnimation,
+          alignment: Alignment.topCenter,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: rowWidgets,
           ),
         ),
       ],
@@ -481,86 +504,88 @@ class _TimelineChapterSectionState extends State<_TimelineChapterSection> {
     required VoidCallback onToggle,
     required VoidCallback onStartTimer,
   }) {
-    return CustomPaint(
-      painter: _TimelineConnectorPainter(
-        isFirst: isFirst,
-        isLast: isLast,
-        color: AppTheme.sketchBorderColor.withValues(alpha: 0.35),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Left continuous connector bubble
-            SizedBox(
-              width: 38,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Center(
-                  child: TimelineCheckBubble(
-                    number: number,
-                    isDone: isDone,
-                    onTap: onToggle,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Right topic box card with elastic swipe-to-complete
-            Expanded(
-              child: Dismissible(
-                key: ValueKey('swipe_$id'),
-                direction: DismissDirection.endToStart,
-                confirmDismiss: (_) async {
-                  HapticFeedback.mediumImpact();
-                  onToggle();
-                  return false; // Elastically snaps back!
-                },
-                background: Container(
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentEmerald.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: AppTheme.accentEmerald,
-                      width: 1.5,
+    return RepaintBoundary(
+      child: CustomPaint(
+        painter: _TimelineConnectorPainter(
+          isFirst: isFirst,
+          isLast: isLast,
+          color: AppTheme.sketchBorderColor.withValues(alpha: 0.35),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Left continuous connector bubble
+              SizedBox(
+                width: 38,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Center(
+                    child: TimelineCheckBubble(
+                      number: number,
+                      isDone: isDone,
+                      onTap: onToggle,
                     ),
                   ),
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.only(right: 18),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Complete',
-                        style: TextStyle(
-                          color: AppTheme.accentEmerald,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Icon(
-                        Icons.check_circle_rounded,
-                        color: AppTheme.accentEmerald,
-                        size: 20,
-                      ),
-                    ],
-                  ),
-                ),
-                child: _TimelineCard(
-                  title: title,
-                  detail: detail,
-                  secondaryDetail: secondaryDetail,
-                  badgeColor: badgeColor,
-                  badgeIcon: badgeIcon,
-                  isDone: isDone,
-                  onToggle: onToggle,
-                  onStartTimer: onStartTimer,
                 ),
               ),
-            ),
-          ],
+              const SizedBox(width: 8),
+              // Right topic box card with elastic swipe-to-complete
+              Expanded(
+                child: Dismissible(
+                  key: ValueKey('swipe_$id'),
+                  direction: DismissDirection.endToStart,
+                  confirmDismiss: (_) async {
+                    HapticFeedback.mediumImpact();
+                    onToggle();
+                    return false; // Elastically snaps back!
+                  },
+                  background: Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentEmerald.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: AppTheme.accentEmerald,
+                        width: 1.5,
+                      ),
+                    ),
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 18),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Complete',
+                          style: TextStyle(
+                            color: AppTheme.accentEmerald,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(
+                          Icons.check_circle_rounded,
+                          color: AppTheme.accentEmerald,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ),
+                  child: _TimelineCard(
+                    title: title,
+                    detail: detail,
+                    secondaryDetail: secondaryDetail,
+                    badgeColor: badgeColor,
+                    badgeIcon: badgeIcon,
+                    isDone: isDone,
+                    onToggle: onToggle,
+                    onStartTimer: onStartTimer,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -623,12 +648,11 @@ class TimelineCheckBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onTap();
-      },
-      behavior: HitTestBehavior.opaque,
+    return ApplePressable(
+      pressedScale: 0.90,
+      pressedOpacity: 0.85,
+      hapticStyle: HapticStyle.light,
+      onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
         color: Colors.transparent,
@@ -748,14 +772,13 @@ class _TimelineCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Row(
           children: [
-            // Entire Card Body is Tappable to Toggle Done/Incomplete
+            // Entire Card Body is Tappable to Toggle Done/Incomplete with ApplePressable
             Expanded(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  onToggle();
-                },
+              child: ApplePressable(
+                pressedScale: 0.98,
+                pressedOpacity: 0.90,
+                hapticStyle: HapticStyle.light,
+                onTap: onToggle,
                 child: Row(
                   children: [
                     // Animated Checkbox

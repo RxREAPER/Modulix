@@ -23,11 +23,13 @@ class SquareSubjectCard extends StatelessWidget {
     final percent = (completion * 100).round();
     final totalHours = subject.totalHours;
 
-    return ApplePressable(
-      onTap: onTap,
-      pressedScale: 0.96,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
+    return RepaintBoundary(
+      child: ApplePressable(
+        onTap: onTap,
+        pressedScale: 0.96,
+        pressedOpacity: 0.88,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
         decoration: AppTheme.sketchDecoration(
           backgroundColor: AppTheme.cardWhite,
           borderRadius: 20,
@@ -140,6 +142,7 @@ class SquareSubjectCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

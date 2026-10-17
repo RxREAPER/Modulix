@@ -61,3 +61,11 @@ key.properties
 google-services.json
 GoogleService-Info.plist
 .env*
+
+# AI Agent Artifacts & Local Prototyping Scratchpads
+.claude/
+agent/
+skills-lock.json
+test_nori_web/
+test_sprites_out/
+Thumbs.db

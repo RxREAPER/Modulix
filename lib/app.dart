@@ -97,8 +97,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: ':subjectId',
-                    pageBuilder: (context, state) => CupertinoPage(
-                      key: state.pageKey,
+                    pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+                      state: state,
                       child: SubjectScreen(
                         subjectId: state.pathParameters['subjectId']!,
                       ),
@@ -106,8 +106,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                     routes: [
                       GoRoute(
                         path: 'analytics',
-                        pageBuilder: (context, state) => CupertinoPage(
-                          key: state.pageKey,
+                        pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+                          state: state,
                           child: SubjectAnalyticsScreen(
                             subjectId: state.pathParameters['subjectId']!,
                           ),
@@ -115,8 +115,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                       ),
                       GoRoute(
                         path: ':chapterIndex',
-                        pageBuilder: (context, state) => CupertinoPage(
-                          key: state.pageKey,
+                        pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+                          state: state,
                           child: ChapterScreen(
                             subjectId: state.pathParameters['subjectId'] ?? '',
                             chapterIndex: int.tryParse(
@@ -264,6 +264,35 @@ CustomTransitionPage<void> _buildSlideUpTransitionPage({
         ).animate(curved),
         child: FadeTransition(
           opacity: fadeCurved,
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
+CustomTransitionPage<void> _buildSlideHorizontalTransitionPage({
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 240),
+    reverseTransitionDuration: const Duration(milliseconds: 180),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
+      return SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0.08, 0),
+          end: Offset.zero,
+        ).animate(curved),
+        child: FadeTransition(
+          opacity: curved,
           child: child,
         ),
       );

@@ -91,9 +91,11 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
       curve: Curves.easeOutCubic,
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        ref.read(recentSubjectsProvider.notifier).recordVisit(widget.subjectId);
-      }
+      Future.delayed(const Duration(milliseconds: 350), () {
+        if (mounted) {
+          ref.read(recentSubjectsProvider.notifier).recordVisit(widget.subjectId);
+        }
+      });
     });
   }
 
@@ -197,6 +199,26 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
         ? subject.qbankChapters
         : subject.chapters;
 
+    // Precompute unit stats once to eliminate per-frame recalculations during scrolling
+    final unitStats = List.generate(displayChapters.length, (idx) {
+      final chapter = displayChapters[idx];
+      int totalCount = 0;
+      int doneCount = 0;
+      if (activeTab == 'videos') {
+        totalCount = chapter.videos.length;
+        doneCount = chapter.videos.where((v) => completedVideos.containsKey(v.id)).length;
+      } else if (activeTab == 'qbank') {
+        totalCount = chapter.qbanks.length;
+        doneCount = chapter.qbanks.where((q) => completedQBanks.containsKey(q.id)).length;
+      } else {
+        totalCount = chapter.notes.length;
+        doneCount = chapter.notes.where((n) => completedNotes.containsKey(n.id)).length;
+      }
+      final isComplete = totalCount > 0 && doneCount == totalCount;
+      final percent = totalCount > 0 ? (doneCount / totalCount) : 0.0;
+      return (totalCount: totalCount, doneCount: doneCount, isComplete: isComplete, percent: percent);
+    });
+
     final selectedUnit = await showModalBottomSheet<int>(
       context: context,
       isScrollControlled: true,
@@ -292,30 +314,16 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
                       separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF3F4F6)),
                       itemBuilder: (context, idx) {
                         final chapter = displayChapters[idx];
+                        final stat = unitStats[idx];
+                        final totalCount = stat.totalCount;
+                        final doneCount = stat.doneCount;
+                        final isComplete = stat.isComplete;
+                        final percent = stat.percent;
 
-                        int totalCount = 0;
-                        int doneCount = 0;
-                        if (activeTab == 'videos') {
-                          totalCount = chapter.videos.length;
-                          doneCount = chapter.videos
-                              .where((v) => completedVideos.containsKey(v.id))
-                              .length;
-                        } else if (activeTab == 'qbank') {
-                          totalCount = chapter.qbanks.length;
-                          doneCount = chapter.qbanks
-                              .where((q) => completedQBanks.containsKey(q.id))
-                              .length;
-                        } else {
-                          totalCount = chapter.notes.length;
-                          doneCount = chapter.notes
-                              .where((n) => completedNotes.containsKey(n.id))
-                              .length;
-                        }
-
-                        final isComplete = totalCount > 0 && doneCount == totalCount;
-                        final percent = totalCount > 0 ? (doneCount / totalCount) : 0.0;
-
-                        return InkWell(
+                        return ApplePressable(
+                          pressedScale: 0.97,
+                          pressedOpacity: 0.88,
+                          hapticStyle: HapticStyle.selection,
                           onTap: () {
                             Navigator.pop(ctx, idx);
                           },
@@ -372,14 +380,21 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
                                         ),
                                       ),
                                       const SizedBox(height: 5),
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(2),
-                                        child: LinearProgressIndicator(
-                                          value: percent.clamp(0.0, 1.0),
-                                          minHeight: 4,
-                                          backgroundColor: AppTheme.borderLight,
-                                          valueColor: AlwaysStoppedAnimation<Color>(
-                                            isComplete ? AppTheme.accentPrimary : categoryColor,
+                                      Container(
+                                        height: 4,
+                                        width: double.infinity,
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.borderLight,
+                                          borderRadius: BorderRadius.circular(2),
+                                        ),
+                                        child: FractionallySizedBox(
+                                          alignment: Alignment.centerLeft,
+                                          widthFactor: percent.clamp(0.0, 1.0),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: isComplete ? AppTheme.accentPrimary : categoryColor,
+                                              borderRadius: BorderRadius.circular(2),
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -442,7 +457,10 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
     );
 
     if (selectedUnit != null && mounted) {
-      _scrollToUnit(selectedUnit, subject, activeTab);
+      await Future.delayed(const Duration(milliseconds: 120));
+      if (mounted) {
+        _scrollToUnit(selectedUnit, subject, activeTab);
+      }
     }
   }
 
@@ -556,7 +574,7 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
             ),
             body: CustomScrollView(
               controller: _scrollController,
-              scrollCacheExtent: const ScrollCacheExtent.viewport(1.5),
+              scrollCacheExtent: const ScrollCacheExtent.pixels(450.0),
               physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
               slivers: [
                 SliverPadding(
