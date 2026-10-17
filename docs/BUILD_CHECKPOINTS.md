@@ -33,7 +33,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - **Subpage Analytics Sheets:** Accelerated bottom sheet animation styles (`sheetAnimationStyle` duration 200ms, reverseDuration 150ms) across Study Plan, Focus Timer, and Daily Tasks analytics sheets. Wrapped all sheet content in `FadeSlideEntrance(180ms)`, wrapped fl_chart `BarChart` in `RepaintBoundary`, and wrapped session log cards and task rows in `ApplePressable(pressedScale: 0.98)`.
   - **Curriculum & Module Views:** Accelerated timeline unit expansion and tab slide durations in `ModuleTimeline` from 260ms to snappy 180ms. Added animated progress bar width (`TweenAnimationBuilder`) to `SquareSubjectCard`. Wrapped `ChapterScreen` and `ModuleTasksScreen` bodies in `FadeSlideEntrance(180ms)` with 450px cache extent for smooth 120 FPS scrolling.
 - **Verification:** `flutter analyze` passed with 0 compile errors/warnings across all 13 modified files; test suite passed (14/14 tests green across `study_desk_test.dart` and `m2_regression_test.dart`).
-- **Build Status:** ⏳ Pending APK Build / Verified Live
+- **Build Status:** ✅ Included in Build v1.2.0 (Verified on OnePlus 13R ba009d81)
 
 ---
 
