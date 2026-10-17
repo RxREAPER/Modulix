@@ -25,7 +25,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - **Removed GPU Opacity Buffers:** Converted `PageEntrance` from raw `Opacity` layers to compositor-backed `FadeTransition`.
   - **RAM & VRAM Optimization:** Added `cacheWidth: 80` to `SubjectSketchIcon` (decoding 512x512 images directly to thumbnail size, saving ~95% RAM) and `cacheWidth: 1080` to `StudyDeskClock` ornate sketch frame.
 - **Verification:** `flutter analyze` 0 errors on modified files; comprehensive test suite passed (44/44 tests green across `apple_pressable_test.dart`, `tab_persistence_test.dart`, `plan_screen_test.dart`, `chapter_screen_test.dart`, `curriculum_sort_test.dart`, `theme_system_test.dart`, `lovable_nav_bar_test.dart`, `animated_strike_text_test.dart`, `animated_check_stroke_test.dart`).
-- **Build Status:** ⏳ Pending APK Build
+- **Build Status:** ✅ Included in Build (Commit 54f85fb, app-debug.apk compiled in 90.2s)
 
 ---
 
