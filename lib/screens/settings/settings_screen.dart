@@ -1,49 +1,74 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../models/app_state.dart';
 import '../../providers/app_state_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../theme/modulix_theme.dart';
 import '../../services/notification_service.dart';
 import '../../widgets/profile/profile_customization.dart';
+import 'appearance_theme_sheet.dart';
 import 'learn_the_app_sheet.dart';
 import 'data_privacy_sheet.dart';
 import 'about_support_sheet.dart';
-
-
+import '../../services/tour/app_tour_controller.dart';
+import '../../services/auth_service.dart';
+import '../../services/sync_service.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/sync_provider.dart';
+import '../../widgets/sync_status_badge.dart';
+import '../../widgets/animations/apple_pressable.dart';
+import '../auth/auth_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+  final String? from;
+  const SettingsScreen({super.key, this.from});
 
   @override
   Widget build(BuildContext context) {
+    final activeTheme = context.modulixTheme;
+
     return Scaffold(
-      backgroundColor: AppTheme.paperBackground,
+      backgroundColor: activeTheme.scaffoldBackground,
       appBar: AppBar(
-        backgroundColor: AppTheme.paperBackground,
+        backgroundColor: activeTheme.scaffoldBackground,
         elevation: 0,
         centerTitle: false,
-        leading: context.canPop()
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.inkForeground),
-                onPressed: () => context.pop(),
-              )
-            : null,
-        title: const Text(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_rounded,
+              color: activeTheme.inkForeground),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else if (from != null && from!.isNotEmpty) {
+              context.go(from!);
+            } else {
+              context.go('/');
+            }
+          },
+        ),
+        title: Text(
           'Settings & Profile',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w900,
-            color: AppTheme.inkForeground,
+            color: activeTheme.inkForeground,
           ),
         ),
       ),
       body: ListView(
-        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics()),
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
         children: const [
           _DoctorProfileCard(),
           SizedBox(height: 20),
+          _CloudSyncSection(),
+          SizedBox(height: 20),
+          _ThemeAppearanceSection(),
+          SizedBox(height: 24),
           _SyllabusEditionSection(),
           SizedBox(height: 24),
           _StartOfDaySection(),
@@ -63,13 +88,15 @@ class SettingsScreen extends StatelessWidget {
     required bool selected,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return ApplePressable(
       onTap: onTap,
+      pressedScale: 0.94,
+      borderRadius: BorderRadius.circular(14),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: selected ? AppTheme.inkForeground : Colors.white,
+          color: selected ? AppTheme.inkForeground : AppTheme.cardWhite,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: selected ? AppTheme.inkForeground : AppTheme.borderLight,
@@ -89,7 +116,7 @@ class SettingsScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w800,
-              color: selected ? Colors.white : AppTheme.inkForeground,
+              color: selected ? AppTheme.paperBackground : AppTheme.inkForeground,
             ),
           ),
         ),
@@ -97,15 +124,16 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  static void editDoctorName(BuildContext context, AppStateNotifier notifier, String current) {
+  static void editDoctorName(
+      BuildContext context, AppStateNotifier notifier, String current) {
     final ctrl = TextEditingController(text: current);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.cardWhite,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppTheme.sketchBorderColor, width: 1.8),
+          side: BorderSide(color: AppTheme.sketchBorderColor, width: 1.8),
         ),
         title: const Text('Edit Doctor Name',
             style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
@@ -120,13 +148,13 @@ class SettingsScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel',
+            child: Text('Cancel',
                 style: TextStyle(color: AppTheme.mutedText)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.inkForeground,
-              foregroundColor: Colors.white,
+              foregroundColor: AppTheme.paperBackground,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
             ),
@@ -153,7 +181,7 @@ class SettingsScreen extends StatelessWidget {
           final isConfirmed = textCtrl.text.trim().toUpperCase() == 'RESET';
 
           return AlertDialog(
-            backgroundColor: Colors.white,
+            backgroundColor: AppTheme.cardWhite,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(22),
               side: const BorderSide(color: Colors.redAccent, width: 2),
@@ -163,14 +191,15 @@ class SettingsScreen extends StatelessWidget {
                 Icon(Icons.warning_rounded, color: Colors.redAccent, size: 24),
                 SizedBox(width: 8),
                 Text('Danger: Reset Progress',
-                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17)),
+                    style:
+                        TextStyle(fontWeight: FontWeight.w900, fontSize: 17)),
               ],
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'This action CANNOT be undone. Type RESET below to permanently clear your completion records.',
                   style: TextStyle(fontSize: 13, color: AppTheme.mutedText),
                 ),
@@ -182,7 +211,7 @@ class SettingsScreen extends StatelessWidget {
                   decoration: InputDecoration(
                     hintText: 'Type RESET',
                     filled: true,
-                    fillColor: Colors.red.shade50,
+                    fillColor: AppTheme.current.isDark ? const Color(0xFF2D1515) : Colors.red.shade50,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(color: Colors.redAccent),
@@ -194,24 +223,28 @@ class SettingsScreen extends StatelessWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancel',
+                child: Text('Cancel',
                     style: TextStyle(color: AppTheme.mutedText)),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isConfirmed ? Colors.redAccent : Colors.grey.shade300,
+                  backgroundColor:
+                      isConfirmed ? Colors.redAccent : Colors.grey.shade300,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
                 ),
                 onPressed: isConfirmed
                     ? () async {
-                        await ref.read(appStateProvider.notifier).resetAllProgress();
+                        await ref
+                            .read(appStateProvider.notifier)
+                            .resetAllProgress();
                         if (context.mounted) {
                           Navigator.pop(ctx);
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('All progress records have been reset'),
+                              content:
+                                  Text('All progress records have been reset'),
                             ),
                           );
                         }
@@ -236,12 +269,14 @@ class _DoctorProfileCard extends ConsumerWidget {
     final appState = ref.watch(appStateProvider).valueOrNull;
     if (appState == null) return const SizedBox.shrink();
 
-    final doctorName = appState.doctorName.isNotEmpty ? appState.doctorName : 'Doctor';
+    final doctorName =
+        appState.doctorName.isNotEmpty ? appState.doctorName : 'Doctor';
 
     return Container(
+      key: TourTargetRegistry.keyFor(TourTargetId.settingsProfileCard),
       padding: const EdgeInsets.all(16),
       decoration: AppTheme.sketchDecoration(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.cardWhite,
         borderRadius: 20,
         shadowOffset: 3,
       ),
@@ -263,7 +298,7 @@ class _DoctorProfileCard extends ConsumerWidget {
                   doctorName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
                     color: AppTheme.inkForeground,
@@ -285,26 +320,10 @@ class _DoctorProfileCard extends ConsumerWidget {
                         appState.activeEdition == 'marrow_8'
                             ? 'Marrow Ed 8'
                             : 'Marrow Ed 6.5',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
                           color: AppTheme.primaryBlue,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        'Offline Sovereign',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.mutedText,
                         ),
                       ),
                     ),
@@ -313,23 +332,11 @@ class _DoctorProfileCard extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(width: 4),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _ProfileCardAction(
-                icon: Icons.tune_rounded,
-                label: 'Customize',
-                onTap: () => ProfileCustomizeSheet.show(context),
-              ),
-              const SizedBox(height: 4),
-              _ProfileCardAction(
-                icon: Icons.edit_rounded,
-                label: 'Rename',
-                onTap: () => SettingsScreen.editDoctorName(
-                    context, ref.read(appStateProvider.notifier), appState.doctorName),
-              ),
-            ],
+          const SizedBox(width: 8),
+          _ProfileCardAction(
+            icon: Icons.tune_rounded,
+            label: 'Customize',
+            onTap: () => ProfileCustomizeSheet.show(context),
           ),
         ],
       ),
@@ -351,13 +358,14 @@ class _ProfileCardAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return ApplePressable(
       onTap: onTap,
+      pressedScale: 0.92,
       borderRadius: BorderRadius.circular(10),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: Colors.grey.shade100,
+          color: AppTheme.parchmentSurface,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: AppTheme.borderLight, width: 1.2),
         ),
@@ -368,7 +376,7 @@ class _ProfileCardAction extends StatelessWidget {
             const SizedBox(width: 5),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.inkForeground,
@@ -381,19 +389,357 @@ class _ProfileCardAction extends StatelessWidget {
   }
 }
 
+// ── Cloud Sync & Multi-Device Section ─────────────────────────────
+class _CloudSyncSection extends ConsumerWidget {
+  const _CloudSyncSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isAuthenticated = ref.watch(isAuthenticatedProvider);
+    final currentUser = ref.watch(currentUserProvider);
+    final syncStatus = ref.watch(syncStatusProvider);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: AppTheme.sketchDecoration(
+        backgroundColor: AppTheme.cardWhite,
+        borderRadius: 20,
+        shadowOffset: 3,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentSubtle,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: AppTheme.accentPrimary.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.cloud_sync_rounded,
+                        color: AppTheme.accentPrimary,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Cloud Sync & Devices',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              color: AppTheme.inkForeground,
+                            ),
+                          ),
+                          Text(
+                            isAuthenticated
+                                ? (currentUser?.email ?? 'Logged in')
+                                : 'Guest Mode · Local storage only',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.mutedText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              const SyncStatusBadge(),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (isAuthenticated) ...[
+            Text(
+              'Your study progress, timer history, and daily tasks sync automatically across all your Android devices.',
+              style: TextStyle(fontSize: 12, color: AppTheme.mutedText, height: 1.3),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      side: BorderSide(color: AppTheme.cardBorder),
+                    ),
+                    onPressed: syncStatus == SyncStatus.syncing
+                        ? null
+                        : () => SyncService.instance.syncFull(ref),
+                    icon: Icon(Icons.refresh_rounded, size: 16, color: AppTheme.inkForeground),
+                    label: Text(
+                      'Sync Now',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.inkForeground),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    side: BorderSide(color: Colors.red.withValues(alpha: 0.3)),
+                  ),
+                  onPressed: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        backgroundColor: AppTheme.cardWhite,
+                        title: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.w800)),
+                        content: const Text(
+                          'Your study progress will remain safely on this device and in the cloud.',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: Text('Cancel', style: TextStyle(color: AppTheme.mutedText)),
+                          ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.redAccent,
+                              foregroundColor: Colors.white,
+                            ),
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text('Sign Out'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirm == true) {
+                      await AuthService.instance.signOut();
+                    }
+                  },
+                  child: const Text(
+                    'Sign Out',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.redAccent),
+                  ),
+                ),
+              ],
+            ),
+          ] else ...[
+            Text(
+              'Sign in or create a Modulix account to sync your study plan, video checklists, and focus timer records with other devices.',
+              style: TextStyle(fontSize: 12, color: AppTheme.mutedText, height: 1.3),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.inkForeground,
+                foregroundColor: AppTheme.cardWhite,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                elevation: 0,
+              ),
+              onPressed: () => AuthScreen.show(context),
+              icon: const Icon(Icons.login_rounded, size: 16),
+              label: const Text(
+                'Sign In or Create Account',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ── Theme & Appearance ───────────────────────────────────────────
+class _ThemeAppearanceSection extends ConsumerWidget {
+  const _ThemeAppearanceSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appStateAsync = ref.watch(appStateProvider);
+    final appState = appStateAsync.value ?? AppState.empty;
+    final activeTheme = context.modulixTheme;
+
+    final preset = PalettePreset.fromId(appState.palettePresetId);
+    final themeAccent = preset.isDark ? preset.accentDark : preset.accent;
+
+    return Column(
+      key: TourTargetRegistry.keyFor(TourTargetId.settingsThemeSection),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'APPEARANCE & THEME',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.0,
+                color: activeTheme.mutedText,
+              ),
+            ),
+            ApplePressable(
+              onTap: () => context.push('/theme-studio'),
+              pressedScale: 0.94,
+              child: Text(
+                'Studio →',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: activeTheme.accent,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        ApplePressable(
+          onTap: () => context.push('/theme-studio'),
+          pressedScale: 0.98,
+          borderRadius: BorderRadius.circular(18),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+            decoration: AppTheme.sketchDecoration(
+              borderRadius: 18,
+              shadowOffset: 2.5,
+            ),
+            child: Row(
+              children: [
+                // Multi-tier theme preview capsule
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: preset.scaffoldBackground,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: preset.borderSubtle, width: 1.4),
+                    boxShadow: [
+                      BoxShadow(
+                        color: activeTheme.inkForeground.withValues(alpha: 0.08),
+                        offset: const Offset(0, 1),
+                        blurRadius: 3,
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: preset.cardBackground,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: preset.borderSubtle, width: 1.0),
+                      ),
+                      child: Center(
+                        child: Container(
+                          width: 14,
+                          height: 14,
+                          decoration: BoxDecoration(
+                            color: themeAccent,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        preset.label,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: activeTheme.inkForeground,
+                          letterSpacing: -0.3,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        preset.description,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: activeTheme.mutedText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: activeTheme.surfaceSubtle,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: activeTheme.borderSubtle,
+                      width: 1.2,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Studio',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: activeTheme.accent,
+                        ),
+                      ),
+                      const SizedBox(width: 3),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        color: activeTheme.accent,
+                        size: 13,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 // ── 2. Syllabus Edition Selection ────────────────────────────────
 class _SyllabusEditionSection extends ConsumerWidget {
   const _SyllabusEditionSection();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activeEdition = ref.watch(appStateProvider.select((s) => s.valueOrNull?.activeEdition));
+    final activeEdition =
+        ref.watch(appStateProvider.select((s) => s.valueOrNull?.activeEdition));
     final notifier = ref.read(appStateProvider.notifier);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'ACTIVE SYLLABUS EDITION',
           style: TextStyle(
             fontSize: 11,
@@ -427,21 +773,20 @@ class _SyllabusEditionSection extends ConsumerWidget {
   }
 }
 
-
-
 // ── 4. Start of the Study Day ────────────────────────────────────
 class _StartOfDaySection extends ConsumerWidget {
   const _StartOfDaySection();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dayStartHour = ref.watch(appStateProvider.select((s) => s.valueOrNull?.dayStartHour ?? 5));
+    final dayStartHour = ref.watch(
+        appStateProvider.select((s) => s.valueOrNull?.dayStartHour ?? 5));
     final notifier = ref.read(appStateProvider.notifier);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'START OF THE STUDY DAY',
           style: TextStyle(
             fontSize: 11,
@@ -451,7 +796,7 @@ class _StartOfDaySection extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 4),
-        const Text(
+        Text(
           'Configures your daily streak rollover, focus timer resets, and desk pad boundaries',
           style: TextStyle(fontSize: 12, color: AppTheme.mutedText),
         ),
@@ -459,7 +804,7 @@ class _StartOfDaySection extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: AppTheme.sketchDecoration(
-            backgroundColor: Colors.white,
+            backgroundColor: AppTheme.cardWhite,
             borderRadius: 18,
             shadowOffset: 3,
           ),
@@ -469,21 +814,21 @@ class _StartOfDaySection extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Row(
+                  Row(
                     children: [
                       Icon(Icons.wb_twilight_rounded,
                           size: 18, color: Colors.orange),
                       SizedBox(width: 8),
                       Text('Day resets at:',
-                        style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.inkForeground)),
+                          style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.inkForeground)),
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.orange.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10),
@@ -514,7 +859,7 @@ class _StartOfDaySection extends ConsumerWidget {
                     labelStyle: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: isSelected ? Colors.white : AppTheme.inkForeground,
+                      color: isSelected ? AppTheme.paperBackground : AppTheme.inkForeground,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -585,7 +930,7 @@ class _NotificationsSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'NOTIFICATIONS & ALERTS',
           style: TextStyle(
             fontSize: 11,
@@ -598,7 +943,7 @@ class _NotificationsSection extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: AppTheme.sketchDecoration(
-            backgroundColor: Colors.white,
+            backgroundColor: AppTheme.cardWhite,
             borderRadius: 18,
             shadowOffset: 3,
           ),
@@ -631,8 +976,7 @@ class _NotificationsSection extends ConsumerWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8, vertical: 4),
                               minimumSize: Size.zero,
-                              tapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
                             onPressed: () async {
                               await NotificationService.instance
@@ -647,9 +991,9 @@ class _NotificationsSection extends ConsumerWidget {
                                 );
                               }
                             },
-                            icon: const Icon(Icons.notifications_active,
+                            icon: Icon(Icons.notifications_active,
                                 size: 14, color: AppTheme.primaryBlue),
-                            label: const Text(
+                            label: Text(
                               'Test',
                               style: TextStyle(
                                 fontSize: 12,
@@ -684,8 +1028,8 @@ class _NotificationsSection extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: Colors.amber.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                            color: Colors.amber.shade700, width: 1),
+                        border:
+                            Border.all(color: Colors.amber.shade700, width: 1),
                       ),
                       child: Row(
                         children: [
@@ -714,7 +1058,7 @@ class _NotificationsSection extends ConsumerWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -755,12 +1099,12 @@ class _NotificationsSection extends ConsumerWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.access_time_rounded,
+                            Icon(Icons.access_time_rounded,
                                 size: 14, color: AppTheme.primaryBlue),
                             const SizedBox(width: 4),
                             Text(
                               _formatTimeStr(appState.studyReminderTime),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
                                 color: AppTheme.primaryBlue,
@@ -771,20 +1115,22 @@ class _NotificationsSection extends ConsumerWidget {
                       ),
                     ),
                   const SizedBox(width: 8),
-                  Switch(
+                  CupertinoSwitch(
                     activeColor: AppTheme.primaryBlue,
+                    trackColor: AppTheme.borderLight,
+                    thumbColor: Colors.white,
                     value: appState.dailyReminderEnabled,
                     onChanged: (val) => notifier.setDailyReminder(val),
                   ),
                 ],
               ),
-              const Divider(height: 16, color: AppTheme.borderLight),
+              Divider(height: 16, color: AppTheme.borderLight),
 
               // 2. Streak at Risk Alert
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -819,8 +1165,8 @@ class _NotificationsSection extends ConsumerWidget {
                         decoration: BoxDecoration(
                           color: Colors.orange.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                              color: Colors.orange.withOpacity(0.3)),
+                          border:
+                              Border.all(color: Colors.orange.withOpacity(0.3)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -841,20 +1187,22 @@ class _NotificationsSection extends ConsumerWidget {
                       ),
                     ),
                   const SizedBox(width: 8),
-                  Switch(
+                  CupertinoSwitch(
                     activeColor: Colors.orange,
+                    trackColor: AppTheme.borderLight,
+                    thumbColor: Colors.white,
                     value: appState.streakReminderEnabled,
                     onChanged: (val) => notifier.setStreakReminder(val),
                   ),
                 ],
               ),
-              const Divider(height: 16, color: AppTheme.borderLight),
+              Divider(height: 16, color: AppTheme.borderLight),
 
               // 3. Module Daily Tasks Reminder
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -889,8 +1237,8 @@ class _NotificationsSection extends ConsumerWidget {
                         decoration: BoxDecoration(
                           color: Colors.teal.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                              color: Colors.teal.withOpacity(0.3)),
+                          border:
+                              Border.all(color: Colors.teal.withOpacity(0.3)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -911,21 +1259,22 @@ class _NotificationsSection extends ConsumerWidget {
                       ),
                     ),
                   const SizedBox(width: 8),
-                  Switch(
+                  CupertinoSwitch(
                     activeColor: Colors.teal,
+                    trackColor: AppTheme.borderLight,
+                    thumbColor: Colors.white,
                     value: appState.moduleTasksReminderEnabled,
-                    onChanged: (val) =>
-                        notifier.setModuleTasksReminder(val),
+                    onChanged: (val) => notifier.setModuleTasksReminder(val),
                   ),
                 ],
               ),
-              const Divider(height: 16, color: AppTheme.borderLight),
+              Divider(height: 16, color: AppTheme.borderLight),
 
               // 4. Focus Timer Alerts
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -946,11 +1295,12 @@ class _NotificationsSection extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  Switch(
+                  CupertinoSwitch(
                     activeColor: AppTheme.primaryBlue,
+                    trackColor: AppTheme.borderLight,
+                    thumbColor: Colors.white,
                     value: appState.focusTimerAlertsEnabled,
-                    onChanged: (val) =>
-                        notifier.setFocusTimerAlerts(val),
+                    onChanged: (val) => notifier.setFocusTimerAlerts(val),
                   ),
                 ],
               ),
@@ -963,15 +1313,15 @@ class _NotificationsSection extends ConsumerWidget {
 }
 
 // ── 6. Resource Hubs (Learn the App, Data & Privacy, About) ──────
-class _ResourceHubsSection extends StatelessWidget {
+class _ResourceHubsSection extends ConsumerWidget {
   const _ResourceHubsSection();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'RESOURCES & SOVEREIGNTY',
           style: TextStyle(
             fontSize: 11,
@@ -982,10 +1332,37 @@ class _ResourceHubsSection extends StatelessWidget {
         ),
         const SizedBox(height: 12),
 
+        // Interactive Feature Tour Card
+        _SleekHubCard(
+          title: 'Interactive Feature Tour',
+          subtitle: 'Step-by-step spotlight tour across Desk Clock, Tasks, Curriculum, Analytics & Focus Timer',
+          tag: 'GUIDED',
+          icon: Icons.auto_awesome_rounded,
+          iconColor: const Color(0xFF2DD4BF),
+          iconBg: const Color(0x202DD4BF),
+          onTap: () => ref.read(appTourProvider.notifier).startTour(context),
+        ),
+
+        const SizedBox(height: 10),
+
+        // Welcome Tour Card
+        _SleekHubCard(
+          title: 'Welcome Tour',
+          subtitle: 'Replay feature walkthrough & configure doctor profile',
+          tag: 'PROFILE SETUP',
+          icon: Icons.explore_outlined,
+          iconColor: AppTheme.primaryBlue,
+          iconBg: AppTheme.primaryBlue.withValues(alpha: 0.12),
+          onTap: () => context.push('/onboarding?replay=true'),
+        ),
+
+        const SizedBox(height: 10),
+
         // Learn the App Card
         _SleekHubCard(
           title: 'Learn the App',
-          subtitle: 'Interactive guide & tips for module tracking & timer modes',
+          subtitle:
+              'Interactive guide & tips for module tracking & timer modes',
           tag: 'GUIDE & TIPS',
           icon: Icons.lightbulb_outline_rounded,
           iconColor: Colors.purple,
@@ -1042,7 +1419,6 @@ class _DangerZoneSection extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 10),
-
         Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
@@ -1084,9 +1460,9 @@ class _DangerZoneSection extends ConsumerWidget {
                   side: const BorderSide(color: Colors.redAccent, width: 1.4),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
-                  backgroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 10),
+                  backgroundColor: AppTheme.cardWhite,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 ),
                 icon: const Icon(Icons.delete_forever_rounded,
                     color: Colors.redAccent, size: 18),
@@ -1129,12 +1505,13 @@ class _SleekHubCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
+    return ApplePressable(
+      pressedScale: 0.98,
+      onPressed: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: AppTheme.sketchDecoration(
-          backgroundColor: Colors.white,
+          backgroundColor: AppTheme.cardWhite,
           borderRadius: 16,
           shadowOffset: 2.5,
         ),
@@ -1156,12 +1533,15 @@ class _SleekHubCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
-                          color: AppTheme.inkForeground,
+                      Flexible(
+                        child: Text(
+                          title,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                            color: AppTheme.inkForeground,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -1189,7 +1569,7 @@ class _SleekHubCard extends StatelessWidget {
                     subtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.mutedText,
@@ -1199,7 +1579,7 @@ class _SleekHubCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.arrow_forward_ios_rounded,
+            Icon(Icons.arrow_forward_ios_rounded,
                 size: 13, color: AppTheme.mutedText),
           ],
         ),

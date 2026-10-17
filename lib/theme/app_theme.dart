@@ -1,43 +1,73 @@
 import 'package:flutter/material.dart';
+import 'modulix_theme.dart';
 
 class AppTheme {
+  /// Live theme extension representing the active theme and palette
+  static ModulixThemeExtension current = ModulixThemeExtension.defaultPaper;
+
   // Lovable Study Desk Design Tokens
-  static const paperBackground = Color(0xFFFCFBF8);
-  static const inkForeground = Color(0xFF1C1C1C);
-  static const primaryBlue = Color(0xFF4F46E5);
-  static const highlightCoral = Color(0xFFFFD1D6);
-  static const highlightStrong = Color(0xFFFE5F55);
-  static const mutedText = Color(0xFF71717A);
-  static const sketchBorderColor = Color(0xFF1C1C1C);
-  static const cardWhite = Color(0xFFFFFFFF);
-  static const borderLight = Color(0xFFE4E4E7);
+  static Color get paperBackground => current.scaffoldBackground;
+  static Color get inkForeground => current.inkForeground;
+  static Color get accentPrimary => current.accent;
+  static Color get accentSubtle => current.accentSubtle;
+  static Color get onAccent =>
+      current.accent.computeLuminance() > 0.45 ? const Color(0xFF1E1610) : Colors.white;
+  static Color get primaryBlue => current.accent;
+  static Color get highlightCoral => current.accentSubtle;
+  static Color get highlightStrong => current.accent;
+  static Color get mutedText => current.mutedText;
+  static Color get sketchBorderColor => current.borderSubtle;
+  static Color get cardWhite => current.cardBackground;
+  static Color get cardBackground => current.cardBackground;
+  static Color get borderLight => current.borderSubtle;
+  static Color get cardBorder => current.borderSubtle;
+  static Color get scaffoldBg => current.scaffoldBackground;
 
   // Clean compatibility tokens for cards and sheets
-  static const parchmentSurface = Color(0xFFF3F1EA);
-  static const parchmentBorder = Color(0xFFE4E4E7);
-  static const parchmentText = Color(0xFF4A463F);
-  static const subtleText = Color(0xFFA1A1AA);
-  static const vibrantBlue = Color(0xFF2563EB);
-  static const accentEmerald = Color(0xFF059669);
-  static const accentEmeraldBg = Color(0xFFECFDF5);
-  static const accentAmber = Color(0xFFD97706);
-  static const accentAmberBg = Color(0xFFFFFBEB);
+  static Color get parchmentSurface => current.surfaceSubtle;
+  static Color get parchmentBorder => current.borderSubtle;
+  static Color get parchmentText => current.inkForeground;
+  static Color get subtleText => current.mutedText;
+  static Color get vibrantBlue => current.accent;
+
+  static BoxDecoration accentPillDecoration({
+    required bool selected,
+    double borderRadius = 12.0,
+  }) =>
+      current.accentPillDecoration(
+        isSelected: selected,
+        borderRadius: borderRadius,
+      );
+  static Color get accentEmerald =>
+      current.isDark ? const Color(0xFF10B981) : const Color(0xFF059669);
+  static Color get accentEmeraldBg => current.surfaceSubtle;
+  static Color get accentAmber =>
+      current.isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706);
+  static Color get accentAmberBg => current.surfaceSubtle;
 
   static BoxDecoration sketchDecoration({
-    Color backgroundColor = cardWhite,
+    Color? backgroundColor,
     double borderRadius = 18.0,
-    double borderWidth = 1.8,
-    Color borderColor = sketchBorderColor,
-    double shadowOffset = 4.0,
+    double borderWidth = 1.4,
+    Color? borderColor,
+    double shadowOffset = 2.0,
   }) {
+    final effectiveBg = (backgroundColor == null ||
+            backgroundColor == const Color(0xFFFFFFFF))
+        ? current.cardBackground
+        : backgroundColor;
+    final effectiveBorder = borderColor ?? current.borderSubtle;
+
     return BoxDecoration(
-      color: backgroundColor,
+      color: effectiveBg,
       borderRadius: BorderRadius.circular(borderRadius),
-      border: Border.all(color: borderColor, width: borderWidth),
+      border: Border.all(color: effectiveBorder, width: borderWidth),
       boxShadow: [
         if (shadowOffset > 0)
           BoxShadow(
-            color: const Color(0x181C1C1C),
+            color: current.isDark
+                ? Colors.black.withValues(alpha: 0.45)
+                : current.inkForeground.withValues(alpha: 0.12),
             offset: Offset(shadowOffset, shadowOffset),
             blurRadius: 0,
           ),
@@ -46,15 +76,21 @@ class AppTheme {
   }
 
   static BoxDecoration parchmentDecoration({
-    Color backgroundColor = cardWhite,
-    Color borderColor = borderLight,
+    Color? backgroundColor,
+    Color? borderColor,
     double borderRadius = 8.0,
     double borderWidth = 1.0,
   }) {
+    final effectiveBg = (backgroundColor == null ||
+            backgroundColor == const Color(0xFFFFFFFF))
+        ? current.cardBackground
+        : backgroundColor;
+    final effectiveBorder = borderColor ?? current.borderSubtle;
+
     return BoxDecoration(
-      color: backgroundColor,
+      color: effectiveBg,
       borderRadius: BorderRadius.circular(borderRadius),
-      border: Border.all(color: borderColor, width: borderWidth),
+      border: Border.all(color: effectiveBorder, width: borderWidth),
     );
   }
 
