@@ -16,8 +16,8 @@ android {
     }
 
     defaultConfig {
-        // Application ID preserves the user's primary installed package and existing database sandbox
-        applicationId = "com.flowmd.flowmd_flutter"
+        // Official Application ID for Modulix
+        applicationId = "com.modulix.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

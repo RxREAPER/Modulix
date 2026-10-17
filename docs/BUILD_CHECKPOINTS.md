@@ -8,6 +8,25 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-007] Native Package ID Migration to com.modulix.app & Clean Cloud Sync Foundation
+- **Timestamp:** 2026-10-17 05:41 UTC
+- **Category:** Architecture / Native Android / Cloud
+- **Files Modified:**
+  - `android/app/build.gradle.kts`
+  - `android/app/src/main/AndroidManifest.xml`
+  - `android/app/src/main/kotlin/com/modulix/app/MainActivity.kt`
+  - `lib/config/supabase_config.dart`
+  - `docs/BUILD_CHECKPOINTS.md`
+- **Summary:** Migrated native Android build identifier and cleaned legacy install:
+  - Updated `applicationId = "com.modulix.app"` in `android/app/build.gradle.kts`.
+  - Uninstalled legacy `com.flowmd.flowmd_flutter` package from connected device (`ba009d81`).
+  - Preserved SHA-1/SHA-256 Android keystore fingerprints and Supabase backend URL (`https://vbvmzjhzznxgofyzxnql.supabase.co`).
+  - Initiated clean debug APK compilation and fresh installation.
+- **Verification:** Legacy `com.flowmd.flowmd_flutter` uninstalled via ADB, debug APK compiled with code 0 (`build/app/outputs/flutter-apk/app-debug.apk`), successfully installed on OnePlus 13R (`ba009d81`), launched `com.modulix.app/.MainActivity` and visually verified.
+- **Build Status:** ✅ Included in Build (Clean Install com.modulix.app)
+
+---
+
 ### [CKPT-006] Hand-Drawn Pomodoro Tomato Focus Timer Icon in Bottom Navigation Dock
 - **Timestamp:** 2026-10-17 05:01 UTC
 - **Category:** UI / Navigation / Iconography
