@@ -48,9 +48,9 @@ class HomeScreen extends ConsumerWidget {
               physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
               padding: const EdgeInsets.only(top: 16, bottom: 120),
               child: PageEntrance(
-                staggerMs: 55,
-                durationMs: 450,
-                slideY: 16.0,
+                staggerMs: 35,
+                durationMs: 220,
+                slideY: 12.0,
                 children: [
                   // ① Top Header + Greeting (single block — they're small)
                   Padding(
@@ -159,20 +159,20 @@ class HomeScreen extends ConsumerWidget {
                   ),
 
                   // ② Hero Study Desk Clock (Full Width Integration)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 14),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 14),
                     child: RepaintBoundary(child: StudyDeskClock()),
                   ),
 
                   // ③ Today's Tasks Section
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                    child: _HomeTasksSection(),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
+                    child: RepaintBoundary(child: _HomeTasksSection()),
                   ),
 
                   // ④ Module Based Tasks Section
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(20, 28, 20, 0),
                     child: _HomeModuleTrackerSection(),
                   ),
                 ],

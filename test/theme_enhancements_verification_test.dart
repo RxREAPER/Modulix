@@ -116,7 +116,7 @@ void main() {
         of: find.byType(TimelineCheckBubble),
         matching: find.byType(Container),
       );
-      final container = tester.widget<Container>(containerFinder);
+      final container = tester.widget<Container>(containerFinder.last);
       final boxDec = container.decoration as BoxDecoration;
       expect(boxDec.color, equals(AppTheme.accentPrimary));
     });

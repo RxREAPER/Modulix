@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sliver_tools/sliver_tools.dart';
 import '../../models/syllabus.dart';
 import '../../theme/app_theme.dart';
 import '../animations/animated_check_stroke.dart';
@@ -51,16 +52,14 @@ class ModuleTimeline extends StatelessWidget {
         ? subject.qbankChapters
         : subject.chapters;
 
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, chapterIndex) {
-          final chapter = displayChapters[chapterIndex];
-          final key = unitKeys?[chapterIndex];
-
-          final section = _TimelineChapterSection(
+    return MultiSliver(
+      pushPinnedChildren: false,
+      children: [
+        for (int chapterIndex = 0; chapterIndex < displayChapters.length; chapterIndex++)
+          _TimelineChapterSection(
             key: ValueKey('sec_${subject.id}_${activeTab}_$chapterIndex'),
-            unitKey: key,
-            chapter: chapter,
+            unitKey: unitKeys?[chapterIndex],
+            chapter: displayChapters[chapterIndex],
             chapterIndex: chapterIndex,
             activeTab: activeTab,
             completedVideos: completedVideos,
@@ -72,26 +71,8 @@ class ModuleTimeline extends StatelessWidget {
             onBulkToggleVideos: onBulkToggleVideos,
             onBulkToggleQBanks: onBulkToggleQBanks,
             onBulkToggleNotes: onBulkToggleNotes,
-          );
-
-          if (contentAnimation == null) {
-            return section;
-          }
-
-          return AnimatedBuilder(
-            animation: contentAnimation!,
-            builder: (context, child) {
-              final offset = (1.0 - contentAnimation!.value) * (slideDirection >= 0 ? 24.0 : -24.0);
-              return Transform.translate(
-                offset: Offset(offset, 0),
-                child: child,
-              );
-            },
-            child: section,
-          );
-        },
-        childCount: displayChapters.length,
-      ),
+          ),
+      ],
     );
   }
 }
@@ -132,31 +113,8 @@ class _TimelineChapterSection extends StatefulWidget {
   State<_TimelineChapterSection> createState() => _TimelineChapterSectionState();
 }
 
-class _TimelineChapterSectionState extends State<_TimelineChapterSection>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _expandController;
-  late final Animation<double> _expandAnimation;
+class _TimelineChapterSectionState extends State<_TimelineChapterSection> {
   bool _isExpanded = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _expandController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 180),
-      value: 1.0,
-    );
-    _expandAnimation = CurvedAnimation(
-      parent: _expandController,
-      curve: Curves.easeOutCubic,
-    );
-  }
-
-  @override
-  void dispose() {
-    _expandController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -166,7 +124,7 @@ class _TimelineChapterSectionState extends State<_TimelineChapterSection>
     int total = 0;
     int done = 0;
     VoidCallback onBulk = () {};
-    final List<Widget> rowWidgets = [];
+    int rowCount = 0;
 
     if (activeTab == 'videos') {
       total = chapter.videos.length;
@@ -174,152 +132,140 @@ class _TimelineChapterSectionState extends State<_TimelineChapterSection>
       final allDone = total > 0 && done == total;
       final videoIds = chapter.videos.map((v) => v.id).toList();
       onBulk = () => widget.onBulkToggleVideos(videoIds, chapter.name, !allDone);
-
-      for (int i = 0; i < chapter.videos.length; i++) {
-        final video = chapter.videos[i];
-        final isDone = widget.completedVideos.containsKey(video.id);
-        rowWidgets.add(
-          _buildTimelineRow(
-            context: context,
-            id: video.id,
-            isFirst: i == 0,
-            isLast: i == chapter.videos.length - 1,
-            number: video.assignedNumber ?? video.serialNumber,
-            isDone: isDone,
-            title: video.title,
-            detail: video.durationLabel,
-            secondaryDetail: isDone ? _formatDate(widget.completedVideos[video.id]) : null,
-            badgeColor: const Color(0xFFFFFBEB),
-            badgeIcon: Icons.play_arrow_rounded,
-            onToggle: () => widget.onToggleVideo(video.id),
-            onStartTimer: () => context.push(
-              '/timer',
-              extra: {
-                'subjectId': video.subjectId,
-                'topicId': video.id,
-                'topicTitle': video.title,
-                'chapterName': chapter.name,
-                'topicType': 'video',
-                'durationMins': video.durationMins > 0 ? video.durationMins : 15,
-              },
-            ),
-          ),
-        );
-      }
+      rowCount = chapter.videos.length;
     } else if (activeTab == 'qbank') {
       total = chapter.qbanks.length;
       done = chapter.qbanks.where((q) => widget.completedQBanks.containsKey(q.id)).length;
       final allDone = total > 0 && done == total;
       final qbankIds = chapter.qbanks.map((q) => q.id).toList();
       onBulk = () => widget.onBulkToggleQBanks(qbankIds, !allDone);
-
-      for (int i = 0; i < chapter.qbanks.length; i++) {
-        final q = chapter.qbanks[i];
-        final isDone = widget.completedQBanks.containsKey(q.id);
-        rowWidgets.add(
-          _buildTimelineRow(
-            context: context,
-            id: q.id,
-            isFirst: i == 0,
-            isLast: i == chapter.qbanks.length - 1,
-            number: q.assignedNumber ?? q.serialNumber,
-            isDone: isDone,
-            title: q.title,
-            detail: '${q.totalMcqs} MCQs',
-            secondaryDetail: isDone ? _formatDate(widget.completedQBanks[q.id]) : null,
-            badgeColor: const Color(0xFFEFF6FF),
-            badgeIcon: Icons.quiz_rounded,
-            onToggle: () => widget.onToggleQBank(q.id),
-            onStartTimer: () => context.push(
-              '/timer',
-              extra: {
-                'subjectId': q.subjectId,
-                'topicId': q.id,
-                'topicTitle': q.title,
-                'chapterName': chapter.name,
-                'topicType': 'qbank',
-                'durationMins': 30,
-              },
-            ),
-          ),
-        );
-      }
+      rowCount = chapter.qbanks.length;
     } else {
       total = chapter.notes.length;
       done = chapter.notes.where((n) => widget.completedNotes.containsKey(n.id)).length;
       final allDone = total > 0 && done == total;
       final noteIds = chapter.notes.map((n) => n.id).toList();
       onBulk = () => widget.onBulkToggleNotes(noteIds, !allDone);
-
-      for (int i = 0; i < chapter.notes.length; i++) {
-        final note = chapter.notes[i];
-        final isDone = widget.completedNotes.containsKey(note.id);
-        rowWidgets.add(
-          _buildTimelineRow(
-            context: context,
-            id: note.id,
-            isFirst: i == 0,
-            isLast: i == chapter.notes.length - 1,
-            number: i + 1,
-            isDone: isDone,
-            title: note.title,
-            detail: 'Notes Module',
-            secondaryDetail: isDone ? _formatDate(widget.completedNotes[note.id]) : null,
-            badgeColor: const Color(0xFFF0FDF4),
-            badgeIcon: Icons.menu_book_rounded,
-            onToggle: () => widget.onToggleNotes(note.id),
-            onStartTimer: () => context.push(
-              '/timer',
-              extra: {
-                'subjectId': note.subjectId,
-                'topicId': note.id,
-                'topicTitle': note.title,
-                'chapterName': chapter.name,
-                'topicType': 'notes',
-                'durationMins': 20,
-              },
-            ),
-          ),
-        );
-      }
+      rowCount = chapter.notes.length;
     }
 
     final allDone = total > 0 && done == total;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
+    return MultiSliver(
+      pushPinnedChildren: false,
       children: [
-        _buildBlendedUnitHeader(
-          key: widget.unitKey,
-          unitName: chapter.name,
-          unitNumber: widget.chapterIndex + 1,
-          doneCount: done,
-          totalCount: total,
-          isAllDone: allDone,
-          durationLabel: chapter.durationLabel,
-          onBulkToggle: onBulk,
-          isExpanded: _isExpanded,
-          onToggleAccordion: () {
-            HapticFeedback.lightImpact();
-            setState(() {
-              _isExpanded = !_isExpanded;
-              if (_isExpanded) {
-                _expandController.forward();
-              } else {
-                _expandController.reverse();
-              }
-            });
-          },
-        ),
-        SizeTransition(
-          sizeFactor: _expandAnimation,
-          alignment: Alignment.topCenter,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: rowWidgets,
+        SliverToBoxAdapter(
+          child: _buildBlendedUnitHeader(
+            key: widget.unitKey,
+            unitName: chapter.name,
+            unitNumber: widget.chapterIndex + 1,
+            doneCount: done,
+            totalCount: total,
+            isAllDone: allDone,
+            durationLabel: chapter.durationLabel,
+            onBulkToggle: onBulk,
+            isExpanded: _isExpanded,
+            onToggleAccordion: () {
+              HapticFeedback.lightImpact();
+              setState(() {
+                _isExpanded = !_isExpanded;
+              });
+            },
           ),
         ),
+        if (_isExpanded && rowCount > 0)
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, i) {
+                if (activeTab == 'videos') {
+                  final video = chapter.videos[i];
+                  final isDone = widget.completedVideos.containsKey(video.id);
+                  return _buildTimelineRow(
+                    context: context,
+                    id: video.id,
+                    isFirst: i == 0,
+                    isLast: i == chapter.videos.length - 1,
+                    number: video.assignedNumber ?? video.serialNumber,
+                    isDone: isDone,
+                    title: video.title,
+                    detail: video.durationLabel,
+                    secondaryDetail: isDone ? _formatDate(widget.completedVideos[video.id]) : null,
+                    badgeColor: const Color(0xFFFFFBEB),
+                    badgeIcon: Icons.play_arrow_rounded,
+                    onToggle: () => widget.onToggleVideo(video.id),
+                    onStartTimer: () => context.push(
+                      '/timer',
+                      extra: {
+                        'subjectId': video.subjectId,
+                        'topicId': video.id,
+                        'topicTitle': video.title,
+                        'chapterName': chapter.name,
+                        'topicType': 'video',
+                        'durationMins': video.durationMins > 0 ? video.durationMins : 15,
+                      },
+                    ),
+                  );
+                } else if (activeTab == 'qbank') {
+                  final q = chapter.qbanks[i];
+                  final isDone = widget.completedQBanks.containsKey(q.id);
+                  return _buildTimelineRow(
+                    context: context,
+                    id: q.id,
+                    isFirst: i == 0,
+                    isLast: i == chapter.qbanks.length - 1,
+                    number: q.assignedNumber ?? q.serialNumber,
+                    isDone: isDone,
+                    title: q.title,
+                    detail: '${q.totalMcqs} MCQs',
+                    secondaryDetail: isDone ? _formatDate(widget.completedQBanks[q.id]) : null,
+                    badgeColor: const Color(0xFFEFF6FF),
+                    badgeIcon: Icons.quiz_rounded,
+                    onToggle: () => widget.onToggleQBank(q.id),
+                    onStartTimer: () => context.push(
+                      '/timer',
+                      extra: {
+                        'subjectId': q.subjectId,
+                        'topicId': q.id,
+                        'topicTitle': q.title,
+                        'chapterName': chapter.name,
+                        'topicType': 'qbank',
+                        'durationMins': 30,
+                      },
+                    ),
+                  );
+                } else {
+                  final note = chapter.notes[i];
+                  final isDone = widget.completedNotes.containsKey(note.id);
+                  return _buildTimelineRow(
+                    context: context,
+                    id: note.id,
+                    isFirst: i == 0,
+                    isLast: i == chapter.notes.length - 1,
+                    number: i + 1,
+                    isDone: isDone,
+                    title: note.title,
+                    detail: 'Notes Module',
+                    secondaryDetail: isDone ? _formatDate(widget.completedNotes[note.id]) : null,
+                    badgeColor: const Color(0xFFF0FDF4),
+                    badgeIcon: Icons.menu_book_rounded,
+                    onToggle: () => widget.onToggleNotes(note.id),
+                    onStartTimer: () => context.push(
+                      '/timer',
+                      extra: {
+                        'subjectId': note.subjectId,
+                        'topicId': note.id,
+                        'topicTitle': note.title,
+                        'chapterName': chapter.name,
+                        'topicType': 'notes',
+                        'durationMins': 20,
+                      },
+                    ),
+                  );
+                }
+              },
+              childCount: rowCount,
+            ),
+          ),
       ],
     );
   }

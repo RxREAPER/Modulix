@@ -19,6 +19,7 @@ import '../../widgets/animations/animated_check_stroke.dart';
 import '../../widgets/animations/page_entrance.dart';
 
 class ModuleTasksScreen extends ConsumerWidget {
+  static String? _lastCheckedKey;
   const ModuleTasksScreen({super.key});
 
   @override
@@ -194,16 +195,19 @@ class ModuleTasksScreen extends ConsumerWidget {
             effectiveBatchIds = uncompleted.take(targetQuota).map((v) => v.id).toList();
           }
 
-          // Refresh batch if needed
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _checkAndRefreshDailyBatch(
-              ref: ref,
-              editionState: editionState,
-              planVideos: planVideos,
-              targetQuota: targetQuota,
-              todayKey: todayKey,
-            );
-          });
+          // Refresh batch only when needed
+          if (_lastCheckedKey != todayKey || !isBatchValid) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _lastCheckedKey = todayKey;
+              _checkAndRefreshDailyBatch(
+                ref: ref,
+                editionState: editionState,
+                planVideos: planVideos,
+                targetQuota: targetQuota,
+                todayKey: todayKey,
+              );
+            });
+          }
 
           final batchVideos = effectiveBatchIds
               .map((id) => planVideos.where((v) => v.id == id).firstOrNull)

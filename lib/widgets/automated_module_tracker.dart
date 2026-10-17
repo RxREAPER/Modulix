@@ -16,6 +16,7 @@ import 'animations/apple_pressable.dart';
 /// Clean Home Screen stationery banner that directly links to the full
 /// dedicated Module Tasks Screen (/module-tasks) without cramping the Home layout.
 class AutomatedModuleTracker extends ConsumerWidget {
+  static String? _lastCheckedKey;
   final EditionState editionState;
   final String editionName;
   final List<Subject> subjects;
@@ -93,16 +94,19 @@ class AutomatedModuleTracker extends ConsumerWidget {
       effectiveBatchIds = uncompleted.take(targetQuota).map((v) => v.id).toList();
     }
 
-    // Schedule background persistence and rollover check
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndRefreshDailyBatch(
-        ref: ref,
-        editionState: editionState,
-        planVideos: planVideos,
-        targetQuota: targetQuota,
-        todayKey: todayKey,
-      );
-    });
+    // Schedule background persistence and rollover check only when needed
+    if (_lastCheckedKey != todayKey || !isBatchValid) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _lastCheckedKey = todayKey;
+        _checkAndRefreshDailyBatch(
+          ref: ref,
+          editionState: editionState,
+          planVideos: planVideos,
+          targetQuota: targetQuota,
+          todayKey: todayKey,
+        );
+      });
+    }
 
     final batchVideos = effectiveBatchIds
         .map((id) => planVideos.where((v) => v.id == id).firstOrNull)
@@ -255,7 +259,7 @@ class AutomatedModuleTracker extends ConsumerWidget {
                               color: AppTheme.inkForeground,
                             ),
                           ),
-                          SizedBox(height: 2),
+                          const SizedBox(height: 2),
                           Text(
                             'No active plan configured',
                             style: TextStyle(
@@ -316,7 +320,7 @@ class AutomatedModuleTracker extends ConsumerWidget {
                     Row(
                       children: [
                         Icon(Icons.tune_rounded, size: 16, color: AppTheme.primaryBlue),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Text(
                           'Set up module plan',
                           style: TextStyle(

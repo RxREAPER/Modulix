@@ -92,7 +92,7 @@ void main() {
 
       // Verify Best Streak medal icon
       final medalIcon = tester.widget<Icon>(find.byIcon(Icons.military_tech_rounded));
-      expect(medalIcon.color, Colors.white); // ShaderMask uses gold shimmer on white base icon
+      expect(medalIcon.color, const Color(0xFFEAB308));
 
       // Verify "View Details" text is present and does not use loud accent color
       final viewDetailsTexts = find.text('View Details');

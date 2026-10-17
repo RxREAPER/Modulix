@@ -124,10 +124,11 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
       }
     }
 
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.88,
-      ),
+    return RepaintBoundary(
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.88,
+        ),
       decoration: BoxDecoration(
         color: AppTheme.paperBackground,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
@@ -230,6 +231,7 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
               slideY: 10.0,
               child: ListView(
                 physics: const BouncingScrollPhysics(),
+                cacheExtent: 400.0,
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
                 children: [
                 if (!plan.isConfigured) ...[
@@ -563,6 +565,7 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

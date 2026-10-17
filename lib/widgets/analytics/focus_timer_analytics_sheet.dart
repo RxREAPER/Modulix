@@ -131,10 +131,11 @@ class _FocusTimerAnalyticsSheetState extends ConsumerState<FocusTimerAnalyticsSh
         .fold(0.0, (a, b) => a > b ? a : b);
     final double maxChartY = ((highestHours > 4.5 ? highestHours * 1.25 : 5.0).ceilToDouble());
 
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.88,
-      ),
+    return RepaintBoundary(
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.88,
+        ),
       decoration: BoxDecoration(
         color: AppTheme.paperBackground,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
@@ -211,6 +212,7 @@ class _FocusTimerAnalyticsSheetState extends ConsumerState<FocusTimerAnalyticsSh
               durationMs: 180,
               slideY: 10.0,
               child: ListView(
+                cacheExtent: 400.0,
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
                 children: [
                 // Today's Hero Card
@@ -654,6 +656,7 @@ class _FocusTimerAnalyticsSheetState extends ConsumerState<FocusTimerAnalyticsSh
           ),
         ),
       ],
+    ),
     ),
   );
   }

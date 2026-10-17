@@ -182,6 +182,7 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
           ),
           error: (e, _) => Center(child: Text('Error loading syllabus: $e')),
           data: (subjectsList) => ListView(
+            cacheExtent: 450.0,
             physics: const BouncingScrollPhysics(
                 parent: AlwaysScrollableScrollPhysics()),
             padding: const EdgeInsets.fromLTRB(18, 16, 18, 100),
@@ -197,13 +198,15 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
               const SizedBox(height: 10),
               SizedBox(
                 height: 106,
-                child: ListView.separated(
-                  physics: const BouncingScrollPhysics(
-                      parent: AlwaysScrollableScrollPhysics()),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: subjectsList.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 10),
-                  itemBuilder: (ctx, i) {
+                child: RepaintBoundary(
+                  child: ListView.separated(
+                    cacheExtent: 350.0,
+                    physics: const BouncingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics()),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: subjectsList.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 10),
+                    itemBuilder: (ctx, i) {
                     final sub = subjectsList[i];
                     final isSelected = sub.id == _selectedSubject;
                     final meta = subjectMeta(sub.id);
@@ -316,6 +319,7 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                   },
                 ),
               ),
+            ),
 
               const SizedBox(height: 24),
 
@@ -326,13 +330,14 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                 'Set your deadline date and daily module pace',
               ),
               const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: AppTheme.sketchDecoration(
-                  backgroundColor: AppTheme.cardWhite,
-                  borderRadius: 18,
-                  shadowOffset: 3,
-                ),
+              RepaintBoundary(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: AppTheme.sketchDecoration(
+                    backgroundColor: AppTheme.cardWhite,
+                    borderRadius: 18,
+                    shadowOffset: 3,
+                  ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -536,102 +541,104 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                   ],
                 ),
               ),
+            ),
 
-              // Task D: Dedicated On-Track / Pace Insight Card (animated unfold)
-              ClipRect(
-                child: AnimatedSize(
-                  duration: const Duration(milliseconds: 320),
-                  curve: Curves.easeOutCubic,
-                  child: (_targetDate != null && _videosPerDay != null && _selectedSubject != null)
-                      ? Padding(
-                          padding: const EdgeInsets.only(top: 14),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(16),
-                            decoration: AppTheme.sketchDecoration(
-                              backgroundColor: _videosPerDay! >= neededPerDay
-                                  ? const Color(0xFFF0FDF4)
-                                  : const Color(0xFFFFFBEB),
-                              borderRadius: 16,
-                              borderColor: _videosPerDay! >= neededPerDay
-                                  ? const Color(0xFF86EFAC)
-                                  : const Color(0xFFFCD34D),
-                              shadowOffset: 2.5,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
+              // Task D: Dedicated On-Track / Pace Insight Card (isolated crossfade)
+              RepaintBoundary(
+                child: AnimatedCrossFade(
+                  duration: const Duration(milliseconds: 200),
+                  crossFadeState: (_targetDate != null && _videosPerDay != null && _selectedSubject != null)
+                      ? CrossFadeState.showFirst
+                      : CrossFadeState.showSecond,
+                  firstChild: Padding(
+                    padding: const EdgeInsets.only(top: 14),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: AppTheme.sketchDecoration(
+                        backgroundColor: _videosPerDay != null && _videosPerDay! >= neededPerDay
+                            ? const Color(0xFFF0FDF4)
+                            : const Color(0xFFFFFBEB),
+                        borderRadius: 16,
+                        borderColor: _videosPerDay != null && _videosPerDay! >= neededPerDay
+                            ? const Color(0xFF86EFAC)
+                            : const Color(0xFFFCD34D),
+                        shadowOffset: 2.5,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: (_videosPerDay ?? 0) >= neededPerDay
+                                      ? AppTheme.accentSubtle
+                                      : const Color(0xFFD97706).withValues(alpha: 0.15),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  (_videosPerDay ?? 0) >= neededPerDay
+                                      ? Icons.check_circle_rounded
+                                      : Icons.speed_rounded,
+                                  size: 18,
+                                  color: (_videosPerDay ?? 0) >= neededPerDay
+                                      ? AppTheme.accentPrimary
+                                      : const Color(0xFFD97706),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: _videosPerDay! >= neededPerDay
-                                            ? AppTheme.accentSubtle
-                                            : const Color(0xFFD97706).withValues(alpha: 0.15),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        _videosPerDay! >= neededPerDay
-                                            ? Icons.check_circle_rounded
-                                            : Icons.speed_rounded,
-                                        size: 18,
-                                        color: _videosPerDay! >= neededPerDay
-                                            ? AppTheme.accentPrimary
-                                            : const Color(0xFFD97706),
+                                    Text(
+                                      (_videosPerDay ?? 0) >= neededPerDay
+                                          ? 'PACING: ON TRACK'
+                                          : 'PACING: ADJUSTMENT NEEDED',
+                                      style: TextStyle(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 0.8,
+                                        color: (_videosPerDay ?? 0) >= neededPerDay
+                                            ? const Color(0xFF15803D)
+                                            : const Color(0xFFB45309),
                                       ),
                                     ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            _videosPerDay! >= neededPerDay
-                                                ? 'PACING: ON TRACK'
-                                                : 'PACING: ADJUSTMENT NEEDED',
-                                            style: TextStyle(
-                                              fontSize: 10.5,
-                                              fontWeight: FontWeight.w900,
-                                              letterSpacing: 0.8,
-                                              color: _videosPerDay! >= neededPerDay
-                                                  ? const Color(0xFF15803D)
-                                                  : const Color(0xFFB45309),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 1),
-                                          Text(
-                                            'Target: $_videosPerDay/day  •  Required: ~$neededPerDay/day',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w700,
-                                              color: AppTheme.inkForeground,
-                                            ),
-                                          ),
-                                        ],
+                                    const SizedBox(height: 1),
+                                    Text(
+                                      'Target: $_videosPerDay/day  •  Required: ~$neededPerDay/day',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppTheme.inkForeground,
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  _videosPerDay! >= neededPerDay
-                                      ? 'Your current pace of $_videosPerDay modules/day comfortably finishes all $totalVids selected modules before your deadline ($daysRemaining days remaining).'
-                                      : 'To complete all $totalVids modules within $daysRemaining days, you need at least ~$neededPerDay modules/day. Consider dialing up your daily target.',
-                                  style: TextStyle(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: _videosPerDay! >= neededPerDay
-                                        ? const Color(0xFF166534)
-                                        : const Color(0xFF78350F),
-                                    height: 1.35,
-                                  ),
-                                ),
-                              ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            (_videosPerDay ?? 0) >= neededPerDay
+                                ? 'Your current pace of $_videosPerDay modules/day comfortably finishes all $totalVids selected modules before your deadline ($daysRemaining days remaining).'
+                                : 'To complete all $totalVids modules within $daysRemaining days, you need at least ~$neededPerDay modules/day. Consider dialing up your daily target.',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              color: (_videosPerDay ?? 0) >= neededPerDay
+                                  ? const Color(0xFF166534)
+                                  : const Color(0xFF78350F),
+                              height: 1.35,
                             ),
                           ),
-                        )
-                      : const SizedBox.shrink(),
+                        ],
+                      ),
+                    ),
+                  ),
+                  secondChild: const SizedBox.shrink(),
                 ),
               ),
 
@@ -767,10 +774,11 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                   ),
 
                 // Unit Chips: Task E order numbering
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: List.generate(selectedSub.chapters.length, (index) {
+                RepaintBoundary(
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: List.generate(selectedSub.chapters.length, (index) {
                     final ch = selectedSub.chapters[index];
                     final isSelected = _isMultipleMode
                         ? _selectedUnits.contains(ch.name)
@@ -892,6 +900,7 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                     );
                   }),
                 ),
+              ),
               ] else ...[
                 // Awaiting subject selection prompt (Task G)
                 Container(

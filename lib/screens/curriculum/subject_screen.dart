@@ -223,6 +223,10 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      sheetAnimationStyle: const AnimationStyle(
+        duration: Duration(milliseconds: 200),
+        reverseDuration: Duration(milliseconds: 150),
+      ),
       builder: (ctx) {
         final categoryTitle = activeTab == 'videos'
             ? 'Videos'
@@ -237,11 +241,12 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
           minChildSize: 0.4,
           maxChildSize: 0.90,
           builder: (_, scrollController) {
-            return Container(
-              decoration: BoxDecoration(
-                color: AppTheme.cardWhite,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-              ),
+            return RepaintBoundary(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.cardWhite,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                ),
               child: Column(
                 children: [
                   // Top Drag Handle
@@ -309,6 +314,7 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
                   Expanded(
                     child: ListView.separated(
                       controller: scrollController,
+                      cacheExtent: 350.0,
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       itemCount: displayChapters.length,
                       separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF3F4F6)),
@@ -450,11 +456,12 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
                   ),
                 ],
               ),
-            );
-          },
-        );
-      },
-    );
+            ),
+          );
+        },
+      );
+    },
+  );
 
     if (selectedUnit != null && mounted) {
       await Future.delayed(const Duration(milliseconds: 120));
@@ -574,7 +581,7 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
             ),
             body: CustomScrollView(
               controller: _scrollController,
-              scrollCacheExtent: const ScrollCacheExtent.pixels(450.0),
+              cacheExtent: 450.0,
               physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
               slivers: [
                 SliverPadding(

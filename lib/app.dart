@@ -31,9 +31,9 @@ final _shellNavigatorKeyAnalytics = GlobalKey<NavigatorState>(debugLabel: 'shell
 final _shellNavigatorKeySettings = GlobalKey<NavigatorState>(debugLabel: 'shellSettings');
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final listenable = ValueNotifier<bool>(false);
-  ref.listen<bool>(
-    appStateProvider.select((s) => s.valueOrNull?.onboardingDone ?? false),
+  final listenable = ValueNotifier<bool?>(null);
+  ref.listen<bool?>(
+    appStateProvider.select((s) => s.valueOrNull?.onboardingDone),
     (_, next) {
       listenable.value = next;
     },
