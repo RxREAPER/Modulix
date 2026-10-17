@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🩺 Modulix (FlowMD)
+# 🩺 Modulix
 ### Clinical-Grade MBBS & NEET-PG Medical Education Companion
 
 [![Flutter CI](https://github.com/RxREAPER/flowmd_flutter/actions/workflows/ci.yml/badge.svg)](https://github.com/RxREAPER/flowmd_flutter/actions/workflows/ci.yml)
