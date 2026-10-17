@@ -8,6 +8,25 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-006] Hand-Drawn Pomodoro Tomato Focus Timer Icon in Bottom Navigation Dock
+- **Timestamp:** 2026-10-17 05:01 UTC
+- **Category:** UI / Navigation / Iconography
+- **Files Modified:**
+  - `lib/widgets/nav/sketch_nav_icons.dart`
+  - `lib/widgets/lovable_nav_bar.dart`
+  - `assets/icons/navbar/pomodoro_tomato_only_white.png`
+  - `assets/icons/navbar/pomodoro_tomato_only_dark.png`
+  - `test/lovable_nav_bar_test.dart`
+- **Summary:** Adapted the center Focus Timer button on the floating bottom nav dock to the authentic hand-drawn Pomodoro tomato timer:
+  - Extracted and packaged transparent high-res assets (`pomodoro_tomato_only_white.png`, `pomodoro_tomato_only_dark.png`) from the reference drawing (`Redesigning_focus_timer_icon_var…_2K_20261017102112.jpg`).
+  - Added `SketchNavIconType.pomodoro` enum and built multi-pass vector painter `_paintPomodoro` (tomato body, curved 5-leaf calyx, stem, equator dial line with graduated calibration ticks, pointer arrow, and contour hatching).
+  - Configured center button with white gel-pen Pomodoro icon inside the dark circular medallion, with automatic vector fallback.
+  - Removed overlapping inner halo ring from `_SketchTimerMedallionPainter` to keep the tomato body completely clear and legible.
+- **Verification:** `flutter analyze` passed (0 errors), `flutter test test/lovable_nav_bar_test.dart` passed (4/4 test suites).
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### [CKPT-005] Redone Appearance & Theme Showcase Cards (Adapted Borders, Zero Badges)
 - **Timestamp:** 2026-10-17 04:40 UTC
 - **Category:** UI / Theme
