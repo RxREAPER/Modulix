@@ -39,9 +39,8 @@ class _PaceEngineAnimationWidgetState extends State<PaceEngineAnimationWidget>
         // Phase 2 (0.30 to 0.65): Target adjusts up to 4.5 v/d
         // Phase 3 (0.65 to 1.00): ON TRACK, suggested batch active
 
-        final double sliderProgress = t < 0.30
-            ? 0.0
-            : (t < 0.65 ? (t - 0.30) / 0.35 : 1.0);
+        final double sliderProgress =
+            t < 0.30 ? 0.0 : (t < 0.65 ? (t - 0.30) / 0.35 : 1.0);
 
         final double vPerDay = 2.0 + 2.5 * sliderProgress;
         final bool isOnTrack = sliderProgress > 0.6;
@@ -66,10 +65,10 @@ class _PaceEngineAnimationWidgetState extends State<PaceEngineAnimationWidget>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // FlowMD StudyPlanAnalyticsSheet Header + Ring + Target Info
+              // Modulix StudyPlanAnalyticsSheet Header + Ring + Target Info
               Row(
                 children: [
-                  // Real FlowMD Circular Progress Ring
+                  // Real Modulix Circular Progress Ring
                   SizedBox(
                     width: 54,
                     height: 54,
@@ -86,7 +85,7 @@ class _PaceEngineAnimationWidgetState extends State<PaceEngineAnimationWidget>
                         ),
                         Text(
                           '${(progress * 100).round()}%',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w900,
                             fontFamily: 'monospace',
@@ -101,7 +100,7 @@ class _PaceEngineAnimationWidgetState extends State<PaceEngineAnimationWidget>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'TARGET: 15 NOV 2026',
                           style: TextStyle(
                             fontSize: 9,
@@ -111,7 +110,7 @@ class _PaceEngineAnimationWidgetState extends State<PaceEngineAnimationWidget>
                           ),
                         ),
                         const SizedBox(height: 2),
-                        const Text(
+                        Text(
                           '142 / 180',
                           style: TextStyle(
                             fontSize: 18,
@@ -135,12 +134,14 @@ class _PaceEngineAnimationWidgetState extends State<PaceEngineAnimationWidget>
 
               const SizedBox(height: 10),
 
-              // Exact FlowMD ETA & Pace Banner from StudyPlanAnalyticsSheet
+              // Exact Modulix ETA & Pace Banner from StudyPlanAnalyticsSheet
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 decoration: BoxDecoration(
-                  color: (isOnTrack ? Colors.green : Colors.orange).withOpacity(0.12),
+                  color: (isOnTrack ? Colors.green : Colors.orange)
+                      .withOpacity(0.12),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isOnTrack ? Colors.green : Colors.orange,
@@ -150,7 +151,9 @@ class _PaceEngineAnimationWidgetState extends State<PaceEngineAnimationWidget>
                 child: Row(
                   children: [
                     Icon(
-                      isOnTrack ? Icons.check_circle_rounded : Icons.warning_amber_rounded,
+                      isOnTrack
+                          ? Icons.check_circle_rounded
+                          : Icons.warning_amber_rounded,
                       color: isOnTrack ? Colors.green : Colors.orange,
                       size: 18,
                     ),
@@ -160,11 +163,15 @@ class _PaceEngineAnimationWidgetState extends State<PaceEngineAnimationWidget>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            isOnTrack ? 'On Track · Pace: 4.5 v/day' : 'Behind Pace · Need 4.5 v/day',
+                            isOnTrack
+                                ? 'On Track · Pace: 4.5 v/day'
+                                : 'Behind Pace · Need 4.5 v/day',
                             style: TextStyle(
                               fontSize: 10.5,
                               fontWeight: FontWeight.w900,
-                              color: isOnTrack ? Colors.green.shade800 : Colors.orange.shade900,
+                              color: isOnTrack
+                                  ? Colors.green.shade800
+                                  : Colors.orange.shade900,
                             ),
                           ),
                           Text(
@@ -174,7 +181,9 @@ class _PaceEngineAnimationWidgetState extends State<PaceEngineAnimationWidget>
                             style: TextStyle(
                               fontSize: 8.5,
                               fontWeight: FontWeight.w600,
-                              color: isOnTrack ? Colors.green.shade700 : Colors.orange.shade800,
+                              color: isOnTrack
+                                  ? Colors.green.shade700
+                                  : Colors.orange.shade800,
                             ),
                           ),
                         ],
@@ -188,7 +197,8 @@ class _PaceEngineAnimationWidgetState extends State<PaceEngineAnimationWidget>
 
               // Real Daily Suggested Batch Preview
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
@@ -202,7 +212,8 @@ class _PaceEngineAnimationWidgetState extends State<PaceEngineAnimationWidget>
                         color: AppTheme.primaryBlue.withOpacity(0.12),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.playlist_play_rounded, size: 14, color: AppTheme.primaryBlue),
+                      child: Icon(Icons.playlist_play_rounded,
+                          size: 14, color: AppTheme.primaryBlue),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -213,7 +224,9 @@ class _PaceEngineAnimationWidgetState extends State<PaceEngineAnimationWidget>
                         style: TextStyle(
                           fontSize: 8.5,
                           fontWeight: FontWeight.w700,
-                          color: isOnTrack ? AppTheme.inkForeground : Colors.orange.shade900,
+                          color: isOnTrack
+                              ? AppTheme.inkForeground
+                              : Colors.orange.shade900,
                         ),
                       ),
                     ),

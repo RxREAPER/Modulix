@@ -11,11 +11,11 @@ import 'widgets/curved_navigation_bar.dart';
 import 'screens/onboarding/onboarding_pages.dart';
 
 void main() {
-  runApp(const FlowMDWidgetbook());
+  runApp(const ModulixWidgetbook());
 }
 
-class FlowMDWidgetbook extends StatelessWidget {
-  const FlowMDWidgetbook({super.key});
+class ModulixWidgetbook extends StatelessWidget {
+  const ModulixWidgetbook({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +143,8 @@ class FlowMDWidgetbook extends StatelessWidget {
                           ),
                           serialNumber: sNo,
                           isCompleted: isCompleted,
-                          completedAt: isCompleted ? '2026-09-18T20:00:00Z' : null,
+                          completedAt:
+                              isCompleted ? '2026-09-18T20:00:00Z' : null,
                           accentColor: const Color(0xFF3B82F6),
                           onToggle: () {},
                         ),
@@ -167,7 +168,8 @@ class FlowMDWidgetbook extends StatelessWidget {
                     for (int i = 0; i < 90; i++) {
                       if (i % 2 == 0 || i % 3 == 0) {
                         final d = now.subtract(Duration(days: i));
-                        final key = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+                        final key =
+                            '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
                         mockHistory[key] = (i % 7) + 1;
                       }
                     }
@@ -206,38 +208,38 @@ class FlowMDWidgetbook extends StatelessWidget {
           name: 'Onboarding Pages',
           children: [
             WidgetbookComponent(
-              name: 'Step 1: Daily Goals',
+              name: 'Slide 1: Welcome Desk',
               useCases: [
                 WidgetbookUseCase(
-                  name: 'Calendar Pulse',
-                  builder: (context) => OnboardingPage1(),
+                  name: 'Welcome Desk Banner',
+                  builder: (context) => const OnboardingWelcomeSlide(),
                 ),
               ],
             ),
             WidgetbookComponent(
-              name: 'Step 2: Curriculum',
+              name: 'Slide 2: Tasks & Plan',
               useCases: [
                 WidgetbookUseCase(
-                  name: 'Subject Grid Preview',
-                  builder: (context) => OnboardingPage2(),
+                  name: 'Daily Tasks & Study Plan',
+                  builder: (context) => const OnboardingTasksSlide(),
                 ),
               ],
             ),
             WidgetbookComponent(
-              name: 'Step 3: Analytics',
+              name: 'Slide 3: 19 Subjects',
               useCases: [
                 WidgetbookUseCase(
-                  name: 'Animated Charts',
-                  builder: (context) => OnboardingPage3(),
+                  name: '19 Subjects Modules',
+                  builder: (context) => const OnboardingCurriculumSlide(),
                 ),
               ],
             ),
             WidgetbookComponent(
-              name: 'Step 4: Daily Quests',
+              name: 'Slide 4: Focus Timer',
               useCases: [
                 WidgetbookUseCase(
-                  name: 'Checklist Tick-off',
-                  builder: (context) => OnboardingPage4(),
+                  name: 'Focus Timer & Soundscapes',
+                  builder: (context) => const OnboardingTimerSlide(),
                 ),
               ],
             ),
@@ -260,7 +262,8 @@ class _InteractiveNavBarDemoState extends State<_InteractiveNavBarDemo> {
 
   static const _demoTabs = [
     CurvedNavItem(svgAsset: 'assets/icons/navbar/home.svg', label: 'Home'),
-    CurvedNavItem(svgAsset: 'assets/icons/navbar/chart.svg', label: 'Analytics'),
+    CurvedNavItem(
+        svgAsset: 'assets/icons/navbar/chart.svg', label: 'Analytics'),
     CurvedNavItem(svgAsset: 'assets/icons/navbar/clock.svg', label: 'Plan'),
     CurvedNavItem(svgAsset: 'assets/icons/navbar/bell.svg', label: 'Alerts'),
   ];
@@ -289,4 +292,3 @@ class _InteractiveNavBarDemoState extends State<_InteractiveNavBarDemo> {
     );
   }
 }
-

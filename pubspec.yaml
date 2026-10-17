@@ -1,5 +1,5 @@
-name: flowmd_flutter
-description: FlowMD – Advanced NEET-PG Study Planner
+name: modulix
+description: Modulix – Advanced NEET-PG Study Planner
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -19,6 +19,10 @@ dependencies:
 
   # Persistence
   shared_preferences: ^2.3.2
+
+  # Supabase Backend & Auth
+  supabase_flutter: ^2.8.0
+  google_sign_in: ^6.2.2
 
   # Charts
   fl_chart: ^0.69.0
@@ -45,6 +49,13 @@ dependencies:
   flutter_local_notifications: ^17.2.2
   timezone: ^0.9.4
   flutter_timezone: ^5.1.0
+  video_player: ^2.14.0
+  wakelock_plus: ^1.5.2
+  sqflite: ^2.4.4+1
+  path: ^1.9.1
+  firebase_core: ^4.15.0
+  firebase_analytics: ^12.6.0
+  firebase_crashlytics: ^5.4.0
 
 dev_dependencies:
   flutter_test:
@@ -52,6 +63,7 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   build_runner: ^2.4.12
   riverpod_generator: ^2.4.3
+  sqflite_common_ffi: ^2.4.3
 
 flutter:
   uses-material-design: true
@@ -59,8 +71,65 @@ flutter:
     - assets/illustrations/
     - assets/icons/
     - assets/icons/navbar/
+    - assets/icons/subjects/
     - assets/audio/
     - assets/images/
+    - assets/avatars/
     - assets/rive/
-    - assets/sprites/cat/
+    - assets/sprites/73wgl0lx/sprites/
+    - assets/sprites/nori/bored/
+    - assets/sprites/nori/celebrating/
+    - assets/sprites/nori/celebrating_alt/
+    - assets/sprites/nori/eating/
+    - assets/sprites/nori/excited/
+    - assets/sprites/nori/love/
+    - assets/sprites/nori/playful/
+    - assets/sprites/nori/rolling_sleep/
+    - assets/sprites/nori/running/
+    - assets/sprites/nori/sad/
+    - assets/sprites/nori/sleepy/
+    - assets/sprites/nori/studying/
+    - assets/sprites/nori/tired/
+    - assets/sprites/nori/walking/
+    - assets/sprites/nori/welcoming/
+    - assets/sprites/nori/yawning_loaf/
+    - assets/sprites/nori/transitions/bored_to_study/
+    - assets/sprites/nori/transitions/bored_to_welcome/
+    - assets/sprites/nori/transitions/celebrate_to_run/
+    - assets/sprites/nori/transitions/celebrate_to_walk/
+    - assets/sprites/nori/transitions/eat_to_play/
+    - assets/sprites/nori/transitions/eat_to_sleep/
+    - assets/sprites/nori/transitions/excited_to_love/
+    - assets/sprites/nori/transitions/excited_to_play/
+    - assets/sprites/nori/transitions/love_to_excited/
+    - assets/sprites/nori/transitions/love_to_play/
+    - assets/sprites/nori/transitions/play_to_eat/
+    - assets/sprites/nori/transitions/play_to_excited/
+    - assets/sprites/nori/transitions/play_to_love/
+    - assets/sprites/nori/transitions/play_to_sleep/
+    - assets/sprites/nori/transitions/run_to_celebrate/
+    - assets/sprites/nori/transitions/run_to_walk/
+    - assets/sprites/nori/transitions/sleep_to_eat/
+    - assets/sprites/nori/transitions/sleep_to_play/
+    - assets/sprites/nori/transitions/study_to_bored/
+    - assets/sprites/nori/transitions/study_to_welcome/
+    - assets/sprites/nori/transitions/walk_to_celebrate/
+    - assets/sprites/nori/transitions/walk_to_run/
+    - assets/sprites/nori/transitions/welcome_to_bored/
+    - assets/sprites/nori/transitions/welcome_to_study/
+    - assets/sprites/nori_v2/
+    - assets/sprites/nori_v2/study/
+    - assets/sprites/nori_v2/sleep/
+    - assets/sprites/nori_v2/walk/
+    - assets/sprites/nori_v2/love/
+    - assets/sprites/nori_v2/idle/
     - assets/lottie/
+    - assets/gifs/
+    - assets/images/background_thumbs/
+    - assets/fonts/
+
+  fonts:
+    - family: CabinSketch
+      fonts:
+        - asset: assets/fonts/CabinSketch-Bold.ttf
+          weight: 700

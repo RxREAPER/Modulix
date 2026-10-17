@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/daily_desk_task.dart';
 import '../theme/app_theme.dart';
+import 'animations/animated_check_stroke.dart';
+import 'animations/animated_strike_text.dart';
+import 'animations/apple_pressable.dart';
 
 class StudyTaskCard extends StatelessWidget {
   final String id;
@@ -30,20 +33,20 @@ class StudyTaskCard extends StatelessWidget {
     final cardContent = RepaintBoundary(
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        child: InkWell(
-          onTap: () {
-            HapticFeedback.selectionClick();
-            onToggle();
-          },
+        child: ApplePressable(
+          pressedScale: 0.97,
+          pressedOpacity: 0.94,
+          hapticStyle: HapticStyle.selection,
+          onTap: onToggle,
           borderRadius: BorderRadius.circular(16),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             curve: Curves.easeOutCubic,
             decoration: AppTheme.sketchDecoration(
-              backgroundColor: isCompleted ? const Color(0xFFF6F6F5) : Colors.white,
+              backgroundColor: isCompleted ? AppTheme.parchmentSurface : AppTheme.cardWhite,
               borderRadius: 16,
               shadowOffset: isCompleted ? 1 : 3.5,
-              borderColor: isCompleted ? Colors.grey.shade400 : AppTheme.sketchBorderColor,
+              borderColor: isCompleted ? AppTheme.borderLight : AppTheme.sketchBorderColor,
             ),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
@@ -55,23 +58,19 @@ class StudyTaskCard extends StatelessWidget {
                   width: 26,
                   height: 26,
                   decoration: BoxDecoration(
-                    color: isCompleted ? AppTheme.inkForeground : Colors.white,
+                    color: isCompleted ? AppTheme.accentPrimary : AppTheme.cardWhite,
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
-                      color: isCompleted ? AppTheme.inkForeground : AppTheme.sketchBorderColor,
+                      color: isCompleted ? AppTheme.accentPrimary : AppTheme.sketchBorderColor,
                       width: 2,
                     ),
                   ),
-                  child: AnimatedScale(
-                    scale: isCompleted ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 150),
-                    curve: Curves.easeOutBack,
-                    child: const Center(
-                      child: Icon(
-                        Icons.check,
-                        size: 16,
-                        color: Colors.white,
-                      ),
+                  child: Center(
+                    child: AnimatedCheckStroke(
+                      checked: isCompleted,
+                      size: 16,
+                      color: AppTheme.onAccent,
+                      strokeWidth: 2.2,
                     ),
                   ),
                 ),
@@ -83,16 +82,16 @@ class StudyTaskCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        title,
+                      AnimatedStrikeText(
+                        text: title,
+                        isStruck: isCompleted,
                         style: TextStyle(
                           fontSize: 14.5,
                           fontWeight: isCompleted ? FontWeight.w500 : FontWeight.w700,
-                          color: isCompleted ? Colors.grey.shade400 : AppTheme.inkForeground,
-                          decoration: isCompleted ? TextDecoration.lineThrough : null,
-                          decorationThickness: 2.2,
-                          decorationColor: isCompleted ? Colors.grey.shade500 : null,
+                          color: AppTheme.inkForeground,
                         ),
+                        strikeColor: AppTheme.mutedText,
+                        strikeThickness: 2.0,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -103,14 +102,10 @@ class StudyTaskCard extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                             decoration: BoxDecoration(
-                              color: isCompleted
-                                  ? const Color(0xFFF4F4F5)
-                                  : const Color(0xFFF3F1EA),
+                              color: AppTheme.parchmentSurface,
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: isCompleted
-                                    ? const Color(0xFFE4E4E7)
-                                    : const Color(0xFFD6D2C4),
+                                color: AppTheme.borderLight,
                                 width: 1,
                               ),
                             ),
@@ -120,7 +115,7 @@ class StudyTaskCard extends StatelessWidget {
                                 Icon(
                                   _categoryIcon(category),
                                   size: 11,
-                                  color: isCompleted ? Colors.grey.shade400 : const Color(0xFF4A463F),
+                                  color: isCompleted ? AppTheme.mutedText : AppTheme.inkForeground,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -130,8 +125,8 @@ class StudyTaskCard extends StatelessWidget {
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: 0.5,
                                     color: isCompleted
-                                        ? Colors.grey.shade500
-                                        : const Color(0xFF4A463F),
+                                        ? AppTheme.mutedText
+                                        : AppTheme.inkForeground,
                                   ),
                                 ),
                               ],
@@ -226,19 +221,5 @@ class StudyTaskCard extends StatelessWidget {
         return Icons.flag_outlined;
     }
   }
-
-  Color _categoryColor(TaskCategory cat) {
-    switch (cat) {
-      case TaskCategory.revision:
-        return const Color(0xFFD97706); // Amber
-      case TaskCategory.qbank:
-        return const Color(0xFF7C3AED); // Purple
-      case TaskCategory.video:
-        return const Color(0xFF2563EB); // Blue
-      case TaskCategory.notes:
-        return const Color(0xFF059669); // Emerald
-      case TaskCategory.general:
-        return const Color(0xFF4B5563); // Grey
-    }
-  }
 }
+

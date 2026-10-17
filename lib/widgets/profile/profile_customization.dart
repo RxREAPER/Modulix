@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/app_state_provider.dart';
 import '../../theme/app_theme.dart';
+import '../animations/apple_pressable.dart';
 
 // ─── Palette ─────────────────────────────────────────────────────────────────
 
@@ -35,27 +36,51 @@ Color profileAvatarColor(String id) {
   return AppTheme.primaryBlue;
 }
 
-// ─── Icons ───────────────────────────────────────────────────────────────────
+// ─── Avatars Catalogue ────────────────────────────────────────────────────────
 
-class ProfileIconOption {
+const Map<String, String> _kLegacyAvatarAliases = {
+  'comic_spiderman': 'avatar_webslinger',
+  'funny_spiderman': 'avatar_mastermind',
+  'spectacular_spiderman': 'avatar_arachnid',
+  'batman_animated': 'avatar_dark_knight',
+  'gojo_eye_aura': 'avatar_six_eyes',
+  'gojo_cat': 'avatar_blindfold_cat',
+  'itachi_moon': 'avatar_moon_perch',
+  'itachi_cat': 'avatar_ninja_cat',
+  'groot': 'avatar_little_sprout',
+};
+
+String resolveAvatarId(String id) => _kLegacyAvatarAliases[id] ?? id;
+
+class ProfileAvatarItem {
   final String id;
-  final IconData icon;
-  const ProfileIconOption({required this.id, required this.icon});
+  final String label;
+  final String? assetPath;
+  const ProfileAvatarItem({
+    required this.id,
+    required this.label,
+    this.assetPath,
+  });
 }
 
-const List<ProfileIconOption> kProfileIcons = [
-  ProfileIconOption(id: 'letter', icon: Icons.text_fields_rounded),
-  ProfileIconOption(id: 'stethoscope', icon: Icons.medical_services_rounded),
-  ProfileIconOption(id: 'psychology', icon: Icons.psychology_rounded),
-  ProfileIconOption(id: 'book', icon: Icons.menu_book_rounded),
-  ProfileIconOption(id: 'library', icon: Icons.local_library_rounded),
-  ProfileIconOption(id: 'heart', icon: Icons.monitor_heart_rounded),
-  ProfileIconOption(id: 'vaccines', icon: Icons.vaccines_rounded),
-  ProfileIconOption(id: 'science', icon: Icons.science_rounded),
-  ProfileIconOption(id: 'biotech', icon: Icons.biotech_rounded),
-  ProfileIconOption(id: 'emergency', icon: Icons.emergency_rounded),
-  ProfileIconOption(id: 'favorite', icon: Icons.favorite_rounded),
-  ProfileIconOption(id: 'spark', icon: Icons.auto_awesome_rounded),
+const List<ProfileAvatarItem> kProfileAvatars = [
+  ProfileAvatarItem(id: 'letter', label: 'Initial (Letter)'),
+  ProfileAvatarItem(id: 'avatar_webslinger', label: 'Web Slinger', assetPath: 'assets/avatars/avatar_webslinger.png'),
+  ProfileAvatarItem(id: 'avatar_dark_knight', label: 'Dark Knight', assetPath: 'assets/avatars/avatar_dark_knight.png'),
+  ProfileAvatarItem(id: 'cute_plague_doctor', label: 'Plague Doctor', assetPath: 'assets/avatars/cute_plague_doctor.png'),
+  ProfileAvatarItem(id: 'avatar_six_eyes', label: 'Six Eyes', assetPath: 'assets/avatars/avatar_six_eyes.png'),
+  ProfileAvatarItem(id: 'avatar_blindfold_cat', label: 'Blindfold Cat', assetPath: 'assets/avatars/avatar_blindfold_cat.png'),
+  ProfileAvatarItem(id: 'avatar_moon_perch', label: 'Moon Shinobi', assetPath: 'assets/avatars/avatar_moon_perch.png'),
+  ProfileAvatarItem(id: 'avatar_ninja_cat', label: 'Ninja Cat', assetPath: 'assets/avatars/avatar_ninja_cat.png'),
+  ProfileAvatarItem(id: 'september_glow', label: 'Cyber Girl', assetPath: 'assets/avatars/september_glow.png'),
+  ProfileAvatarItem(id: 'avatar_little_sprout', label: 'Little Sprout', assetPath: 'assets/avatars/avatar_little_sprout.png'),
+  ProfileAvatarItem(id: 'bw_cats', label: 'Yin Yang Cats', assetPath: 'assets/avatars/bw_cats.png'),
+  ProfileAvatarItem(id: 'avatar_mastermind', label: 'Mastermind', assetPath: 'assets/avatars/avatar_mastermind.png'),
+  ProfileAvatarItem(id: 'avatar_arachnid', label: 'Arachnid', assetPath: 'assets/avatars/avatar_arachnid.png'),
+  ProfileAvatarItem(id: 'peeking_cat', label: 'Peeking Cat', assetPath: 'assets/avatars/peeking_cat.png'),
+  ProfileAvatarItem(id: 'anime_black_cat', label: 'Shadow Cat', assetPath: 'assets/avatars/anime_black_cat.png'),
+  ProfileAvatarItem(id: 'black_cat_cartoon', label: 'Cartoon Cat', assetPath: 'assets/avatars/black_cat_cartoon.png'),
+  ProfileAvatarItem(id: 'acid', label: 'Neon Flow', assetPath: 'assets/avatars/acid.png'),
 ];
 
 // ─── Shared helpers ──────────────────────────────────────────────────────────
@@ -69,8 +94,8 @@ String profileInitial(String doctorName) {
 
 // ─── Avatar ──────────────────────────────────────────────────────────────────
 
-/// Sketch-style avatar matching the Study Desk theme: ink border, hard
-/// offset shadow, palette-tinted background with a bold initial or icon.
+/// Circular avatar matching the Study Desk theme: crisp ink border, hard
+/// offset shadow, rendering illustrated Discord PFP character images or initial.
 class ProfileAvatar extends StatelessWidget {
   final double size;
   final String colorId;
@@ -81,7 +106,7 @@ class ProfileAvatar extends StatelessWidget {
   const ProfileAvatar({
     super.key,
     required this.size,
-    required this.colorId,
+    this.colorId = 'indigo',
     required this.iconId,
     required this.doctorName,
     this.onTap,
@@ -89,61 +114,70 @@ class ProfileAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = profileAvatarColor(colorId);
-    final radius = size * 0.30;
+    final effectiveId = resolveAvatarId(iconId);
+    final avatarItem = kProfileAvatars.firstWhere(
+      (a) => a.id == effectiveId,
+      orElse: () => const ProfileAvatarItem(id: 'letter', label: 'Initial'),
+    );
+
+    Widget inner;
+    if (avatarItem.assetPath != null) {
+      inner = ClipOval(
+        child: Image.asset(
+          avatarItem.assetPath!,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _buildFallbackInitial(),
+        ),
+      );
+    } else {
+      inner = _buildFallbackInitial();
+    }
 
     final content = Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: accent == AppTheme.inkForeground
-            ? AppTheme.inkForeground
-            : accent.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(radius),
+        shape: BoxShape.circle,
         border: Border.all(color: AppTheme.sketchBorderColor, width: 2),
         boxShadow: const [
           BoxShadow(
             color: Color(0x181C1C1C),
-            offset: Offset(3, 3),
+            offset: Offset(2.5, 2.5),
             blurRadius: 0,
           ),
         ],
       ),
-      child: Center(
-        child: iconId == 'letter'
-            ? Text(
-                profileInitial(doctorName),
-                style: TextStyle(
-                  fontSize: size * 0.42,
-                  fontWeight: FontWeight.w900,
-                  color: accent == AppTheme.inkForeground
-                      ? Colors.white
-                      : accent,
-                ),
-              )
-            : Icon(
-                _iconFor(iconId),
-                size: size * 0.48,
-                color: accent == AppTheme.inkForeground
-                    ? Colors.white
-                    : accent,
-              ),
-      ),
+      child: inner,
     );
 
     if (onTap == null) return content;
-    return InkWell(
+    return ApplePressable(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(radius),
+      pressedScale: 0.92,
+      borderRadius: BorderRadius.circular(size / 2),
       child: content,
     );
   }
 
-  IconData _iconFor(String id) {
-    for (final o in kProfileIcons) {
-      if (o.id == id) return o.icon;
-    }
-    return Icons.medical_services_rounded;
+  Widget _buildFallbackInitial() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.primaryBlue.withValues(alpha: 0.15),
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text(
+          profileInitial(doctorName),
+          style: TextStyle(
+            fontSize: size * 0.44,
+            fontWeight: FontWeight.w900,
+            color: AppTheme.primaryBlue,
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -205,7 +239,7 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.88,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppTheme.paperBackground,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         border: Border(
@@ -243,11 +277,11 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                     border: Border.all(
                         color: AppTheme.sketchBorderColor, width: 1.5),
                   ),
-                  child: const Icon(Icons.palette_rounded,
+                  child: Icon(Icons.palette_rounded,
                       color: AppTheme.primaryBlue, size: 22),
                 ),
                 const SizedBox(width: 14),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -273,7 +307,7 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                 ),
                 IconButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close_rounded,
+                  icon: Icon(Icons.close_rounded,
                       color: AppTheme.inkForeground),
                   splashRadius: 20,
                 ),
@@ -281,7 +315,7 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
             ),
           ),
 
-          const Divider(height: 1, color: AppTheme.borderLight),
+          Divider(height: 1, color: AppTheme.borderLight),
 
           // Body
           Flexible(
@@ -295,7 +329,7 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: AppTheme.sketchDecoration(
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppTheme.cardWhite,
                     borderRadius: 18,
                     shadowOffset: 3,
                   ),
@@ -307,7 +341,7 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                         iconId: appState.avatarIconId,
                         doctorName: name,
                       ),
-                      const SizedBox(width: 14),
+                        const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -316,7 +350,7 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                               name,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w900,
                                 color: AppTheme.inkForeground,
@@ -328,7 +362,7 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.grey.shade500,
+                                color: AppTheme.mutedText,
                               ),
                             ),
                           ],
@@ -340,7 +374,7 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
 
                 // ── Display name ──────────────────────────────
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   'DISPLAY NAME',
                   style: TextStyle(
                     fontSize: 11,
@@ -352,7 +386,7 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                 const SizedBox(height: 8),
                 Container(
                   decoration: AppTheme.sketchDecoration(
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppTheme.cardWhite,
                     borderRadius: 14,
                     shadowOffset: 2.5,
                   ),
@@ -370,7 +404,7 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                       if (text.isNotEmpty) notifier.setDoctorName(text);
                       setState(() => _nameDirty = false);
                     },
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
                       color: AppTheme.inkForeground,
@@ -383,7 +417,7 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                         color: Colors.grey.shade400,
                       ),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: AppTheme.cardWhite,
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 14),
                       border: OutlineInputBorder(
@@ -399,82 +433,20 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                                 }
                                 setState(() => _nameDirty = false);
                               },
-                              icon: const Icon(Icons.check_circle_rounded,
+                              icon: Icon(Icons.check_circle_rounded,
                                   size: 20, color: AppTheme.accentEmerald),
                               splashRadius: 18,
                             )
-                          : const Icon(Icons.person_rounded,
+                          : Icon(Icons.person_rounded,
                               size: 20, color: AppTheme.mutedText),
                     ),
                   ),
                 ),
 
-                // ── Avatar color ──────────────────────────────
+                // ── Choose your avatar ───────────────────────
                 const SizedBox(height: 20),
-                const Text(
-                  'AVATAR COLOR',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.0,
-                    color: AppTheme.inkForeground,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: AppTheme.sketchDecoration(
-                    backgroundColor: Colors.white,
-                    borderRadius: 18,
-                    shadowOffset: 3,
-                  ),
-                  child: Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: kProfilePalette.map((p) {
-                      final selected = p.id == appState.avatarColorId;
-                      return GestureDetector(
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          notifier.setAvatarColor(p.id);
-                        },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 160),
-                          curve: Curves.easeOut,
-                          width: 46,
-                          height: 46,
-                          decoration: BoxDecoration(
-                            color: p.color,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: selected
-                                  ? AppTheme.sketchBorderColor
-                                  : Colors.white,
-                              width: selected ? 2.6 : 2,
-                            ),
-                            boxShadow: [
-                              if (selected)
-                                const BoxShadow(
-                                  color: Color(0x281C1C1C),
-                                  offset: Offset(0, 3),
-                                  blurRadius: 6,
-                                ),
-                            ],
-                          ),
-                          child: selected
-                              ? const Icon(Icons.check_rounded,
-                                  color: Colors.white, size: 20)
-                              : null,
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-
-                // ── Avatar icon ───────────────────────────────
-                const SizedBox(height: 20),
-                const Text(
-                  'AVATAR ICON',
+                Text(
+                  'CHOOSE YOUR AVATAR',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
@@ -483,8 +455,8 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  'Pick a monogram or a study glyph',
+                Text(
+                  'Select your companion avatar for your profile',
                   style: TextStyle(
                     fontSize: 11,
                     color: AppTheme.mutedText,
@@ -492,79 +464,122 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                 ),
                 const SizedBox(height: 10),
                 Container(
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                   decoration: AppTheme.sketchDecoration(
-                    backgroundColor: Colors.white,
-                    borderRadius: 18,
+                    backgroundColor: AppTheme.cardWhite,
+                    borderRadius: 20,
                     shadowOffset: 3,
                   ),
-                  child: Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: kProfileIcons.map((o) {
-                      final selected = o.id == appState.avatarIconId;
-                      final accent = profileAvatarColor(appState.avatarColorId);
-                      return GestureDetector(
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          notifier.setAvatarIcon(o.id);
-                        },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 160),
-                          curve: Curves.easeOut,
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            color: selected
-                                ? accent.withValues(alpha: 0.14)
-                                : Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: selected
-                                  ? AppTheme.sketchBorderColor
-                                  : AppTheme.borderLight,
-                              width: selected ? 2.2 : 1.4,
+                  child: SizedBox(
+                    height: 154,
+                    child: GridView.builder(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 14,
+                        crossAxisSpacing: 14,
+                        childAspectRatio: 1.0,
+                      ),
+                      itemCount: kProfileAvatars.length,
+                      itemBuilder: (ctx, index) {
+                        final item = kProfileAvatars[index];
+                        final selected = item.id == resolveAvatarId(appState.avatarIconId);
+
+                        Widget avatarImage;
+                        if (item.assetPath != null) {
+                          avatarImage = ClipOval(
+                            child: Image.asset(
+                              item.assetPath!,
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
                             ),
-                            boxShadow: selected
-                                ? const [
-                                    BoxShadow(
-                                      color: Color(0x181C1C1C),
-                                      offset: Offset(2, 2),
-                                      blurRadius: 0,
-                                    ),
-                                  ]
-                                : null,
-                          ),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Icon(
-                                o.icon,
-                                size: 24,
-                                color: selected
-                                    ? accent
-                                    : AppTheme.mutedText,
-                              ),
-                              if (selected)
-                                Positioned(
-                                  right: 3,
-                                  top: 3,
-                                  child: Container(
-                                    width: 13,
-                                    height: 13,
-                                    decoration: const BoxDecoration(
-                                      color: AppTheme.inkForeground,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(Icons.check_rounded,
-                                        size: 9, color: Colors.white),
-                                  ),
+                          );
+                        } else {
+                          // Monogram letter
+                          avatarImage = Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryBlue.withValues(alpha: 0.12),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                profileInitial(name),
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppTheme.primaryBlue,
                                 ),
-                            ],
+                              ),
+                            ),
+                          );
+                        }
+
+                        return GestureDetector(
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            notifier.setAvatarIcon(item.id);
+                          },
+                          child: AnimatedScale(
+                            scale: selected ? 1.05 : 1.0,
+                            duration: const Duration(milliseconds: 180),
+                            curve: Curves.easeOutBack,
+                            child: Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: selected
+                                      ? const Color(0xFFF59E0B) // Amber ring matching screenshot
+                                      : Colors.grey.shade300,
+                                  width: selected ? 3.0 : 1.5,
+                                ),
+                                boxShadow: [
+                                  if (selected)
+                                    BoxShadow(
+                                      color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                ],
+                              ),
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  avatarImage,
+                                  // Centered checkmark badge when selected (matching screenshot)
+                                  if (selected)
+                                    Container(
+                                      width: 26,
+                                      height: 26,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFF59E0B),
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Color(0x33000000),
+                                            blurRadius: 4,
+                                            offset: Offset(0, 1),
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Icon(
+                                        Icons.check_rounded,
+                                        size: 17,
+                                        color: Color(0xFF1C1C1C),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                      );
-                    }).toList(),
+                        );
+                      },
+                    ),
                   ),
                 ),
 
@@ -589,7 +604,7 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.inkForeground,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppTheme.paperBackground,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),

@@ -1,17 +1,27 @@
-# flowmd_flutter
+# Modulix Flutter
 
-A new Flutter project.
+A focused, clinical-grade daily companion and curriculum tracker for medical students preparing for post-graduate medical entrance examinations (NEET-PG / INI-CET / USMLE).
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 📚 Developer & Architecture Knowledge Base
 
-A few resources to get you started if this is your first Flutter project:
+Modulix contains dedicated, professional-grade technical documentation detailing all core models, state machines, math algorithms, and routing rules:
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+- **[System Architecture & Tech Stack](docs/ARCHITECTURE.md)**: State management (Riverpod), navigation (GoRouter), storage partitions, theme tokens, and notifications.
+- **[Focus Timer](docs/features/focus-timer.md)**: Timer modes (Pomodoro, Count-Up, Module-Linked), the 1-second tick engine, background themes, and TimeLog logging.
+- **[Daily Desk Tasks](docs/features/daily-desk-tasks.md)**: Task models, shortcode prefixes (`[VID]`, `[MCQ]`, `[REV]`), mutators, and the **5:00 AM day-rollover algorithm**.
+- **[Module-Based Tasks & Study Plan](docs/features/module-based-tasks.md)**: `StudyPlan` schema, the **"2 Stale + 2 Fresh = 4"** quota capping algorithm, global numbering, and velocity calculations.
+- **[Curriculum, Subjects & Bulk Marking](docs/features/curriculum-and-bulk-mark.md)**: Medical syllabus modalities (Videos/QBanks/Notes), single-unit notes design rule, multi-edition support, and **analytics-safe bulk completion**.
+- **[Analytics, TimeLogs & Streaks](docs/features/analytics-and-streaks.md)**: Immutable `TimeLog` session stream, streak tracking algorithm, and distribution metrics.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## 🛠 Tech Stack
+
+- **Framework:** Flutter (Dart 3)
+- **State Management:** Riverpod 2 (`AsyncNotifierProvider`, `StateNotifierProvider`, `Provider`)
+- **Navigation:** GoRouter with animated page transitions
+- **Storage:** Local SharedPreferences (JSON serialized)
+- **Notifications:** `flutter_local_notifications`
+- **Design Language:** Modulix parchment-sketch aesthetic & Modulix Studio Light theme

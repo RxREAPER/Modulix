@@ -13,6 +13,12 @@ import '../../widgets/automated_module_tracker.dart';
 import '../../widgets/study_desk_clock.dart';
 import '../../widgets/study_task_card.dart';
 import '../../widgets/task_setup_sheet.dart';
+import '../../widgets/profile/profile_customization.dart';
+import '../../widgets/animations/page_entrance.dart';
+import '../../widgets/animations/apple_pressable.dart';
+import '../../services/tour/app_tour_controller.dart';
+import '../../widgets/sync_status_badge.dart';
+
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -22,13 +28,13 @@ class HomeScreen extends ConsumerWidget {
     final appStateAsync = ref.watch(appStateProvider);
 
     return appStateAsync.when(
-      loading: () => const Scaffold(
+      loading: () => Scaffold(
         backgroundColor: AppTheme.paperBackground,
-        body: Center(child: CircularProgressIndicator()),
+        body: const Center(child: CircularProgressIndicator()),
       ),
       error: (e, _) => Scaffold(
         backgroundColor: AppTheme.paperBackground,
-        body: Center(child: Text('Error loading FlowMD: $e')),
+        body: Center(child: Text('Error loading Modulix: $e')),
       ),
       data: (state) {
         final doctorName = state.doctorName.isNotEmpty ? state.doctorName : 'Doctor';
@@ -40,135 +46,135 @@ class HomeScreen extends ConsumerWidget {
             bottom: false,
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.only(top: 16, bottom: 120),
+              child: PageEntrance(
+                staggerMs: 55,
+                durationMs: 450,
+                slideY: 16.0,
                 children: [
-                  // Top Header
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: AppTheme.inkForeground,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                'F',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w900,
-                                  fontFamily: 'serif',
+                  // ① Top Header + Greeting (single block — they're small)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 46,
+                                  height: 46,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.inkForeground,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      'M',
+                                      style: TextStyle(
+                                        color: AppTheme.paperBackground,
+                                        fontSize: 25,
+                                        fontWeight: FontWeight.w900,
+                                        fontFamily: 'serif',
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'FlowMD',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppTheme.inkForeground,
+                                const SizedBox(width: 12),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Modulix',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppTheme.inkForeground,
+                                      ),
+                                    ),
+                                    const Text(
+                                      'DAILY COMPANION',
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.8,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              Text(
-                                'DAILY COMPANION',
-                                style: TextStyle(
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.8,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      InkWell(
-                        onTap: () => context.push('/settings'),
-                        borderRadius: BorderRadius.circular(20),
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppTheme.inkForeground,
-                              width: 1.5,
+                              ],
                             ),
-                          ),
-                          child: const Icon(
-                            Icons.person_outline,
-                            color: AppTheme.inkForeground,
-                            size: 20,
+                            Row(
+                              children: [
+                                const SyncStatusBadge(compact: true),
+                                const SizedBox(width: 10),
+                                ProfileAvatar(
+                                  size: 46,
+                                  colorId: state.avatarColorId,
+                                  iconId: state.avatarIconId,
+                                  doctorName: doctorName,
+                                  onTap: () => context.go('/settings?from=/'),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          todayFormatted,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.8,
+                            color: Colors.grey.shade500,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Greeting Section
-                  Text(
-                    todayFormatted,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.8,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Focus, $doctorName.',
-                    style: const TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
-                      color: AppTheme.inkForeground,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Transform.rotate(
-                    angle: -0.02,
-                    child: Container(
-                      width: 90,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: AppTheme.highlightCoral,
-                        borderRadius: BorderRadius.circular(3),
-                      ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Focus, $doctorName.',
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                            color: AppTheme.inkForeground,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Transform.rotate(
+                          angle: -0.02,
+                          child: Container(
+                            width: 90,
+                            height: 5,
+                            decoration: BoxDecoration(
+                              color: AppTheme.highlightCoral,
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
 
-                  const SizedBox(height: 24),
-
-                  // Hero Study Desk Clock & Nori Mascot (Isolated with RepaintBoundary)
-                  const RepaintBoundary(
-                    child: StudyDeskClock(),
+                  // ② Hero Study Desk Clock (Full Width Integration)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 14),
+                    child: RepaintBoundary(child: StudyDeskClock()),
                   ),
 
-                  const SizedBox(height: 28),
+                  // ③ Today's Tasks Section
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                    child: _HomeTasksSection(),
+                  ),
 
-                  // Today's Tasks Section (Isolated in _HomeTasksSection)
-                  const _HomeTasksSection(),
-
-                  const SizedBox(height: 28),
-
-                  // Module Based Tasks Section (Isolated with RepaintBoundary)
-                  const _HomeModuleTrackerSection(),
+                  // ④ Module Based Tasks Section
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+                    child: _HomeModuleTrackerSection(),
+                  ),
                 ],
               ),
             ),
@@ -195,7 +201,6 @@ class _HomeTasksSection extends ConsumerWidget {
     final totalCount = deskTasks.length;
     final completedCount = deskTasks.where((t) => completedTaskIds.contains(t.id)).length;
     final isAllDone = totalCount > 0 && completedCount == totalCount;
-    final progressFraction = totalCount > 0 ? (completedCount / totalCount).clamp(0.0, 1.0) : 0.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,7 +213,7 @@ class _HomeTasksSection extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     "Today's tasks",
                     style: TextStyle(
                       fontSize: 20,
@@ -234,36 +239,31 @@ class _HomeTasksSection extends ConsumerWidget {
               ),
             ),
             if (deskTasks.isNotEmpty)
-              Container(
-                decoration: AppTheme.sketchDecoration(
-                  backgroundColor: Colors.white,
-                  borderRadius: 10,
-                  borderWidth: 1.4,
-                  shadowOffset: 1.5,
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(10),
-                    onTap: () => _openTaskSheet(context, ref, deskTasks),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.add_rounded, size: 15, color: AppTheme.inkForeground),
-                          SizedBox(width: 4),
-                          Text(
-                            'Add',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: AppTheme.inkForeground,
-                            ),
-                          ),
-                        ],
+              ApplePressable(
+                pressedScale: 0.94,
+                onPressed: () => _openTaskSheet(context, ref, deskTasks),
+                child: Container(
+                  decoration: AppTheme.sketchDecoration(
+                    backgroundColor: AppTheme.cardWhite,
+                    borderRadius: 10,
+                    borderWidth: 1.4,
+                    shadowOffset: 1.5,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.add_rounded, size: 15, color: AppTheme.inkForeground),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Add',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.inkForeground,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ),
@@ -277,6 +277,7 @@ class _HomeTasksSection extends ConsumerWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: deskTasks.length,
+            // ignore: deprecated_member_use
             onReorder: (oldIndex, newIndex) {
               HapticFeedback.lightImpact();
               ref.read(dailyTasksProvider.notifier).reorderTasks(oldIndex, newIndex);
@@ -285,8 +286,7 @@ class _HomeTasksSection extends ConsumerWidget {
               final task = deskTasks[index];
               final isDone = completedTaskIds.contains(task.id);
 
-              return StudyTaskCard(
-                key: ValueKey(task.id),
+              final taskCard = StudyTaskCard(
                 id: task.id,
                 title: task.title,
                 category: task.category,
@@ -330,6 +330,21 @@ class _HomeTasksSection extends ConsumerWidget {
                   ),
                 ),
               );
+
+              if (index == 0) {
+                return KeyedSubtree(
+                  key: ValueKey(task.id),
+                  child: Container(
+                    key: TourTargetRegistry.keyFor(TourTargetId.todaysTasksTarget),
+                    child: taskCard,
+                  ),
+                );
+              }
+
+              return KeyedSubtree(
+                key: ValueKey(task.id),
+                child: taskCard,
+              );
             },
           ),
       ],
@@ -343,78 +358,82 @@ class _HomeTasksSection extends ConsumerWidget {
   ) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 90,
-                height: 90,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFE8F2FF),
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.menu_book_outlined,
-                    size: 42,
-                    color: AppTheme.primaryBlue,
-                  ),
+          // Soft circular medallion with clean task icon & floating breath
+          _FloatingBreath(
+            child: Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: AppTheme.parchmentSurface,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppTheme.borderLight,
+                  width: 1.5,
                 ),
               ),
-              const Positioned(
-                right: 2,
-                top: 0,
-                child: Icon(
-                  Icons.auto_awesome,
-                  size: 20,
-                  color: AppTheme.highlightStrong,
-                ),
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.checklist_rounded,
+                size: 42,
+                color: AppTheme.inkForeground.withValues(alpha: 0.65),
               ),
-            ],
+            ),
           ),
-          const SizedBox(height: 20),
-          const Text(
-            'Your page is clear',
+          const SizedBox(height: 18),
+          Text(
+            "Today's desk is quiet",
             style: TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w800,
               color: AppTheme.inkForeground,
+              letterSpacing: -0.3,
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            'Sketch out a few goals for today. Nori will keep you company.',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.shade600,
-              height: 1.4,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton.icon(
+          const SizedBox(height: 14),
+          ApplePressable(
+            pressedScale: 0.94,
             onPressed: () => _openTaskSheet(context, ref, currentTasks),
-            icon: const Icon(Icons.playlist_add_check, size: 20),
-            label: const Text(
-              "Set up today's tasks",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+            child: Container(
+              key: TourTargetRegistry.keyFor(TourTargetId.todaysTasksTarget),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9.5),
+              decoration: BoxDecoration(
+                color: AppTheme.inkForeground,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.inkForeground.withValues(alpha: 0.15),
+                    offset: const Offset(0, 2),
+                    blurRadius: 6,
+                  ),
+                ],
+              ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.playlist_add_check_rounded,
+                      size: 18,
+                      color: AppTheme.paperBackground,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      "Set up today's tasks",
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.paperBackground,
+                        letterSpacing: 0.1,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryBlue,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -425,10 +444,8 @@ class _HomeTasksSection extends ConsumerWidget {
     WidgetRef ref,
     List<DailyDeskTask> currentTasks,
   ) {
-    final suggestedVideos = ref.read(suggestedVideosProvider);
     TaskSetupSheet.show(
       context,
-      suggestedVideos: suggestedVideos,
       currentTasks: currentTasks,
       onConfirmTasks: (updatedTasks) {
         ref.read(dailyTasksProvider.notifier).setTasks(updatedTasks);
@@ -453,6 +470,67 @@ class _HomeModuleTrackerSection extends ConsumerWidget {
         editionName: appState.activeEdition,
         subjects: subjects,
       ),
+    );
+  }
+}
+
+class _FloatingBreath extends StatefulWidget {
+  final Widget child;
+  const _FloatingBreath({required this.child});
+
+  @override
+  State<_FloatingBreath> createState() => _FloatingBreathState();
+}
+
+class _FloatingBreathState extends State<_FloatingBreath>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _translateAnimation;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2600),
+    )..repeat(reverse: true);
+
+    _translateAnimation = Tween<double>(begin: 0.0, end: -5.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOutSine,
+      ),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.025).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOutSine,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, _translateAnimation.value),
+          child: Transform.scale(
+            scale: _scaleAnimation.value,
+            child: child,
+          ),
+        );
+      },
+      child: widget.child,
     );
   }
 }

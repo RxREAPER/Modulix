@@ -47,3 +47,17 @@ app.*.map.json
 # Widget Preview related
 .widget_preview/
 .agents/
+PFP icons/
+
+# Keystores, signing certificates, and secrets
+*.jks
+*.keystore
+key.properties
+*.p12
+*.mobileprovision
+*.cer
+*.crt
+*.pem
+google-services.json
+GoogleService-Info.plist
+.env*

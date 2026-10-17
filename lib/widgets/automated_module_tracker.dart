@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../data/subjects_metadata.dart';
 import '../models/app_state.dart';
 import '../models/syllabus.dart';
 import '../providers/app_state_provider.dart';
 import '../theme/app_theme.dart';
-import 'curriculum/configure_plan_sheet.dart';
+import 'curriculum/subject_sketch_icon.dart';
+import 'in_situ_hint_pill.dart';
+import 'animations/apple_pressable.dart';
+
 
 /// Clean Home Screen stationery banner that directly links to the full
 /// dedicated Module Tasks Screen (/module-tasks) without cramping the Home layout.
@@ -45,10 +48,14 @@ class AutomatedModuleTracker extends ConsumerWidget {
     List<Video> planVideos = [];
     if (targetSubject != null) {
       if (plan.targetUnits.isNotEmpty) {
-        planVideos = targetSubject.chapters
-            .where((c) => plan.targetUnits.contains(c.name))
-            .expand((c) => c.videos)
-            .toList();
+        for (final unitName in plan.targetUnits) {
+          final ch = targetSubject.chapters
+              .where((c) => c.name == unitName)
+              .firstOrNull;
+          if (ch != null) {
+            planVideos.addAll(ch.videos);
+          }
+        }
       } else {
         planVideos = targetSubject.allVideos;
       }
@@ -140,83 +147,30 @@ class AutomatedModuleTracker extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header Row matching Today's tasks exactly
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
+        // Section Header (clean, without redundant outer View Details button)
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Module Based Tasks',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.inkForeground,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    !isConfigured
-                        ? 'Tap to setup daily curriculum pace'
-                        : isAllDone
-                            ? 'All modules completed · Great pace today, Doctor'
-                            : '$completedBatchCount of $totalBatchCount completed' +
-                                (uncompletedStaleCount > 0 ? ' · $uncompletedStaleCount stale' : ''),
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: (isConfigured && isAllDone) ? FontWeight.w700 : FontWeight.w500,
-                      color: (isConfigured && isAllDone) ? const Color(0xFF059669) : Colors.grey.shade600,
-                    ),
-                  ),
-                ],
+            Text(
+              'Module Based Tasks',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.inkForeground,
+                letterSpacing: -0.3,
               ),
             ),
-            Container(
-              decoration: AppTheme.sketchDecoration(
-                backgroundColor: Colors.white,
-                borderRadius: 10,
-                borderWidth: 1.4,
-                shadowOffset: 1.5,
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(10),
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    if (!isConfigured) {
-                      ConfigurePlanSheet.show(context);
-                    } else {
-                      context.push('/module-tasks');
-                    }
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'View Details',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.inkForeground,
-                          ),
-                        ),
-                        SizedBox(width: 4),
-                        Icon(
-                          Icons.arrow_forward_rounded,
-                          size: 14,
-                          color: AppTheme.inkForeground,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+            const SizedBox(height: 2),
+            Text(
+              !isConfigured
+                  ? 'Tap to setup daily curriculum pace'
+                  : isAllDone
+                      ? 'All modules completed · Great pace today, Doctor'
+                      : '$completedBatchCount of $totalBatchCount completed${uncompletedStaleCount > 0 ? ' · $uncompletedStaleCount stale' : ''}',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: (isConfigured && isAllDone) ? FontWeight.w700 : FontWeight.w500,
+                color: (isConfigured && isAllDone) ? const Color(0xFF059669) : Colors.grey.shade600,
               ),
             ),
           ],
@@ -224,7 +178,7 @@ class AutomatedModuleTracker extends ConsumerWidget {
         const SizedBox(height: 10),
         Container(
           height: 1.2,
-          color: AppTheme.parchmentBorder.withOpacity(0.7),
+          color: AppTheme.parchmentBorder.withValues(alpha: 0.7),
         ),
         const SizedBox(height: 14),
 
@@ -234,6 +188,7 @@ class AutomatedModuleTracker extends ConsumerWidget {
         else
           _buildConfiguredModuleCard(
             context: context,
+            subjectId: plan.targetSubject,
             subjectName: subjectName,
             selectedUnitDisplay: selectedUnitDisplay,
             completedBatchCount: completedBatchCount,
@@ -250,92 +205,141 @@ class AutomatedModuleTracker extends ConsumerWidget {
   }
 
   Widget _buildEmptyModuleState(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          HapticFeedback.lightImpact();
-          ConfigurePlanSheet.show(context);
-        },
-        child: Container(
-          width: double.infinity,
+    return ApplePressable(
+      pressedScale: 0.97,
+      pressedOpacity: 0.93,
+      hapticStyle: HapticStyle.light,
+      onTap: () => context.push('/plan'),
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        width: double.infinity,
           decoration: AppTheme.sketchDecoration(
-            backgroundColor: Colors.white,
-            borderRadius: 16,
-            shadowOffset: 2,
+            backgroundColor: AppTheme.cardWhite,
+            borderRadius: 18,
+            shadowOffset: 3,
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          padding: const EdgeInsets.all(16),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppTheme.parchmentSurface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppTheme.parchmentBorder,
-                    width: 1.5,
+              // Top Row: Icon + Title on left, Status Pill on right (Day resets at style)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryBlue.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.auto_stories_rounded,
+                            size: 18,
+                            color: AppTheme.primaryBlue,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Study Plan Pace',
+                            style: TextStyle(
+                              fontSize: 15.5,
+                              fontWeight: FontWeight.w900,
+                              color: AppTheme.inkForeground,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'No active plan configured',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.mutedText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.auto_stories_outlined,
-                    size: 22,
-                    color: AppTheme.primaryBlue,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.parchmentSurface,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppTheme.borderLight, width: 1.2),
+                    ),
+                    child: Text(
+                      'NOT SET',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                        color: AppTheme.mutedText,
+                      ),
+                    ),
                   ),
+                ],
+              ),
+              const Divider(height: 24, thickness: 1, color: Color(0xFFF4F4F5)),
+              Text(
+                'Set your target deadline date, daily modules pace, and unit scope to pace your curriculum lectures.',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.mutedText,
+                  height: 1.4,
                 ),
               ),
               const SizedBox(height: 14),
-              const Text(
-                'No active module plan',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.inkForeground,
-                ),
-              ),
-              const SizedBox(height: 5),
-              Text(
-                'Set up a daily curriculum pace to track your modules step by step.',
-                style: TextStyle(
-                  fontSize: 12.5,
-                  color: Colors.grey.shade600,
-                  height: 1.4,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: () => ConfigurePlanSheet.show(context),
-                icon: const Icon(Icons.tune_rounded, size: 16),
-                label: const Text(
-                  'Set up module plan',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
+              // Inner action bar (integrated into the card itself)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryBlue.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.primaryBlue.withValues(alpha: 0.2),
+                    width: 1.0,
                   ),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryBlue,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.tune_rounded, size: 16, color: AppTheme.primaryBlue),
+                        SizedBox(width: 8),
+                        Text(
+                          'Set up module plan',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.primaryBlue,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Icon(Icons.arrow_forward_rounded, size: 14, color: AppTheme.primaryBlue),
+                  ],
                 ),
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
+      );
+    }
 
   Widget _buildConfiguredModuleCard({
     required BuildContext context,
+    required String subjectId,
     required String subjectName,
     required String selectedUnitDisplay,
     required int completedBatchCount,
@@ -351,75 +355,95 @@ class AutomatedModuleTracker extends ConsumerWidget {
         .where((v) => !editionState.completedVideos.containsKey(v.id))
         .firstOrNull;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          HapticFeedback.lightImpact();
-          context.push('/module-tasks');
-        },
-        child: Container(
-          width: double.infinity,
+    final meta = subjectMeta(subjectId);
+    final isAllDone = batchVideos.isNotEmpty && completedBatchCount >= batchVideos.length;
+
+    return ApplePressable(
+      pressedScale: 0.97,
+      pressedOpacity: 0.93,
+      hapticStyle: HapticStyle.light,
+      onTap: () => context.push('/module-tasks'),
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        width: double.infinity,
           decoration: AppTheme.sketchDecoration(
-            backgroundColor: Colors.white,
-            borderRadius: 16,
-            borderWidth: 1.5,
+            backgroundColor: AppTheme.cardWhite,
+            borderRadius: 18,
             shadowOffset: 3.0,
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top Row: Subject + Unit, Pace Status Badge
+              // Top Row: Subject icon + Name/Unit on left, Pace badge on right (Day resets at style)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Text(
-                          subjectName,
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w900,
-                            color: AppTheme.inkForeground,
-                            letterSpacing: -0.3,
+                        Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: meta.accent.withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          child: SubjectSketchIcon(
+                            subjectId: subjectId,
+                            color: meta.accent,
+                            size: 22,
+                          ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          selectedUnitDisplay,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            fontStyle: FontStyle.italic,
-                            color: Colors.grey.shade600,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                subjectName,
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppTheme.inkForeground,
+                                  letterSpacing: -0.3,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                selectedUnitDisplay,
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey.shade600,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: paceStatusColor.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: paceStatusColor, width: 1),
+                      color: paceStatusColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: paceStatusColor, width: 1.2),
                     ),
                     child: Text(
                       paceStatusText.toUpperCase(),
                       style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.4,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
                         color: paceStatusColor,
                       ),
                     ),
@@ -427,22 +451,32 @@ class AutomatedModuleTracker extends ConsumerWidget {
                 ],
               ),
 
-              const SizedBox(height: 12),
+              Divider(
+                  height: 24, thickness: 1, color: AppTheme.borderLight),
+
+              if (uncompletedStaleCount > 0) ...[
+                const InSituHintPill(
+                  prefKey: 'hint_behind_pace_seen',
+                  message: 'Tap Recalibrate to re-balance your daily video quota',
+                  icon: Icons.tune_rounded,
+                  margin: EdgeInsets.only(bottom: 12),
+                ),
+              ],
 
               // Progress Counters Row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '$completedBatchCount of ${batchVideos.length} done',
-                    style: const TextStyle(
+                    '$completedBatchCount of ${batchVideos.length} done today',
+                    style: TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w800,
                       color: AppTheme.inkForeground,
                     ),
                   ),
                   Text(
-                    '$progressPercent% unit scope done',
+                    '$progressPercent% scope completed',
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,
@@ -452,16 +486,17 @@ class AutomatedModuleTracker extends ConsumerWidget {
                 ],
               ),
 
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
 
               // Tactile sketch progress bar
               Container(
                 height: 7,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF3F1EA),
+                  color: AppTheme.parchmentSurface,
                   borderRadius: BorderRadius.circular(3.5),
-                  border: Border.all(color: AppTheme.sketchBorderColor, width: 1.1),
+                  border: Border.all(
+                      color: AppTheme.sketchBorderColor, width: 1.0),
                 ),
                 child: FractionallySizedBox(
                   alignment: Alignment.centerLeft,
@@ -469,51 +504,93 @@ class AutomatedModuleTracker extends ConsumerWidget {
                   child: Container(
                     decoration: BoxDecoration(
                       color: completedBatchCount >= targetQuota && targetQuota > 0
-                          ? const Color(0xFF059669)
-                          : AppTheme.primaryBlue,
+                          ? AppTheme.accentPrimary
+                          : AppTheme.accentPrimary.withValues(alpha: 0.7),
                       borderRadius: BorderRadius.circular(2.5),
                     ),
                   ),
                 ),
               ),
 
-              if (nextVideo != null) ...[
-                const SizedBox(height: 10),
-                Row(
+              const SizedBox(height: 12),
+
+              // Integrated Inner Queue Navigation Bar (The inner part of the card)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                decoration: BoxDecoration(
+                  color: isAllDone
+                      ? AppTheme.accentSubtle
+                      : AppTheme.parchmentSurface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isAllDone
+                        ? AppTheme.accentPrimary.withValues(alpha: 0.4)
+                        : AppTheme.borderLight,
+                    width: 1.0,
+                  ),
+                ),
+                child: Row(
                   children: [
-                    const Icon(
-                      Icons.play_circle_outline_rounded,
-                      size: 14,
-                      color: AppTheme.primaryBlue,
+                    Icon(
+                      isAllDone
+                          ? Icons.check_circle_rounded
+                          : Icons.play_circle_outline_rounded,
+                      size: 16,
+                      color: isAllDone
+                          ? AppTheme.accentPrimary
+                          : AppTheme.accentPrimary,
                     ),
-                    const SizedBox(width: 5),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Up next: #${nextVideo.serialNumber} ${nextVideo.title}',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade700,
-                        ),
+                        isAllDone
+                            ? "All today's modules finished!"
+                            : (nextVideo != null
+                                ? 'Next: #${nextVideo.serialNumber} ${nextVideo.title}'
+                                : 'Open task queue'),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: isAllDone
+                              ? AppTheme.accentPrimary
+                              : AppTheme.inkForeground,
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 4),
-                    const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 10,
-                      color: Colors.grey,
+                    const SizedBox(width: 6),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Open Queue',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w800,
+                            color: isAllDone
+                                ? const Color(0xFF059669)
+                                : AppTheme.primaryBlue,
+                          ),
+                        ),
+                        const SizedBox(width: 3),
+                        Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 13,
+                          color: isAllDone
+                              ? const Color(0xFF059669)
+                              : AppTheme.primaryBlue,
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ],
           ),
         ),
-      ),
-    );
-  }
+      );
+    }
 
   /// Rollover check: 2 stale + 2 fresh = 4 total capped at user quota
   Future<void> _checkAndRefreshDailyBatch({
@@ -525,7 +602,7 @@ class AutomatedModuleTracker extends ConsumerWidget {
   }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final savedBatchDate = prefs.getString('flowmd_module_batch_date');
+      final savedBatchDate = (prefs.getString('modulix_module_batch_date') ?? prefs.getString('flowmd_module_batch_date'));
       final currentBatchIds = editionState.queueBatchVideoIds;
 
       final planVideoIds = planVideos.map((v) => v.id).toSet();
@@ -551,7 +628,7 @@ class AutomatedModuleTracker extends ConsumerWidget {
         final freshBatchIds = freshCandidates.take(neededFresh).map((v) => v.id).toList();
         final newBatch = [...uncompletedFromYesterday, ...freshBatchIds];
 
-        await prefs.setString('flowmd_module_batch_date', todayKey);
+        await prefs.setString('modulix_module_batch_date', todayKey);
         await ref.read(appStateProvider.notifier).setBatch(newBatch, uncompletedFromYesterday);
       } else if (!isBatchValid) {
         // Same day but invalid batch (e.g. freshly configured or plan modified)
@@ -560,7 +637,7 @@ class AutomatedModuleTracker extends ConsumerWidget {
             .toList();
         final newBatch = uncompleted.take(targetQuota).map((v) => v.id).toList();
 
-        await prefs.setString('flowmd_module_batch_date', todayKey);
+        await prefs.setString('modulix_module_batch_date', todayKey);
         await ref.read(appStateProvider.notifier).setBatch(newBatch, []);
       }
     } catch (_) {}

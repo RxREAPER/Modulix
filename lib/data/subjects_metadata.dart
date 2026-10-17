@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/syllabus.dart';
 import 'syllabus_marrow8.dart';
 import 'syllabus_marrow65.dart';
+import 'syllabus_qbank.dart';
 import 'standard_resources.dart';
 
 // ─── Subject palette ─────────────────────────────────────────────────────────
@@ -194,6 +195,45 @@ Color videoTileColor(String videoId) {
   return _tileColors[h % _tileColors.length];
 }
 
+String _formatUnitNotesTitle(String chapterName) {
+  final words = chapterName.trim().split(RegExp(r'\s+'));
+  final titleWords = words.map((w) {
+    if (w.isEmpty) return '';
+    final lower = w.toLowerCase();
+    if (lower == 'and' || lower == '&' || lower == 'of' || lower == 'the' || lower == 'to' || lower == 'in') {
+      return lower;
+    }
+    return lower[0].toUpperCase() + lower.substring(1);
+  }).join(' ');
+  return '$titleWords Notes';
+}
+
+// ─── Q-Bank Loader ──────────────────────────────────────────────────────────
+
+final Map<String, List<Chapter>> _qbankChaptersMap = () {
+  final map = <String, List<Chapter>>{};
+  for (final subjMap in marrowQBankRaw) {
+    final subjId = subjMap['id'] as String;
+    final chRaw = (subjMap['chapters'] as List<dynamic>?) ?? [];
+    final chapters = chRaw.map((c) {
+      final chMap = c as Map<String, dynamic>;
+      final chName = chMap['name'] as String? ?? '';
+      final tRaw = (chMap['topics'] as List<dynamic>?) ?? [];
+      final topics = tRaw
+          .map((t) => QBankTopic.fromMap(t as Map<String, dynamic>, subjId, chName))
+          .toList();
+      return Chapter(
+        name: chName,
+        videos: const [],
+        qbanks: topics,
+        notes: const [],
+      );
+    }).toList();
+    map[subjId] = chapters;
+  }
+  return map;
+}();
+
 // ─── Loaders ─────────────────────────────────────────────────────────────
 
 List<Subject> loadMarrow8Syllabus() => _buildSubjectsFromRaw(marrow8Raw);
@@ -207,8 +247,8 @@ List<Subject> _buildSubjectsFromRaw(List<Map<String, dynamic>> raw) {
     final chaptersRaw =
         (subjectMap['chapters'] as List<dynamic>?) ?? [];
 
-    int globalQBankIndex = 1;
     final standardBooks = standardTextbooks[id] ?? ['Standard Reference Textbook'];
+    final qbankChapters = _qbankChaptersMap[id] ?? const <Chapter>[];
 
     final chapters = chaptersRaw.asMap().entries.map((chEntry) {
       final chIndex = chEntry.key;
@@ -220,56 +260,22 @@ List<Subject> _buildSubjectsFromRaw(List<Map<String, dynamic>> raw) {
           .map((vMap) => Video.fromMap(vMap as Map<String, dynamic>, id, chapterName))
           .toList();
 
-      // Realistic QBank modules derived from videos/chapters
-      final qbanks = <QBankTopic>[];
-      if (videos.isNotEmpty) {
-        for (final v in videos) {
-          final mcqs = 25 + ((v.id.hashCode.abs()) % 36); // 25 to 60 MCQs
-          qbanks.add(QBankTopic(
-            id: 'qb_${v.id}',
-            title: '${v.title} MCQs',
-            subjectId: id,
-            chapterName: chapterName,
-            totalMcqs: mcqs,
-            serialNumber: globalQBankIndex++,
-          ));
-        }
-      } else {
-        qbanks.add(QBankTopic(
-          id: 'qb_${id}_$chIndex',
-          title: '$chapterName Module MCQs',
-          subjectId: id,
-          chapterName: chapterName,
-          totalMcqs: 40,
-          serialNumber: globalQBankIndex++,
-        ));
-      }
-
-      // Notes & Textbooks for this unit
+      // Exactly one Notes topic per unit, named after the unit
       final notes = <NotesItem>[
         NotesItem(
-          id: 'note_${id}_${chIndex}_rev',
-          title: '$chapterName High-Yield Review Notes',
+          id: 'note_${id}_ch$chIndex',
+          title: _formatUnitNotesTitle(chapterName),
           subjectId: id,
           chapterName: chapterName,
-          pages: 14 + (chIndex * 2 % 15),
+          pages: 15,
           isCustom: false,
         ),
-        if (chIndex < standardBooks.length)
-          NotesItem(
-            id: 'book_${id}_$chIndex',
-            title: '${standardBooks[chIndex % standardBooks.length]} (Excerpts)',
-            subjectId: id,
-            chapterName: chapterName,
-            pages: 35 + (chIndex * 5 % 30),
-            isCustom: false,
-          ),
       ];
 
       return Chapter(
         name: chapterName,
         videos: videos,
-        qbanks: qbanks,
+        qbanks: const [],
         notes: notes,
       );
     }).toList();
@@ -279,6 +285,7 @@ List<Subject> _buildSubjectsFromRaw(List<Map<String, dynamic>> raw) {
       name: name,
       displayName: meta.displayName,
       chapters: chapters,
+      qbankChapters: qbankChapters,
       accent: meta.accent,
     );
   }).toList();

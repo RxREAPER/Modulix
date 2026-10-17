@@ -4,13 +4,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../data/subjects_metadata.dart';
 import '../../models/app_state.dart';
 import '../../models/syllabus.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/daily_tasks_provider.dart';
 import '../../providers/syllabus_provider.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/curriculum/configure_plan_sheet.dart';
+import '../../widgets/curriculum/subject_sketch_icon.dart';
+import '../../services/tour/app_tour_controller.dart';
+import '../../widgets/animations/apple_pressable.dart';
+import '../../widgets/animations/animated_strike_text.dart';
+import '../../widgets/animations/animated_check_stroke.dart';
 
 class ModuleTasksScreen extends ConsumerWidget {
   const ModuleTasksScreen({super.key});
@@ -20,18 +25,35 @@ class ModuleTasksScreen extends ConsumerWidget {
     final appStateAsync = ref.watch(appStateProvider);
     final subjectsAsync = ref.watch(activeSyllabusProvider);
 
-    return Scaffold(
-      backgroundColor: AppTheme.paperBackground,
-      appBar: AppBar(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/');
+          }
+        }
+      },
+      child: Scaffold(
         backgroundColor: AppTheme.paperBackground,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        centerTitle: false,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.inkForeground),
-          onPressed: () => context.pop(),
-        ),
-        title: const Text(
+        appBar: AppBar(
+          backgroundColor: AppTheme.paperBackground,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          centerTitle: false,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_rounded, color: AppTheme.inkForeground),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/');
+              }
+            },
+          ),
+        title: Text(
           'Module Based Tasks',
           style: TextStyle(
             color: AppTheme.inkForeground,
@@ -43,40 +65,36 @@ class ModuleTasksScreen extends ConsumerWidget {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 14),
-            child: Container(
-              decoration: AppTheme.sketchDecoration(
-                backgroundColor: Colors.white,
-                borderRadius: 10,
-                borderWidth: 1.4,
-                shadowOffset: 1.5,
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(10),
-                  onTap: () => ConfigurePlanSheet.show(context),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.tune_rounded,
-                          size: 15,
-                          color: AppTheme.inkForeground,
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          'Setup',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.inkForeground,
-                          ),
-                        ),
-                      ],
+            child: ApplePressable(
+              onTap: () => context.push('/plan'),
+              pressedScale: 0.94,
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                decoration: AppTheme.sketchDecoration(
+                  backgroundColor: AppTheme.cardWhite,
+                  borderRadius: 10,
+                  borderWidth: 1.4,
+                  shadowOffset: 1.5,
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.tune_rounded,
+                      size: 15,
+                      color: AppTheme.inkForeground,
                     ),
-                  ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Setup',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.inkForeground,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -86,12 +104,12 @@ class ModuleTasksScreen extends ConsumerWidget {
           preferredSize: const Size.fromHeight(1.2),
           child: Container(
             height: 1.2,
-            color: AppTheme.parchmentBorder.withOpacity(0.7),
+            color: AppTheme.parchmentBorder.withValues(alpha: 0.7),
           ),
         ),
       ),
       body: appStateAsync.when(
-        loading: () => const Center(
+        loading: () => Center(
           child: CircularProgressIndicator(color: AppTheme.primaryBlue),
         ),
         error: (err, _) => Center(
@@ -99,7 +117,7 @@ class ModuleTasksScreen extends ConsumerWidget {
         ),
         data: (appState) {
           if (subjectsAsync.isLoading) {
-            return const Center(
+            return Center(
               child: CircularProgressIndicator(color: AppTheme.primaryBlue),
             );
           }
@@ -129,10 +147,14 @@ class ModuleTasksScreen extends ConsumerWidget {
           List<Video> planVideos = [];
           if (targetSubject != null) {
             if (plan.targetUnits.isNotEmpty) {
-              planVideos = targetSubject.chapters
-                  .where((c) => plan.targetUnits.contains(c.name))
-                  .expand((c) => c.videos)
-                  .toList();
+              for (final unitName in plan.targetUnits) {
+                final ch = targetSubject.chapters
+                    .where((c) => c.name == unitName)
+                    .firstOrNull;
+                if (ch != null) {
+                  planVideos.addAll(ch.videos);
+                }
+              }
             } else {
               planVideos = targetSubject.allVideos;
             }
@@ -221,7 +243,11 @@ class ModuleTasksScreen extends ConsumerWidget {
           if (plan.targetDate.isNotEmpty) {
             try {
               final targetDt = DateTime.parse(plan.targetDate);
-              daysRemaining = targetDt.difference(DateTime.now()).inDays.clamp(0, 9999);
+              final now = DateTime.now();
+              daysRemaining = DateTime.utc(targetDt.year, targetDt.month, targetDt.day)
+                  .difference(DateTime.utc(now.year, now.month, now.day))
+                  .inDays
+                  .clamp(0, 9999);
             } catch (_) {}
           }
 
@@ -257,6 +283,9 @@ class ModuleTasksScreen extends ConsumerWidget {
                 subjectName: subjectName,
                 isUnitScope: isUnitScope,
                 plan: plan,
+                currentUnitName: isUnitScope
+                    ? (plan.targetUnits.isNotEmpty ? plan.targetUnits.first : null)
+                    : batchVideos.firstOrNull?.chapterName,
               ),
 
               const SizedBox(height: 16),
@@ -278,7 +307,7 @@ class ModuleTasksScreen extends ConsumerWidget {
                 children: [
                   Text(
                     "Today's Modules (${batchVideos.length})",
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
                       color: AppTheme.inkForeground,
@@ -323,7 +352,7 @@ class ModuleTasksScreen extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: AppTheme.sketchDecoration(
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppTheme.cardWhite,
                     borderRadius: 14,
                     shadowOffset: 2,
                   ),
@@ -333,7 +362,7 @@ class ModuleTasksScreen extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade600,
+                        color: AppTheme.mutedText,
                       ),
                     ),
                   ),
@@ -344,8 +373,9 @@ class ModuleTasksScreen extends ConsumerWidget {
           );
         },
       ),
-    );
-  }
+    ),
+  );
+}
 
   /// PART 1: Top Banner with Subject, small Unit text, plan details, and Unit Progress Bar
   Widget _buildTopBanner({
@@ -366,66 +396,90 @@ class ModuleTasksScreen extends ConsumerWidget {
     required int daysRemaining,
     required bool isUnitScope,
   }) {
+    final meta = targetSubject != null ? subjectMeta(targetSubject.id) : null;
+
     return Container(
+      key: TourTargetRegistry.keyFor(TourTargetId.moduleTasksScreenHeader),
       width: double.infinity,
       decoration: AppTheme.sketchDecoration(
-        backgroundColor: const Color(0xFFFBF9F3),
+        backgroundColor: AppTheme.cardWhite,
         borderRadius: 18,
-        borderWidth: 1.8,
-        shadowOffset: 3.5,
+        borderWidth: 1.4,
+        shadowOffset: 2.5,
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Row 1: Selected Subject (Large Bold) & Status Pill
+          // Row 1: Selected Subject with accent icon & Status Pill
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Text(
-                      subjectName,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                        color: AppTheme.inkForeground,
-                        letterSpacing: -0.5,
+                    if (meta != null) ...[
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: meta.accent.withValues(alpha: 0.14),
+                          shape: BoxShape.circle,
+                        ),
+                        child: SubjectSketchIcon(
+                          subjectId: plan.targetSubject,
+                          color: meta.accent,
+                          size: 22,
+                        ),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    // Small text: Selected Unit underneath
-                    Text(
-                      isUnitScope ? 'Unit: $selectedUnitDisplay' : 'Scope: $selectedUnitDisplay',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w600,
-                        fontStyle: FontStyle.italic,
-                        color: Colors.grey.shade600,
+                      const SizedBox(width: 12),
+                    ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            subjectName,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              color: AppTheme.inkForeground,
+                              letterSpacing: -0.4,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            isUnitScope ? 'Unit: $selectedUnitDisplay' : 'Scope: $selectedUnitDisplay',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: paceStatusColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(6),
+                  color: paceStatusColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: paceStatusColor, width: 1.2),
                 ),
                 child: Text(
                   paceStatusText.toUpperCase(),
                   style: TextStyle(
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
                     letterSpacing: 0.4,
                     color: paceStatusColor,
                   ),
@@ -434,91 +488,83 @@ class ModuleTasksScreen extends ConsumerWidget {
             ],
           ),
 
-          const SizedBox(height: 14),
+          const Divider(height: 24, thickness: 1, color: Color(0xFFF4F4F5)),
 
-          // Row 2: User Plan Details (Daily Goal, Done Today, Target)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.parchmentBorder, width: 1.2),
-            ),
-            child: Row(
-              children: [
+          // Row 2: Clean 3-Column Plan Metrics
+          Row(
+            children: [
+              Expanded(
+                child: _planMetric(
+                  label: 'DAILY GOAL',
+                  value: '${plan.videosPerDay ?? 4}',
+                  unit: 'vids/day',
+                ),
+              ),
+              Container(width: 1.0, height: 26, color: const Color(0xFFE5E7EB)),
+              Expanded(
+                child: _planMetric(
+                  label: 'DONE TODAY',
+                  value: '$completedBatchCount/$totalBatchCount',
+                  unit: 'completed',
+                  highlightColor: completedBatchCount >= totalBatchCount && totalBatchCount > 0
+                      ? const Color(0xFF059669)
+                      : null,
+                ),
+              ),
+              if (daysRemaining > 0) ...[
+                Container(width: 1.0, height: 26, color: const Color(0xFFE5E7EB)),
                 Expanded(
                   child: _planMetric(
-                    label: 'DAILY GOAL',
-                    value: '${plan.videosPerDay ?? 4}',
-                    unit: 'vids/day',
+                    label: 'TARGET',
+                    value: '$daysRemaining',
+                    unit: 'days left',
                   ),
                 ),
-                Container(width: 1.2, height: 28, color: AppTheme.parchmentBorder),
-                Expanded(
-                  child: _planMetric(
-                    label: 'DONE TODAY',
-                    value: '$completedBatchCount/$totalBatchCount',
-                    unit: 'completed',
-                    highlightColor: completedBatchCount >= totalBatchCount && totalBatchCount > 0
-                        ? const Color(0xFF059669)
-                        : null,
-                  ),
-                ),
-                if (daysRemaining > 0) ...[
-                  Container(width: 1.2, height: 28, color: AppTheme.parchmentBorder),
-                  Expanded(
-                    child: _planMetric(
-                      label: 'TARGET',
-                      value: '$daysRemaining',
-                      unit: 'days left',
-                    ),
-                  ),
-                ],
               ],
-            ),
+            ],
           ),
 
-          const SizedBox(height: 14),
+          const Divider(height: 24, thickness: 1, color: Color(0xFFF4F4F5)),
 
-          // Row 3: Unit Progress Bar & Label
+          // Row 3: Subject / Unit Progress Bar & Label
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 isUnitScope ? 'Unit Progress' : 'Subject Progress',
-                style: const TextStyle(
-                  fontSize: 11.5,
+                style: TextStyle(
+                  fontSize: 12,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF4A463F),
+                  color: AppTheme.inkForeground,
                 ),
               ),
               Text(
                 '$unitProgressPercent% ($completedInScope of $totalVideosInScope)',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11.5,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   fontFamily: 'monospace',
-                  color: AppTheme.inkForeground,
+                  color: Colors.grey.shade700,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Container(
-            height: 8,
+            height: 7,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: AppTheme.sketchBorderColor, width: 1.1),
+              color: AppTheme.parchmentSurface,
+              borderRadius: BorderRadius.circular(3.5),
+              border: Border.all(color: AppTheme.sketchBorderColor, width: 1.0),
             ),
             child: FractionallySizedBox(
               alignment: Alignment.centerLeft,
               widthFactor: unitProgress.clamp(0.0, 1.0),
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryBlue,
-                  borderRadius: BorderRadius.circular(3),
+                  color: meta?.accent ?? AppTheme.primaryBlue,
+                  borderRadius: BorderRadius.circular(2.5),
                 ),
               ),
             ),
@@ -528,204 +574,117 @@ class ModuleTasksScreen extends ConsumerWidget {
     );
   }
 
-  /// PART 2: Graphic stationery card linked directly to selected unit in Curriculum
+  /// PART 2: Minimalist card linked directly to selected unit/subject in Curriculum
   Widget _buildCurriculumDeepLink({
     required BuildContext context,
     required Subject? targetSubject,
     required String subjectName,
     required bool isUnitScope,
     required StudyPlan plan,
+    String? currentUnitName,
   }) {
-    final linkLabel = isUnitScope
-        ? 'Open "${plan.targetUnits.first}" in Curriculum'
-        : 'Open $subjectName in Curriculum';
+    final meta = targetSubject != null ? subjectMeta(targetSubject.id) : null;
 
-    final int? unitNumber = (targetSubject != null && isUnitScope)
-        ? (targetSubject.chapters.indexWhere((c) => plan.targetUnits.contains(c.name)) + 1)
-        : null;
+    int? targetUnitIndex;
+    String resolvedUnitName = '';
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: () {
-          HapticFeedback.lightImpact();
-          if (targetSubject != null) {
-            if (isUnitScope) {
-              final idx = targetSubject.chapters
-                  .indexWhere((c) => plan.targetUnits.contains(c.name));
-              if (idx != -1) {
-                context.push('/curriculum/${targetSubject.id}/$idx');
-                return;
-              }
-            }
-            context.push('/curriculum/${targetSubject.id}');
-          } else {
-            context.go('/curriculum');
-          }
-        },
-        child: Container(
-          width: double.infinity,
-          decoration: AppTheme.sketchDecoration(
-            backgroundColor: const Color(0xFFFBF9F3),
-            borderRadius: 14,
-            borderWidth: 1.6,
-            shadowOffset: 2.5,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Row(
-            children: [
-              // Graphic Bookmark / Stamp with icon & unit number badge
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryBlue.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: AppTheme.primaryBlue.withOpacity(0.25),
-                    width: 1.3,
+    if (targetSubject != null && targetSubject.chapters.isNotEmpty) {
+      final unitToFind = currentUnitName ??
+          (plan.targetUnits.isNotEmpty ? plan.targetUnits.first : null);
+      if (unitToFind != null && unitToFind.isNotEmpty) {
+        final idx = targetSubject.chapters.indexWhere(
+          (c) =>
+              c.name.toLowerCase().trim() == unitToFind.toLowerCase().trim() ||
+              c.name.toLowerCase().contains(unitToFind.toLowerCase()) ||
+              unitToFind.toLowerCase().contains(c.name.toLowerCase()),
+        );
+        if (idx != -1) {
+          targetUnitIndex = idx;
+          resolvedUnitName = targetSubject.chapters[idx].name;
+        }
+      }
+      if (targetUnitIndex == null && targetSubject.chapters.isNotEmpty) {
+        targetUnitIndex = 0;
+        resolvedUnitName = targetSubject.chapters[0].name;
+      }
+    }
+
+    final String labelText = resolvedUnitName.isNotEmpty
+        ? 'View all modules in $resolvedUnitName'
+        : (isUnitScope && plan.targetUnits.isNotEmpty
+            ? 'View all modules in ${plan.targetUnits.first}'
+            : 'View all modules in $subjectName');
+
+    return ApplePressable(
+      onTap: () {
+        if (targetSubject != null && targetUnitIndex != null) {
+          context.go('/curriculum/${targetSubject.id}/$targetUnitIndex');
+        } else if (targetSubject != null) {
+          context.go('/curriculum/${targetSubject.id}');
+        } else {
+          context.go('/curriculum');
+        }
+      },
+      pressedScale: 0.98,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        width: double.infinity,
+        decoration: AppTheme.sketchDecoration(
+          backgroundColor: AppTheme.cardWhite,
+          borderRadius: 14,
+          borderWidth: 1.2,
+          shadowOffset: 2.0,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: (meta?.accent ?? AppTheme.primaryBlue).withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: SubjectSketchIcon(
+                subjectId: targetSubject?.id ?? '',
+                size: 20,
+                color: meta?.accent ?? AppTheme.primaryBlue,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                labelText,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.inkForeground,
+                  letterSpacing: -0.2,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Open',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: meta?.accent ?? AppTheme.primaryBlue,
                   ),
                 ),
-                child: Center(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      const Icon(
-                        Icons.collections_bookmark_outlined,
-                        size: 24,
-                        color: AppTheme.primaryBlue,
-                      ),
-                      if (unitNumber != null && unitNumber > 0)
-                        Positioned(
-                          right: 0,
-                          bottom: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(2.5),
-                            decoration: const BoxDecoration(
-                              color: AppTheme.primaryBlue,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Text(
-                              '$unitNumber',
-                              style: const TextStyle(
-                                fontSize: 8,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 14,
+                  color: meta?.accent ?? AppTheme.primaryBlue,
                 ),
-              ),
-
-              const SizedBox(width: 12),
-
-              // Title and Description
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          'CURRICULUM SYLLABUS',
-                          style: TextStyle(
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.6,
-                            color: AppTheme.primaryBlue.withOpacity(0.85),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          width: 3.5,
-                          height: 3.5,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade400,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          subjectName.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.4,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      linkLabel,
-                      style: const TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppTheme.inkForeground,
-                        letterSpacing: -0.2,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Tap to jump into complete unit module list & notes',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(width: 8),
-
-              // Action Graphic Tag
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppTheme.sketchBorderColor, width: 1.2),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x15000000),
-                      offset: Offset(0, 1.5),
-                      blurRadius: 0,
-                    ),
-                  ],
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Open',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppTheme.inkForeground,
-                      ),
-                    ),
-                    SizedBox(width: 3),
-                    Icon(
-                      Icons.arrow_forward_rounded,
-                      size: 13,
-                      color: AppTheme.inkForeground,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -781,23 +740,23 @@ class ModuleTasksScreen extends ConsumerWidget {
 
   Widget _buildBlendedUnitHeader(String unitName, int? unitNumber) {
     return Padding(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
+      padding: const EdgeInsets.only(top: 12, bottom: 8),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: const Color(0xFFF3F1EA),
+              color: AppTheme.parchmentSurface,
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: const Color(0xFFD6D2C4), width: 1),
+              border: Border.all(color: AppTheme.borderLight, width: 1),
             ),
             child: Text(
               unitNumber != null ? 'UNIT $unitNumber' : 'UNIT',
-              style: const TextStyle(
-                fontSize: 9,
+              style: TextStyle(
+                fontSize: 9.5,
                 fontWeight: FontWeight.w800,
-                letterSpacing: 0.6,
-                color: Color(0xFF4A463F),
+                letterSpacing: 0.5,
+                color: AppTheme.inkForeground,
               ),
             ),
           ),
@@ -809,25 +768,23 @@ class ModuleTasksScreen extends ConsumerWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 12,
-                fontWeight: FontWeight.w600,
-                fontStyle: FontStyle.italic,
-                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w700,
+                color: Colors.grey.shade700,
               ),
             ),
           ),
           const SizedBox(width: 8),
-          Expanded(
-            child: Divider(
-              color: AppTheme.parchmentBorder.withOpacity(0.7),
-              thickness: 1,
-            ),
+          Container(
+            width: 32,
+            height: 1,
+            color: AppTheme.parchmentBorder.withValues(alpha: 0.8),
           ),
         ],
       ),
     );
   }
 
-  /// PART 3: Style A Curriculum Timeline Module Item with strictly preserved syllabus numbers
+  /// PART 3: Minimalist Timeline Module Item with whole-syllabus numbering
   Widget _buildTimelineItem({
     required BuildContext context,
     required WidgetRef ref,
@@ -838,51 +795,58 @@ class ModuleTasksScreen extends ConsumerWidget {
     required String subjectName,
   }) {
     final detail = video.durationLabel.isNotEmpty ? video.durationLabel : '${video.durationMins}m';
-    // Strictly preserved syllabus module number
-    final displayNum = video.serialNumber;
 
-    return IntrinsicHeight(
+    // Global numbering assigned from the whole syllabus/subject
+    final globalIndex = video.serialNumber > 0
+        ? video.serialNumber
+        : ((targetSubject?.allVideos.indexWhere((v) => v.id == video.id) ?? -1) + 1);
+    final displayNum = globalIndex > 0 ? '$globalIndex' : '${video.serialNumber}';
+
+    return CustomPaint(
+      painter: _DottedLinePainter(
+        color: AppTheme.sketchBorderColor.withValues(alpha: 0.35),
+        centerX: 19.0,
+      ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Left Continuous Dotted Line + Circular Number Bubble
+          // Left Circular Number Bubble
           SizedBox(
             width: 38,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: _DottedLinePainter(
-                      color: AppTheme.sketchBorderColor.withOpacity(0.4),
-                    ),
-                  ),
-                ),
-                Container(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Center(
+                child: Container(
                   width: 28,
                   height: 28,
                   decoration: BoxDecoration(
-                    color: isDone ? const Color(0xFF16A34A) : Colors.white,
+                    color: isDone ? AppTheme.accentPrimary : AppTheme.cardWhite,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: isDone ? const Color(0xFF16A34A) : AppTheme.sketchBorderColor,
-                      width: 1.8,
+                      color: isDone ? AppTheme.accentPrimary : AppTheme.sketchBorderColor,
+                      width: 1.5,
                     ),
-                    boxShadow: const [
+                    boxShadow: [
                       BoxShadow(
-                        color: Color(0x181C1C1C),
-                        offset: Offset(1.5, 2),
-                        blurRadius: 0,
+                        color: isDone
+                            ? AppTheme.accentPrimary.withValues(alpha: 0.35)
+                            : const Color(0x101C1C1C),
+                        offset: const Offset(1, 1.5),
+                        blurRadius: isDone ? 3 : 0,
                       ),
                     ],
                   ),
                   child: Center(
                     child: isDone
-                        ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
+                        ? AnimatedCheckStroke(
+                            checked: true,
+                            size: 14,
+                            color: AppTheme.onAccent,
+                          )
                         : Text(
-                            '$displayNum',
-                            style: const TextStyle(
-                              fontSize: 10,
+                            displayNum,
+                            style: TextStyle(
+                              fontSize: 10.5,
                               fontWeight: FontWeight.w800,
                               fontFamily: 'monospace',
                               color: AppTheme.inkForeground,
@@ -890,164 +854,189 @@ class ModuleTasksScreen extends ConsumerWidget {
                           ),
                   ),
                 ),
-              ],
+              ),
             ),
           ),
           const SizedBox(width: 8),
 
-          // Topic Box with Details, Checkbox and Focus Timer Shortcut
+          // Minimalist Task Card
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: isDone
-                      ? const Color(0xFFF6F6F5)
-                      : const Color(0xFFFFF9E6), // curriculum warm yellow
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: isDone ? Colors.green.shade400 : AppTheme.sketchBorderColor,
-                    width: 1.5,
+              child: ApplePressable(
+                pressedScale: 0.98,
+                onPressed: () {
+                  HapticFeedback.selectionClick();
+                  if (isDone) {
+                    ref.read(appStateProvider.notifier).markVideoIncomplete(video.id);
+                  } else {
+                    ref.read(appStateProvider.notifier).markVideoComplete(video.id);
+                  }
+
+                  final deskTasks = ref.read(dailyTasksProvider).tasks;
+                  final matching = deskTasks.where((t) => t.id == 'vid_${video.id}').toList();
+                  if (matching.isNotEmpty) {
+                    final deskCompleted = ref.read(dailyTasksProvider).completedIds;
+                    final isDeskDone = deskCompleted.contains('vid_${video.id}');
+                    if (isDone && isDeskDone) {
+                      ref.read(dailyTasksProvider.notifier).toggleTask('vid_${video.id}');
+                    } else if (!isDone && !isDeskDone) {
+                      ref.read(dailyTasksProvider.notifier).toggleTask('vid_${video.id}');
+                    }
+                  }
+                },
+                child: Container(
+                  decoration: AppTheme.sketchDecoration(
+                    backgroundColor: isDone ? AppTheme.parchmentSurface : AppTheme.cardWhite,
+                    borderRadius: 14,
+                    borderWidth: 1.2,
+                    shadowOffset: 2.0,
                   ),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x141C1C1C),
-                      offset: Offset(3, 3),
-                      blurRadius: 0,
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                child: Row(
-                  children: [
-                    // Checkbox
-                    GestureDetector(
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                        if (isDone) {
-                          ref.read(appStateProvider.notifier).markVideoIncomplete(video.id);
-                        } else {
-                          ref.read(appStateProvider.notifier).markVideoComplete(video.id);
-                        }
-
-                        // Sync with daily tasks if matching
-                        final deskTasks = ref.read(dailyTasksProvider).tasks;
-                        final matching = deskTasks.where((t) => t.id == 'vid_${video.id}').toList();
-                        if (matching.isNotEmpty) {
-                          final deskCompleted = ref.read(dailyTasksProvider).completedIds;
-                          final isDeskDone = deskCompleted.contains('vid_${video.id}');
-                          if (isDone && isDeskDone) {
-                            ref.read(dailyTasksProvider.notifier).toggleTask('vid_${video.id}');
-                          } else if (!isDone && !isDeskDone) {
-                            ref.read(dailyTasksProvider.notifier).toggleTask('vid_${video.id}');
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+                  child: Row(
+                    children: [
+                      // Custom Animated Checkbox
+                      ApplePressable(
+                        pressedScale: 0.88,
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          if (isDone) {
+                            ref.read(appStateProvider.notifier).markVideoIncomplete(video.id);
+                          } else {
+                            ref.read(appStateProvider.notifier).markVideoComplete(video.id);
                           }
-                        }
-                      },
-                      child: Container(
-                        width: 22,
-                        height: 22,
-                        decoration: BoxDecoration(
-                          color: isDone ? const Color(0xFF16A34A) : Colors.white,
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                            color: isDone ? const Color(0xFF16A34A) : AppTheme.sketchBorderColor,
-                            width: 1.8,
-                          ),
-                        ),
-                        child: isDone
-                            ? const Icon(Icons.check, color: Colors.white, size: 16)
-                            : null,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
 
-                    // Topic Title & Duration
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            video.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: isDone ? Colors.grey.shade500 : AppTheme.inkForeground,
-                              decoration: isDone ? TextDecoration.lineThrough : null,
+                          // Sync with daily tasks if matching
+                          final deskTasks = ref.read(dailyTasksProvider).tasks;
+                          final matching = deskTasks.where((t) => t.id == 'vid_${video.id}').toList();
+                          if (matching.isNotEmpty) {
+                            final deskCompleted = ref.read(dailyTasksProvider).completedIds;
+                            final isDeskDone = deskCompleted.contains('vid_${video.id}');
+                            if (isDone && isDeskDone) {
+                              ref.read(dailyTasksProvider.notifier).toggleTask('vid_${video.id}');
+                            } else if (!isDone && !isDeskDone) {
+                              ref.read(dailyTasksProvider.notifier).toggleTask('vid_${video.id}');
+                            }
+                          }
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 22,
+                          height: 22,
+                          decoration: BoxDecoration(
+                            color: isDone ? AppTheme.accentPrimary : AppTheme.cardWhite,
+                            borderRadius: BorderRadius.circular(6.5),
+                            border: Border.all(
+                              color: isDone ? AppTheme.accentPrimary : AppTheme.sketchBorderColor,
+                              width: 1.5,
                             ),
                           ),
-                          const SizedBox(height: 3),
-                          Row(
-                            children: [
-                              Text(
-                                detail,
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  fontFamily: 'monospace',
-                                  color: Colors.grey.shade700,
-                                ),
+                          child: Center(
+                            child: AnimatedCheckStroke(
+                              checked: isDone,
+                              size: 15,
+                              color: AppTheme.onAccent,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+
+                      // Topic Title & Meta Info
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            AnimatedStrikeText(
+                              text: video.title,
+                              isStruck: isDone,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w700,
+                                color: isDone ? AppTheme.mutedText : AppTheme.inkForeground,
                               ),
-                              // "Stale" tag for carried over modules
-                              if (isStale && !isDone) ...[
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFEF3C7),
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(color: const Color(0xFFD97706), width: 0.9),
+                              strikeColor: AppTheme.mutedText,
+                              strikeThickness: 1.8,
+                            ),
+                            const SizedBox(height: 3),
+                            Row(
+                              children: [
+                                Text(
+                                  detail,
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: 'monospace',
+                                    color: AppTheme.mutedText,
                                   ),
-                                  child: const Text(
-                                    'Stale',
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w800,
-                                      color: Color(0xFFB45309),
+                                ),
+                                if (isStale && !isDone) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFEF3C7),
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(color: const Color(0xFFD97706), width: 0.9),
+                                    ),
+                                    child: const Text(
+                                      'Stale',
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFFB45309),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
-                              if (isDone) ...[
-                                const SizedBox(width: 8),
-                                Text(
-                                  '• Completed',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.green.shade700,
+                                ],
+                                if (isDone) ...[
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '• Completed',
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.accentPrimary,
+                                    ),
                                   ),
-                                ),
+                                ],
                               ],
-                            ],
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
 
-                    // Module-Mode Focus Timer Shortcut Icon
-                    IconButton(
-                      icon: const Icon(Icons.timer_outlined, size: 18),
-                      tooltip: 'Focus on this module',
-                      color: AppTheme.inkForeground,
-                      onPressed: () {
-                        HapticFeedback.lightImpact();
-                        context.push(
-                          '/timer',
-                          extra: {
-                            'subjectId': targetSubject?.id ?? video.subjectId,
-                            'subjectName': targetSubject?.displayName ?? subjectName,
-                            'topicId': video.id,
-                            'topicTitle': video.title,
-                            'chapterName': video.chapterName,
-                            'topicType': 'video',
-                            'durationMins': video.durationMins > 0 ? video.durationMins : 15,
-                          },
-                        );
-                      },
-                    ),
-                  ],
+                      // Module-Mode Focus Timer Shortcut Icon
+                      ApplePressable(
+                        pressedScale: 0.90,
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          context.push(
+                            '/timer',
+                            extra: {
+                              'subjectId': targetSubject?.id ?? video.subjectId,
+                              'subjectName': targetSubject?.displayName ?? subjectName,
+                              'topicId': video.id,
+                              'topicTitle': video.title,
+                              'chapterName': video.chapterName,
+                              'topicType': 'video',
+                              'durationMins': video.durationMins > 0 ? video.durationMins : 15,
+                            },
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: Icon(
+                            Icons.timer_outlined,
+                            size: 19,
+                            color: isDone ? AppTheme.mutedText : AppTheme.inkForeground,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1062,10 +1051,11 @@ class ModuleTasksScreen extends ConsumerWidget {
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Container(
+          key: TourTargetRegistry.keyFor(TourTargetId.moduleTasksScreenHeader),
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
           decoration: AppTheme.sketchDecoration(
-            backgroundColor: Colors.white,
+            backgroundColor: AppTheme.cardWhite,
             borderRadius: 16,
             shadowOffset: 2,
             borderWidth: 1.6,
@@ -1077,11 +1067,11 @@ class ModuleTasksScreen extends ConsumerWidget {
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF3F1EA),
+                  color: AppTheme.parchmentSurface,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFD6D2C4), width: 1.4),
+                  border: Border.all(color: AppTheme.borderLight, width: 1.4),
                 ),
-                child: const Center(
+                child: Center(
                   child: Icon(
                     Icons.auto_stories_outlined,
                     size: 30,
@@ -1090,7 +1080,7 @@ class ModuleTasksScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'No Study Plan Configured',
                 style: TextStyle(
                   fontSize: 17,
@@ -1103,19 +1093,19 @@ class ModuleTasksScreen extends ConsumerWidget {
                 'Configure your target subject, unit scope, and daily module goal in Setup to view your automated daily study queue.',
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.grey.shade600,
+                  color: AppTheme.mutedText,
                   height: 1.4,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
               ElevatedButton.icon(
-                onPressed: () => ConfigurePlanSheet.show(context),
+                onPressed: () => context.push('/plan'),
                 icon: const Icon(Icons.add_rounded, size: 16),
                 label: const Text('Open Setup'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryBlue,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppTheme.paperBackground,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -1141,7 +1131,9 @@ class ModuleTasksScreen extends ConsumerWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 18),
       decoration: AppTheme.sketchDecoration(
-        backgroundColor: const Color(0xFFF0FDF4),
+        backgroundColor: AppTheme.current.isDark
+            ? const Color(0xFF064E3B).withValues(alpha: 0.3)
+            : const Color(0xFFF0FDF4),
         borderRadius: 16,
         shadowOffset: 2.5,
         borderWidth: 1.6,
@@ -1152,7 +1144,7 @@ class ModuleTasksScreen extends ConsumerWidget {
           const SizedBox(height: 10),
           Text(
             isUnitScope ? '$unitName is completed!' : 'All modules in $subjectName completed!',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w800,
               color: AppTheme.inkForeground,
@@ -1163,22 +1155,22 @@ class ModuleTasksScreen extends ConsumerWidget {
           Text(
             isUnitScope
                 ? 'Great progress! Select your next unit in Setup to continue your daily curriculum flow.'
-                : 'Outstanding work doctor! Configure your next subject or start a revision cycle.',
+                : 'Outstanding work doctor! Configure your next target subject in Setup to continue your daily curriculum flow.',
             style: TextStyle(
               fontSize: 12.5,
-              color: Colors.grey.shade700,
+              color: AppTheme.mutedText,
               height: 1.4,
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 14),
           ElevatedButton.icon(
-            onPressed: () => ConfigurePlanSheet.show(context),
+            onPressed: () => context.push('/plan'),
             icon: const Icon(Icons.tune_rounded, size: 15),
             label: const Text('Open Setup'),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF059669),
-              foregroundColor: Colors.white,
+              foregroundColor: AppTheme.paperBackground,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -1202,7 +1194,7 @@ class ModuleTasksScreen extends ConsumerWidget {
   }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final savedBatchDate = prefs.getString('flowmd_module_batch_date');
+      final savedBatchDate = (prefs.getString('modulix_module_batch_date') ?? prefs.getString('flowmd_module_batch_date'));
       final currentBatchIds = editionState.queueBatchVideoIds;
 
       final planVideoIds = planVideos.map((v) => v.id).toSet();
@@ -1228,7 +1220,7 @@ class ModuleTasksScreen extends ConsumerWidget {
         final freshBatchIds = freshCandidates.take(neededFresh).map((v) => v.id).toList();
         final newBatch = [...uncompletedFromYesterday, ...freshBatchIds];
 
-        await prefs.setString('flowmd_module_batch_date', todayKey);
+        await prefs.setString('modulix_module_batch_date', todayKey);
         await ref.read(appStateProvider.notifier).setBatch(newBatch, uncompletedFromYesterday);
       } else if (!isBatchValid) {
         // Same day but invalid batch (e.g. freshly configured or plan modified)
@@ -1237,7 +1229,7 @@ class ModuleTasksScreen extends ConsumerWidget {
             .toList();
         final newBatch = uncompleted.take(targetQuota).map((v) => v.id).toList();
 
-        await prefs.setString('flowmd_module_batch_date', todayKey);
+        await prefs.setString('modulix_module_batch_date', todayKey);
         await ref.read(appStateProvider.notifier).setBatch(newBatch, []);
       }
     } catch (_) {}
@@ -1246,8 +1238,12 @@ class ModuleTasksScreen extends ConsumerWidget {
 
 class _DottedLinePainter extends CustomPainter {
   final Color color;
+  final double centerX;
 
-  _DottedLinePainter({required this.color});
+  _DottedLinePainter({
+    required this.color,
+    this.centerX = 19.0,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1256,7 +1252,6 @@ class _DottedLinePainter extends CustomPainter {
       ..strokeWidth = 1.5
       ..strokeCap = StrokeCap.round;
 
-    final centerX = size.width / 2;
     double startY = 0;
     const dashLength = 4.0;
     const dashGap = 4.0;
@@ -1273,5 +1268,5 @@ class _DottedLinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _DottedLinePainter oldDelegate) =>
-      oldDelegate.color != color;
+      oldDelegate.color != color || oldDelegate.centerX != centerX;
 }

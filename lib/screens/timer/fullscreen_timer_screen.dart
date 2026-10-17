@@ -71,15 +71,14 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Background GIF (subtle)
-          if (t.theme.gifUrl != null)
+          // Background preview (subtle)
+          if (t.theme.thumbnailAssetPath != null)
             Positioned.fill(
               child: Opacity(
-                opacity: 0.12,
-                child: Image.network(
-                  t.theme.gifUrl!,
+                opacity: 0.14,
+                child: Image.asset(
+                  t.theme.thumbnailAssetPath!,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const SizedBox(),
                 ),
               ),
             ),

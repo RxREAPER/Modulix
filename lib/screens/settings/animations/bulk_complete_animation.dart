@@ -45,9 +45,8 @@ class _BulkCompleteAnimationWidgetState
         final bool item1Done = t >= 0.40;
         final bool item2Done = t >= 0.55;
 
-        final double percent = t < 0.40
-            ? 0.0
-            : (t < 0.75 ? ((t - 0.40) / 0.35) : 1.0);
+        final double percent =
+            t < 0.40 ? 0.0 : (t < 0.75 ? ((t - 0.40) / 0.35) : 1.0);
 
         final int completedCount = item2Done ? 2 : (item1Done ? 1 : 0);
 
@@ -77,7 +76,7 @@ class _BulkCompleteAnimationWidgetState
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Valvular Heart Diseases',
                         style: TextStyle(
                           fontSize: 13,
@@ -87,14 +86,18 @@ class _BulkCompleteAnimationWidgetState
                       ),
                       Text(
                         '$completedCount / 2 videos done',
-                        style: const TextStyle(fontSize: 8.5, color: AppTheme.primaryBlue, fontWeight: FontWeight.w800),
+                        style: TextStyle(
+                            fontSize: 8.5,
+                            color: AppTheme.primaryBlue,
+                            fontWeight: FontWeight.w800),
                       ),
                     ],
                   ),
-                  // Bulk Complete Button (FlowMD style)
+                  // Bulk Complete Button (Modulix style)
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
                       color: tapButton
                           ? const Color(0xFF10B981)
@@ -110,7 +113,9 @@ class _BulkCompleteAnimationWidgetState
                         Icon(
                           Icons.done_all_rounded,
                           size: 13,
-                          color: tapButton ? Colors.white : const Color(0xFF10B981),
+                          color: tapButton
+                              ? Colors.white
+                              : const Color(0xFF10B981),
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -118,7 +123,9 @@ class _BulkCompleteAnimationWidgetState
                           style: TextStyle(
                             fontSize: 9.5,
                             fontWeight: FontWeight.w900,
-                            color: tapButton ? Colors.white : const Color(0xFF10B981),
+                            color: tapButton
+                                ? Colors.white
+                                : const Color(0xFF10B981),
                           ),
                         ),
                       ],
@@ -129,7 +136,7 @@ class _BulkCompleteAnimationWidgetState
 
               const SizedBox(height: 6),
 
-              // FlowMD Chapter Linear Progress Indicator
+              // Modulix Chapter Linear Progress Indicator
               ClipRRect(
                 borderRadius: BorderRadius.circular(3),
                 child: LinearProgressIndicator(
@@ -142,8 +149,8 @@ class _BulkCompleteAnimationWidgetState
 
               const SizedBox(height: 10),
 
-              // Exact FlowMD VideoTile 1
-              _buildFlowMDVideoTile(
+              // Exact Modulix VideoTile 1
+              _buildModulixVideoTile(
                 serialNumber: 1,
                 title: 'Mitral Stenosis: Hemodynamics & Murmurs',
                 duration: '34 mins',
@@ -153,8 +160,8 @@ class _BulkCompleteAnimationWidgetState
 
               const SizedBox(height: 6),
 
-              // Exact FlowMD VideoTile 2
-              _buildFlowMDVideoTile(
+              // Exact Modulix VideoTile 2
+              _buildModulixVideoTile(
                 serialNumber: 2,
                 title: 'Aortic Regurgitation: Peripheral Signs',
                 duration: '28 mins',
@@ -166,20 +173,24 @@ class _BulkCompleteAnimationWidgetState
 
               // Subtitle tag
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: AppTheme.borderLight),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.bolt_rounded, size: 13, color: Colors.amber),
                     SizedBox(width: 4),
                     Text(
                       '1-tap syncs offline lectures to your curriculum progress',
-                      style: TextStyle(fontSize: 8.5, fontWeight: FontWeight.w700, color: AppTheme.mutedText),
+                      style: TextStyle(
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.mutedText),
                     ),
                   ],
                 ),
@@ -191,8 +202,8 @@ class _BulkCompleteAnimationWidgetState
     );
   }
 
-  // Exact FlowMD VideoTile component replica
-  Widget _buildFlowMDVideoTile({
+  // Exact Modulix VideoTile component replica
+  Widget _buildModulixVideoTile({
     required int serialNumber,
     required String title,
     required String duration,
@@ -223,7 +234,8 @@ class _BulkCompleteAnimationWidgetState
             ),
             child: Center(
               child: isCompleted
-                  ? const Icon(Icons.check_rounded, color: Colors.green, size: 16)
+                  ? const Icon(Icons.check_rounded,
+                      color: Colors.green, size: 16)
                   : Text(
                       '$serialNumber',
                       style: TextStyle(
@@ -245,7 +257,9 @@ class _BulkCompleteAnimationWidgetState
                     fontSize: 9.5,
                     fontWeight: FontWeight.w700,
                     decoration: isCompleted ? TextDecoration.lineThrough : null,
-                    color: isCompleted ? Colors.grey.shade400 : AppTheme.inkForeground,
+                    color: isCompleted
+                        ? Colors.grey.shade400
+                        : AppTheme.inkForeground,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -253,11 +267,15 @@ class _BulkCompleteAnimationWidgetState
                 const SizedBox(height: 2),
                 Row(
                   children: [
-                    Icon(Icons.schedule_rounded, size: 9, color: Colors.grey.shade500),
+                    Icon(Icons.schedule_rounded,
+                        size: 9, color: Colors.grey.shade500),
                     const SizedBox(width: 3),
                     Text(
                       duration,
-                      style: TextStyle(fontSize: 8, color: Colors.grey.shade500, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                          fontSize: 8,
+                          color: Colors.grey.shade500,
+                          fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),

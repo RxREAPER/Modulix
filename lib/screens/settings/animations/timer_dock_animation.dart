@@ -6,7 +6,8 @@ class TimerDockAnimationWidget extends StatefulWidget {
   const TimerDockAnimationWidget({super.key});
 
   @override
-  State<TimerDockAnimationWidget> createState() => _TimerDockAnimationWidgetState();
+  State<TimerDockAnimationWidget> createState() =>
+      _TimerDockAnimationWidgetState();
 }
 
 class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
@@ -35,14 +36,16 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
       builder: (context, _) {
         final t = _ctrl.value; // 0.0 to 1.0
 
-        // Phase 1 (0.0 to 0.28): Full FlowMD FocusTimerScreen visible
+        // Phase 1 (0.0 to 0.28): Full Modulix FocusTimerScreen visible
         // Phase 2 (0.28 to 0.50): Pointer taps X, screen smoothly slides down
         // Phase 3 (0.50 to 0.85): MiniTimerOverlay docked above LovableNavBar
         // Phase 4 (0.85 to 1.00): Expands back up
 
         final double shrinkVal = t < 0.28
             ? 0.0
-            : (t < 0.50 ? (t - 0.28) / 0.22 : (t < 0.85 ? 1.0 : 1.0 - (t - 0.85) / 0.15));
+            : (t < 0.50
+                ? (t - 0.28) / 0.22
+                : (t < 0.85 ? 1.0 : 1.0 - (t - 0.85) / 0.15));
 
         final bool isDocked = shrinkVal > 0.5;
 
@@ -64,7 +67,7 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
           clipBehavior: Clip.antiAlias,
           child: Stack(
             children: [
-              // ── 1. App background behind docked timer (FlowMD Curriculum screen) ──
+              // ── 1. App background behind docked timer (Modulix Curriculum screen) ──
               Positioned.fill(
                 child: Opacity(
                   opacity: shrinkVal.clamp(0.0, 1.0),
@@ -78,7 +81,7 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
+                            Text(
                               'Curriculum',
                               style: TextStyle(
                                 fontSize: 15,
@@ -87,13 +90,17 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 color: AppTheme.primaryBlue.withOpacity(0.12),
                                 borderRadius: BorderRadius.circular(6),
                               ),
-                              child: const Text('Marrow Ed 8',
-                                  style: TextStyle(fontSize: 8, fontWeight: FontWeight.w800, color: AppTheme.primaryBlue)),
+                              child: Text('Marrow Ed 8',
+                                  style: TextStyle(
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppTheme.primaryBlue)),
                             ),
                           ],
                         ),
@@ -116,15 +123,23 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                                   color: Colors.red.shade100,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Icon(Icons.favorite_rounded, size: 16, color: Colors.red),
+                                child: const Icon(Icons.favorite_rounded,
+                                    size: 16, color: Colors.red),
                               ),
                               const SizedBox(width: 8),
-                              const Expanded(
+                              Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('Medicine & Cardiology', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.inkForeground)),
-                                    Text('18 of 42 chapters done', style: TextStyle(fontSize: 8, color: AppTheme.mutedText)),
+                                    Text('Medicine & Cardiology',
+                                        style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w800,
+                                            color: AppTheme.inkForeground)),
+                                    Text('18 of 42 chapters done',
+                                        style: TextStyle(
+                                            fontSize: 8,
+                                            color: AppTheme.mutedText)),
                                   ],
                                 ),
                               ),
@@ -137,7 +152,7 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                 ),
               ),
 
-              // ── 2. Exact FlowMD FocusTimerScreen ──
+              // ── 2. Exact Modulix FocusTimerScreen ──
               Positioned(
                 top: 0,
                 left: 0,
@@ -152,42 +167,60 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                     padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
                     child: Column(
                       children: [
-                        // FlowMD FocusTimer top bar
+                        // Modulix FocusTimer top bar
                         Row(
                           children: [
                             _miniGlassBtn(Icons.palette_outlined),
                             const SizedBox(width: 6),
-                            _miniGlassBtn(Icons.graphic_eq_rounded, isAccent: true),
+                            _miniGlassBtn(Icons.graphic_eq_rounded,
+                                isAccent: true),
                             const SizedBox(width: 6),
                             _miniGlassBtn(Icons.fullscreen_rounded),
                             const Spacer(),
                             // Real close cross
-                            _miniGlassBtn(Icons.close_rounded, isClose: true, isHighlight: t >= 0.20 && t < 0.35),
+                            _miniGlassBtn(Icons.close_rounded,
+                                isClose: true,
+                                isHighlight: t >= 0.20 && t < 0.35),
                           ],
                         ),
                         const SizedBox(height: 8),
                         // Real Task Card
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.08),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.white.withOpacity(0.32), width: 1.2),
+                            border: Border.all(
+                                color: Colors.white.withOpacity(0.32),
+                                width: 1.2),
                           ),
-                          child: const Row(
+                          child: Row(
                             children: [
-                              Icon(Icons.play_arrow_rounded, color: AppTheme.primaryBlue, size: 14),
+                              Icon(Icons.play_arrow_rounded,
+                                  color: AppTheme.primaryBlue, size: 14),
                               SizedBox(width: 6),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('CARDIOLOGY', style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: AppTheme.primaryBlue, letterSpacing: 0.8)),
-                                    Text('Heart Failure Clinical Management', maxLines: 1, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Colors.white)),
+                                    Text('CARDIOLOGY',
+                                        style: TextStyle(
+                                            fontSize: 7,
+                                            fontWeight: FontWeight.w900,
+                                            color: AppTheme.primaryBlue,
+                                            letterSpacing: 0.8)),
+                                    Text('Heart Failure Clinical Management',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w800,
+                                            color: Colors.white)),
                                   ],
                                 ),
                               ),
-                              Icon(Icons.tune_rounded, color: Colors.white54, size: 12),
+                              Icon(Icons.tune_rounded,
+                                  color: Colors.white54, size: 12),
                             ],
                           ),
                         ),
@@ -205,7 +238,10 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                         ),
                         const Text(
                           'Break 00:00 · Total 24:58',
-                          style: TextStyle(fontSize: 8, color: Colors.white54, fontWeight: FontWeight.w700),
+                          style: TextStyle(
+                              fontSize: 8,
+                              color: Colors.white54,
+                              fontWeight: FontWeight.w700),
                         ),
                         const Spacer(),
                         // Real bottom controls
@@ -219,20 +255,29 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                                 decoration: BoxDecoration(
                                   color: AppTheme.primaryBlue.withOpacity(0.85),
                                   borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: Colors.white.withOpacity(0.4), width: 1.4),
+                                  border: Border.all(
+                                      color: Colors.white.withOpacity(0.4),
+                                      width: 1.4),
                                 ),
                                 child: const Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.pause_rounded, color: Colors.white, size: 16),
+                                    Icon(Icons.pause_rounded,
+                                        color: Colors.white, size: 16),
                                     SizedBox(width: 4),
-                                    Text('PAUSE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.6)),
+                                    Text('PAUSE',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: 10,
+                                            letterSpacing: 0.6)),
                                   ],
                                 ),
                               ),
                             ),
                             const SizedBox(width: 6),
-                            _miniControlBtn('Finish', Icons.check_rounded, isFinish: true),
+                            _miniControlBtn('Finish', Icons.check_rounded,
+                                isFinish: true),
                           ],
                         ),
                       ],
@@ -241,7 +286,7 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                 ),
               ),
 
-              // ── 3. Exact FlowMD MiniTimerOverlay (Docks above bottom nav) ──
+              // ── 3. Exact Modulix MiniTimerOverlay (Docks above bottom nav) ──
               if (shrinkVal > 0.25)
                 Positioned(
                   left: 12,
@@ -250,12 +295,16 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                   child: Opacity(
                     opacity: ((shrinkVal - 0.25) / 0.75).clamp(0.0, 1.0),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 7),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1C1C1C),
                         borderRadius: BorderRadius.circular(14),
                         boxShadow: const [
-                          BoxShadow(color: Color(0x35000000), blurRadius: 10, offset: Offset(0, 3)),
+                          BoxShadow(
+                              color: Color(0x35000000),
+                              blurRadius: 10,
+                              offset: Offset(0, 3)),
                         ],
                       ),
                       child: Row(
@@ -264,7 +313,9 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                           Container(
                             width: 7,
                             height: 7,
-                            decoration: const BoxDecoration(color: Colors.greenAccent, shape: BoxShape.circle),
+                            decoration: const BoxDecoration(
+                                color: Colors.greenAccent,
+                                shape: BoxShape.circle),
                           ),
                           const SizedBox(width: 8),
                           const Expanded(
@@ -272,21 +323,39 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text('CARDIOLOGY', style: TextStyle(color: Colors.white60, fontSize: 7, fontWeight: FontWeight.w700, letterSpacing: 0.6)),
-                                Text('Heart Failure Clinical Management', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.white, fontSize: 9.5, fontWeight: FontWeight.w800)),
+                                Text('CARDIOLOGY',
+                                    style: TextStyle(
+                                        color: Colors.white60,
+                                        fontSize: 7,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.6)),
+                                Text('Heart Failure Clinical Management',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w800)),
                               ],
                             ),
                           ),
                           const SizedBox(width: 6),
-                          const Text(
+                          Text(
                             '24:54',
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, fontFamily: 'monospace', color: AppTheme.primaryBlue),
+                            style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w900,
+                                fontFamily: 'monospace',
+                                color: AppTheme.primaryBlue),
                           ),
                           const SizedBox(width: 6),
                           Container(
                             padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(color: AppTheme.primaryBlue.withOpacity(0.25), shape: BoxShape.circle),
-                            child: const Icon(Icons.pause_rounded, color: AppTheme.primaryBlue, size: 12),
+                            decoration: BoxDecoration(
+                                color: AppTheme.primaryBlue.withOpacity(0.25),
+                                shape: BoxShape.circle),
+                            child: Icon(Icons.pause_rounded,
+                                color: AppTheme.primaryBlue, size: 12),
                           ),
                         ],
                       ),
@@ -294,16 +363,18 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                   ),
                 ),
 
-              // ── 4. Exact FlowMD LovableNavBar at the bottom ──
+              // ── 4. Exact Modulix LovableNavBar at the bottom ──
               Positioned(
                 left: 0,
                 right: 0,
                 bottom: 0,
                 height: 36,
                 child: Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: Colors.white,
-                    border: Border(top: BorderSide(color: AppTheme.sketchBorderColor, width: 1.6)),
+                    border: Border(
+                        top: BorderSide(
+                            color: AppTheme.sketchBorderColor, width: 1.6)),
                   ),
                   child: Stack(
                     clipBehavior: Clip.none,
@@ -316,27 +387,34 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                           children: [
                             _miniNavIcon(Icons.home_outlined, false),
                             _miniNavIcon(Icons.menu_book_rounded, isDocked),
-                            const SizedBox(width: 32), // space for center button
+                            const SizedBox(
+                                width: 32), // space for center button
                             _miniNavIcon(Icons.bar_chart_outlined, false),
                             _miniNavIcon(Icons.person_outline, false),
                           ],
                         ),
                       ),
-                      // Elevated Center Timer Button (FlowMD signature)
+                      // Elevated Center Timer Button (Modulix signature)
                       Positioned(
                         top: -12,
                         child: Container(
                           width: 32,
                           height: 32,
                           decoration: BoxDecoration(
-                            color: !isDocked ? AppTheme.primaryBlue : AppTheme.inkForeground,
+                            color: !isDocked
+                                ? AppTheme.primaryBlue
+                                : AppTheme.inkForeground,
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white, width: 2.2),
                             boxShadow: const [
-                              BoxShadow(color: Color(0x301C1C1C), offset: Offset(0, 2), blurRadius: 4),
+                              BoxShadow(
+                                  color: Color(0x301C1C1C),
+                                  offset: Offset(0, 2),
+                                  blurRadius: 4),
                             ],
                           ),
-                          child: const Icon(Icons.timer_outlined, color: Colors.white, size: 16),
+                          child: const Icon(Icons.timer_outlined,
+                              color: Colors.white, size: 16),
                         ),
                       ),
                     ],
@@ -365,15 +443,22 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                 top: 6,
                 left: 10,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: isDocked ? Colors.green.withOpacity(0.9) : Colors.black87,
+                    color: isDocked
+                        ? Colors.green.withOpacity(0.9)
+                        : Colors.black87,
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(color: Colors.white30),
                   ),
                   child: Text(
-                    isDocked ? 'DOCKED ABOVE NAV BAR ✓' : 'TAP ✕ TO MINIMIZE',
-                    style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.6),
+                    isDocked ? 'DOCKED ABOVE NAV BAR' : 'TAP TO MINIMIZE',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.6),
                   ),
                 ),
               ),
@@ -384,22 +469,30 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
     );
   }
 
-  static Widget _miniGlassBtn(IconData icon, {bool isAccent = false, bool isClose = false, bool isHighlight = false}) {
+  static Widget _miniGlassBtn(IconData icon,
+      {bool isAccent = false, bool isClose = false, bool isHighlight = false}) {
     return Container(
       width: 22,
       height: 22,
       decoration: BoxDecoration(
         color: isHighlight
             ? Colors.redAccent.withOpacity(0.4)
-            : (isAccent ? AppTheme.primaryBlue.withOpacity(0.3) : Colors.white.withOpacity(0.08)),
+            : (isAccent
+                ? AppTheme.primaryBlue.withOpacity(0.3)
+                : Colors.white.withOpacity(0.08)),
         shape: BoxShape.circle,
-        border: Border.all(color: isHighlight ? Colors.redAccent : Colors.white.withOpacity(0.35), width: 1.2),
+        border: Border.all(
+            color:
+                isHighlight ? Colors.redAccent : Colors.white.withOpacity(0.35),
+            width: 1.2),
       ),
-      child: Icon(icon, size: 12, color: isAccent ? AppTheme.primaryBlue : Colors.white),
+      child: Icon(icon,
+          size: 12, color: isAccent ? AppTheme.primaryBlue : Colors.white),
     );
   }
 
-  static Widget _miniControlBtn(String label, IconData icon, {bool isFinish = false}) {
+  static Widget _miniControlBtn(String label, IconData icon,
+      {bool isFinish = false}) {
     return Container(
       width: 38,
       height: 32,
@@ -411,14 +504,20 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 13, color: isFinish ? Colors.greenAccent : Colors.white70),
-          Text(label, style: TextStyle(fontSize: 7, fontWeight: FontWeight.w700, color: isFinish ? Colors.greenAccent : Colors.white70)),
+          Icon(icon,
+              size: 13, color: isFinish ? Colors.greenAccent : Colors.white70),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 7,
+                  fontWeight: FontWeight.w700,
+                  color: isFinish ? Colors.greenAccent : Colors.white70)),
         ],
       ),
     );
   }
 
   static Widget _miniNavIcon(IconData icon, bool active) {
-    return Icon(icon, size: 15, color: active ? AppTheme.primaryBlue : Colors.grey.shade500);
+    return Icon(icon,
+        size: 15, color: active ? AppTheme.primaryBlue : Colors.grey.shade500);
   }
 }

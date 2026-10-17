@@ -109,7 +109,6 @@ class _NoriLottieCharacterState extends State<NoriLottieCharacter>
       case NoriLottieState.cheeky:
         return 'assets/lottie/nori_cheeky.json';
       case NoriLottieState.idle:
-      default:
         return 'assets/lottie/nori_idle.json';
     }
   }

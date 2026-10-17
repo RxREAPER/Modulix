@@ -136,7 +136,7 @@ class _FocusTimerSheetState extends ConsumerState<FocusTimerSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppTheme.paperBackground,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -167,7 +167,7 @@ class _FocusTimerSheetState extends ConsumerState<FocusTimerSheet> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Focus Study Timer',
                     style: TextStyle(
                       fontSize: 18,
@@ -177,7 +177,7 @@ class _FocusTimerSheetState extends ConsumerState<FocusTimerSheet> {
                   ),
                   Text(
                     widget.subjectName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.primaryBlue,
@@ -218,10 +218,10 @@ class _FocusTimerSheetState extends ConsumerState<FocusTimerSheet> {
               labelText: 'Session / Module Name',
               labelStyle: const TextStyle(fontSize: 12),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: AppTheme.cardWhite,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppTheme.sketchBorderColor, width: 1.5),
+                borderSide: BorderSide(color: AppTheme.sketchBorderColor, width: 1.5),
               ),
             ),
           ),
@@ -232,7 +232,7 @@ class _FocusTimerSheetState extends ConsumerState<FocusTimerSheet> {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 32),
             decoration: AppTheme.sketchDecoration(
-              backgroundColor: Colors.white,
+              backgroundColor: AppTheme.cardWhite,
               borderRadius: 24,
               shadowOffset: 4,
             ),
@@ -293,7 +293,7 @@ class _FocusTimerSheetState extends ConsumerState<FocusTimerSheet> {
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.inkForeground,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppTheme.paperBackground,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
@@ -313,20 +313,20 @@ class _FocusTimerSheetState extends ConsumerState<FocusTimerSheet> {
       avatar: Icon(
         icon,
         size: 16,
-        color: isSelected ? Colors.white : AppTheme.inkForeground,
+        color: isSelected ? AppTheme.paperBackground : AppTheme.inkForeground,
       ),
       label: Text(label),
       labelStyle: TextStyle(
         fontSize: 11,
         fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-        color: isSelected ? Colors.white : AppTheme.inkForeground,
+        color: isSelected ? AppTheme.paperBackground : AppTheme.inkForeground,
       ),
       selectedColor: AppTheme.inkForeground,
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.cardWhite,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
         side: BorderSide(
-          color: isSelected ? AppTheme.sketchBorderColor : Colors.grey.shade300,
+          color: isSelected ? AppTheme.sketchBorderColor : AppTheme.borderLight,
           width: 1.2,
         ),
       ),

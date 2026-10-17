@@ -3,6 +3,11 @@ import 'package:flutter/material.dart';
 import '../models/app_state.dart';
 import '../services/storage_service.dart';
 import '../services/notification_service.dart';
+import '../services/analytics_service.dart';
+import '../services/crash_reporting_service.dart';
+import '../services/metrics_service.dart';
+import '../services/sync_service.dart';
+import '../theme/modulix_theme.dart';
 
 // ─── App State ───────────────────────────────────────────────────────────────
 
@@ -14,7 +19,7 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
   Future<AppState> build() async {
     final loaded = StorageService.instance.load();
     NotificationService.instance.syncAllReminders(loaded);
-    // Trigger standard system permission popup ("Allow FlowMD to send you notifications?")
+    // Trigger standard system permission popup ("Allow Modulix to send you notifications?")
     if (loaded.dailyReminderEnabled ||
         loaded.streakReminderEnabled ||
         loaded.moduleTasksReminderEnabled ||
@@ -29,18 +34,31 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
     final updated = updater(current);
     state = AsyncData(updated);
     await StorageService.instance.save(updated);
+    SyncService.instance.schedulePush(ref);
   }
 
   // Onboarding
   Future<void> completeOnboarding({
     required String doctorName,
     required String activeEdition,
-  }) =>
-      _update((s) => s.copyWith(
-            onboardingDone: true,
-            doctorName: doctorName.trim().isEmpty ? 'Dr' : doctorName.trim(),
-            activeEdition: activeEdition,
-          ));
+    String? avatarColorId,
+    String? avatarIconId,
+  }) async {
+    final cleanName = doctorName.trim().isEmpty ? 'Doctor' : doctorName.trim();
+    await _update((s) => s.copyWith(
+          onboardingDone: true,
+          doctorName: cleanName,
+          activeEdition: activeEdition,
+          avatarColorId: avatarColorId ?? s.avatarColorId,
+          avatarIconId: avatarIconId ?? s.avatarIconId,
+        ));
+    AnalyticsService.instance.logOnboardingCompleted(
+      doctorName: cleanName,
+      edition: activeEdition,
+    );
+    CrashReportingService.instance.setDoctorName(cleanName);
+    CrashReportingService.instance.setCustomKey('active_edition', activeEdition);
+  }
 
   // Edition
   Future<void> switchEdition(String editionId) =>
@@ -119,7 +137,9 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
     final current = state.value ?? AppState.empty;
     final clearedEditions = current.editions.map((k, v) => MapEntry(
           k,
-          EditionState(plan: v.plan), // preserves configured plan structure but wipes completions & logs
+          EditionState(
+              plan: v
+                  .plan), // preserves configured plan structure but wipes completions & logs
         ));
     final updated = current.copyWith(editions: clearedEditions);
     state = AsyncData(updated);
@@ -127,16 +147,23 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
   }
 
   // Plan
-  Future<void> updatePlan(StudyPlan plan) =>
-      _update((s) => s.updateCurrentEdition((e) => e.copyWith(plan: plan)));
+  Future<void> updatePlan(StudyPlan plan) async {
+    await _update((s) => s.updateCurrentEdition((e) => e.copyWith(plan: plan)));
+    AnalyticsService.instance.logPlanConfigured(
+      subject: plan.targetSubject,
+      targetDate: plan.targetDate,
+      dailyHours: plan.dailyHours,
+    );
+  }
 
   // Video completion
   Future<void> markVideoComplete(String videoId) async {
     await _update((s) => s.updateCurrentEdition((e) {
           final updated = Map<String, dynamic>.from(e.completedVideos);
+          if (updated.containsKey(videoId)) return e;
           updated[videoId] = DateTime.now().toIso8601String();
           // Also update daily history
-          final today = _todayKey();
+          final today = _todayKey(s.dayStartHour);
           final history = Map<String, int>.from(e.dailyHistory);
           final newCount = (history[today] ?? 0) + 1;
           history[today] = newCount;
@@ -154,6 +181,11 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
 
           return e.copyWith(completedVideos: updated, dailyHistory: history);
         }));
+    AnalyticsService.instance.logModuleCompleted(
+      subject: state.value?.currentEdition.plan.targetSubject ?? '',
+      type: 'video',
+      topicId: videoId,
+    );
   }
 
   Future<void> markVideoIncomplete(String videoId) async {
@@ -162,7 +194,7 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
           final wasCompleted = updated.remove(videoId) != null;
           // Decrement daily history
           if (wasCompleted) {
-            final today = _todayKey();
+            final today = _todayKey(s.dayStartHour);
             final history = Map<String, int>.from(e.dailyHistory);
             final cur = history[today] ?? 0;
             if (cur > 1) {
@@ -177,6 +209,20 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
   }
 
   // QBank completion
+  Future<void> markQBankComplete(String qbankId) async {
+    await _update((s) => s.updateCurrentEdition((e) {
+          final updated = Map<String, dynamic>.from(e.completedQBanks);
+          if (updated.containsKey(qbankId)) return e;
+          updated[qbankId] = DateTime.now().toIso8601String();
+          return e.copyWith(completedQBanks: updated);
+        }));
+    AnalyticsService.instance.logModuleCompleted(
+      subject: state.value?.currentEdition.plan.targetSubject ?? '',
+      type: 'qbank',
+      topicId: qbankId,
+    );
+  }
+
   Future<void> toggleQBankComplete(String qbankId) async {
     await _update((s) => s.updateCurrentEdition((e) {
           final updated = Map<String, dynamic>.from(e.completedQBanks);
@@ -187,9 +233,28 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
           }
           return e.copyWith(completedQBanks: updated);
         }));
+    AnalyticsService.instance.logModuleCompleted(
+      subject: state.value?.currentEdition.plan.targetSubject ?? '',
+      type: 'qbank',
+      topicId: qbankId,
+    );
   }
 
   // Notes completion
+  Future<void> markNotesComplete(String noteId) async {
+    await _update((s) => s.updateCurrentEdition((e) {
+          final updated = Map<String, dynamic>.from(e.completedNotes);
+          if (updated.containsKey(noteId)) return e;
+          updated[noteId] = DateTime.now().toIso8601String();
+          return e.copyWith(completedNotes: updated);
+        }));
+    AnalyticsService.instance.logModuleCompleted(
+      subject: state.value?.currentEdition.plan.targetSubject ?? '',
+      type: 'notes',
+      topicId: noteId,
+    );
+  }
+
   Future<void> toggleNotesComplete(String noteId) async {
     await _update((s) => s.updateCurrentEdition((e) {
           final updated = Map<String, dynamic>.from(e.completedNotes);
@@ -200,18 +265,28 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
           }
           return e.copyWith(completedNotes: updated);
         }));
+    AnalyticsService.instance.logModuleCompleted(
+      subject: state.value?.currentEdition.plan.targetSubject ?? '',
+      type: 'notes',
+      topicId: noteId,
+    );
   }
 
-  // Bulk chapter completion
-  Future<void> bulkCompleteChapter(
-      String chapterName, List<String> videoIds) async {
+  // Bulk video completion (does not inflate today's study history in Analytics)
+  Future<void> markVideosBulk(List<String> videoIds,
+      [String? chapterName]) async {
     await _update((s) => s.updateCurrentEdition((e) {
           final updated = Map<String, dynamic>.from(e.completedVideos);
+          final nowStr = DateTime.now().toIso8601String();
           for (final id in videoIds) {
-            updated[id] = true; // legacy bulk marker
+            if (!updated.containsKey(id)) {
+              updated[id] = nowStr;
+            }
           }
           final chapters = List<String>.from(e.bulkCompletedChapters);
-          if (!chapters.contains(chapterName)) chapters.add(chapterName);
+          if (chapterName != null && !chapters.contains(chapterName)) {
+            chapters.add(chapterName);
+          }
           return e.copyWith(
             completedVideos: updated,
             bulkCompletedChapters: chapters,
@@ -219,8 +294,81 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
         }));
   }
 
+  Future<void> unmarkVideosBulk(List<String> videoIds,
+      [String? chapterName]) async {
+    await _update((s) => s.updateCurrentEdition((e) {
+          final updated = Map<String, dynamic>.from(e.completedVideos);
+          for (final id in videoIds) {
+            updated.remove(id);
+          }
+          final chapters = List<String>.from(e.bulkCompletedChapters);
+          if (chapterName != null) {
+            chapters.remove(chapterName);
+          }
+          return e.copyWith(
+            completedVideos: updated,
+            bulkCompletedChapters: chapters,
+          );
+        }));
+  }
+
+  // Bulk QBank completion
+  Future<void> markQBanksBulk(List<String> qbankIds) async {
+    await _update((s) => s.updateCurrentEdition((e) {
+          final updated = Map<String, dynamic>.from(e.completedQBanks);
+          final nowStr = DateTime.now().toIso8601String();
+          for (final id in qbankIds) {
+            if (!updated.containsKey(id)) {
+              updated[id] = nowStr;
+            }
+          }
+          return e.copyWith(completedQBanks: updated);
+        }));
+  }
+
+  Future<void> unmarkQBanksBulk(List<String> qbankIds) async {
+    await _update((s) => s.updateCurrentEdition((e) {
+          final updated = Map<String, dynamic>.from(e.completedQBanks);
+          for (final id in qbankIds) {
+            updated.remove(id);
+          }
+          return e.copyWith(completedQBanks: updated);
+        }));
+  }
+
+  // Bulk Notes completion
+  Future<void> markNotesBulk(List<String> noteIds) async {
+    await _update((s) => s.updateCurrentEdition((e) {
+          final updated = Map<String, dynamic>.from(e.completedNotes);
+          final nowStr = DateTime.now().toIso8601String();
+          for (final id in noteIds) {
+            if (!updated.containsKey(id)) {
+              updated[id] = nowStr;
+            }
+          }
+          return e.copyWith(completedNotes: updated);
+        }));
+  }
+
+  Future<void> unmarkNotesBulk(List<String> noteIds) async {
+    await _update((s) => s.updateCurrentEdition((e) {
+          final updated = Map<String, dynamic>.from(e.completedNotes);
+          for (final id in noteIds) {
+            updated.remove(id);
+          }
+          return e.copyWith(completedNotes: updated);
+        }));
+  }
+
+  // Legacy Bulk chapter completion
+  Future<void> bulkCompleteChapter(
+      String chapterName, List<String> videoIds) async {
+    await markVideosBulk(videoIds, chapterName);
+  }
+
   // Queue batch
-  Future<void> setBatch(List<String> videoIds, [List<String> staleIds = const []]) =>
+  Future<void> setBatch(List<String> videoIds,
+          [List<String> staleIds = const []]) =>
       _update((s) => s.updateCurrentEdition((e) => e.copyWith(
             queueBatchVideoIds: videoIds,
             staleBatchVideoIds: staleIds,
@@ -231,6 +379,19 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
       _update((s) => s.updateCurrentEdition((e) => e.copyWith(
             queueCompletedInBatch: e.queueCompletedInBatch + 1,
           )));
+
+  // Themes & Appearance
+  Future<void> setThemePref(ThemePref pref) =>
+      _update((s) => s.copyWith(themePref: pref));
+
+  Future<void> setPalettePreset(String presetId) async {
+    final preset = PalettePreset.fromId(presetId);
+    await _update((s) => s.copyWith(
+          palettePresetId: preset.id,
+          accentColorId: preset.id,
+          themePref: preset.isDark ? ThemePref.dark : ThemePref.light,
+        ));
+  }
 
   // Backup
   Future<void> importState(AppState imported) async {
@@ -244,7 +405,40 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
   }
 }
 
-// ─── Theme Mode ──────────────────────────────────────────────────────────────
+// ─── Theme Data & Appearance ──────────────────────────────────────────────────
+
+class ModulixAppThemeData {
+  final ThemeData lightTheme;
+  final ThemeData darkTheme;
+  final ThemeMode themeMode;
+  final ModulixThemeExtension extension;
+
+  const ModulixAppThemeData({
+    required this.lightTheme,
+    required this.darkTheme,
+    required this.themeMode,
+    required this.extension,
+  });
+}
+
+/// Backward compatibility alias for FlowMDAppThemeData
+typedef FlowMDAppThemeData = ModulixAppThemeData;
+
+final appThemeDataProvider = Provider<ModulixAppThemeData>((ref) {
+  final appState = ref.watch(appStateProvider).valueOrNull ?? AppState.empty;
+  final preset = PalettePreset.fromId(appState.palettePresetId);
+
+  final activeExt = ModulixThemeExtension.from(preset: preset);
+  final activeTheme = ModulixThemeFactory.build(preset: preset);
+  final themeMode = preset.isDark ? ThemeMode.dark : ThemeMode.light;
+
+  return ModulixAppThemeData(
+    lightTheme: activeTheme,
+    darkTheme: activeTheme,
+    themeMode: themeMode,
+    extension: activeExt,
+  );
+});
 
 final themeModeProvider = Provider<ThemeMode>((ref) {
   final appState = ref.watch(appStateProvider);
@@ -261,7 +455,4 @@ final themeModeProvider = Provider<ThemeMode>((ref) {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-String _todayKey() {
-  final now = DateTime.now();
-  return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-}
+String _todayKey([int dayStartHour = 5]) => MetricsService.todayKey(dayStartHour);

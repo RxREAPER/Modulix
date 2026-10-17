@@ -6,7 +6,8 @@ class TimerModesAnimationWidget extends StatefulWidget {
   const TimerModesAnimationWidget({super.key});
 
   @override
-  State<TimerModesAnimationWidget> createState() => _TimerModesAnimationWidgetState();
+  State<TimerModesAnimationWidget> createState() =>
+      _TimerModesAnimationWidgetState();
 }
 
 class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
@@ -58,33 +59,39 @@ class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
           clipBehavior: Clip.antiAlias,
           child: Column(
             children: [
-              // Top Bar with FlowMD Mode Dropdown Button
+              // Top Bar with Modulix Mode Dropdown Button
               Padding(
                 padding: const EdgeInsets.fromLTRB(14, 10, 14, 4),
                 child: Row(
                   children: [
                     Expanded(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.08),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withOpacity(0.35), width: 1.5),
+                          border: Border.all(
+                              color: Colors.white.withOpacity(0.35),
+                              width: 1.5),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
                               modeIndex == 0
-                                  ? '⏱  Pomodoro'
-                                  : (modeIndex == 1 ? '⬆  Count-Up' : '📌  Module-Linked'),
+                                  ? 'Pomodoro'
+                                  : (modeIndex == 1
+                                      ? 'Count-Up'
+                                      : 'Module-Linked'),
                               style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w900,
                                 color: Colors.white,
                               ),
                             ),
-                            Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white.withOpacity(0.7), size: 16),
+                            Icon(Icons.keyboard_arrow_down_rounded,
+                                color: Colors.white.withOpacity(0.7), size: 16),
                           ],
                         ),
                       ),
@@ -92,7 +99,8 @@ class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
                     const SizedBox(width: 8),
                     // Mode Tag Pill
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 6),
                       decoration: BoxDecoration(
                         color: modeIndex == 0
                             ? Colors.orange.withOpacity(0.2)
@@ -103,7 +111,9 @@ class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
                         border: Border.all(
                           color: modeIndex == 0
                               ? Colors.orange
-                              : (modeIndex == 1 ? Colors.blueAccent : const Color(0xFFA78BFA)),
+                              : (modeIndex == 1
+                                  ? Colors.blueAccent
+                                  : const Color(0xFFA78BFA)),
                           width: 1.2,
                         ),
                       ),
@@ -117,7 +127,9 @@ class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
                           letterSpacing: 0.6,
                           color: modeIndex == 0
                               ? Colors.orange
-                              : (modeIndex == 1 ? Colors.blueAccent : const Color(0xFFA78BFA)),
+                              : (modeIndex == 1
+                                  ? Colors.blueAccent
+                                  : const Color(0xFFA78BFA)),
                         ),
                       ),
                     ),
@@ -150,7 +162,8 @@ class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
                         decoration: BoxDecoration(
                           color: AppTheme.primaryBlue.withOpacity(0.85),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withOpacity(0.4), width: 1.4),
+                          border: Border.all(
+                              color: Colors.white.withOpacity(0.4), width: 1.4),
                           boxShadow: [
                             BoxShadow(
                               color: AppTheme.primaryBlue.withOpacity(0.3),
@@ -162,15 +175,22 @@ class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.pause_rounded, color: Colors.white, size: 16),
+                            Icon(Icons.pause_rounded,
+                                color: Colors.white, size: 16),
                             SizedBox(width: 4),
-                            Text('PAUSE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.6)),
+                            Text('PAUSE',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 11,
+                                    letterSpacing: 0.6)),
                           ],
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    _miniControlBtn('Finish', Icons.check_rounded, isFinish: true),
+                    _miniControlBtn('Finish', Icons.check_rounded,
+                        isFinish: true),
                   ],
                 ),
               ),
@@ -189,7 +209,7 @@ class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Real FlowMD Pomodoro preset chips
+        // Real Modulix Pomodoro preset chips
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [15, 25, 45, 60].map((mins) {
@@ -198,10 +218,14 @@ class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
               margin: const EdgeInsets.symmetric(horizontal: 3),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
               decoration: BoxDecoration(
-                color: sel ? AppTheme.primaryBlue.withOpacity(0.85) : Colors.white.withOpacity(0.08),
+                color: sel
+                    ? AppTheme.primaryBlue.withOpacity(0.85)
+                    : Colors.white.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: sel ? Colors.white.withOpacity(0.6) : Colors.white.withOpacity(0.2),
+                  color: sel
+                      ? Colors.white.withOpacity(0.6)
+                      : Colors.white.withOpacity(0.2),
                   width: 1.2,
                 ),
               ),
@@ -229,7 +253,9 @@ class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
           ),
         ),
         Text(
-          isBreak ? '☕ BREAK INTERVAL (5 MIN REST)' : '🔥 FOCUS INTERVAL (25 MIN SPRINT)',
+          isBreak
+              ? 'BREAK INTERVAL (5 MIN REST)'
+              : 'FOCUS INTERVAL (25 MIN SPRINT)',
           style: TextStyle(
             fontSize: 7.5,
             fontWeight: FontWeight.w900,
@@ -281,14 +307,18 @@ class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: Colors.white.withOpacity(0.25), width: 1),
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.play_arrow_rounded, color: AppTheme.primaryBlue, size: 12),
+              Icon(Icons.play_arrow_rounded,
+                  color: AppTheme.primaryBlue, size: 12),
               SizedBox(width: 4),
               Text(
                 'Cardiology · Heart Failure (38 mins)',
-                style: TextStyle(fontSize: 8.5, fontWeight: FontWeight.w800, color: Colors.white),
+                style: TextStyle(
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white),
               ),
             ],
           ),
@@ -316,7 +346,8 @@ class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
     );
   }
 
-  static Widget _miniControlBtn(String label, IconData icon, {bool isFinish = false}) {
+  static Widget _miniControlBtn(String label, IconData icon,
+      {bool isFinish = false}) {
     return Container(
       width: 42,
       height: 34,
@@ -328,8 +359,13 @@ class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 14, color: isFinish ? Colors.greenAccent : Colors.white70),
-          Text(label, style: TextStyle(fontSize: 7, fontWeight: FontWeight.w700, color: isFinish ? Colors.greenAccent : Colors.white70)),
+          Icon(icon,
+              size: 14, color: isFinish ? Colors.greenAccent : Colors.white70),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 7,
+                  fontWeight: FontWeight.w700,
+                  color: isFinish ? Colors.greenAccent : Colors.white70)),
         ],
       ),
     );

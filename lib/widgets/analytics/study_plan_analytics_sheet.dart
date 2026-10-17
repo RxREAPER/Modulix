@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../models/app_state.dart';
 import '../../models/syllabus.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/syllabus_provider.dart';
 import '../../services/metrics_service.dart';
 import '../../theme/app_theme.dart';
-import '../curriculum/configure_plan_sheet.dart';
+import 'analytics_progress_hero_card.dart';
 
 class StudyPlanAnalyticsSheet extends ConsumerWidget {
   const StudyPlanAnalyticsSheet({super.key});
@@ -36,7 +36,7 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
     if (appState == null) {
       return Container(
         height: 300,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppTheme.paperBackground,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
@@ -64,6 +64,9 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
 
     if (targetSub != null) {
       for (final ch in targetSub.chapters) {
+        if (plan.targetUnits.isNotEmpty && !plan.targetUnits.contains(ch.name)) {
+          continue;
+        }
         int chTotal = ch.videos.length;
         int chDone = 0;
         for (final v in ch.videos) {
@@ -109,7 +112,7 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
       for (int i = 0; i < 7; i++) {
         final d = now.subtract(Duration(days: i));
         final k = DateFormat('yyyy-MM-dd').format(d);
-        last7DaysDone += (edition.dailyHistory[k] as int?) ?? 0;
+        last7DaysDone += edition.dailyHistory[k] ?? 0;
       }
       rollingVelocity = last7DaysDone / 7.0;
 
@@ -123,7 +126,7 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.88,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppTheme.paperBackground,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         border: Border(
@@ -153,25 +156,25 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryBlue.withOpacity(0.12),
+                    color: AppTheme.accentSubtle,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppTheme.primaryBlue, width: 1.5),
+                    border: Border.all(color: AppTheme.accentPrimary, width: 1.5),
                   ),
-                  child: const Icon(Icons.track_changes_rounded,
-                      color: AppTheme.primaryBlue, size: 24),
+                  child: Icon(Icons.track_changes_rounded,
+                      color: AppTheme.accentPrimary, size: 24),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'MODULE PLAN ANALYTICS',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.2,
-                          color: AppTheme.primaryBlue,
+                          color: AppTheme.accentPrimary,
                         ),
                       ),
                       Text(
@@ -180,7 +183,7 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
                             : 'No Plan Configured',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w900,
                           color: AppTheme.inkForeground,
@@ -192,16 +195,16 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
                 GestureDetector(
                   onTap: () {
                     Navigator.pop(context);
-                    ConfigurePlanSheet.show(context);
+                    context.push('/plan');
                   },
-                  child: Container(
+                    child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppTheme.cardWhite,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: AppTheme.sketchBorderColor, width: 1.4),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.edit_rounded, size: 14, color: AppTheme.inkForeground),
@@ -218,7 +221,7 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
               ],
             ),
           ),
-          const Divider(height: 1, color: AppTheme.borderLight),
+          Divider(height: 1, color: AppTheme.borderLight),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
@@ -227,15 +230,15 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: AppTheme.sketchDecoration(
-                      backgroundColor: Colors.white,
+                      backgroundColor: AppTheme.cardWhite,
                       borderRadius: 18,
                     ),
                     child: Column(
                       children: [
-                        const Icon(Icons.event_note_rounded,
+                        Icon(Icons.event_note_rounded,
                             size: 48, color: AppTheme.mutedText),
                         const SizedBox(height: 12),
-                        const Text(
+                        Text(
                           'No Target Configured Yet',
                           style: TextStyle(
                             fontSize: 16,
@@ -244,7 +247,7 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 6),
-                        const Text(
+                        Text(
                           'Set your exam deadline, target subject, and daily video pace in Configure Study Plan.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
@@ -256,14 +259,14 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
                         ElevatedButton.icon(
                           onPressed: () {
                             Navigator.pop(context);
-                            ConfigurePlanSheet.show(context);
+                            context.push('/plan');
                           },
                           icon: const Icon(Icons.add_task_rounded, size: 18),
                           label: const Text('Configure Now',
                               style: TextStyle(fontWeight: FontWeight.w800)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.inkForeground,
-                            foregroundColor: Colors.white,
+                            foregroundColor: AppTheme.paperBackground,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 20, vertical: 12),
                             shape: RoundedRectangleBorder(
@@ -275,81 +278,16 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
                     ),
                   ),
                 ] else ...[
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: AppTheme.sketchDecoration(
-                      backgroundColor: Colors.white,
-                      borderRadius: 20,
-                      shadowOffset: 4,
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            SizedBox(
-                              width: 82,
-                              height: 82,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  CircularProgressIndicator(
-                                    value: progress,
-                                    strokeWidth: 9,
-                                    strokeCap: StrokeCap.round,
-                                    backgroundColor: Colors.grey.shade200,
-                                    valueColor: const AlwaysStoppedAnimation(
-                                        AppTheme.primaryBlue),
-                                  ),
-                                  Text(
-                                    '${(progress * 100).round()}%',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w900,
-                                      fontFamily: 'monospace',
-                                      color: AppTheme.inkForeground,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 20),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'TARGET: ${DateFormat('d MMM yyyy').format(DateTime.tryParse(plan.targetDate) ?? DateTime.now())}',
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w800,
-                                      color: AppTheme.mutedText,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '$completedVideos / $totalVideos',
-                                    style: const TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.w900,
-                                      color: AppTheme.inkForeground,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Videos completed · ${remainingHours.toStringAsFixed(1)}h remaining',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (eta != null) ...[
-                          const SizedBox(height: 16),
-                          Container(
+                  AnalyticsProgressHeroCard(
+                    progress: progress,
+                    progressColor: AppTheme.accentPrimary,
+                    tagLabel:
+                        'TARGET: ${DateFormat('d MMM yyyy').format(DateTime.tryParse(plan.targetDate) ?? DateTime.now())}',
+                    primaryValue: '$completedVideos / $totalVideos',
+                    secondaryLabel:
+                        'Videos completed · ${remainingHours.toStringAsFixed(1)}h remaining',
+                    statusBanner: eta != null
+                        ? Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 14, vertical: 10),
                             decoration: BoxDecoration(
@@ -393,10 +331,8 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
                                 ),
                               ],
                             ),
-                          ),
-                        ],
-                      ],
-                    ),
+                          )
+                        : null,
                   ),
                   const SizedBox(height: 20),
                   Row(
@@ -405,25 +341,25 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
                         child: Container(
                           padding: const EdgeInsets.all(14),
                           decoration: AppTheme.sketchDecoration(
-                            backgroundColor: Colors.white,
+                            backgroundColor: AppTheme.cardWhite,
                             borderRadius: 16,
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('DAILY TARGET',
+                              Text('DAILY TARGET',
                                   style: TextStyle(
                                       fontSize: 9,
                                       fontWeight: FontWeight.w800,
                                       color: AppTheme.mutedText)),
                               const SizedBox(height: 4),
                               Text('${plan.videosPerDay ?? 5} vids',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w900,
                                       color: AppTheme.inkForeground)),
-                              Text('${plan.dailyHours.toStringAsFixed(1)}h planned',
-                                  style: const TextStyle(
+                              Text('Module pace',
+                                  style: TextStyle(
                                       fontSize: 10,
                                       color: AppTheme.mutedText)),
                             ],
@@ -435,24 +371,30 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
                         child: Container(
                           padding: const EdgeInsets.all(14),
                           decoration: AppTheme.sketchDecoration(
-                            backgroundColor: Colors.white,
+                            backgroundColor: AppTheme.cardWhite,
                             borderRadius: 16,
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('REVISION CYCLES',
+                              Text('ACTIVE UNITS',
                                   style: TextStyle(
                                       fontSize: 9,
                                       fontWeight: FontWeight.w800,
                                       color: AppTheme.mutedText)),
                               const SizedBox(height: 4),
-                              Text('${plan.revisionCycles}x target',
-                                  style: const TextStyle(
+                              Text(
+                                  plan.targetUnits.isEmpty
+                                      ? 'All Units'
+                                      : '${plan.targetUnits.length} Units',
+                                  style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w900,
                                       color: AppTheme.inkForeground)),
-                              const Text('High-yield recall',
+                              Text(
+                                  plan.targetUnits.isEmpty
+                                      ? 'Full subject scope'
+                                      : 'Targeted units',
                                   style: TextStyle(
                                       fontSize: 10,
                                       color: AppTheme.mutedText)),
@@ -469,25 +411,25 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
                         child: Container(
                           padding: const EdgeInsets.all(14),
                           decoration: AppTheme.sketchDecoration(
-                            backgroundColor: Colors.white,
+                            backgroundColor: AppTheme.cardWhite,
                             borderRadius: 16,
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('7D VELOCITY',
+                              Text('7D VELOCITY',
                                   style: TextStyle(
                                       fontSize: 9,
                                       fontWeight: FontWeight.w800,
                                       color: AppTheme.mutedText)),
                               const SizedBox(height: 4),
                               Text('${rollingVelocity.toStringAsFixed(1)} vids/d',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w900,
-                                      color: AppTheme.primaryBlue)),
+                                      color: AppTheme.accentPrimary)),
                               Text('Target: ${plan.videosPerDay ?? 4}/day',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 10,
                                       color: AppTheme.mutedText)),
                             ],
@@ -499,13 +441,13 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
                         child: Container(
                           padding: const EdgeInsets.all(14),
                           decoration: AppTheme.sketchDecoration(
-                            backgroundColor: Colors.white,
+                            backgroundColor: AppTheme.cardWhite,
                             borderRadius: 16,
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('STALE CLEARANCE',
+                              Text('STALE CLEARANCE',
                                   style: TextStyle(
                                       fontSize: 9,
                                       fontWeight: FontWeight.w800,
@@ -517,7 +459,7 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
                                       fontWeight: FontWeight.w900,
                                       color: staleRate >= 80 ? const Color(0xFF059669) : const Color(0xFFD97706))),
                               Text('$staleDone of ${staleIds.length} resolved',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 10,
                                       color: AppTheme.mutedText)),
                             ],
@@ -527,7 +469,7 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  const Text(
+                  Text(
                     'CHAPTER COMPLETION BREAKDOWN',
                     style: TextStyle(
                       fontSize: 11,
@@ -548,7 +490,7 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppTheme.cardWhite,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                             color: AppTheme.borderLight, width: 1.2),
@@ -592,11 +534,11 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
                             child: LinearProgressIndicator(
                               value: pct,
                               minHeight: 5,
-                              backgroundColor: Colors.grey.shade100,
+                              backgroundColor: AppTheme.borderLight,
                               valueColor: AlwaysStoppedAnimation(
                                 isComplete
                                     ? Colors.green
-                                    : AppTheme.primaryBlue,
+                                    : AppTheme.accentPrimary,
                               ),
                             ),
                           ),

@@ -9,6 +9,7 @@ class Video {
   final int durationMins;
   final int durationSecs;
   final int serialNumber;
+  final int? assignedNumber;
 
   const Video({
     required this.id,
@@ -18,9 +19,11 @@ class Video {
     this.durationMins = 0,
     this.durationSecs = 0,
     required this.serialNumber,
+    this.assignedNumber,
   });
 
   factory Video.fromMap(Map<String, dynamic> map, String subjectId, [String? fallbackChapterName]) {
+    final assignedNo = map['assignedNumber'] as int?;
     final rawVideoNumber = map['videoNumber'] as String? ?? '';
     int parsedNumber = 0;
     if (rawVideoNumber.isNotEmpty) {
@@ -49,7 +52,8 @@ class Video {
       chapterName: resolvedChapter,
       durationMins: map['durationMins'] as int? ?? 0,
       durationSecs: map['durationSecs'] as int? ?? 0,
-      serialNumber: parsedNumber,
+      serialNumber: assignedNo ?? parsedNumber,
+      assignedNumber: assignedNo,
     );
   }
 
@@ -70,6 +74,7 @@ class QBankTopic {
   final String chapterName;
   final int totalMcqs;
   final int serialNumber;
+  final int? assignedNumber;
 
   const QBankTopic({
     required this.id,
@@ -78,7 +83,22 @@ class QBankTopic {
     required this.chapterName,
     required this.totalMcqs,
     required this.serialNumber,
+    this.assignedNumber,
   });
+
+  factory QBankTopic.fromMap(Map<String, dynamic> map, String subjectId, [String? fallbackChapterName]) {
+    final assignedNo = map['assignedNumber'] as int?;
+    final sNo = map['serialNumber'] as int? ?? assignedNo ?? 0;
+    return QBankTopic(
+      id: map['id'] as String,
+      title: map['title'] as String? ?? '',
+      subjectId: subjectId,
+      chapterName: (map['chapterName'] as String?) ?? (fallbackChapterName ?? ''),
+      totalMcqs: map['totalMcqs'] as int? ?? 0,
+      serialNumber: sNo,
+      assignedNumber: assignedNo ?? sNo,
+    );
+  }
 }
 
 /// Represents a Notes/Textbook resource
@@ -117,6 +137,20 @@ class Chapter {
   int get totalVideos => videos.length;
   int get totalQBanks => qbanks.length;
   int get totalNotes => notes.length;
+
+  double get totalMinutes => videos.fold<double>(0.0, (acc, v) => acc + v.totalMinutes);
+
+  double get totalHours => totalMinutes / 60;
+
+  String get durationLabel {
+    final mins = totalMinutes.round();
+    if (mins == 0) return '';
+    final h = mins ~/ 60;
+    final m = mins % 60;
+    if (h == 0) return '${m}m';
+    if (m == 0) return '${h}h';
+    return '${h}h ${m}m';
+  }
 }
 
 /// A subject in the syllabus
@@ -125,6 +159,7 @@ class Subject {
   final String name;
   final String displayName;
   final List<Chapter> chapters;
+  final List<Chapter> qbankChapters;
   final Color accent;
 
   const Subject({
@@ -132,11 +167,15 @@ class Subject {
     required this.name,
     required this.displayName,
     required this.chapters,
+    this.qbankChapters = const [],
     required this.accent,
   });
 
+  Color get accentColor => accent;
+
   List<Video> get allVideos => chapters.expand((c) => c.videos).toList();
-  List<QBankTopic> get allQBanks => chapters.expand((c) => c.qbanks).toList();
+  List<QBankTopic> get allQBanks =>
+      (qbankChapters.isNotEmpty ? qbankChapters : chapters).expand((c) => c.qbanks).toList();
   List<NotesItem> get allNotes => chapters.expand((c) => c.notes).toList();
 
   int get totalVideos => allVideos.length;

@@ -1,9 +1,6 @@
-import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/time_log.dart';
-
-const _kTimeLogsKey = 'flowmd_time_logs_v1';
+import '../services/database_service.dart';
 
 final timeLogsProvider =
     StateNotifierProvider<TimeLogsNotifier, List<TimeLog>>((ref) {
@@ -17,29 +14,26 @@ class TimeLogsNotifier extends StateNotifier<List<TimeLog>> {
 
   Future<void> _load() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_kTimeLogsKey);
-      if (raw != null && raw.isNotEmpty) {
-        final list = (jsonDecode(raw) as List)
-            .map((e) => TimeLog.fromJson(e as Map<String, dynamic>))
-            .toList();
-        state = list;
-      }
+      final logs = await DatabaseService.instance.getAllTimeLogs();
+      state = logs;
     } catch (_) {}
   }
 
   Future<void> logTime(TimeLog entry) async {
     final updated = [...state, entry];
     state = updated;
-    await _persist(updated);
+    try {
+      await DatabaseService.instance.insertTimeLog(entry);
+    } catch (_) {}
   }
 
-  Future<void> _persist(List<TimeLog> list) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = jsonEncode(list.map((e) => e.toJson()).toList());
-      await prefs.setString(_kTimeLogsKey, raw);
-    } catch (_) {}
+  Future<void> reloadFromDatabase() async {
+    await _load();
+  }
+
+  Future<void> clearAll() async {
+    state = [];
+    await DatabaseService.instance.clearAllTimeLogs();
   }
 
   List<TimeLog> forSubject(String subjectId) {

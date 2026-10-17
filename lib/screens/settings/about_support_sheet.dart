@@ -18,7 +18,7 @@ class AboutSupportSheet extends StatelessWidget {
     );
   }
 
-  static const String feedbackEmail = 'ezioauditore9553@gamil.com';
+  static const String feedbackEmail = 'ezioauditore9553@gmail.com';
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class AboutSupportSheet extends StatelessWidget {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppTheme.paperBackground,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         border: Border(
@@ -59,7 +59,7 @@ class AboutSupportSheet extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.blueGrey.withOpacity(0.12),
+                    color: Colors.blueGrey.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: Colors.blueGrey, width: 1.5),
                   ),
@@ -67,7 +67,7 @@ class AboutSupportSheet extends StatelessWidget {
                       color: Colors.blueGrey, size: 22),
                 ),
                 const SizedBox(width: 14),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -95,11 +95,12 @@ class AboutSupportSheet extends StatelessWidget {
             ),
           ),
 
-          const Divider(height: 1, color: AppTheme.borderLight),
+          Divider(height: 1, color: AppTheme.borderLight),
 
           Expanded(
             child: ListView(
-              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+              physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics()),
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
               children: [
                 // App Logo Hero Badge
@@ -122,7 +123,7 @@ class AboutSupportSheet extends StatelessWidget {
                         ),
                         child: const Center(
                           child: Text(
-                            'F',
+                            'M',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 32,
@@ -132,15 +133,15 @@ class AboutSupportSheet extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        'FlowMD',
+                      Text(
+                        'Modulix',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w900,
                           color: AppTheme.inkForeground,
                         ),
                       ),
-                      const Text(
+                      Text(
                         'Version 1.0.0 (Build 36) · NEET-PG Study Companion',
                         style: TextStyle(
                           fontSize: 12,
@@ -158,94 +159,168 @@ class AboutSupportSheet extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: AppTheme.sketchDecoration(
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppTheme.cardWhite,
                     borderRadius: 18,
                     shadowOffset: 3,
                   ),
                   child: Material(
                     type: MaterialType.transparency,
                     child: Column(
-                    children: [
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(Icons.mail_outline_rounded,
-                              color: Colors.redAccent, size: 20),
-                        ),
-                        title: const Text('Contact Support & Feedback',
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                color: AppTheme.inkForeground)),
-                        subtitle: const Text(
-                          feedbackEmail,
-                          style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: AppTheme.primaryBlue),
-                        ),
-                        trailing: const Icon(Icons.copy_rounded,
-                            size: 18, color: AppTheme.mutedText),
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Support contact: $feedbackEmail'),
-                              duration: const Duration(seconds: 3),
+                      children: [
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                          );
-                        },
-                      ),
-                      const Divider(height: 1, color: AppTheme.borderLight),
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryBlue.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(10),
+                            child: const Icon(Icons.mail_outline_rounded,
+                                color: Colors.redAccent, size: 20),
                           ),
-                          child: const Icon(Icons.share_rounded,
-                              color: AppTheme.primaryBlue, size: 20),
-                        ),
-                        title: const Text('Share FlowMD with Colleagues',
+                          title: Text('Contact Support & Feedback',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.inkForeground)),
+                          subtitle: Text(
+                            feedbackEmail,
                             style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                color: AppTheme.inkForeground)),
-                        subtitle: const Text(
-                          'Help peer medicos build focused study habits',
-                          style: TextStyle(
-                              fontSize: 11, color: AppTheme.mutedText),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.primaryBlue),
+                          ),
+                          trailing: Icon(Icons.copy_rounded,
+                              size: 18, color: AppTheme.mutedText),
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text('Support contact: $feedbackEmail'),
+                                duration: Duration(seconds: 3),
+                              ),
+                            );
+                          },
                         ),
-                        trailing: const Icon(Icons.chevron_right_rounded,
-                            color: AppTheme.mutedText),
-                        onTap: () {
-                          Share.share(
-                            'Level up your NEET-PG clinical prep with FlowMD — offline module pacing and deep-work study timers!',
-                            subject: 'FlowMD NEET-PG Companion',
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                        Divider(height: 1, color: AppTheme.borderLight),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryBlue.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(Icons.share_rounded,
+                                color: AppTheme.primaryBlue, size: 20),
+                          ),
+                          title: Text('Share Modulix with Colleagues',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.inkForeground)),
+                          subtitle: Text(
+                            'Help peer medicos build focused study habits',
+                            style: TextStyle(
+                                fontSize: 11, color: AppTheme.mutedText),
+                          ),
+                          trailing: Icon(Icons.chevron_right_rounded,
+                              color: AppTheme.mutedText),
+                          onTap: () {
+                            Share.share(
+                              'Level up your NEET-PG clinical prep with Modulix — offline module pacing and deep-work study timers!',
+                              subject: 'Modulix NEET-PG Companion',
+                            );
+                          },
+                        ),
+                        Divider(height: 1, color: AppTheme.borderLight),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.deepPurple.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.code_rounded,
+                                color: Colors.deepPurple, size: 20),
+                          ),
+                          title: Text('Open Source Licenses',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.inkForeground)),
+                          subtitle: Text(
+                            'Third-party software libraries & credits',
+                            style: TextStyle(
+                                fontSize: 11, color: AppTheme.mutedText),
+                          ),
+                          trailing: Icon(Icons.chevron_right_rounded,
+                              color: AppTheme.mutedText),
+                          onTap: () {
+                            showLicensePage(
+                              context: context,
+                              applicationName: 'Modulix',
+                              applicationVersion: '1.0.0 (Build 36)',
+                              applicationLegalese:
+                                  'Copyright © 2026 Modulix. All rights reserved.',
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 
                 const SizedBox(height: 20),
 
+                // Medical Disclaimer Notice
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppTheme.current.isDark
+                        ? const Color(0xFF2A2415)
+                        : const Color(0xFFFEF3C7),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                        color: AppTheme.current.isDark
+                            ? const Color(0xFF5A4515)
+                            : const Color(0xFFFDE68A),
+                        width: 1.2),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.health_and_safety_outlined,
+                          size: 18, color: Color(0xFFD97706)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Educational study planner & exam tracking companion. Does not provide clinical medical advice, patient diagnosis, or treatment.',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.current.isDark
+                                ? const Color(0xFFFDE68A)
+                                : const Color(0xFF78350F),
+                            height: 1.35,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
                 // Offline Notice
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: AppTheme.parchmentSurface,
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
                       Icon(Icons.offline_pin_outlined,
                           size: 18, color: AppTheme.mutedText),

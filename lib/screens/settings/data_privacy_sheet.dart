@@ -10,6 +10,8 @@ import '../../providers/app_state_provider.dart';
 import '../../providers/daily_tasks_provider.dart';
 import '../../providers/time_log_provider.dart';
 import '../../services/storage_service.dart';
+import '../../services/backup_service.dart';
+import '../../services/database_service.dart';
 import '../../theme/app_theme.dart';
 
 class DataPrivacySheet extends ConsumerWidget {
@@ -37,7 +39,7 @@ class DataPrivacySheet extends ConsumerWidget {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.90,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppTheme.paperBackground,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         border: Border(
@@ -78,7 +80,7 @@ class DataPrivacySheet extends ConsumerWidget {
                       color: Colors.teal, size: 22),
                 ),
                 const SizedBox(width: 14),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -106,20 +108,27 @@ class DataPrivacySheet extends ConsumerWidget {
             ),
           ),
 
-          const Divider(height: 1, color: AppTheme.borderLight),
+          Divider(height: 1, color: AppTheme.borderLight),
 
           Expanded(
             child: ListView(
-              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+              physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics()),
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
               children: [
                 // 1. Privacy Policy & Terms Legal Box
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.teal.shade50,
+                    color: AppTheme.current.isDark
+                        ? Colors.teal.withValues(alpha: 0.15)
+                        : Colors.teal.shade50,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.teal.shade200, width: 1.4),
+                    border: Border.all(
+                        color: AppTheme.current.isDark
+                            ? Colors.teal.withValues(alpha: 0.4)
+                            : Colors.teal.shade200,
+                        width: 1.4),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,8 +150,8 @@ class DataPrivacySheet extends ConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Your study data belongs exclusively to you. FlowMD operates completely offline without tracking, third-party analytics, or cloud data collection.',
+                      Text(
+                        'Your study data belongs exclusively to you. Modulix operates completely offline without tracking, third-party analytics, or cloud data collection.',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -201,7 +210,7 @@ class DataPrivacySheet extends ConsumerWidget {
                 const SizedBox(height: 24),
 
                 // 2. Backup & Restore
-                const Text(
+                Text(
                   'EXPORT & IMPORT BACKUPS',
                   style: TextStyle(
                     fontSize: 11,
@@ -211,7 +220,7 @@ class DataPrivacySheet extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   'Export your completed videos, daily tasks, study plan and timer history to a portable JSON backup file.',
                   style: TextStyle(fontSize: 12, color: AppTheme.mutedText),
                 ),
@@ -220,70 +229,72 @@ class DataPrivacySheet extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: AppTheme.sketchDecoration(
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppTheme.cardWhite,
                     borderRadius: 18,
                     shadowOffset: 3,
                   ),
                   child: Material(
                     type: MaterialType.transparency,
                     child: Column(
-                    children: [
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryBlue.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(10),
+                      children: [
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryBlue.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(Icons.upload_file_rounded,
+                                color: AppTheme.primaryBlue, size: 20),
                           ),
-                          child: const Icon(Icons.upload_file_rounded,
-                              color: AppTheme.primaryBlue, size: 20),
+                          title: Text('Export Backup File',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.inkForeground)),
+                          subtitle: Text(
+                              'Save .json to drive or share to another phone',
+                              style: TextStyle(
+                                  fontSize: 11, color: AppTheme.mutedText)),
+                          trailing: Icon(Icons.chevron_right_rounded,
+                              color: AppTheme.mutedText),
+                          onTap: () => _exportBackup(context, ref),
                         ),
-                        title: const Text('Export Backup File',
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                color: AppTheme.inkForeground)),
-                        subtitle: const Text('Save .json to drive or share to another phone',
-                            style: TextStyle(
-                                fontSize: 11, color: AppTheme.mutedText)),
-                        trailing: const Icon(Icons.chevron_right_rounded,
-                            color: AppTheme.mutedText),
-                        onTap: () => _exportBackup(context, ref),
-                      ),
-                      const Divider(height: 1, color: AppTheme.borderLight),
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(10),
+                        Divider(height: 1, color: AppTheme.borderLight),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.download_rounded,
+                                color: Colors.green, size: 20),
                           ),
-                          child: const Icon(Icons.download_rounded,
-                              color: Colors.green, size: 20),
+                          title: Text('Import Backup File',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.inkForeground)),
+                          subtitle: Text(
+                              'Restore from a previously exported .json file',
+                              style: TextStyle(
+                                  fontSize: 11, color: AppTheme.mutedText)),
+                          trailing: Icon(Icons.chevron_right_rounded,
+                              color: AppTheme.mutedText),
+                          onTap: () => _importBackup(context, ref),
                         ),
-                        title: const Text('Import Backup File',
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                color: AppTheme.inkForeground)),
-                        subtitle: const Text('Restore from a previously exported .json file',
-                            style: TextStyle(
-                                fontSize: 11, color: AppTheme.mutedText)),
-                        trailing: const Icon(Icons.chevron_right_rounded,
-                            color: AppTheme.mutedText),
-                        onTap: () => _importBackup(context, ref),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                   ),
                 ),
 
                 const SizedBox(height: 24),
 
                 // 3. Granular Cleaning
-                const Text(
+                Text(
                   'PARTIAL DATA MANAGEMENT',
                   style: TextStyle(
                     fontSize: 11,
@@ -293,7 +304,7 @@ class DataPrivacySheet extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   'Selectively clear isolated history without wiping your whole curriculum progression.',
                   style: TextStyle(fontSize: 12, color: AppTheme.mutedText),
                 ),
@@ -302,59 +313,61 @@ class DataPrivacySheet extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: AppTheme.sketchDecoration(
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppTheme.cardWhite,
                     borderRadius: 18,
                     shadowOffset: 3,
                   ),
                   child: Material(
                     type: MaterialType.transparency,
                     child: Column(
-                    children: [
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(10),
+                      children: [
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.timer_off_outlined,
+                                color: Colors.orange, size: 20),
                           ),
-                          child: const Icon(Icons.timer_off_outlined,
-                              color: Colors.orange, size: 20),
+                          title: Text('Clear Focus Timer History',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.inkForeground)),
+                          subtitle: Text(
+                              'Deletes all recorded study timer session logs',
+                              style: TextStyle(
+                                  fontSize: 11, color: AppTheme.mutedText)),
+                          onTap: () => _confirmClearLogs(context, ref),
                         ),
-                        title: const Text('Clear Focus Timer History',
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                color: AppTheme.inkForeground)),
-                        subtitle: const Text('Deletes all recorded study timer session logs',
-                            style: TextStyle(
-                                fontSize: 11, color: AppTheme.mutedText)),
-                        onTap: () => _confirmClearLogs(context, ref),
-                      ),
-                      const Divider(height: 1, color: AppTheme.borderLight),
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.teal.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(10),
+                        Divider(height: 1, color: AppTheme.borderLight),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.teal.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.playlist_remove_rounded,
+                                color: Colors.teal, size: 20),
                           ),
-                          child: const Icon(Icons.playlist_remove_rounded,
-                              color: Colors.teal, size: 20),
+                          title: Text('Clear Desk Pad Tasks',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.inkForeground)),
+                          subtitle: Text(
+                              'Wipes today\'s task list and daily task history',
+                              style: TextStyle(
+                                  fontSize: 11, color: AppTheme.mutedText)),
+                          onTap: () => _confirmClearTasks(context, ref),
                         ),
-                        title: const Text('Clear Desk Pad Tasks',
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                color: AppTheme.inkForeground)),
-                        subtitle: const Text('Wipes today\'s task list and daily task history',
-                            style: TextStyle(
-                                fontSize: 11, color: AppTheme.mutedText)),
-                        onTap: () => _confirmClearTasks(context, ref),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -366,83 +379,47 @@ class DataPrivacySheet extends ConsumerWidget {
   }
 
   static Future<void> _exportBackup(BuildContext context, WidgetRef ref) async {
-    try {
-      final json = ref.read(appStateProvider.notifier).exportState();
-      final dir = await getTemporaryDirectory();
-      final date = DateTime.now().toIso8601String().substring(0, 10);
-      final file = File('${dir.path}/flowmd_backup_$date.json');
-      await file.writeAsString(json);
-      await Share.shareXFiles(
-        [XFile(file.path, mimeType: 'application/json')],
-        subject: 'FlowMD Backup $date',
-      );
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: $e')),
-        );
-      }
-    }
+    await BackupService.exportAndShare(context, ref);
   }
 
   static Future<void> _importBackup(BuildContext context, WidgetRef ref) async {
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['json'],
-      );
-      if (result == null || result.files.single.path == null) return;
-      final file = File(result.files.single.path!);
-      final content = await file.readAsString();
-      final imported = StorageService.instance.import(content);
-      if (imported == null) throw Exception('Invalid backup format');
-
-      await ref.read(appStateProvider.notifier).importState(imported);
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Backup restored successfully!')),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Import failed: $e')),
-        );
-      }
-    }
+    await BackupService.pickAndRestore(context, ref);
   }
 
   static void _confirmClearLogs(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.cardWhite,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppTheme.sketchBorderColor, width: 1.8),
+          side: BorderSide(color: AppTheme.sketchBorderColor, width: 1.8),
         ),
         title: const Text('Clear Focus Timer Logs?',
             style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17)),
-        content: const Text(
+        content: Text(
           'This will permanently delete all timer session logs from Analytics. Your video progress remains untouched.',
           style: TextStyle(fontSize: 13, color: AppTheme.mutedText),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: AppTheme.mutedText)),
+            child: Text('Cancel',
+                style: TextStyle(color: AppTheme.mutedText)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange,
               foregroundColor: Colors.white,
             ),
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Focus timer history cleared')),
-              );
+              await ref.read(timeLogsProvider.notifier).clearAll();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Focus timer history cleared')),
+                );
+              }
             },
             child: const Text('Clear Logs'),
           ),
@@ -455,21 +432,22 @@ class DataPrivacySheet extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.cardWhite,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppTheme.sketchBorderColor, width: 1.8),
+          side: BorderSide(color: AppTheme.sketchBorderColor, width: 1.8),
         ),
         title: const Text('Clear Desk Tasks?',
             style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17)),
-        content: const Text(
+        content: Text(
           'This will wipe your current desk pad checklist and reset your daily task checklist for today.',
           style: TextStyle(fontSize: 13, color: AppTheme.mutedText),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: AppTheme.mutedText)),
+            child: Text('Cancel',
+                style: TextStyle(color: AppTheme.mutedText)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -495,10 +473,10 @@ class DataPrivacySheet extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.cardWhite,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(22),
-          side: const BorderSide(color: AppTheme.sketchBorderColor, width: 2),
+          side: BorderSide(color: AppTheme.sketchBorderColor, width: 2),
         ),
         title: Text(title,
             style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
@@ -507,7 +485,7 @@ class DataPrivacySheet extends ConsumerWidget {
           child: SingleChildScrollView(
             child: Text(
               content,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 color: AppTheme.inkForeground,
                 height: 1.45,
@@ -519,7 +497,7 @@ class DataPrivacySheet extends ConsumerWidget {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.inkForeground,
-              foregroundColor: Colors.white,
+              foregroundColor: AppTheme.paperBackground,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
             ),
@@ -531,7 +509,9 @@ class DataPrivacySheet extends ConsumerWidget {
     );
   }
 
-  static const String _privacyPolicyText = 'FLOWMD PRIVACY POLICY\\nLast Updated: September 2026\\n\\n1. Zero Telemetry & Local Storage\\nFlowMD is built with privacy-by-design for medical professionals. We do NOT track, collect, transmit, or monetize your study progress, exam schedules, or usage patterns. All data created within the app is stored strictly on your local device.\\n\\n2. No Third-Party Tracking\\nThe application does not include any third-party tracking SDKs, ad networks, behavioral trackers, or external analytics endpoints.\\n\\n3. Backups & Data Portability\\nWhen you choose to export your study progress, FlowMD compiles a local JSON archive. You retain 100% control over where this file is transferred or stored.\\n\\n4. Device Permissions\\n- Storage/Files: Used exclusively for user-directed JSON backup import and export.\\n- Network/Internet: Used solely for playing ambient study streams if selected. No personal study information is transmitted.';
+  static const String _privacyPolicyText =
+      'MODULIX PRIVACY POLICY\\nLast Updated: September 2026\\n\\n1. Zero Telemetry & Local Storage\\nModulix is built with privacy-by-design for medical professionals. We do NOT track, collect, transmit, or monetize your study progress, exam schedules, or usage patterns. All data created within the app is stored strictly on your local device.\\n\\n2. No Third-Party Tracking\\nThe application does not include any third-party tracking SDKs, ad networks, behavioral trackers, or external analytics endpoints.\\n\\n3. Backups & Data Portability\\nWhen you choose to export your study progress, Modulix compiles a local JSON archive. You retain 100% control over where this file is transferred or stored.\\n\\n4. Device Permissions\\n- Storage/Files: Used exclusively for user-directed JSON backup import and export.\\n- Network/Internet: Used solely for playing ambient study streams if selected. No personal study information is transmitted.';
 
-  static const String _termsConditionsText = 'FLOWMD TERMS AND CONDITIONS OF USE\\nLast Updated: September 2026\\n\\n1. Educational & Planning Utility\\nFlowMD is an independent study companion and planning tracker designed for medical aspirants. It does not replace formal medical education or institutional curricula.\\n\\n2. Intellectual Property & Brand Separation\\nFlowMD is an independent application. Syllabus references (including Marrow Edition 8 & 6.5) are provided strictly as academic taxonomy indices for personal progress tracking under fair reference principles. FlowMD does not distribute copyrighted video lectures, clinical notes, or Q-Bank test items.\\n\\n3. Disclaimer of Warranties\\nThe software is provided "as is", without warranty of any kind, express or implied. FlowMD and its creator shall not be held liable for any exam performance outcomes, scheduling discrepancies, or data loss arising from hardware failures. Users are encouraged to maintain periodic backups using the Export feature.\\n\\n4. Acceptance\\nBy using FlowMD, you acknowledge that your data remains on your physical hardware under your ownership and agree to these terms.';
+  static const String _termsConditionsText =
+      'MODULIX TERMS AND CONDITIONS OF USE\\nLast Updated: September 2026\\n\\n1. Educational & Planning Utility\\nModulix is an independent study companion and planning tracker designed for medical aspirants. It does not replace formal medical education or institutional curricula.\\n\\n2. Intellectual Property & Brand Separation\\nModulix is an independent application. Syllabus references (including Marrow Edition 8 & 6.5) are provided strictly as academic taxonomy indices for personal progress tracking under fair reference principles. Modulix does not distribute copyrighted video lectures, clinical notes, or Q-Bank test items.\\n\\n3. Disclaimer of Warranties\\nThe software is provided "as is", without warranty of any kind, express or implied. Modulix and its creator shall not be held liable for any exam performance outcomes, scheduling discrepancies, or data loss arising from hardware failures. Users are encouraged to maintain periodic backups using the Export feature.\\n\\n4. Acceptance\\nBy using Modulix, you acknowledge that your data remains on your physical hardware under your ownership and agree to these terms.';
 }

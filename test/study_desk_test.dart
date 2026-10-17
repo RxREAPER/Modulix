@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flowmd_flutter/widgets/nori_companion.dart';
-import 'package:flowmd_flutter/widgets/study_desk_clock.dart';
-import 'package:flowmd_flutter/widgets/study_task_card.dart';
-import 'package:flowmd_flutter/widgets/automated_module_tracker.dart';
-import 'package:flowmd_flutter/screens/curriculum/module_tasks_screen.dart';
-import 'package:flowmd_flutter/models/app_state.dart';
-import 'package:flowmd_flutter/models/syllabus.dart';
-import 'package:flowmd_flutter/providers/app_state_provider.dart';
-import 'package:flowmd_flutter/providers/syllabus_provider.dart';
-import 'package:flowmd_flutter/screens/analytics/analytics_screen.dart';
-import 'package:flowmd_flutter/widgets/analytics/focus_timer_analytics_sheet.dart';
+import 'package:modulix/widgets/study_desk_clock.dart';
+import 'package:modulix/widgets/study_task_card.dart';
+import 'package:modulix/widgets/automated_module_tracker.dart';
+import 'package:modulix/screens/curriculum/module_tasks_screen.dart';
+import 'package:modulix/models/app_state.dart';
+import 'package:modulix/models/syllabus.dart';
+import 'package:modulix/providers/app_state_provider.dart';
+import 'package:modulix/providers/syllabus_provider.dart';
+import 'package:modulix/screens/analytics/analytics_screen.dart';
+import 'package:modulix/widgets/analytics/focus_timer_analytics_sheet.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -23,20 +22,7 @@ class _FakeAppStateNotifier extends AppStateNotifier {
 }
 
 void main() {
-  testWidgets('NoriCompanion renders successfully with mascot elements', (tester) async {
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: Scaffold(
-          body: NoriCompanion(size: 110),
-        ),
-      ),
-    );
-
-    expect(find.byType(NoriCompanion), findsOneWidget);
-    await tester.pump(const Duration(milliseconds: 500));
-  });
-
-  testWidgets('StudyDeskClock displays time and Nori companion', (tester) async {
+  testWidgets('StudyDeskClock renders pure ornate sketchy clock with no buttons, tags, or timer links', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
@@ -45,9 +31,21 @@ void main() {
       ),
     );
 
-    expect(find.text('START FOCUS'), findsOneWidget);
-    expect(find.text('Wardrobe'), findsOneWidget);
-    expect(find.byType(NoriCompanion), findsOneWidget);
+    expect(find.byType(StudyDeskClock), findsOneWidget);
+    // Verifies strict adherence to user mandate: no focus buttons, no pace tags
+    expect(find.text('START FOCUS'), findsNothing);
+    expect(find.byIcon(Icons.play_arrow_rounded), findsNothing);
+    expect(find.text('STUDY STATION'), findsNothing);
+
+    // Verifies ornate sketch frame image is rendered
+    expect(find.byType(Image), findsOneWidget);
+
+    // Verifies no InkWell / interactive link to focus timer screen
+    expect(find.byType(InkWell), findsNothing);
+
+    // Verifies sketchy CabinSketch font is used for time display
+    final timeTexts = tester.widgetList<Text>(find.byType(Text));
+    expect(timeTexts.any((t) => t.style?.fontFamily == 'CabinSketch'), isTrue);
   });
 
   testWidgets('StudyTaskCard renders title, subtitle and triggers toggle', (tester) async {
@@ -111,10 +109,10 @@ void main() {
 
     expect(find.text('Module Based Tasks'), findsOneWidget);
     expect(find.text('Tap to setup daily curriculum pace'), findsOneWidget);
-    expect(find.text('View Details'), findsOneWidget);
+    expect(find.text('Set up module plan'), findsOneWidget);
   });
 
-  testWidgets('AutomatedModuleTracker renders stationery card matching Today tasks layout with View Details', (tester) async {
+  testWidgets('AutomatedModuleTracker renders card matching Day resets at layout with inner Open Queue action', (tester) async {
     final testSubject = Subject(
       id: 'anat',
       name: 'Anatomy',
@@ -138,7 +136,7 @@ void main() {
       accent: Colors.blue,
     );
 
-    final plan = StudyPlan(
+    const plan = StudyPlan(
       targetSubject: 'anat',
       targetDate: '2026-12-31T00:00:00.000Z',
       videosPerDay: 4,
@@ -161,12 +159,12 @@ void main() {
       ),
     );
 
-    // Verify header matching Today's tasks layout with View Details button
+    // Verify header matching clean layout with inner Open Queue action
     expect(find.text('Module Based Tasks'), findsOneWidget);
-    expect(find.text('View Details'), findsOneWidget);
+    expect(find.text('Open Queue'), findsOneWidget);
     expect(find.text('Anatomy'), findsOneWidget);
     expect(find.text('Upper Limb'), findsOneWidget);
-    expect(find.text('0 of 4 done'), findsOneWidget);
+    expect(find.text('0 of 4 done today'), findsOneWidget);
 
     // Minimalist verification: No Setup button on Home card, no footer CTA button
     expect(find.text('Setup'), findsNothing);
@@ -174,7 +172,7 @@ void main() {
   });
 
   testWidgets('ModuleTasksScreen displays top banner with unit progress bar, curriculum link, and exact numbering', (tester) async {
-    final testSubject = Subject(
+    const testSubject = Subject(
       id: 'anat',
       name: 'Anatomy',
       displayName: 'Anatomy',
@@ -182,7 +180,7 @@ void main() {
         Chapter(
           name: 'Upper Limb',
           videos: [
-            const Video(
+            Video(
               id: 'anat_vid_41',
               title: 'Ulnar Nerve',
               subjectId: 'anat',
@@ -190,7 +188,7 @@ void main() {
               durationMins: 30,
               serialNumber: 41,
             ),
-            const Video(
+            Video(
               id: 'anat_vid_42',
               title: 'Vessels of Upper Limb',
               subjectId: 'anat',
@@ -204,7 +202,7 @@ void main() {
       accent: Colors.blue,
     );
 
-    final plan = StudyPlan(
+    const plan = StudyPlan(
       targetSubject: 'anat',
       targetDate: '2026-12-31T00:00:00.000Z',
       videosPerDay: 2,
@@ -246,9 +244,8 @@ void main() {
     expect(find.text('DONE TODAY'), findsOneWidget);
     expect(find.text('Unit Progress'), findsOneWidget);
 
-    // PART 2: Graphic curriculum deep link
-    expect(find.text('Open "Upper Limb" in Curriculum'), findsOneWidget);
-    expect(find.text('CURRICULUM SYLLABUS'), findsOneWidget);
+    // PART 2: Minimalist curriculum deep link
+    expect(find.textContaining('View all modules'), findsOneWidget);
     expect(find.text('Open'), findsOneWidget);
 
     // PART 3: Today's Modules list with exact immutable serial numbers (41 and 42)
@@ -272,7 +269,7 @@ void main() {
       tester.view.resetDevicePixelRatio();
     });
 
-    final testSubject = Subject(
+    const testSubject = Subject(
       id: 'anat',
       name: 'Anatomy',
       displayName: 'Anatomy',
@@ -280,7 +277,7 @@ void main() {
         Chapter(
           name: 'Upper Limb',
           videos: [
-            const Video(
+            Video(
               id: 'anat_vid_41',
               title: 'Ulnar Nerve',
               subjectId: 'anat',
@@ -294,7 +291,7 @@ void main() {
       accent: Colors.blue,
     );
 
-    final plan = StudyPlan(
+    const plan = StudyPlan(
       targetSubject: 'anat',
       targetDate: '2026-12-31T00:00:00.000Z',
       videosPerDay: 4,

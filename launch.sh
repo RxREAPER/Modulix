@@ -8,7 +8,7 @@ fuser -k 8080/tcp 2>/dev/null
 python3 -m http.server 8080 --directory build/web > /dev/null 2>&1 &
 SERVER_PID=$!
 
-echo "🚀 FlowMD launched at http://localhost:8080 (PID: $SERVER_PID)"
+echo "Modulix launched at http://localhost:8080 (PID: $SERVER_PID)"
 sleep 1
 
 # Open Chrome on desktop

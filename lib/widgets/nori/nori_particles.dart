@@ -50,7 +50,7 @@ class NoriParticleController extends ChangeNotifier {
 
       Color color;
       if (type == ParticleType.heart) {
-        color = const Color(0xFFFE5F55); // FlowMD coral
+        color = const Color(0xFFFE5F55); // Modulix coral
       } else if (type == ParticleType.sparkle) {
         color = const Color(0xFFFFD166); // warm gold
       } else {

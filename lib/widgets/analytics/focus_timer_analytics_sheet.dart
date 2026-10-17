@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -6,7 +7,7 @@ import '../../models/time_log.dart';
 import '../../providers/time_log_provider.dart';
 import '../../theme/app_theme.dart';
 
-class FocusTimerAnalyticsSheet extends ConsumerWidget {
+class FocusTimerAnalyticsSheet extends ConsumerStatefulWidget {
   const FocusTimerAnalyticsSheet({super.key});
 
   static Future<void> show(BuildContext context) {
@@ -22,17 +23,24 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
     );
   }
 
-  static String _formatDuration(int totalSecs) {
-    final h = totalSecs ~/ 3600;
-    final m = (totalSecs % 3600) ~/ 60;
-    if (h > 0) {
-      return '${h}h ${m}m';
-    }
-    return '${m}m';
+  @override
+  ConsumerState<FocusTimerAnalyticsSheet> createState() => _FocusTimerAnalyticsSheetState();
+}
+
+String _formatDuration(int totalSecs) {
+  final h = totalSecs ~/ 3600;
+  final m = (totalSecs % 3600) ~/ 60;
+  if (h > 0) {
+    return '${h}h ${m}m';
   }
+  return '${m}m';
+}
+
+class _FocusTimerAnalyticsSheetState extends ConsumerState<FocusTimerAnalyticsSheet> {
+  int? _lastTouchedBarIndex;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final timeLogs = ref.watch(timeLogsProvider);
 
     // Compute today's logs (using 5 AM day boundary)
@@ -60,6 +68,7 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
       int vSec = 0;
       int qSec = 0;
       int nSec = 0;
+      int gSec = 0;
 
       for (final log in timeLogs) {
         if (DateFormat('yyyy-MM-dd').format(log.timestamp) == key) {
@@ -70,8 +79,11 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
             case 'qbank':
               qSec += log.durationSecs;
               break;
-            default:
+            case 'notes':
               nSec += log.durationSecs;
+              break;
+            default:
+              gSec += log.durationSecs;
               break;
           }
         }
@@ -80,10 +92,11 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
       weekStats.add(_FocusDayStat(
         dateKey: key,
         dayName: dayName,
-        totalSecs: vSec + qSec + nSec,
+        totalSecs: vSec + qSec + nSec + gSec,
         videoSecs: vSec,
         qbankSecs: qSec,
         notesSecs: nSec,
+        generalSecs: gSec,
       ));
     }
 
@@ -120,9 +133,9 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.88,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppTheme.paperBackground,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         border: Border(
           top: BorderSide(color: AppTheme.sketchBorderColor, width: 2),
           left: BorderSide(color: AppTheme.sketchBorderColor, width: 2),
@@ -153,15 +166,15 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.12),
+                    color: AppTheme.accentSubtle,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.orange, width: 1.5),
+                    border: Border.all(color: AppTheme.accentPrimary, width: 1.5),
                   ),
-                  child: const Icon(Icons.timer_outlined,
-                      color: Colors.orange, size: 24),
+                  child: Icon(Icons.timer_outlined,
+                      color: AppTheme.accentPrimary, size: 24),
                 ),
                 const SizedBox(width: 14),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -171,7 +184,7 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.2,
-                          color: Colors.orange,
+                          color: AppTheme.accentPrimary,
                         ),
                       ),
                       Text(
@@ -189,7 +202,7 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
             ),
           ),
 
-          const Divider(height: 1, color: AppTheme.borderLight),
+          Divider(height: 1, color: AppTheme.borderLight),
 
           Expanded(
             child: ListView(
@@ -199,14 +212,14 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: AppTheme.sketchDecoration(
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppTheme.cardWhite,
                     borderRadius: 20,
                     shadowOffset: 4,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'TODAY\'S FOCUS TIME',
                         style: TextStyle(
                           fontSize: 10,
@@ -222,7 +235,7 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
                         children: [
                           Text(
                             _formatDuration(todaySecs),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 38,
                               fontWeight: FontWeight.w900,
                               fontFamily: 'monospace',
@@ -233,7 +246,7 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
                           const SizedBox(width: 12),
                           Text(
                             '· ${timeLogs.where((l) => l.timestamp.isAfter(effectiveTodayStart)).length} sessions',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
                               color: AppTheme.mutedText,
@@ -251,7 +264,7 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: AppTheme.sketchDecoration(
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppTheme.cardWhite,
                     borderRadius: 18,
                     shadowOffset: 3,
                   ),
@@ -261,7 +274,7 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Expanded(
+                          Expanded(
                             child: Text(
                               'INTERACTIVE STUDY HOURS (7 DAYS)',
                               maxLines: 1,
@@ -278,16 +291,16 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: Colors.orange.withOpacity(0.12),
+                              color: AppTheme.accentSubtle,
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: const Text(
+                            child: Text(
                               'TOUCH FOR DETAILS',
                               style: TextStyle(
                                 fontSize: 8.5,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 0.5,
-                                color: Colors.orange,
+                                color: AppTheme.accentPrimary,
                               ),
                             ),
                           ),
@@ -296,167 +309,198 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
                       const SizedBox(height: 20),
                       SizedBox(
                         height: 155,
-                        child: BarChart(
-                          BarChartData(
-                            alignment: BarChartAlignment.spaceAround,
-                            maxY: maxChartY,
-                            minY: 0,
-                            groupsSpace: 12,
-                            extraLinesData: ExtraLinesData(
-                              horizontalLines: [
-                                HorizontalLine(
-                                  y: 4.0,
-                                  color: AppTheme.primaryBlue.withOpacity(0.4),
-                                  strokeWidth: 1.4,
-                                  dashArray: [5, 4],
-                                  label: HorizontalLineLabel(
-                                    show: true,
-                                    alignment: Alignment.topRight,
-                                    padding: const EdgeInsets.only(right: 4, bottom: 2),
-                                    style: const TextStyle(
-                                      fontSize: 9.5,
-                                      fontWeight: FontWeight.w800,
-                                      color: AppTheme.primaryBlue,
+                        child: TweenAnimationBuilder<double>(
+                          tween: Tween<double>(begin: 0.0, end: 1.0),
+                          duration: const Duration(milliseconds: 700),
+                          curve: Curves.easeOutCubic,
+                          builder: (context, animValue, _) {
+                            return BarChart(
+                              BarChartData(
+                                alignment: BarChartAlignment.spaceAround,
+                                maxY: maxChartY,
+                                minY: 0,
+                                groupsSpace: 12,
+                                extraLinesData: ExtraLinesData(
+                                  horizontalLines: [
+                                    HorizontalLine(
+                                      y: 4.0,
+                                      color: AppTheme.accentPrimary.withValues(alpha: 0.4),
+                                      strokeWidth: 1.4,
+                                      dashArray: [5, 4],
+                                      label: HorizontalLineLabel(
+                                        show: true,
+                                        alignment: Alignment.topRight,
+                                        padding: const EdgeInsets.only(right: 4, bottom: 2),
+                                        style: TextStyle(
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppTheme.accentPrimary,
+                                        ),
+                                        labelResolver: (_) => '4h Goal',
+                                      ),
                                     ),
-                                    labelResolver: (_) => '4h Goal',
+                                  ],
+                                ),
+                                barTouchData: BarTouchData(
+                                  enabled: true,
+                                  touchCallback: (FlTouchEvent event, barTouchResponse) {
+                                    if (barTouchResponse != null &&
+                                        barTouchResponse.spot != null) {
+                                      final touchedIndex = barTouchResponse.spot!.touchedBarGroupIndex;
+                                      if (touchedIndex != _lastTouchedBarIndex) {
+                                        _lastTouchedBarIndex = touchedIndex;
+                                        HapticFeedback.selectionClick();
+                                      }
+                                    } else {
+                                      _lastTouchedBarIndex = null;
+                                    }
+                                  },
+                                  touchTooltipData: BarTouchTooltipData(
+                                    getTooltipColor: (_) => AppTheme.inkForeground,
+                                    tooltipRoundedRadius: 8,
+                                    tooltipPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                                      final s = weekStats[group.x.toInt()];
+                                      final isToday = s.dateKey == DateFormat('yyyy-MM-dd').format(now);
+                                      return BarTooltipItem(
+                                        '${s.dayName}${isToday ? ' (Today)' : ''}\n',
+                                        const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 11,
+                                        ),
+                                        children: [
+                                          TextSpan(
+                                            text: 'Total: ${_formatDuration(s.totalSecs)}\n',
+                                            style: const TextStyle(
+                                              color: Color(0xFFFFD1D6),
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 10.5,
+                                            ),
+                                          ),
+                                          if (s.videoSecs > 0)
+                                            TextSpan(
+                                              text: '• Video: ${_formatDuration(s.videoSecs)}\n',
+                                              style: const TextStyle(color: Color(0xFF93C5FD), fontSize: 9.5),
+                                            ),
+                                          if (s.qbankSecs > 0)
+                                            TextSpan(
+                                              text: '• QBank: ${_formatDuration(s.qbankSecs)}\n',
+                                              style: const TextStyle(color: Color(0xFFFCD34D), fontSize: 9.5),
+                                            ),
+                                          if (s.notesSecs > 0)
+                                            TextSpan(
+                                              text: '• Notes: ${_formatDuration(s.notesSecs)}${s.generalSecs > 0 ? '\n' : ''}',
+                                              style: const TextStyle(color: Color(0xFF6EE7B7), fontSize: 9.5),
+                                            ),
+                                          if (s.generalSecs > 0)
+                                            TextSpan(
+                                              text: '• General: ${_formatDuration(s.generalSecs)}',
+                                              style: const TextStyle(color: Color(0xFFFBBF24), fontSize: 9.5),
+                                            ),
+                                        ],
+                                      );
+                                    },
                                   ),
                                 ),
-                              ],
-                            ),
-                            barTouchData: BarTouchData(
-                              enabled: true,
-                              touchTooltipData: BarTouchTooltipData(
-                                getTooltipColor: (_) => AppTheme.inkForeground,
-                                tooltipRoundedRadius: 8,
-                                tooltipPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                                  final s = weekStats[group.x.toInt()];
-                                  final isToday = s.dateKey == DateFormat('yyyy-MM-dd').format(now);
-                                  return BarTooltipItem(
-                                    '${s.dayName}${isToday ? ' (Today)' : ''}\n',
-                                    const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 11,
+                                titlesData: FlTitlesData(
+                                  show: true,
+                                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                  leftTitles: AxisTitles(
+                                    sideTitles: SideTitles(
+                                      showTitles: true,
+                                      reservedSize: 26,
+                                      interval: 2,
+                                      getTitlesWidget: (val, _) {
+                                        if (val == 0) return const SizedBox.shrink();
+                                        return Text(
+                                          '${val.toInt()}h',
+                                          style: TextStyle(
+                                            fontSize: 9.5,
+                                            fontWeight: FontWeight.w700,
+                                            fontFamily: 'monospace',
+                                            color: Colors.grey.shade500,
+                                          ),
+                                        );
+                                      },
                                     ),
-                                    children: [
-                                      TextSpan(
-                                        text: 'Total: ${_formatDuration(s.totalSecs)}\n',
-                                        style: const TextStyle(
-                                          color: Color(0xFFFFD1D6),
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 10.5,
+                                  ),
+                                  bottomTitles: AxisTitles(
+                                    sideTitles: SideTitles(
+                                      showTitles: true,
+                                      getTitlesWidget: (val, _) {
+                                        final idx = val.toInt();
+                                        if (idx < 0 || idx >= weekStats.length) return const SizedBox.shrink();
+                                        final s = weekStats[idx];
+                                        final isToday = s.dateKey == DateFormat('yyyy-MM-dd').format(now);
+                                        return Padding(
+                                          padding: const EdgeInsets.only(top: 6),
+                                          child: Text(
+                                            s.dayName[0],
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: isToday ? FontWeight.w900 : FontWeight.w700,
+                                              color: isToday ? AppTheme.accentPrimary : AppTheme.inkForeground,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                gridData: FlGridData(
+                                  show: true,
+                                  drawVerticalLine: false,
+                                  horizontalInterval: 2,
+                                  getDrawingHorizontalLine: (val) {
+                                    return FlLine(
+                                      color: AppTheme.parchmentBorder.withValues(alpha: 0.5),
+                                      strokeWidth: 1,
+                                      dashArray: [4, 4],
+                                    );
+                                  },
+                                ),
+                                borderData: FlBorderData(show: false),
+                                barGroups: List.generate(weekStats.length, (idx) {
+                                  final s = weekStats[idx];
+                                  final isToday = s.dateKey == DateFormat('yyyy-MM-dd').format(now);
+                                  final staggerStart = idx * 0.08;
+                                  final barProgress = ((animValue - staggerStart) / 0.44).clamp(0.0, 1.0);
+                                  final barTotal = s.totalHours * barProgress;
+                                  final barVideo = s.videoHours * barProgress;
+                                  final barQbank = s.qbankHours * barProgress;
+                                  final barNotes = s.notesHours * barProgress;
+
+                                  return BarChartGroupData(
+                                    x: idx,
+                                    barRods: [
+                                      BarChartRodData(
+                                        toY: barTotal,
+                                        width: 18,
+                                        borderRadius: BorderRadius.circular(5),
+                                        rodStackItems: [
+                                          BarChartRodStackItem(0, barVideo, AppTheme.accentPrimary),
+                                          BarChartRodStackItem(barVideo, barVideo + barQbank, const Color(0xFFD97706)),
+                                          BarChartRodStackItem(barVideo + barQbank, barVideo + barQbank + barNotes, const Color(0xFF059669)),
+                                          BarChartRodStackItem(barVideo + barQbank + barNotes, barTotal, const Color(0xFFF59E0B)),
+                                        ],
+                                        backDrawRodData: BackgroundBarChartRodData(
+                                          show: true,
+                                          toY: maxChartY,
+                                          color: isToday
+                                              ? AppTheme.accentPrimary.withValues(alpha: 0.06)
+                                              : const Color(0xFFF3F1EA),
                                         ),
                                       ),
-                                      if (s.videoSecs > 0)
-                                        TextSpan(
-                                          text: '• Video: ${_formatDuration(s.videoSecs)}\n',
-                                          style: const TextStyle(color: Color(0xFF93C5FD), fontSize: 9.5),
-                                        ),
-                                      if (s.qbankSecs > 0)
-                                        TextSpan(
-                                          text: '• QBank: ${_formatDuration(s.qbankSecs)}\n',
-                                          style: const TextStyle(color: Color(0xFFFCD34D), fontSize: 9.5),
-                                        ),
-                                      if (s.notesSecs > 0)
-                                        TextSpan(
-                                          text: '• Notes: ${_formatDuration(s.notesSecs)}',
-                                          style: const TextStyle(color: Color(0xFF6EE7B7), fontSize: 9.5),
-                                        ),
                                     ],
                                   );
-                                },
+                                }),
                               ),
-                            ),
-                            titlesData: FlTitlesData(
-                              show: true,
-                              topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                              rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                              leftTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  reservedSize: 26,
-                                  interval: 2,
-                                  getTitlesWidget: (val, _) {
-                                    if (val == 0) return const SizedBox.shrink();
-                                    return Text(
-                                      '${val.toInt()}h',
-                                      style: TextStyle(
-                                        fontSize: 9.5,
-                                        fontWeight: FontWeight.w700,
-                                        fontFamily: 'monospace',
-                                        color: Colors.grey.shade500,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              bottomTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  getTitlesWidget: (val, _) {
-                                    final idx = val.toInt();
-                                    if (idx < 0 || idx >= weekStats.length) return const SizedBox.shrink();
-                                    final s = weekStats[idx];
-                                    final isToday = s.dateKey == DateFormat('yyyy-MM-dd').format(now);
-                                    return Padding(
-                                      padding: const EdgeInsets.only(top: 6),
-                                      child: Text(
-                                        s.dayName[0],
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: isToday ? FontWeight.w900 : FontWeight.w700,
-                                          color: isToday ? AppTheme.primaryBlue : AppTheme.inkForeground,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                            gridData: FlGridData(
-                              show: true,
-                              drawVerticalLine: false,
-                              horizontalInterval: 2,
-                              getDrawingHorizontalLine: (val) {
-                                return FlLine(
-                                  color: AppTheme.parchmentBorder.withOpacity(0.5),
-                                  strokeWidth: 1,
-                                  dashArray: [4, 4],
-                                );
-                              },
-                            ),
-                            borderData: FlBorderData(show: false),
-                            barGroups: List.generate(weekStats.length, (idx) {
-                              final s = weekStats[idx];
-                              final isToday = s.dateKey == DateFormat('yyyy-MM-dd').format(now);
-
-                              return BarChartGroupData(
-                                x: idx,
-                                barRods: [
-                                  BarChartRodData(
-                                    toY: s.totalHours,
-                                    width: 18,
-                                    borderRadius: BorderRadius.circular(5),
-                                    rodStackItems: [
-                                      BarChartRodStackItem(0, s.videoHours, AppTheme.primaryBlue),
-                                      BarChartRodStackItem(s.videoHours, s.videoHours + s.qbankHours, const Color(0xFFD97706)),
-                                      BarChartRodStackItem(s.videoHours + s.qbankHours, s.totalHours, const Color(0xFF059669)),
-                                    ],
-                                    backDrawRodData: BackgroundBarChartRodData(
-                                      show: true,
-                                      toY: maxChartY,
-                                      color: isToday
-                                          ? AppTheme.primaryBlue.withOpacity(0.06)
-                                          : const Color(0xFFF3F1EA),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }),
-                          ),
-                          swapAnimationDuration: const Duration(milliseconds: 650),
-                          swapAnimationCurve: Curves.easeOutCubic,
+                              duration: const Duration(milliseconds: 650),
+                              curve: Curves.easeOutCubic,
+                            );
+                          },
                         ),
                       ),
                       const SizedBox(height: 14),
@@ -464,12 +508,14 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          _legendItem('Video', AppTheme.primaryBlue),
-                          const SizedBox(width: 10),
+                          _legendItem('Video', AppTheme.accentPrimary),
+                          const SizedBox(width: 8),
                           _legendItem('QBank', const Color(0xFFD97706)),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 8),
                           _legendItem('Notes', const Color(0xFF059669)),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 8),
+                          _legendItem('General', const Color(0xFFF59E0B)),
+                          const SizedBox(width: 8),
                           _legendTarget('4h Goal'),
                         ],
                       ),
@@ -480,7 +526,7 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
                 const SizedBox(height: 20),
 
                 // Breakdown by Topic Type
-                const Text(
+                Text(
                   'FOCUS DISTRIBUTION BY TYPE',
                   style: TextStyle(
                     fontSize: 11,
@@ -497,7 +543,7 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
                       icon: Icons.play_arrow_rounded,
                       label: 'Videos',
                       duration: _formatDuration(videoSecs),
-                      color: AppTheme.primaryBlue,
+                      color: AppTheme.accentPrimary,
                     ),
                     const SizedBox(width: 8),
                     _typePill(
@@ -536,24 +582,24 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
                       child: Container(
                         padding: const EdgeInsets.all(14),
                         decoration: AppTheme.sketchDecoration(
-                          backgroundColor: Colors.white,
+                          backgroundColor: AppTheme.cardWhite,
                           borderRadius: 16,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('LONGEST SESSION',
+                            Text('LONGEST SESSION',
                                 style: TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.w800,
                                     color: AppTheme.mutedText)),
                             const SizedBox(height: 4),
                             Text(_formatDuration(longestSessionSecs),
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w900,
                                     color: AppTheme.inkForeground)),
-                            const Text('Continuous flow',
+                            Text('Continuous flow',
                                 style: TextStyle(
                                     fontSize: 10, color: AppTheme.mutedText)),
                           ],
@@ -565,25 +611,25 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
                       child: Container(
                         padding: const EdgeInsets.all(14),
                         decoration: AppTheme.sketchDecoration(
-                          backgroundColor: Colors.white,
+                          backgroundColor: AppTheme.cardWhite,
                           borderRadius: 16,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('ALL-TIME FOCUS',
+                            Text('ALL-TIME FOCUS',
                                 style: TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.w800,
                                     color: AppTheme.mutedText)),
                             const SizedBox(height: 4),
                             Text(_formatDuration(totalSecs),
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w900,
                                     color: AppTheme.inkForeground)),
                             Text('${timeLogs.length} total sessions',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 10, color: AppTheme.mutedText)),
                           ],
                         ),
@@ -591,7 +637,215 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
                     ),
                   ],
                 ),
+
+                const SizedBox(height: 24),
+
+                // Focus Session History
+                _buildSessionLogsSection(timeLogs),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Widget _buildSessionLogsSection(List<TimeLog> logs) {
+    final sortedLogs = List<TimeLog>.from(logs)
+      ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'RECENT FOCUS SESSION LOGS',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.0,
+                color: AppTheme.inkForeground,
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3F1EA),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: const Color(0xFFD6D2C4), width: 1),
+              ),
+              child: Text(
+                '${sortedLogs.length} ${sortedLogs.length == 1 ? 'Session' : 'Sessions'}',
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF4A463F),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (sortedLogs.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+            decoration: BoxDecoration(
+              color: AppTheme.cardWhite,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppTheme.borderLight, width: 1.2),
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.history_rounded, size: 28, color: Colors.grey.shade400),
+                const SizedBox(height: 8),
+                Text(
+                  'No focus sessions recorded yet',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.inkForeground,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Complete a focus session from your study desk to start logging.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: sortedLogs.length > 25 ? 25 : sortedLogs.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (context, index) {
+              final log = sortedLogs[index];
+              return _buildSessionLogCard(log);
+            },
+          ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  static Widget _buildSessionLogCard(TimeLog log) {
+    Color typeColor;
+    IconData typeIcon;
+    String typeLabel;
+
+    switch (log.topicType) {
+      case 'video':
+        typeColor = AppTheme.accentPrimary;
+        typeIcon = Icons.play_arrow_rounded;
+        typeLabel = 'VIDEO';
+        break;
+      case 'qbank':
+        typeColor = const Color(0xFFD97706);
+        typeIcon = Icons.quiz_outlined;
+        typeLabel = 'Q-BANK';
+        break;
+      case 'notes':
+        typeColor = const Color(0xFF059669);
+        typeIcon = Icons.menu_book_outlined;
+        typeLabel = 'NOTES';
+        break;
+      default:
+        typeColor = const Color(0xFF6B7280);
+        typeIcon = Icons.timer_outlined;
+        typeLabel = 'DEEP WORK';
+        break;
+    }
+
+    final formattedDate = DateFormat('MMM d, h:mm a').format(log.timestamp);
+    final formattedDuration = _formatDuration(log.durationSecs);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppTheme.cardWhite,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.borderLight, width: 1.2),
+      ),
+      child: Row(
+        children: [
+          // Type Indicator Icon
+          Container(
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              color: typeColor.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(typeIcon, color: typeColor, size: 14),
+          ),
+          const SizedBox(width: 10),
+
+          // Title & Date
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  log.topicTitle.isNotEmpty ? log.topicTitle : 'Focus Session',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.inkForeground,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Text(
+                      typeLabel,
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w800,
+                        color: typeColor,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      '• $formattedDate',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Duration Badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3F1EA),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: const Color(0xFFE4E4E7), width: 1),
+            ),
+            child: Text(
+              formattedDuration,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                fontFamily: 'monospace',
+                color: AppTheme.inkForeground,
+              ),
             ),
           ),
         ],
@@ -609,7 +863,7 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.cardWhite,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: AppTheme.borderLight, width: 1.2),
         ),
@@ -618,7 +872,7 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
+                color: color.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: color, size: 14),
@@ -628,12 +882,12 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.mutedText)),
                 Text(duration,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w900,
                         fontFamily: 'monospace',
@@ -661,7 +915,7 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
         const SizedBox(width: 4),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w700,
             color: AppTheme.mutedText,
@@ -679,17 +933,17 @@ class FocusTimerAnalyticsSheet extends ConsumerWidget {
           width: 12,
           height: 2,
           decoration: BoxDecoration(
-            color: AppTheme.primaryBlue.withOpacity(0.6),
+            color: AppTheme.accentPrimary.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(1),
           ),
         ),
         const SizedBox(width: 4),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w700,
-            color: AppTheme.primaryBlue,
+            color: AppTheme.accentPrimary,
           ),
         ),
       ],
@@ -704,6 +958,7 @@ class _FocusDayStat {
   final int videoSecs;
   final int qbankSecs;
   final int notesSecs;
+  final int generalSecs;
 
   const _FocusDayStat({
     required this.dateKey,
@@ -712,11 +967,13 @@ class _FocusDayStat {
     required this.videoSecs,
     required this.qbankSecs,
     required this.notesSecs,
+    this.generalSecs = 0,
   });
 
   double get totalHours => totalSecs / 3600.0;
   double get videoHours => videoSecs / 3600.0;
   double get qbankHours => qbankSecs / 3600.0;
   double get notesHours => notesSecs / 3600.0;
+  double get generalHours => generalSecs / 3600.0;
 }
 

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flowmd_flutter/models/app_state.dart';
-import 'package:flowmd_flutter/services/notification_service.dart';
-import 'package:flowmd_flutter/providers/focus_timer_provider.dart';
+import 'package:modulix/models/app_state.dart';
+import 'package:modulix/services/notification_service.dart';
+import 'package:modulix/providers/focus_timer_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {

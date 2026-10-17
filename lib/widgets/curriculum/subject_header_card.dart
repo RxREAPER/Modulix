@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../models/syllabus.dart';
 import '../../theme/app_theme.dart';
 import '../../data/subjects_metadata.dart';
+import '../animations/apple_pressable.dart';
+import 'subject_sketch_icon.dart';
 
 class SubjectHeaderCard extends StatelessWidget {
   final Subject subject;
@@ -27,21 +29,16 @@ class SubjectHeaderCard extends StatelessWidget {
     final progress = totalVids > 0 ? (completedVideosCount / totalVids) : 0.0;
     final percent = (progress * 100).round();
 
-    return GestureDetector(
+    return ApplePressable(
       onTap: onTapAnalytics,
+      pressedScale: 0.98,
+      borderRadius: BorderRadius.circular(22),
       child: Container(
         width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: AppTheme.sketchBorderColor, width: 2.0),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x221C1C1C),
-              offset: Offset(4, 5),
-              blurRadius: 0,
-            ),
-          ],
+        decoration: AppTheme.sketchDecoration(
+          borderRadius: 22,
+          borderWidth: 1.8,
+          shadowOffset: 4.0,
         ),
         padding: const EdgeInsets.all(18),
         child: Column(
@@ -54,12 +51,12 @@ class SubjectHeaderCard extends StatelessWidget {
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                    color: meta.accent.withOpacity(0.18),
+                    color: meta.accent.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: meta.accent, width: 1.8),
                   ),
                   child: Center(
-                    child: Icon(meta.icon, color: meta.accent, size: 28),
+                    child: SubjectSketchIcon(subjectId: subject.id, color: meta.accent, size: 30),
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -69,7 +66,7 @@ class SubjectHeaderCard extends StatelessWidget {
                     children: [
                       Text(
                         subject.displayName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
                           color: AppTheme.inkForeground,
@@ -82,7 +79,7 @@ class SubjectHeaderCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade600,
+                          color: AppTheme.mutedText,
                         ),
                       ),
                     ],
@@ -92,15 +89,15 @@ class SubjectHeaderCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppTheme.highlightCoral,
+                    color: AppTheme.parchmentSurface,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.sketchBorderColor, width: 1.5),
+                    border: Border.all(color: AppTheme.borderLight, width: 1.5),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.bar_chart_rounded, size: 16, color: AppTheme.inkForeground),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Text(
                         'Analytics',
                         style: TextStyle(
@@ -121,9 +118,9 @@ class SubjectHeaderCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: AppTheme.paperBackground,
+                color: AppTheme.parchmentSurface,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.grey.shade300, width: 1.2),
+                border: Border.all(color: AppTheme.borderLight, width: 1.2),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -133,13 +130,13 @@ class SubjectHeaderCard extends StatelessWidget {
                     value: '$completedVideosCount / $totalVids',
                     color: AppTheme.primaryBlue,
                   ),
-                  Container(width: 1, height: 28, color: Colors.grey.shade300),
+                  Container(width: 1, height: 28, color: AppTheme.borderLight),
                   _metricItem(
                     label: 'Q-BANK TOPICS',
                     value: '$completedQBanksCount / $totalQBanks',
-                    color: Colors.teal.shade700,
+                    color: AppTheme.accentEmerald,
                   ),
-                  Container(width: 1, height: 28, color: Colors.grey.shade300),
+                  Container(width: 1, height: 28, color: AppTheme.borderLight),
                   _metricItem(
                     label: 'COMPLETION',
                     value: '$percent%',
@@ -158,9 +155,9 @@ class SubjectHeaderCard extends StatelessWidget {
                   child: Container(
                     height: 8,
                     decoration: BoxDecoration(
-                      color: AppTheme.paperBackground,
+                      color: AppTheme.parchmentSurface,
                       borderRadius: BorderRadius.circular(4),
-                      border: Border.all(color: AppTheme.sketchBorderColor, width: 1.2),
+                      border: Border.all(color: AppTheme.borderLight, width: 1.2),
                     ),
                     child: FractionallySizedBox(
                       alignment: Alignment.centerLeft,
@@ -180,7 +177,7 @@ class SubjectHeaderCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: Colors.grey.shade600,
+                    color: AppTheme.mutedText,
                   ),
                 ),
               ],
@@ -196,28 +193,35 @@ class SubjectHeaderCard extends StatelessWidget {
     required String value,
     required Color color,
   }) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 9,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.6,
-            color: Colors.grey.shade500,
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.6,
+              color: Colors.grey.shade500,
+            ),
           ),
-        ),
-        const SizedBox(height: 3),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w800,
-            fontFamily: 'monospace',
-            color: color,
+          const SizedBox(height: 3),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                fontFamily: 'monospace',
+                color: color,
+              ),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

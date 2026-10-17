@@ -1,103 +1,181 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/profile/profile_customization.dart';
+import 'widgets/onboarding_illustrations.dart';
 
-// ─── Shared onboarding page layout ───────────────────────────────────────────
+// ─── Shared Base Onboarding Slide (Attenly-Inspired Modulix Layout) ────────────
 
-class _OnboardingBase extends StatefulWidget {
-  final Widget illustration;
+class OnboardingSlide extends StatelessWidget {
+  final String tag;
+  final Widget? illustration;
   final String title;
   final String subtitle;
-  final Color accentColor;
+  final List<Widget>? customFooterElements;
 
-  const _OnboardingBase({
-    required this.illustration,
+  const OnboardingSlide({
+    super.key,
+    required this.tag,
+    this.illustration,
     required this.title,
     required this.subtitle,
-    required this.accentColor,
+    this.customFooterElements,
   });
 
   @override
-  State<_OnboardingBase> createState() => _OnboardingBaseState();
-}
-
-class _OnboardingBaseState extends State<_OnboardingBase>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _scale;
-  late Animation<double> _fade;
-  late Animation<Offset> _slide;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 700));
-    _scale = Tween<double>(begin: 0.8, end: 1.0).animate(
-        CurvedAnimation(parent: _ctrl, curve: Curves.easeOutBack));
-    _fade = Tween<double>(begin: 0, end: 1).animate(
-        CurvedAnimation(parent: _ctrl, curve: const Interval(0.2, 1.0)));
-    _slide = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero)
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
-    _ctrl.forward();
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Illustration
-          ScaleTransition(
-            scale: _scale,
-            child: Container(
-              width: 220,
-              height: 220,
-              decoration: BoxDecoration(
-                color: widget.accentColor.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(28),
-                child: widget.illustration,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(height: 4),
+
+                  // 1. FLOATING HERO VISUAL (Spacious, Unboxed)
+                  if (illustration != null)
+                    Center(child: illustration!)
+                  else
+                    // Reserved slot for future custom logo design
+                    const SizedBox(height: 180),
+
+                  const SizedBox(height: 16),
+
+                  // 2. TEXT CONTENT & CONTEXT CAPSULES
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Tag Pill
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppTheme.inkForeground.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color:
+                                AppTheme.inkForeground.withValues(alpha: 0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          tag,
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.8,
+                            color: AppTheme.inkForeground,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // Large Bold Title
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.6,
+                          height: 1.15,
+                          color: AppTheme.inkForeground,
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      // Single-Sentence Subtitle
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          height: 1.45,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+
+                      // Contextual Elements (e.g. Slide 1 pills)
+                      if (customFooterElements != null) ...[
+                        const SizedBox(height: 18),
+                        ...customFooterElements!,
+                      ],
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+                ],
               ),
             ),
           ),
-          const SizedBox(height: 40),
-          // Text
-          FadeTransition(
-            opacity: _fade,
-            child: SlideTransition(
-              position: _slide,
-              child: Column(
-                children: [
-                  Text(
-                    widget.title,
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
-                      height: 1.2,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    widget.subtitle,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
-                      height: 1.5,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
+        );
+      },
+    );
+  }
+}
+
+// ─── Slide 1: Welcome to Modulix ─────────────────────────────────────────────
+
+class OnboardingWelcomeSlide extends StatelessWidget {
+  const OnboardingWelcomeSlide({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return OnboardingSlide(
+      tag: 'STUDY COMPANION',
+      // Welcome card removed as requested; reserved for custom logo
+      illustration: null,
+      title: 'Welcome to Modulix',
+      subtitle:
+          'Your quiet space to plan daily tasks, track subjects, and focus.',
+      customFooterElements: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _buildFeaturePill(Icons.playlist_add_check_rounded, 'Daily Tasks',
+                AppTheme.primaryBlue),
+            _buildFeaturePill(Icons.library_books_rounded, '19 Subjects',
+                const Color(0xFF059669)),
+            _buildFeaturePill(
+                Icons.timer_outlined, 'Focus Timer', const Color(0xFFD97706)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFeaturePill(IconData icon, String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: AppTheme.sketchDecoration(
+        backgroundColor: Colors.white,
+        borderRadius: 12,
+        borderWidth: 1.2,
+        shadowOffset: 1.5,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 6),
+          Icon(icon, size: 14, color: AppTheme.inkForeground),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.inkForeground,
             ),
           ),
         ],
@@ -106,424 +184,359 @@ class _OnboardingBaseState extends State<_OnboardingBase>
   }
 }
 
-// ─── Step 1: Daily goals ──────────────────────────────────────────────────────
+// ─── Slide 2: Plan Daily Goals ──────────────────────────────────────────────
 
-class OnboardingPage1 extends StatelessWidget {
+class OnboardingTasksSlide extends StatelessWidget {
+  const OnboardingTasksSlide({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return _OnboardingBase(
-      accentColor: const Color(0xFF6C3BAA),
-      illustration: _AnimatedCalendarIcon(),
-      title: 'Track Your Daily Goals',
+    return const OnboardingSlide(
+      tag: 'STUDY DESK',
+      illustration: DailyTasksIllustration(),
+      title: 'Plan Daily Goals',
       subtitle:
-          'Set a daily video target and check off lectures as you study. Build momentum with streak tracking.',
+          'Set your daily study targets and keep your syllabus pace on track.',
     );
   }
 }
 
-class _AnimatedCalendarIcon extends StatefulWidget {
-  @override
-  State<_AnimatedCalendarIcon> createState() => _AnimatedCalendarIconState();
-}
+// ─── Slide 3: 19 Medical Subjects (Tracking Only) ───────────────────────────
 
-class _AnimatedCalendarIconState extends State<_AnimatedCalendarIcon>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _pulse;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 1200))
-      ..repeat(reverse: true);
-    _pulse = Tween<double>(begin: 0.92, end: 1.0)
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
+class OnboardingCurriculumSlide extends StatelessWidget {
+  const OnboardingCurriculumSlide({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _pulse,
-      child: const Icon(Icons.calendar_month_rounded,
-          size: 100, color: Color(0xFF6C3BAA)),
-    );
-  }
-}
-
-// ─── Step 2: Curriculum ───────────────────────────────────────────────────────
-
-class OnboardingPage2 extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return _OnboardingBase(
-      accentColor: const Color(0xFF10B981),
-      illustration: _SubjectGridIllustration(),
-      title: 'Marrow 8 & 6.5 Syllabus',
+    return const OnboardingSlide(
+      tag: 'FULL SYLLABUS',
+      illustration: CurriculumModulesIllustration(),
+      title: '19 Medical Subjects',
       subtitle:
-          'Browse every subject, chapter, and lecture. Switch between editions anytime — your progress stays separate.',
+          'Track your video lectures, question banks, and revision notes across every subject.',
     );
   }
 }
 
-class _SubjectGridIllustration extends StatelessWidget {
-  final _colors = const [
-    Color(0xFF3B82F6), Color(0xFF10B981), Color(0xFF8B5CF6),
-    Color(0xFFEF4444), Color(0xFFF97316), Color(0xFF06B6D4),
-  ];
+// ─── Slide 4: Focus Timer ───────────────────────────────────────────────────
+
+class OnboardingTimerSlide extends StatelessWidget {
+  const OnboardingTimerSlide({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: 3,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 8,
-      crossAxisSpacing: 8,
-      children: _colors
-          .map((c) => Container(
-                decoration: BoxDecoration(
-                  color: c.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: c.withOpacity(0.4)),
-                ),
-                child: Icon(Icons.book_rounded, color: c, size: 28),
-              ))
-          .toList(),
-    );
-  }
-}
-
-// ─── Step 3: Analytics ────────────────────────────────────────────────────────
-
-class OnboardingPage3 extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return _OnboardingBase(
-      accentColor: const Color(0xFF06B6D4),
-      illustration: _AnimatedChartIllustration(),
-      title: 'Smart Analytics',
+    return const OnboardingSlide(
+      tag: 'DEEP FOCUS',
+      illustration: FocusTimerIllustration(),
+      title: 'Focus Timer',
       subtitle:
-          'Heatmap calendar, syllabus mastery arc, streak counter, and ETA countdown — see exactly where you stand.',
+          'Study in distraction-free blocks with clean timers and calming ambient sounds.',
     );
   }
 }
 
-class _AnimatedChartIllustration extends StatefulWidget {
-  @override
-  State<_AnimatedChartIllustration> createState() =>
-      _AnimatedChartIllustrationState();
-}
+// ─── Slide 5: Set Up Your Desk (Profile Customization) ──────────────────────
 
-class _AnimatedChartIllustrationState extends State<_AnimatedChartIllustration>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1500))
-      ..forward();
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bars = [0.4, 0.7, 0.5, 0.9, 0.6, 0.8, 1.0];
-    return AnimatedBuilder(
-      animation: _ctrl,
-      builder: (_, __) => Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(bars.length, (i) {
-          final delay = i * 0.1;
-          final t = (((_ctrl.value - delay) / (1 - delay)).clamp(0.0, 1.0));
-          return Container(
-            width: 18,
-            height: 100 * bars[i] * t,
-            decoration: BoxDecoration(
-              color: const Color(0xFF06B6D4).withOpacity(0.7 + 0.3 * bars[i]),
-              borderRadius: BorderRadius.circular(6),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-}
-
-// ─── Step 4: Daily quests ─────────────────────────────────────────────────────
-
-class OnboardingPage4 extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return _OnboardingBase(
-      accentColor: const Color(0xFFF59E0B),
-      illustration: _QuestIllustration(),
-      title: 'Daily Quests',
-      subtitle:
-          'Every day the app queues your next batch of videos. Tick them off and unlock bonus videos when you overshoot.',
-    );
-  }
-}
-
-class _QuestIllustration extends StatefulWidget {
-  @override
-  State<_QuestIllustration> createState() => _QuestIllustrationState();
-}
-
-class _QuestIllustrationState extends State<_QuestIllustration>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _check;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 800))
-      ..repeat(reverse: true);
-    _check = CurvedAnimation(parent: _ctrl, curve: Curves.elasticOut);
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(3, (i) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          child: Row(
-            children: [
-              ScaleTransition(
-                scale: i == 0 ? _check : const AlwaysStoppedAnimation(1.0),
-                child: Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: i == 0
-                        ? const Color(0xFFF59E0B)
-                        : const Color(0xFFF59E0B).withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: i == 0
-                      ? const Icon(Icons.check, color: Colors.white, size: 18)
-                      : null,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                height: 10,
-                width: 100 - i * 20.0,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-              ),
-            ],
-          ),
-        );
-      }),
-    );
-  }
-}
-
-// ─── Step 5: Setup form ───────────────────────────────────────────────────────
-
-class OnboardingPage5 extends StatelessWidget {
+class OnboardingProfileSetupSlide extends StatefulWidget {
   final TextEditingController nameController;
+  final String selectedAvatarId;
+  final String selectedColorId;
   final String selectedEdition;
+  final ValueChanged<String> onAvatarChanged;
+  final ValueChanged<String> onColorChanged;
   final ValueChanged<String> onEditionChanged;
 
-  const OnboardingPage5({
+  const OnboardingProfileSetupSlide({
     super.key,
     required this.nameController,
+    required this.selectedAvatarId,
+    required this.selectedColorId,
     required this.selectedEdition,
+    required this.onAvatarChanged,
+    required this.onColorChanged,
     required this.onEditionChanged,
   });
 
   @override
+  State<OnboardingProfileSetupSlide> createState() =>
+      _OnboardingProfileSetupSlideState();
+}
+
+class _OnboardingProfileSetupSlideState
+    extends State<OnboardingProfileSetupSlide> {
+  @override
+  void initState() {
+    super.initState();
+    widget.nameController.addListener(_onUpdate);
+  }
+
+  @override
+  void dispose() {
+    widget.nameController.removeListener(_onUpdate);
+    super.dispose();
+  }
+
+  void _onUpdate() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
+    final doctorName = widget.nameController.text.trim().isNotEmpty
+        ? widget.nameController.text.trim()
+        : 'Doctor';
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(28, 24, 28, 16),
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 24),
-          // Emoji + title
-          Text('👋', style: const TextStyle(fontSize: 52)),
-          const SizedBox(height: 16),
-          Text(
-            "Let's set you up",
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Just a couple of things to personalise your experience.',
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: cs.onSurface.withOpacity(0.6),
-            ),
-          ),
-          const SizedBox(height: 36),
-
-          // Name field
-          Text('Your name',
-              style: theme.textTheme.labelLarge
-                  ?.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 8),
-          TextField(
-            controller: nameController,
-            textCapitalization: TextCapitalization.words,
-            decoration: const InputDecoration(
-              hintText: 'e.g. Dr. Arjun',
-              prefixIcon: Icon(Icons.person_outline_rounded),
-            ),
-          ),
-          const SizedBox(height: 28),
-
-          // Edition picker
-          Text('Study source',
-              style: theme.textTheme.labelLarge
-                  ?.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 12),
-          _EditionCard(
-            id: 'marrow_8',
-            label: 'Marrow Edition 8',
-            subtitle: 'Latest edition (2024)',
-            icon: Icons.auto_stories_rounded,
-            selected: selectedEdition == 'marrow_8',
-            onTap: () => onEditionChanged('marrow_8'),
-          ),
-          const SizedBox(height: 10),
-          _EditionCard(
-            id: 'marrow_6_5',
-            label: 'Marrow Edition 6.5',
-            subtitle: 'Previous edition',
-            icon: Icons.menu_book_rounded,
-            selected: selectedEdition == 'marrow_6_5',
-            onTap: () => onEditionChanged('marrow_6_5'),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: cs.primary.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
+          // Header Hero Avatar & Tag
+          Center(
+            child: Column(
               children: [
-                Icon(Icons.info_outline_rounded,
-                    color: cs.primary, size: 18),
-                const SizedBox(width: 10),
-                Expanded(
+                ProfileAvatar(
+                  size: 64,
+                  colorId: widget.selectedColorId,
+                  iconId: widget.selectedAvatarId,
+                  doctorName: doctorName,
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppTheme.inkForeground.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: Text(
-                    'You can switch editions anytime from Settings.',
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: cs.primary, fontWeight: FontWeight.w500),
+                    'PROFILE SETUP',
+                    style: TextStyle(
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
+                      color: AppTheme.inkForeground,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
+
+          const SizedBox(height: 14),
+
+          Text(
+            'Set Up Your Desk',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.6,
+              color: AppTheme.inkForeground,
+            ),
+          ),
+
+          const SizedBox(height: 6),
+
+          Text(
+            'Choose your doctor name and your preferred study edition.',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade700,
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          // ── DOCTOR NAME INPUT CARD
+          Text(
+            'Doctor Name',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.inkForeground,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Container(
+            decoration: AppTheme.sketchDecoration(
+              backgroundColor: Colors.white,
+              borderRadius: 14,
+              borderWidth: 1.3,
+              shadowOffset: 2.0,
+            ),
+            child: TextField(
+              controller: widget.nameController,
+              textCapitalization: TextCapitalization.words,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.inkForeground,
+              ),
+              decoration: InputDecoration(
+                hintText: 'e.g. Dr. Arjun',
+                hintStyle: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey.shade400,
+                ),
+                prefixIcon: Icon(Icons.person_outline_rounded,
+                    size: 20, color: AppTheme.inkForeground),
+                border: InputBorder.none,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          // ── STUDY EDITION SELECTOR CARDS
+          Text(
+            'Preferred Study Edition',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.inkForeground,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: _buildEditionCard(
+                  id: 'marrow_8',
+                  title: 'Marrow Edition 8',
+                  sub: 'Latest 2024 Edition',
+                  isSelected: widget.selectedEdition == 'marrow_8',
+                  onTap: () => widget.onEditionChanged('marrow_8'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildEditionCard(
+                  id: 'marrow_6_5',
+                  title: 'Marrow Edition 6.5',
+                  sub: 'Previous Revision',
+                  isSelected: widget.selectedEdition == 'marrow_6_5',
+                  onTap: () => widget.onEditionChanged('marrow_6_5'),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 18),
+
+          // ── AVATAR SELECTOR ROW
+          Text(
+            'Avatar Style',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.inkForeground,
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 56,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: kProfileAvatars.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                final item = kProfileAvatars[index];
+                final isSelected = item.id == resolveAvatarId(widget.selectedAvatarId);
+
+                return GestureDetector(
+                  onTap: () => widget.onAvatarChanged(item.id),
+                  child: Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isSelected
+                            ? AppTheme.inkForeground
+                            : Colors.grey.shade300,
+                        width: isSelected ? 2.5 : 1.2,
+                      ),
+                    ),
+                    padding: const EdgeInsets.all(2),
+                    child: ProfileAvatar(
+                      size: 44,
+                      colorId: widget.selectedColorId,
+                      iconId: item.id,
+                      doctorName: doctorName,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );
   }
-}
 
-class _EditionCard extends StatelessWidget {
-  final String id;
-  final String label;
-  final String subtitle;
-  final IconData icon;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _EditionCard({
-    required this.id,
-    required this.label,
-    required this.subtitle,
-    required this.icon,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  Widget _buildEditionCard({
+    required String id,
+    required String title,
+    required String sub,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: selected ? cs.primary.withOpacity(0.1) : cs.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: selected ? cs.primary : cs.outline.withOpacity(0.3),
-            width: selected ? 2 : 1,
-          ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: AppTheme.sketchDecoration(
+          backgroundColor: isSelected ? const Color(0xFFF1F5F9) : Colors.white,
+          borderRadius: 14,
+          borderWidth: isSelected ? 1.8 : 1.2,
+          shadowOffset: isSelected ? 1.5 : 2.5,
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: selected
-                    ? cs.primary.withOpacity(0.15)
-                    : cs.onSurface.withOpacity(0.06),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon,
-                  color: selected ? cs.primary : cs.onSurface.withOpacity(0.5),
-                  size: 22),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(
+                  isSelected
+                      ? Icons.check_circle_rounded
+                      : Icons.radio_button_unchecked_rounded,
+                  size: 18,
+                  color: isSelected
+                      ? AppTheme.inkForeground
+                      : Colors.grey.shade400,
+                ),
+                Text(
+                  isSelected ? 'Active' : 'Switch',
+                  style: TextStyle(
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w800,
+                    color: isSelected
+                        ? AppTheme.inkForeground
+                        : Colors.grey.shade500,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: selected ? cs.primary : cs.onSurface,
-                      )),
-                  Text(subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: cs.onSurface.withOpacity(0.5),
-                      )),
-                ],
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.inkForeground,
               ),
             ),
-            if (selected)
-              Icon(Icons.check_circle_rounded, color: cs.primary, size: 22),
+            const SizedBox(height: 2),
+            Text(
+              sub,
+              style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+            ),
           ],
         ),
       ),

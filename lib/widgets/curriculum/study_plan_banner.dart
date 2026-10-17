@@ -1,8 +1,9 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../models/app_state.dart';
 import '../../theme/app_theme.dart';
-import 'configure_plan_sheet.dart';
+import '../animations/apple_pressable.dart';
 
 class StudyPlanBanner extends StatefulWidget {
   final StudyPlan plan;
@@ -36,24 +37,26 @@ class _StudyPlanBannerState extends State<StudyPlanBanner>
   Widget build(BuildContext context) {
     final isConfigured = widget.plan.isConfigured;
 
-    return GestureDetector(
-      onTap: () => ConfigurePlanSheet.show(context),
+    return ApplePressable(
+      onTap: () => context.push('/plan'),
+      pressedScale: 0.97,
+      borderRadius: BorderRadius.circular(20),
       child: AnimatedBuilder(
         animation: _sparkleController,
         builder: (context, child) {
           final t = _sparkleController.value;
-          final angle = math.sin(t * math.pi * 2) * 0.15;
-          final pulse = 1.0 + math.sin(t * math.pi * 2) * 0.04;
+          final angle = math.sin(t * math.pi * 2) * 0.12;
+          final pulse = 1.0 + math.sin(t * math.pi * 2) * 0.03;
 
           return Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [
-                  Color(0xFF4F46E5), // Indigo
-                  Color(0xFF7C3AED), // Deep Purple
-                  Color(0xFFEC4899), // Pink accent
+                  Color(0xFF3B82F6), // Vibrant Blue
+                  Color(0xFF6366F1), // Indigo
+                  Color(0xFF8B5CF6), // Purple
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -63,7 +66,7 @@ class _StudyPlanBannerState extends State<StudyPlanBanner>
               boxShadow: const [
                 BoxShadow(
                   color: Color(0x301C1C1C),
-                  offset: Offset(4, 5),
+                  offset: Offset(3.5, 4.5),
                   blurRadius: 0,
                 ),
               ],
@@ -76,58 +79,59 @@ class _StudyPlanBannerState extends State<StudyPlanBanner>
                   child: Transform.rotate(
                     angle: angle,
                     child: Container(
-                      width: 48,
-                      height: 48,
+                      width: 42,
+                      height: 42,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.white.withOpacity(0.4), width: 1.5),
+                        color: Colors.white.withValues(alpha: 0.22),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.45),
+                          width: 1.5,
+                        ),
                       ),
                       child: const Center(
                         child: Icon(
-                          Icons.auto_awesome,
+                          Icons.auto_awesome_rounded,
                           color: Color(0xFFFFDF7D),
-                          size: 26,
+                          size: 22,
                         ),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 10),
 
-                // Text Content
+                // Text Content - full rendering without text clipping
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Flexible(
-                            child: Text(
-                              isConfigured
-                                  ? '${widget.plan.targetSubject.toUpperCase()} PACING'
-                                  : 'Automate Curriculum Pace',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.3,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                          const Text(
+                            'Module-Based Plan',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.2,
                             ),
                           ),
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFD1D6),
-                              borderRadius: BorderRadius.circular(6),
+                              color: Colors.white.withValues(alpha: 0.25),
+                              borderRadius: BorderRadius.circular(5),
                             ),
                             child: Text(
-                              isConfigured ? '${widget.plan.videosPerDay ?? 0} V/D' : 'SETUP',
+                              isConfigured ? 'ACTIVE' : 'SETUP',
                               style: const TextStyle(
-                                color: AppTheme.inkForeground,
-                                fontSize: 8,
+                                color: Colors.white,
+                                fontSize: 8.0,
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: 0.5,
                               ),
@@ -138,13 +142,11 @@ class _StudyPlanBannerState extends State<StudyPlanBanner>
                       const SizedBox(height: 3),
                       Text(
                         isConfigured
-                            ? 'Target: ${widget.plan.targetDate.isNotEmpty ? widget.plan.targetDate.split('T').first : 'Not set'} · Tap to adjust study pace'
-                            : 'Set exam deadline & daily pace to track curriculum',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                            ? 'Target pace & automated daily modules'
+                            : 'Set exam deadline & daily module targets',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.9),
-                          fontSize: 12,
+                          color: Colors.white.withValues(alpha: 0.92),
+                          fontSize: 11.5,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -152,7 +154,7 @@ class _StudyPlanBannerState extends State<StudyPlanBanner>
                   ),
                 ),
 
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
 
                 // Forward circular action button
                 Container(
@@ -169,7 +171,7 @@ class _StudyPlanBannerState extends State<StudyPlanBanner>
                       ),
                     ],
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Icon(
                       Icons.arrow_forward_rounded,
                       color: AppTheme.inkForeground,

@@ -8,6 +8,31 @@ class AmbientAudioService {
   final AudioPlayer _player = AudioPlayer();
   String _activeId = 'none';
   String get activeId => _activeId;
+  bool _contextConfigured = false;
+
+  Future<void> _ensureAudioContext() async {
+    if (_contextConfigured) return;
+    try {
+      await AudioPlayer.global.setAudioContext(
+        AudioContext(
+          android: const AudioContextAndroid(
+            isSpeakerphoneOn: false,
+            stayAwake: true,
+            contentType: AndroidContentType.music,
+            usageType: AndroidUsageType.media,
+            audioFocus: AndroidAudioFocus.none,
+          ),
+          iOS: AudioContextIOS(
+            category: AVAudioSessionCategory.playback,
+            options: const {
+              AVAudioSessionOptions.mixWithOthers,
+            },
+          ),
+        ),
+      );
+      _contextConfigured = true;
+    } catch (_) {}
+  }
 
   Future<void> playSound(String soundId) async {
     _activeId = soundId;
@@ -18,11 +43,13 @@ class AmbientAudioService {
     if (match == null || match.assetPath.isEmpty) return;
 
     try {
+      await _ensureAudioContext();
       await _player.setVolume(0.85);
       await _player.setReleaseMode(ReleaseMode.loop);
-      await _player.play(AssetSource(match.assetPath));
+      // audioplayers AssetSource prepends 'assets/' by default
+      await _player.play(AssetSource('audio/${match.assetPath}'));
     } catch (e) {
-      // debugPrint('Audio error: $e');
+      // Audio error handled silently
     }
   }
 

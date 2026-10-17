@@ -50,7 +50,7 @@ class NoriSpeechBubble extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 4),
         padding: const EdgeInsets.fromLTRB(10, 6, 10, 7),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.cardWhite,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: AppTheme.sketchBorderColor,
@@ -102,7 +102,7 @@ class NoriSpeechBubble extends StatelessWidget {
               text,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 9.5,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.inkForeground,

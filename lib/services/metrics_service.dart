@@ -5,9 +5,18 @@ import '../models/syllabus.dart';
 /// Ported from js/core/metrics.js
 class MetricsService {
   /// Day boundary with configurable start hour (defaults to 5 AM)
-  static String todayKey([int dayStartHour = 5]) {
-    final adjusted = DateTime.now().subtract(Duration(hours: dayStartHour));
+  static String todayKey([int dayStartHour = 5, DateTime? now]) {
+    final adjusted = (now ?? DateTime.now()).subtract(Duration(hours: dayStartHour));
     return DateFormat('yyyy-MM-dd').format(adjusted);
+  }
+
+  /// Timestamp representing the start of the study day (defaults to 5 AM)
+  static DateTime studyDayStart([int dayStartHour = 5, DateTime? now]) {
+    final current = now ?? DateTime.now();
+    final adjusted = current.subtract(Duration(hours: dayStartHour));
+    return current.isUtc
+        ? DateTime.utc(adjusted.year, adjusted.month, adjusted.day, dayStartHour)
+        : DateTime(adjusted.year, adjusted.month, adjusted.day, dayStartHour);
   }
 
   /// Syllabus-wide stats for a given edition state + subjects
@@ -119,11 +128,13 @@ class MetricsService {
   static ETAResult calculateETA(
     int remainingVideos,
     int videosPerDay,
-    String targetDate,
-  ) {
+    String targetDate, {
+    DateTime? now,
+  }) {
     final pace = videosPerDay < 1 ? 1 : videosPerDay;
     final daysNeeded = (remainingVideos / pace).ceil();
-    final finishDate = DateTime.now().add(Duration(days: daysNeeded));
+    final effectiveNow = now ?? DateTime.now();
+    final finishDate = effectiveNow.add(Duration(days: daysNeeded));
 
     DateTime? deadline;
     int? daysToDeadline;
@@ -132,7 +143,9 @@ class MetricsService {
     if (targetDate.isNotEmpty) {
       try {
         deadline = DateTime.parse(targetDate);
-        daysToDeadline = deadline.difference(DateTime.now()).inDays;
+        final deadlineUtc = DateTime.utc(deadline.year, deadline.month, deadline.day);
+        final nowUtc = DateTime.utc(effectiveNow.year, effectiveNow.month, effectiveNow.day);
+        daysToDeadline = deadlineUtc.difference(nowUtc).inDays;
         isOverdue = daysToDeadline < 0;
       } catch (_) {}
     }
@@ -150,49 +163,72 @@ class MetricsService {
   }
 
   /// Streak calculation from daily history
-  static StreakResult computeStreak(Map<String, int> dailyHistory) {
-    if (dailyHistory.isEmpty) return const StreakResult(current: 0, best: 0);
+  static StreakResult computeStreak(
+    Map<String, int> dailyHistory, {
+    int dayStartHour = 5,
+    DateTime? now,
+  }) {
+    final active = dailyHistory.entries
+        .where((e) => e.value > 0)
+        .map((e) => e.key)
+        .toList();
+    if (active.isEmpty) return const StreakResult(current: 0, best: 0);
 
-    final dates = dailyHistory.keys.toList()..sort();
+    final activeSet = <DateTime>{};
+    for (final d in active) {
+      final parsed = DateTime.tryParse('${d}T00:00:00Z');
+      if (parsed != null) {
+        activeSet.add(parsed);
+      }
+    }
+    if (activeSet.isEmpty) return const StreakResult(current: 0, best: 0);
+    final activeDatesUtc = activeSet.toList()..sort();
+
+    final refNow = now ?? DateTime.now();
+    final todayStr = todayKey(dayStartHour, refNow);
+    final adjustedRef = refNow.subtract(Duration(hours: dayStartHour));
+    final yesterdayStr = DateFormat('yyyy-MM-dd').format(
+      adjustedRef.subtract(const Duration(days: 1)),
+    );
+    final todayUtc = DateTime.parse('${todayStr}T00:00:00Z');
+    final yesterdayUtc = DateTime.parse('${yesterdayStr}T00:00:00Z');
+
     int currentStreak = 0;
-    int bestStreak = 0;
-    int streak = 0;
+    DateTime? anchorDate;
+    if (activeSet.contains(todayUtc)) {
+      anchorDate = todayUtc;
+    } else if (activeSet.contains(yesterdayUtc)) {
+      anchorDate = yesterdayUtc;
+    }
 
-    DateTime? prev;
-    for (final dateStr in dates.reversed) {
-      final date = DateTime.parse(dateStr);
-      if (prev == null) {
-        streak = 1;
-      } else {
-        final diff = prev.difference(date).inDays;
-        if (diff == 1) {
-          streak++;
+    if (anchorDate != null) {
+      currentStreak = 1;
+      DateTime currentCheck = anchorDate;
+      while (true) {
+        final expectedPrev = currentCheck.subtract(const Duration(days: 1));
+        if (activeSet.contains(expectedPrev)) {
+          currentStreak++;
+          currentCheck = expectedPrev;
         } else {
           break;
         }
       }
-      prev = date;
     }
-    currentStreak = streak;
 
     // Best streak
-    streak = 0;
-    DateTime? lastDate;
-    for (final dateStr in dates) {
-      final date = DateTime.parse(dateStr);
-      if (lastDate == null) {
-        streak = 1;
+    int bestStreak = 1;
+    int streak = 1;
+    for (int i = 1; i < activeDatesUtc.length; i++) {
+      final prev = activeDatesUtc[i - 1];
+      final cur = activeDatesUtc[i];
+      if (cur == prev.add(const Duration(days: 1))) {
+        streak++;
       } else {
-        final diff = date.difference(lastDate).inDays;
-        if (diff == 1) {
-          streak++;
-        } else {
-          streak = 1;
-        }
+        streak = 1;
       }
       if (streak > bestStreak) bestStreak = streak;
-      lastDate = date;
     }
+    if (currentStreak > bestStreak) bestStreak = currentStreak;
 
     return StreakResult(current: currentStreak, best: bestStreak);
   }

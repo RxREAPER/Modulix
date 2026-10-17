@@ -23,7 +23,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - Configured center button with white gel-pen Pomodoro icon inside the dark circular medallion, with automatic vector fallback.
   - Removed overlapping inner halo ring from `_SketchTimerMedallionPainter` to keep the tomato body completely clear and legible.
 - **Verification:** `flutter analyze` passed (0 errors), `flutter test test/lovable_nav_bar_test.dart` passed (4/4 test suites).
-- **Build Status:** ⏳ Pending APK Build
+- **Build Status:** ✅ Included in Build (Commit a78d411)
 
 ---
 

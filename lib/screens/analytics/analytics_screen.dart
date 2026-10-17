@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/daily_tasks_provider.dart';
@@ -11,6 +12,12 @@ import '../../widgets/heatmap_calendar.dart';
 import '../../widgets/analytics/study_plan_analytics_sheet.dart';
 import '../../widgets/analytics/focus_timer_analytics_sheet.dart';
 import '../../widgets/analytics/daily_tasks_analytics_sheet.dart';
+import '../../widgets/profile/profile_customization.dart';
+import '../../widgets/animations/page_entrance.dart';
+import '../../widgets/animations/rolling_digit_text.dart';
+import '../../widgets/animations/apple_pressable.dart';
+import '../../services/tour/app_tour_controller.dart';
+
 
 class AnalyticsScreen extends ConsumerWidget {
   const AnalyticsScreen({super.key});
@@ -35,15 +42,18 @@ class AnalyticsScreen extends ConsumerWidget {
     final subjects = syllabusAsync.value ?? [];
 
     if (appState == null) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: AppTheme.paperBackground,
-        body: Center(child: CircularProgressIndicator()),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     final edition = appState.currentEdition;
     final plan = edition.plan;
-    final streak = MetricsService.computeStreak(edition.dailyHistory);
+    final streak = MetricsService.computeStreak(
+      edition.dailyHistory,
+      dayStartHour: appState.dayStartHour,
+    );
 
     // ── 1. Study Plan Summary ──────────────────────────────────────────────
     int planTotalVideos = 0;
@@ -54,6 +64,9 @@ class AnalyticsScreen extends ConsumerWidget {
       if (s.id == plan.targetSubject) {
         planSubjectName = s.name;
         for (final ch in s.chapters) {
+          if (plan.targetUnits.isNotEmpty && !plan.targetUnits.contains(ch.name)) {
+            continue;
+          }
           planTotalVideos += ch.videos.length;
           for (final v in ch.videos) {
             if (edition.completedVideos.containsKey(v.id)) {
@@ -68,11 +81,8 @@ class AnalyticsScreen extends ConsumerWidget {
         : 0.0;
 
     // ── 2. Focus Timer Summary (Today) ─────────────────────────────────────
-    final now = DateTime.now();
-    final todayStart = DateTime(now.year, now.month, now.day, 5);
-    final effectiveTodayStart = now.hour < 5
-        ? todayStart.subtract(const Duration(days: 1))
-        : todayStart;
+    final effectiveTodayStart =
+        MetricsService.studyDayStart(appState.dayStartHour);
 
     int todayFocusSecs = 0;
     int todayFocusSessions = 0;
@@ -95,7 +105,7 @@ class AnalyticsScreen extends ConsumerWidget {
         backgroundColor: AppTheme.paperBackground,
         elevation: 0,
         centerTitle: false,
-        title: const Text(
+        title: Text(
           'Analytics',
           style: TextStyle(
             fontSize: 24,
@@ -103,8 +113,23 @@ class AnalyticsScreen extends ConsumerWidget {
             color: AppTheme.inkForeground,
           ),
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: ProfileAvatar(
+              size: 42,
+              colorId: appState.avatarColorId,
+              iconId: appState.avatarIconId,
+              doctorName: appState.doctorName,
+              onTap: () => context.go('/settings?from=/analytics'),
+            ),
+          ),
+        ],
       ),
-      body: ListView(
+      body: FadeSlideEntrance(
+        durationMs: 320,
+        slideY: 14.0,
+        child: ListView(
         physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
         children: [
@@ -117,8 +142,8 @@ class AnalyticsScreen extends ConsumerWidget {
                   value: '${streak.current}',
                   unit: 'DAYS ACTIVE',
                   sub: streak.current > 0 ? 'Active & burning strong' : 'Start your streak today',
-                  color: Colors.orange,
-                  trailingWidget: const _LiveFlameBadge(color: Colors.orange, size: 20),
+                  color: const Color(0xFFF97316),
+                  trailingWidget: const _LiveFlameBadge(color: Color(0xFFF97316), size: 20),
                 ),
               ),
               const SizedBox(width: 12),
@@ -128,8 +153,8 @@ class AnalyticsScreen extends ConsumerWidget {
                   value: '${streak.best}',
                   unit: 'RECORD',
                   sub: 'Personal all-time best',
-                  color: AppTheme.primaryBlue,
-                  trailingWidget: const _ShiningMedalBadge(color: AppTheme.primaryBlue, size: 20),
+                  color: const Color(0xFFCA8A04),
+                  trailingWidget: const _ShiningMedalBadge(color: Color(0xFFEAB308), size: 20),
                 ),
               ),
             ],
@@ -137,7 +162,7 @@ class AnalyticsScreen extends ConsumerWidget {
 
           const SizedBox(height: 24),
 
-          const Text(
+          Text(
             'PERFORMANCE HUBS',
             style: TextStyle(
               fontSize: 11,
@@ -150,17 +175,18 @@ class AnalyticsScreen extends ConsumerWidget {
 
           // ── Hub Card 1: Module Plan Progress ─────────────────────────────
           _HubCard(
+            key: TourTargetRegistry.keyFor(TourTargetId.analyticsModuleHub),
             title: 'Module Plan Progress',
             subtitle: plan.isConfigured
                 ? '$planSubjectName · ${(planProgress * 100).round()}% complete'
                 : 'No active plan configured · Tap to set',
             badge: plan.isConfigured
-                ? '${planCompletedVideos}/${planTotalVideos} Vids'
+                ? '$planCompletedVideos/$planTotalVideos Vids'
                 : 'Setup',
-            badgeColor: AppTheme.primaryBlue,
+            badgeColor: AppTheme.accentPrimary,
             icon: Icons.track_changes_rounded,
-            iconColor: AppTheme.primaryBlue,
-            iconBg: AppTheme.primaryBlue.withOpacity(0.12),
+            iconColor: AppTheme.accentPrimary,
+            iconBg: AppTheme.accentSubtle,
             progress: planProgress,
             stat1Label: 'Daily Target',
             stat1Value: plan.isConfigured ? '${plan.videosPerDay ?? 4} vids' : '--',
@@ -171,21 +197,20 @@ class AnalyticsScreen extends ConsumerWidget {
             onTap: () => StudyPlanAnalyticsSheet.show(context),
           ),
 
-
-
           const SizedBox(height: 14),
 
           // ── Hub Card 2: Focus Timer Analytics ────────────────────────────
           _HubCard(
+            key: TourTargetRegistry.keyFor(TourTargetId.analyticsFocusHub),
             title: 'Focus & Deep Work',
             subtitle: todayFocusSecs > 0
                 ? '${_formatDuration(todayFocusSecs)} studied today across $todayFocusSessions sessions'
                 : 'No sessions logged today · Start timer',
             badge: todayFocusSecs > 0 ? _formatDuration(todayFocusSecs) : '0m',
-            badgeColor: Colors.orange,
+            badgeColor: AppTheme.accentPrimary,
             icon: Icons.timer_outlined,
-            iconColor: Colors.orange,
-            iconBg: Colors.orange.withOpacity(0.12),
+            iconColor: AppTheme.accentPrimary,
+            iconBg: AppTheme.accentSubtle,
             progress: todayFocusSecs > 0
                 ? (todayFocusSecs / (4 * 3600)).clamp(0.0, 1.0)
                 : 0.0,
@@ -200,15 +225,16 @@ class AnalyticsScreen extends ConsumerWidget {
 
           // ── Hub Card 3: Daily Tasks Analytics ────────────────────────────
           _HubCard(
+            key: TourTargetRegistry.keyFor(TourTargetId.analyticsTasksHub),
             title: 'Daily Tasks Analytics',
             subtitle: totalTasks > 0
                 ? '$doneTasks of $totalTasks tasks checked off today'
                 : 'No tasks scheduled on desk pad',
             badge: totalTasks > 0 ? '$doneTasks/$totalTasks' : '0/0',
-            badgeColor: Colors.teal,
+            badgeColor: AppTheme.accentPrimary,
             icon: Icons.check_circle_outline_rounded,
-            iconColor: Colors.teal,
-            iconBg: Colors.teal.withOpacity(0.12),
+            iconColor: AppTheme.accentPrimary,
+            iconBg: AppTheme.accentSubtle,
             progress: tasksProgress,
             stat1Label: 'Completion Rate',
             stat1Value: '${(tasksProgress * 100).round()}%',
@@ -220,7 +246,7 @@ class AnalyticsScreen extends ConsumerWidget {
           const SizedBox(height: 28),
 
           // ── Heatmap Calendar Section ─────────────────────────────────────
-          const Text(
+          Text(
             '12-WEEK STUDY ACTIVITY',
             style: TextStyle(
               fontSize: 11,
@@ -234,7 +260,7 @@ class AnalyticsScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(18),
             decoration: AppTheme.sketchDecoration(
-              backgroundColor: Colors.white,
+              backgroundColor: AppTheme.cardWhite,
               borderRadius: 20,
               shadowOffset: 4,
             ),
@@ -244,7 +270,7 @@ class AnalyticsScreen extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Daily Consistency Matrix',
                       style: TextStyle(
                         fontSize: 14,
@@ -254,7 +280,7 @@ class AnalyticsScreen extends ConsumerWidget {
                     ),
                     Text(
                       '${edition.dailyHistory.values.fold<int>(0, (a, b) => a + b)} completed',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.mutedText,
@@ -265,13 +291,14 @@ class AnalyticsScreen extends ConsumerWidget {
                 const SizedBox(height: 14),
                 HeatmapCalendar(
                   dailyHistory: edition.dailyHistory,
-                  accentColor: AppTheme.primaryBlue,
+                  accentColor: AppTheme.accentPrimary,
                 ),
               ],
             ),
           ),
         ],
       ),
+    ),
     );
   }
 }
@@ -295,13 +322,16 @@ class _HeroStreakCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: AppTheme.sketchDecoration(
-        backgroundColor: Colors.white,
-        borderRadius: 18,
-        shadowOffset: 3,
-      ),
+    return ApplePressable(
+      pressedScale: 0.97,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: AppTheme.sketchDecoration(
+          backgroundColor: AppTheme.cardWhite,
+          borderRadius: 18,
+          shadowOffset: 3,
+        ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -310,7 +340,7 @@ class _HeroStreakCard extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 9,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 1.0,
@@ -325,15 +355,26 @@ class _HeroStreakCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w900,
-                  fontFamily: 'monospace',
-                  color: AppTheme.inkForeground,
+              if (int.tryParse(value) != null)
+                RollingDigitText.count(
+                  count: int.parse(value),
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    fontFamily: 'monospace',
+                    color: AppTheme.inkForeground,
+                  ),
+                )
+              else
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    fontFamily: 'monospace',
+                    color: AppTheme.inkForeground,
+                  ),
                 ),
-              ),
               const SizedBox(width: 4),
               Text(
                 unit,
@@ -349,7 +390,7 @@ class _HeroStreakCard extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             sub,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w600,
               color: AppTheme.mutedText,
@@ -357,6 +398,7 @@ class _HeroStreakCard extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }
@@ -411,11 +453,11 @@ class _LiveFlameBadgeState extends State<_LiveFlameBadge>
         return Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: widget.color.withOpacity(_glowAnimation.value * 0.4),
+            color: widget.color.withValues(alpha: _glowAnimation.value * 0.4),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: widget.color.withOpacity(_glowAnimation.value),
+                color: widget.color.withValues(alpha: _glowAnimation.value),
                 blurRadius: 8,
                 spreadRadius: 1,
               ),
@@ -480,15 +522,15 @@ class _ShiningMedalBadgeState extends State<_ShiningMedalBadge>
         return Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: widget.color.withOpacity(0.1),
+            color: widget.color.withValues(alpha: 0.1),
             shape: BoxShape.circle,
             border: Border.all(
-              color: widget.color.withOpacity(0.35),
+              color: widget.color.withValues(alpha: 0.35),
               width: 1.2,
             ),
             boxShadow: [
               BoxShadow(
-                color: widget.color.withOpacity(0.15),
+                color: widget.color.withValues(alpha: 0.15),
                 blurRadius: 6,
                 spreadRadius: 0.5,
               ),
@@ -541,6 +583,7 @@ class _HubCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const _HubCard({
+    super.key,
     required this.title,
     required this.subtitle,
     required this.badge,
@@ -558,12 +601,14 @@ class _HubCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return ApplePressable(
       onTap: onTap,
+      pressedScale: 0.98,
+      borderRadius: BorderRadius.circular(20),
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: AppTheme.sketchDecoration(
-          backgroundColor: Colors.white,
+          backgroundColor: AppTheme.cardWhite,
           borderRadius: 20,
           shadowOffset: 4,
         ),
@@ -589,7 +634,7 @@ class _HubCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w900,
                           color: AppTheme.inkForeground,
@@ -600,7 +645,7 @@ class _HubCard extends StatelessWidget {
                         subtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: AppTheme.mutedText,
@@ -613,16 +658,23 @@ class _HubCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
-                    color: badgeColor.withOpacity(0.12),
+                    color: AppTheme.current.isDark
+                        ? Colors.white.withValues(alpha: 0.06)
+                        : AppTheme.parchmentSurface,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: badgeColor, width: 1.2),
+                    border: Border.all(
+                      color: AppTheme.current.isDark
+                          ? Colors.white.withValues(alpha: 0.14)
+                          : AppTheme.borderLight,
+                      width: 1.1,
+                    ),
                   ),
                   child: Text(
                     badge,
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
-                      color: badgeColor,
+                      color: AppTheme.inkForeground,
                     ),
                   ),
                 ),
@@ -637,7 +689,7 @@ class _HubCard extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: progress,
                 minHeight: 6,
-                backgroundColor: Colors.grey.shade100,
+                backgroundColor: AppTheme.borderLight,
                 valueColor: AlwaysStoppedAnimation(badgeColor),
               ),
             ),
@@ -651,12 +703,12 @@ class _HubCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(stat1Label,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.w700,
                             color: AppTheme.mutedText)),
                     Text(stat1Value,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w900,
                             color: AppTheme.inkForeground)),
@@ -667,32 +719,55 @@ class _HubCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(stat2Label,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.w700,
                             color: AppTheme.mutedText)),
                     Text(stat2Value,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w900,
                             color: AppTheme.inkForeground)),
                   ],
                 ),
                 const Spacer(),
-                Row(
-                  children: [
-                    Text(
-                      'View Details',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        color: badgeColor,
+                Container(
+                  padding: AppTheme.current.isDark
+                      ? const EdgeInsets.symmetric(horizontal: 10, vertical: 5)
+                      : EdgeInsets.zero,
+                  decoration: AppTheme.current.isDark
+                      ? BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.14),
+                            width: 1,
+                          ),
+                        )
+                      : null,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'View Details',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.current.isDark
+                              ? Colors.white.withValues(alpha: 0.88)
+                              : AppTheme.mutedText,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(Icons.arrow_forward_ios_rounded,
-                        size: 10, color: badgeColor),
-                  ],
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 10,
+                        color: AppTheme.current.isDark
+                            ? Colors.white.withValues(alpha: 0.75)
+                            : AppTheme.mutedText,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

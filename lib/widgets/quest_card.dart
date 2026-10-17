@@ -3,6 +3,9 @@ import '../models/syllabus.dart';
 import '../models/app_state.dart';
 import '../services/metrics_service.dart';
 import '../data/subjects_metadata.dart';
+import 'curriculum/subject_sketch_icon.dart';
+import 'animations/animated_strike_text.dart';
+import 'animations/apple_pressable.dart';
 
 /// The main daily quest card shown on the home screen
 class QuestCard extends StatefulWidget {
@@ -11,6 +14,7 @@ class QuestCard extends StatefulWidget {
   final List<Subject> subjects;
   final ValueChanged<String> onMarkComplete;
   final ValueChanged<String> onMarkIncomplete;
+  final int dayStartHour;
 
   const QuestCard({
     super.key,
@@ -19,6 +23,7 @@ class QuestCard extends StatefulWidget {
     required this.subjects,
     required this.onMarkComplete,
     required this.onMarkIncomplete,
+    this.dayStartHour = 5,
   });
 
   @override
@@ -72,7 +77,7 @@ class _QuestCardState extends State<QuestCard> {
       return _AllDoneCard();
     }
 
-    final today = MetricsService.todayKey();
+    final today = MetricsService.todayKey(widget.dayStartHour);
     final doneToday = widget.editionState.dailyHistory[today] ?? 0;
     final target = widget.plan.videosPerDay ?? batch.length;
     final meta = subjectMeta(widget.plan.targetSubject);
@@ -96,11 +101,16 @@ class _QuestCardState extends State<QuestCard> {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: meta.accent.withOpacity(0.15),
+                      color: meta.accent.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child:
-                        Icon(meta.icon, color: meta.accent, size: 20),
+                    child: Center(
+                      child: SubjectSketchIcon(
+                        subjectId: widget.plan.targetSubject,
+                        color: meta.accent,
+                        size: 20,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -190,25 +200,28 @@ class _QuestVideoRow extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tileColor = videoTileColor(video.id);
 
-    return InkWell(
+    return ApplePressable(
       onTap: onToggle,
+      pressedScale: 0.98,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
           children: [
             // Colored number tile
-            Container(
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
               width: 34,
               height: 34,
               decoration: BoxDecoration(
                 color: isCompleted
-                    ? Colors.green.withOpacity(0.15)
-                    : tileColor.withOpacity(0.15),
+                    ? Colors.green.withValues(alpha: 0.15)
+                    : tileColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(9),
               ),
               child: Center(
                 child: isCompleted
-                    ? Icon(Icons.check_rounded,
+                    ? const Icon(Icons.check_rounded,
                         color: Colors.green, size: 18)
                     : Text(
                         '${video.serialNumber}',
@@ -224,17 +237,13 @@ class _QuestVideoRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    video.title,
+                  AnimatedStrikeText(
+                    text: video.title,
+                    isStruck: isCompleted,
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      decoration: isCompleted
-                          ? TextDecoration.lineThrough
-                          : null,
-                      color: isCompleted
-                          ? cs.onSurface.withOpacity(0.4)
-                          : cs.onSurface,
+                      color: cs.onSurface,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -244,7 +253,7 @@ class _QuestVideoRow extends StatelessWidget {
                       video.durationLabel,
                       style: TextStyle(
                           fontSize: 11,
-                          color: cs.onSurface.withOpacity(0.4)),
+                          color: cs.onSurface.withValues(alpha: 0.4)),
                     ),
                 ],
               ),
@@ -314,7 +323,19 @@ class _AllDoneCard extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            const Text('🎉', style: TextStyle(fontSize: 40)),
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEAB308).withOpacity(0.16),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.emoji_events_rounded,
+                size: 30,
+                color: Color(0xFFCA8A04),
+              ),
+            ),
             const SizedBox(height: 12),
             const Text('All done for today!',
                 style:

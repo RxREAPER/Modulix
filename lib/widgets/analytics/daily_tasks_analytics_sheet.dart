@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/daily_tasks_provider.dart';
 import '../../theme/app_theme.dart';
+import 'analytics_progress_hero_card.dart';
 
 class DailyTasksAnalyticsSheet extends ConsumerWidget {
   const DailyTasksAnalyticsSheet({super.key});
@@ -42,14 +43,17 @@ class DailyTasksAnalyticsSheet extends ConsumerWidget {
     final todayKey = DateFormat('yyyy-MM-dd').format(checkDay);
     if ((dateHistory[todayKey] ?? 0) > 0 || completedCount > 0) {
       streak = 1;
-      checkDay = checkDay.subtract(const Duration(days: 1));
+      checkDay = DateTime(now.year, now.month, now.day - 1);
+    } else {
+      // Today has 0 completed tasks: start backward traversal from yesterday
+      checkDay = DateTime(now.year, now.month, now.day - 1);
     }
 
     while (true) {
       final key = DateFormat('yyyy-MM-dd').format(checkDay);
       if ((dateHistory[key] ?? 0) > 0) {
         streak++;
-        checkDay = checkDay.subtract(const Duration(days: 1));
+        checkDay = DateTime(checkDay.year, checkDay.month, checkDay.day - 1);
       } else {
         break;
       }
@@ -59,7 +63,7 @@ class DailyTasksAnalyticsSheet extends ConsumerWidget {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.88,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppTheme.paperBackground,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         border: Border(
@@ -92,15 +96,15 @@ class DailyTasksAnalyticsSheet extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.teal.withOpacity(0.12),
+                    color: AppTheme.accentSubtle,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.teal, width: 1.5),
+                    border: Border.all(color: AppTheme.accentPrimary, width: 1.5),
                   ),
-                  child: const Icon(Icons.check_circle_outline_rounded,
-                      color: Colors.teal, size: 24),
+                  child: Icon(Icons.check_circle_outline_rounded,
+                      color: AppTheme.accentPrimary, size: 24),
                 ),
                 const SizedBox(width: 14),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -110,7 +114,7 @@ class DailyTasksAnalyticsSheet extends ConsumerWidget {
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.2,
-                          color: Colors.teal,
+                          color: AppTheme.accentPrimary,
                         ),
                       ),
                       Text(
@@ -128,91 +132,23 @@ class DailyTasksAnalyticsSheet extends ConsumerWidget {
             ),
           ),
 
-          const Divider(height: 1, color: AppTheme.borderLight),
+          Divider(height: 1, color: AppTheme.borderLight),
 
           Expanded(
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
               children: [
                 // Today's Completion Card
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: AppTheme.sketchDecoration(
-                    backgroundColor: Colors.white,
-                    borderRadius: 20,
-                    shadowOffset: 4,
-                  ),
-                  child: Row(
-                    children: [
-                      // Radial Progress
-                      SizedBox(
-                        width: 82,
-                        height: 82,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            CircularProgressIndicator(
-                              value: completionPct,
-                              strokeWidth: 9,
-                              strokeCap: StrokeCap.round,
-                              backgroundColor: Colors.grey.shade200,
-                              valueColor:
-                                  const AlwaysStoppedAnimation(Colors.teal),
-                            ),
-                            Text(
-                              '${(completionPct * 100).round()}%',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                                fontFamily: 'monospace',
-                                color: AppTheme.inkForeground,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'TODAY\'S DESK PAD',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1.0,
-                                color: AppTheme.mutedText,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '$completedCount of $totalTasks Done',
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                                color: AppTheme.inkForeground,
-                              ),
-                            ),
-                            Text(
-                              totalTasks == 0
-                                  ? 'No tasks configured for today'
-                                  : (completedCount == totalTasks
-                                      ? '🎉 All daily targets cleared!'
-                                      : '${totalTasks - completedCount} tasks remaining'),
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: completedCount == totalTasks && totalTasks > 0
-                                    ? Colors.green.shade700
-                                    : AppTheme.mutedText,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                AnalyticsProgressHeroCard(
+                  progress: completionPct,
+                  progressColor: AppTheme.accentPrimary,
+                  tagLabel: "Today's Desk Pad",
+                  primaryValue: '$completedCount of $totalTasks Done',
+                  secondaryLabel: totalTasks == 0
+                      ? 'No tasks configured for today'
+                      : (completedCount == totalTasks
+                          ? 'All daily targets cleared!'
+                          : '${totalTasks - completedCount} tasks remaining'),
                 ),
 
                 const SizedBox(height: 20),
@@ -224,13 +160,13 @@ class DailyTasksAnalyticsSheet extends ConsumerWidget {
                       child: Container(
                         padding: const EdgeInsets.all(14),
                         decoration: AppTheme.sketchDecoration(
-                          backgroundColor: Colors.white,
+                          backgroundColor: AppTheme.cardWhite,
                           borderRadius: 16,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('TASK STREAK',
+                            Text('TASK STREAK',
                                 style: TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.w800,
@@ -239,19 +175,25 @@ class DailyTasksAnalyticsSheet extends ConsumerWidget {
                             Row(
                               children: [
                                 Text('$streak',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         fontSize: 22,
                                         fontWeight: FontWeight.w900,
                                         color: AppTheme.inkForeground)),
-                                const SizedBox(width: 4),
-                                const Text('days 🔥',
+                                const SizedBox(width: 6),
+                                Icon(
+                                  Icons.local_fire_department_rounded,
+                                  size: 15,
+                                  color: AppTheme.accentPrimary,
+                                ),
+                                const SizedBox(width: 2),
+                                Text('days',
                                     style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w700,
-                                        color: Colors.orange)),
+                                        color: AppTheme.accentPrimary)),
                               ],
                             ),
-                            const Text('Any task done',
+                            Text('Any task done',
                                 style: TextStyle(
                                     fontSize: 10, color: AppTheme.mutedText)),
                           ],
@@ -263,24 +205,24 @@ class DailyTasksAnalyticsSheet extends ConsumerWidget {
                       child: Container(
                         padding: const EdgeInsets.all(14),
                         decoration: AppTheme.sketchDecoration(
-                          backgroundColor: Colors.white,
+                          backgroundColor: AppTheme.cardWhite,
                           borderRadius: 16,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('ACTIVE DAYS',
+                            Text('ACTIVE DAYS',
                                 style: TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.w800,
                                     color: AppTheme.mutedText)),
                             const SizedBox(height: 4),
                             Text('${dateHistory.length}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.w900,
                                     color: AppTheme.inkForeground)),
-                            const Text('Days recorded',
+                            Text('Days recorded',
                                 style: TextStyle(
                                     fontSize: 10, color: AppTheme.mutedText)),
                           ],
@@ -293,7 +235,7 @@ class DailyTasksAnalyticsSheet extends ConsumerWidget {
                 const SizedBox(height: 24),
 
                 // Today's Tasks Status List
-                const Text(
+                Text(
                   'TODAY\'S TASKS',
                   style: TextStyle(
                     fontSize: 11,
@@ -308,11 +250,11 @@ class DailyTasksAnalyticsSheet extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppTheme.cardWhite,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: AppTheme.borderLight, width: 1.2),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
                         'No tasks on your desk pad today.\nAdd tasks from the Home screen!',
                         textAlign: TextAlign.center,
@@ -330,10 +272,10 @@ class DailyTasksAnalyticsSheet extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppTheme.cardWhite,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                          color: isDone ? Colors.green.shade200 : AppTheme.borderLight,
+                          color: isDone ? AppTheme.accentPrimary.withValues(alpha: 0.35) : AppTheme.borderLight,
                           width: 1.2,
                         ),
                       ),
@@ -343,7 +285,7 @@ class DailyTasksAnalyticsSheet extends ConsumerWidget {
                             isDone
                                 ? Icons.check_circle_rounded
                                 : Icons.radio_button_unchecked_rounded,
-                            color: isDone ? Colors.green : Colors.grey.shade400,
+                            color: isDone ? AppTheme.accentPrimary : Colors.grey.shade400,
                             size: 20,
                           ),
                           const SizedBox(width: 12),

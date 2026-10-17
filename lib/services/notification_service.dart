@@ -6,6 +6,7 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import '../models/app_state.dart';
+import 'metrics_service.dart';
 
 class NotificationService {
   NotificationService._();
@@ -28,6 +29,7 @@ class NotificationService {
   static const String channelStreakReminders = 'flowmd_streak_reminders_v2';
   static const String channelModuleTasks = 'flowmd_module_tasks_v2';
   static const String channelFocusTimer = 'flowmd_focus_timer_v2';
+  static const String channelFocusTimerLive = 'flowmd_focus_timer_live_v2';
 
   Future<void> init() async {
     if (_initialized) return;
@@ -53,7 +55,7 @@ class NotificationService {
       requestSoundPermission: false,
     );
     const linuxSettings = LinuxInitializationSettings(
-      defaultActionName: 'Open FlowMD',
+      defaultActionName: 'Open Modulix',
     );
 
     const initSettings = InitializationSettings(
@@ -122,6 +124,17 @@ class NotificationService {
               importance: Importance.max,
               playSound: true,
               enableVibration: true,
+            ),
+          );
+          await androidImpl.createNotificationChannel(
+            const AndroidNotificationChannel(
+              channelFocusTimerLive,
+              'Live Focus & Break Timer',
+              description: 'Real-time countdown and stopwatch in notification shade while studying',
+              importance: Importance.low,
+              playSound: false,
+              enableVibration: false,
+              showBadge: false,
             ),
           );
         }
@@ -392,74 +405,89 @@ class NotificationService {
     }
   }
 
-  /// Instant notification when a focus timer starts
+  /// Shows or updates the ongoing live real-time chronometer notification
+  Future<void> showRealtimeTimerNotification({
+    required String title,
+    required String subtitle,
+    required bool isBreak,
+    required bool isCountdown,
+    required int whenMillis,
+    Color? color,
+  }) async {
+    if (!_initialized) await init();
+    try {
+      final effectiveTitle = title.trim().isNotEmpty ? title.trim() : (isBreak ? 'Recharge Break' : 'Focus Session');
+      final effectiveSub = subtitle.trim().isNotEmpty ? subtitle.trim() : (isBreak ? 'Taking a short rest' : 'Study block active');
+
+      final androidDetails = AndroidNotificationDetails(
+        channelFocusTimerLive,
+        'Live Focus & Break Timer',
+        channelDescription: 'Real-time countdown and stopwatch in notification shade while studying',
+        importance: Importance.low,
+        priority: Priority.low,
+        playSound: false,
+        enableVibration: false,
+        ongoing: true,
+        autoCancel: false,
+        onlyAlertOnce: true,
+        showWhen: true,
+        usesChronometer: true,
+        chronometerCountDown: isCountdown,
+        when: whenMillis,
+        color: color ?? (isBreak ? const Color(0xFF10B981) : const Color(0xFF3B82F6)),
+        category: AndroidNotificationCategory.stopwatch,
+        icon: '@mipmap/ic_launcher',
+        subText: isBreak ? 'Break' : 'Focusing',
+      );
+
+      const darwinDetails = DarwinNotificationDetails(
+        presentAlert: false,
+        presentBadge: false,
+        presentSound: false,
+      );
+
+      await _plugin.show(
+        idFocusTimerRunning,
+        effectiveTitle,
+        effectiveSub,
+        NotificationDetails(
+          android: androidDetails,
+          iOS: darwinDetails,
+        ),
+        payload: '/timer',
+      );
+    } catch (e) {
+      debugPrint('[NotificationService] showRealtimeTimerNotification error: $e');
+    }
+  }
+
+  /// Instant notification when a focus timer starts (delegates to real-time chronometer)
   Future<void> showFocusTimerStarted({
     required String topicTitle,
     required int minutes,
   }) async {
-    if (!_initialized) await init();
-    try {
-      final title = topicTitle.trim().isNotEmpty ? topicTitle.trim() : 'Study Session';
-      final minTxt = minutes > 0 ? '$minutes min' : 'active';
-      await _plugin.show(
-        idFocusTimerRunning,
-        'Focus Session Started',
-        'Focusing on "$title" ($minTxt). Stay locked in!',
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            channelFocusTimer,
-            'Focus Timer & Breaks',
-            channelDescription: 'High-priority alerts when focus sessions and breaks finish',
-            importance: Importance.max,
-            priority: Priority.high,
-            playSound: true,
-            enableVibration: true,
-            icon: '@mipmap/ic_launcher',
-          ),
-          iOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          ),
-        ),
-      );
-    } catch (e) {
-      debugPrint('[NotificationService] showFocusTimerStarted error: $e');
-    }
+    final targetMs = DateTime.now().millisecondsSinceEpoch + (minutes > 0 ? minutes : 25) * 60 * 1000;
+    await showRealtimeTimerNotification(
+      title: topicTitle.isNotEmpty ? topicTitle : 'Focus Session',
+      subtitle: minutes > 0 ? '$minutes min session' : 'Active session',
+      isBreak: false,
+      isCountdown: true,
+      whenMillis: targetMs,
+    );
   }
 
-  /// Instant notification when a break starts
+  /// Instant notification when a break starts (delegates to real-time chronometer)
   Future<void> showBreakStarted({
     required int minutes,
   }) async {
-    if (!_initialized) await init();
-    try {
-      final minTxt = minutes > 0 ? '$minutes min' : '5 min';
-      await _plugin.show(
-        idFocusTimerRunning,
-        'Break Started',
-        'Your $minTxt break has started. Step away from your desk and recharge.',
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            channelFocusTimer,
-            'Focus Timer & Breaks',
-            channelDescription: 'High-priority alerts when focus sessions and breaks finish',
-            importance: Importance.max,
-            priority: Priority.high,
-            playSound: true,
-            enableVibration: true,
-            icon: '@mipmap/ic_launcher',
-          ),
-          iOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          ),
-        ),
-      );
-    } catch (e) {
-      debugPrint('[NotificationService] showBreakStarted error: $e');
-    }
+    final targetMs = DateTime.now().millisecondsSinceEpoch + (minutes > 0 ? minutes : 5) * 60 * 1000;
+    await showRealtimeTimerNotification(
+      title: 'Recharge Break',
+      subtitle: minutes > 0 ? '$minutes min break' : '5 min break',
+      isBreak: true,
+      isCountdown: true,
+      whenMillis: targetMs,
+    );
   }
 
   /// Instant notification when a focus timer session completes
@@ -602,7 +630,7 @@ class NotificationService {
 
       await _plugin.show(
         idTestNotification,
-        'FlowMD Notifications Active!',
+        'Modulix Notifications Active!',
         'Hello $doc! Study reminders, streak alerts, and focus timer notifications are all ready.',
         const NotificationDetails(
           android: AndroidNotificationDetails(
@@ -659,9 +687,13 @@ class NotificationService {
       final parts = state.streakReminderTime.split(':');
       final hour = int.tryParse(parts.first) ?? 20;
       final minute = parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
+      final currentStreak = MetricsService.computeStreak(
+        state.currentEdition.dailyHistory,
+        dayStartHour: state.dayStartHour,
+      ).current;
       await scheduleStreakReminder(
         time: TimeOfDay(hour: hour, minute: minute),
-        currentStreak: 1,
+        currentStreak: currentStreak,
       );
     } else {
       await _plugin.cancel(idStreakReminder);

@@ -167,7 +167,8 @@ class AppState {
   final String doctorName;
   final String activeEdition;   // 'marrow_8' | 'marrow_6_5'
   final ThemePref themePref;
-  final String accentColorId;   // 'indigo' | 'coral' | 'emerald' | 'amber' | 'violet' | 'rose'
+  final String palettePresetId; // 'paper' | 'obsidian' | 'slate' | 'sepia'
+  final String accentColorId;   // 'cobalt' | 'emerald' | 'amethyst' | 'amber' | 'coral'
   final String avatarColorId;   // profile avatar palette id (see profile_customization.dart)
   final String avatarIconId;    // profile avatar icon id ('letter' = show initial)
   final int dayStartHour;       // e.g. 5 for 5:00 AM
@@ -187,7 +188,8 @@ class AppState {
     this.doctorName = 'Dr',
     this.activeEdition = 'marrow_8',
     this.themePref = ThemePref.system,
-    this.accentColorId = 'indigo',
+    this.palettePresetId = 'paper',
+    this.accentColorId = 'cobalt',
     this.avatarColorId = 'indigo',
     this.avatarIconId = 'letter',
     this.dayStartHour = 5,
@@ -211,6 +213,7 @@ class AppState {
     String? doctorName,
     String? activeEdition,
     ThemePref? themePref,
+    String? palettePresetId,
     String? accentColorId,
     String? avatarColorId,
     String? avatarIconId,
@@ -231,6 +234,7 @@ class AppState {
       doctorName: doctorName ?? this.doctorName,
       activeEdition: activeEdition ?? this.activeEdition,
       themePref: themePref ?? this.themePref,
+      palettePresetId: palettePresetId ?? this.palettePresetId,
       accentColorId: accentColorId ?? this.accentColorId,
       avatarColorId: avatarColorId ?? this.avatarColorId,
       avatarIconId: avatarIconId ?? this.avatarIconId,
@@ -265,6 +269,7 @@ class AppState {
         'doctorName': doctorName,
         'activeEdition': activeEdition,
         'themePref': themePref.name,
+        'palettePresetId': palettePresetId,
         'accentColorId': accentColorId,
         'avatarColorId': avatarColorId,
         'avatarIconId': avatarIconId,
@@ -289,7 +294,8 @@ class AppState {
           (e) => e.name == json['themePref'],
           orElse: () => ThemePref.system,
         ),
-        accentColorId: json['accentColorId'] as String? ?? 'indigo',
+        palettePresetId: json['palettePresetId'] as String? ?? 'paper',
+        accentColorId: json['accentColorId'] as String? ?? 'cobalt',
         avatarColorId: json['avatarColorId'] as String? ?? 'indigo',
         avatarIconId: json['avatarIconId'] as String? ?? 'letter',
         dayStartHour: json['dayStartHour'] as int? ?? 5,

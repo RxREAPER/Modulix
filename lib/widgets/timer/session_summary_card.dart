@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../animations/apple_pressable.dart';
 
 class SessionSummaryCard extends StatelessWidget {
   final String subjectName;
@@ -62,7 +63,7 @@ class SessionSummaryCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: AppTheme.sketchDecoration(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.cardWhite,
         borderRadius: 24,
         shadowOffset: 6,
       ),
@@ -84,7 +85,7 @@ class SessionSummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 14),
 
-          const Text(
+          Text(
             'Session Finished!',
             style: TextStyle(
               fontSize: 22,
@@ -117,7 +118,7 @@ class SessionSummaryCard extends StatelessWidget {
                   children: [
                     Text(
                       subjectName.toUpperCase(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
                         color: AppTheme.primaryBlue,
@@ -137,7 +138,7 @@ class SessionSummaryCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   topicTitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                     color: AppTheme.inkForeground,
@@ -174,28 +175,36 @@ class SessionSummaryCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(
-                  onPressed: onViewAnalytics,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppTheme.inkForeground,
-                    side: const BorderSide(color: AppTheme.sketchBorderColor, width: 1.5),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: ApplePressable(
+                  pressedScale: 0.96,
+                  onTap: onViewAnalytics,
+                  child: OutlinedButton(
+                    onPressed: onViewAnalytics,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.inkForeground,
+                      side: BorderSide(color: AppTheme.sketchBorderColor, width: 1.5),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('View Analytics', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
                   ),
-                  child: const Text('View Analytics', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: ElevatedButton(
-                  onPressed: onStartAnother,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.inkForeground,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: ApplePressable(
+                  pressedScale: 0.96,
+                  onTap: onStartAnother,
+                  child: ElevatedButton(
+                    onPressed: onStartAnother,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.inkForeground,
+                      foregroundColor: AppTheme.paperBackground,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Start Another', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
                   ),
-                  child: const Text('Start Another', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
                 ),
               ),
             ],

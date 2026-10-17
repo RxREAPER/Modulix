@@ -1,14 +1,22 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../models/timer_theme.dart';
 import '../../providers/focus_timer_provider.dart';
 import '../../services/ambient_audio_service.dart';
 import '../../widgets/timer/ambient_sound_sheet.dart';
 import '../../widgets/timer/timer_background_picker.dart';
 import '../../widgets/timer/task_picker_sheet.dart';
+import 'package:video_player/video_player.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'fullscreen_timer_screen.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/animations/apple_pressable.dart';
+import '../../services/tour/app_tour_controller.dart';
+import '../../widgets/tour/tour_spotlight_overlay.dart';
 
 class FocusTimerScreen extends ConsumerStatefulWidget {
   final String? initialSubjectId;
@@ -34,20 +42,81 @@ class FocusTimerScreen extends ConsumerStatefulWidget {
   ConsumerState<FocusTimerScreen> createState() => _FocusTimerScreenState();
 }
 
-class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> {
+class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with WidgetsBindingObserver {
   bool _initialized = false;
+  VideoPlayerController? _videoCtrl;
+  String? _currentVideoPath;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Enter fullscreen automatically
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    // Keep screen awake if enabled
+    final keepAwake = ref.read(focusTimerProvider).keepScreenAwake;
+    if (keepAwake) {
+      WakelockPlus.enable();
+    }
     // Seed task from external caller (e.g. module timeline)
-    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeSetTask());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _maybeSetTask();
+      _syncBackgroundVideo();
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _ensureVideoPlaying();
+    }
+  }
+
+  void _ensureVideoPlaying() {
+    final ctrl = _videoCtrl;
+    if (ctrl != null && ctrl.value.isInitialized && !ctrl.value.isPlaying) {
+      ctrl.play();
+    }
+  }
+
+  void _syncBackgroundVideo() {
+    final theme = ref.read(focusTimerProvider).theme;
+    if (theme.videoAssetPath != _currentVideoPath) {
+      _currentVideoPath = theme.videoAssetPath;
+      if (_videoCtrl != null) {
+        _videoCtrl!.dispose();
+        _videoCtrl = null;
+      }
+
+      if (theme.videoAssetPath != null) {
+        final ctrl = VideoPlayerController.asset(
+          theme.videoAssetPath!,
+          videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+        );
+        _videoCtrl = ctrl;
+        ctrl.initialize().then((_) {
+          if (!mounted) return;
+          ctrl.setLooping(true);
+          ctrl.setVolume(0.0);
+          ctrl.play();
+          setState(() {});
+        }).catchError((e, st) {
+          debugPrint('FocusTimer video initialization failed: $e\n$st');
+        });
+      } else {
+        setState(() {});
+      }
+    } else {
+      _ensureVideoPlaying();
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    WakelockPlus.disable();
+    _videoCtrl?.dispose();
+    _videoCtrl = null;
     // Restore system UI only when leaving the timer
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
@@ -79,8 +148,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> {
     final h = secs ~/ 3600;
     final m = (secs % 3600) ~/ 60;
     final s = secs % 60;
-    if (h > 0) return '${h.toString().padLeft(2,'0')}:${m.toString().padLeft(2,'0')}:${s.toString().padLeft(2,'0')}';
-    return '${m.toString().padLeft(2,'0')}:${s.toString().padLeft(2,'0')}';
+    return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
   void _handleFinish(BuildContext ctx) async {
@@ -88,27 +156,114 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> {
     final timerState = ref.read(focusTimerProvider);
     final log = await notifier.finishSession();
 
-    if (!mounted) return;
+    if (!mounted || !ctx.mounted) return;
 
     // Show session summary dialog
     await showDialog(
       context: ctx,
-      barrierColor: Colors.black.withOpacity(0.65),
+      barrierColor: Colors.black.withOpacity(0.35),
       barrierDismissible: false,
       builder: (dCtx) => _SessionDoneDialog(
-        subjectName: timerState.subjectName,
-        topicTitle: timerState.topicTitle,
+        subjectName: timerState.hasTarget ? timerState.subjectName : 'General Focus',
+        topicTitle: timerState.hasTarget ? timerState.topicTitle : 'Study Session',
         focusSecs: timerState.focusSecondsElapsed,
         breakSecs: timerState.breakSecondsElapsed,
         modeName: _modeName(timerState.mode),
+        theme: timerState.theme,
+        isLight: timerState.theme.isLight,
+        onDone: () {
+          Navigator.of(dCtx).pop();
+          notifier.reset();
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/');
+          }
+        },
         onViewAnalytics: () {
           Navigator.of(dCtx).pop();
+          notifier.reset();
           context.go('/curriculum/${timerState.subjectId}/analytics');
         },
         onStartAnother: () {
           Navigator.of(dCtx).pop();
-          notifier.reset();
+          notifier.resetSessionForSameTask();
         },
+      ),
+    );
+  }
+
+  void _showCustomMinutesDialog({
+    required BuildContext context,
+    required String title,
+    required int currentMins,
+    required int minMins,
+    required int maxMins,
+    required ValueChanged<int> onSave,
+  }) {
+    final controller = TextEditingController(text: currentMins.toString());
+    showDialog(
+      context: context,
+      builder: (dCtx) => AlertDialog(
+        backgroundColor: AppTheme.cardWhite,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: AppTheme.borderLight),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.inkForeground),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Enter exact duration in minutes:',
+              style: TextStyle(fontSize: 13, color: AppTheme.mutedText),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              autofocus: true,
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.inkForeground),
+              decoration: InputDecoration(
+                suffixText: 'mins',
+                suffixStyle: TextStyle(fontSize: 14, color: AppTheme.mutedText, fontWeight: FontWeight.w600),
+                filled: true,
+                fillColor: AppTheme.parchmentSurface,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.borderLight)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.borderLight)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.primaryBlue, width: 1.8)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dCtx).pop(),
+            child: Text('Cancel', style: TextStyle(color: AppTheme.mutedText, fontWeight: FontWeight.w600)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryBlue,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {
+              final val = int.tryParse(controller.text.trim());
+              if (val != null && val >= minMins && val <= maxMins) {
+                onSave(val);
+                Navigator.of(dCtx).pop();
+              }
+            },
+            child: const Text('Save', style: TextStyle(fontWeight: FontWeight.w700)),
+          ),
+        ],
       ),
     );
   }
@@ -123,14 +278,37 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<bool>(
+      focusTimerProvider.select((s) => s.keepScreenAwake),
+      (prev, next) {
+        if (next) {
+          WakelockPlus.enable();
+        } else {
+          WakelockPlus.disable();
+        }
+      },
+    );
+
+    ref.listen<String?>(
+      focusTimerProvider.select((s) => s.theme.videoAssetPath),
+      (prev, next) {
+        if (prev != next) {
+          _syncBackgroundVideo();
+        }
+      },
+    );
+
     final timer = ref.watch(focusTimerProvider);
     final notifier = ref.read(focusTimerProvider.notifier);
     final theme = timer.theme;
+    final isLight = theme.isLight;
     final sndActive = timer.activeSoundId != 'none';
 
-    final displaySecs = timer.mode == TimerMode.countUp
-        ? timer.focusSecondsElapsed
-        : timer.remainingSeconds;
+    final displaySecs = !timer.hasTarget
+        ? 0
+        : (timer.mode == TimerMode.countUp
+            ? timer.focusSecondsElapsed
+            : timer.remainingSeconds);
 
     return PopScope(
       canPop: false,
@@ -144,306 +322,470 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> {
       },
       child: Scaffold(
         backgroundColor: theme.backgroundColor,
-      body: Stack(fit: StackFit.expand, children: [
-        // Live GIF Background - rich, vibrant, immersive
-        if (theme.gifUrl != null)
-          Positioned.fill(
-            child: Image.network(
-              theme.gifUrl!,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const SizedBox(),
-            ),
-          ),
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            // ── LIVE VIDEO / ASSET BACKGROUND ──────────────────────────
+            if (theme.hasVideo && _videoCtrl != null && _videoCtrl!.value.isInitialized)
+              Positioned.fill(
+                child: FittedBox(
+                  fit: BoxFit.cover,
+                  child: SizedBox(
+                    width: _videoCtrl!.value.size.width,
+                    height: _videoCtrl!.value.size.height,
+                    child: VideoPlayer(_videoCtrl!),
+                  ),
+                ),
+              )
+            else if (theme.thumbnailAssetPath != null)
+              Positioned.fill(
+                child: Image.asset(
+                  theme.thumbnailAssetPath!,
+                  fit: BoxFit.cover,
+                ),
+              ),
 
-        // Dark vignette overlay only at top and bottom edges so user sees the vivid background
-        Positioned.fill(
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withOpacity(0.55),
-                  Colors.transparent,
-                  Colors.black.withOpacity(0.65),
-                ],
-                stops: const [0.0, 0.45, 1.0],
-              ),
-            ),
-          ),
-        ),
-
-        // UI
-        SafeArea(child: Column(children: [
-          // ── TOP BAR ──────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            child: Row(children: [
-              // Background Picker
-              _GlassBtn(
-                icon: Icons.palette_outlined,
-                color: theme.inkColor,
-                onTap: () => TimerBackgroundPicker.show(context,
-                  activeTheme: theme,
-                  onSelectTheme: notifier.setTheme),
-              ),
-              const SizedBox(width: 8),
-              // Ambient Sound
-              _GlassBtn(
-                icon: sndActive ? Icons.graphic_eq_rounded : Icons.volume_off_rounded,
-                color: sndActive ? theme.accentColor : theme.inkColor,
-                pulsing: sndActive,
-                onTap: () => AmbientSoundSheet.show(context,
-                  activeSoundId: timer.activeSoundId,
-                  onSelectSound: (id) {
-                    notifier.setSound(id);
-                    AmbientAudioService.instance.playSound(id);
-                  }),
-              ),
-              const SizedBox(width: 8),
-              // Fullscreen Flip Clock
-              _GlassBtn(
-                icon: Icons.fullscreen_rounded,
-                color: theme.inkColor,
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FullscreenTimerScreen())),
-              ),
-              const Spacer(),
-              // Prominent close cross at the top right
-              _GlassBtn(
-                icon: Icons.close_rounded,
-                color: Colors.white,
-                onTap: () {
-                  if (context.canPop()) {
-                    context.pop();
-                  } else {
-                    context.go('/');
-                  }
-                },
-              ),
-            ]),
-          ),
-
-          const SizedBox(height: 14),
-
-          // ── TASK CARD ────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: GestureDetector(
-              onTap: () => TaskPickerSheet.show(context, onSelect: (task) {
-                notifier.setTask(
-                  subjectId: task.subjectId, subjectName: task.subjectName,
-                  topicId: task.topicId, topicTitle: task.topicTitle,
-                  chapterName: task.chapterName, topicType: task.topicType,
-                  durationMins: task.presetDurationMins,
-                );
-              }),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.32),
-                        width: 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.12),
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
-                        ),
+            // Subtle dark overlay ONLY when live video/custom background is active
+            if (theme.hasVideo || theme.thumbnailAssetPath != null)
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.52),
+                        Colors.black.withOpacity(0.20),
+                        Colors.black.withOpacity(0.68),
                       ],
+                      stops: const [0.0, 0.45, 1.0],
                     ),
-                    child: Row(children: [
-                      Icon(_topicIcon(timer.topicType), color: theme.accentColor, size: 20),
-                      const SizedBox(width: 10),
-                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(timer.subjectName.toUpperCase(),
-                          style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800,
-                            letterSpacing: 1.0, color: theme.accentColor)),
-                        Text(timer.topicTitle, maxLines: 1, overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: theme.inkColor)),
-                      ])),
-                      Icon(Icons.tune_rounded, color: theme.inkColor.withOpacity(0.5), size: 16),
-                    ]),
                   ),
                 ),
               ),
-            ),
-          ),
 
-          const SizedBox(height: 12),
-
-          // ── MODE BUTTON ───────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: _ModeButton(mode: timer.mode, theme: theme, onChanged: notifier.changeMode),
-          ),
-
-          // ── PRESETS ────────────────────────────────────────────────────
-          if (timer.mode == TimerMode.pomodoro) ...[
-            const SizedBox(height: 10),
-            Row(mainAxisAlignment: MainAxisAlignment.center,
-              children: [1, 15, 25, 45, 60].map((mins) {
-                final sel = timer.pomodoroPresetMins == mins;
-                return Padding(padding: const EdgeInsets.symmetric(horizontal: 5),
-                  child: GestureDetector(
-                    onTap: () => notifier.setPomodoroPreset(mins),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                          decoration: BoxDecoration(
-                            color: sel
-                                ? theme.accentColor.withOpacity(0.85)
-                                : Colors.white.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: sel
-                                  ? Colors.white.withOpacity(0.6)
-                                  : Colors.white.withOpacity(0.25),
-                              width: 1.4,
+            // ── ABSOLUTE CENTERPIECE (DEAD-CENTER OF THE SCREEN) ─────────
+            // From Unit heading to Phase badge, centered vertically & horizontally
+            // ZERO drop shadows as requested
+            Positioned.fill(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // 1 & 2. Subject & Topic (Tappable to configure)
+                    ApplePressable(
+                      onTap: () => _SessionConfigSheet.show(
+                        context,
+                        onShowCustomDialog: _showCustomMinutesDialog,
+                      ),
+                      pressedScale: 0.97,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Text(
+                              timer.hasTarget
+                                  ? timer.subjectName.toUpperCase().replaceAll(' ', '.')
+                                  : 'NO TARGET SELECTED',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 2.0,
+                                color: isLight ? theme.accentColor : Colors.white,
+                              ),
                             ),
                           ),
-                          child: Text('${mins}m', style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w800,
-                            color: sel ? Colors.white : theme.inkColor)),
-                        ),
-                      ),
-                    ),
-                  ));
-              }).toList()),
-          ] else if (timer.mode == TimerMode.moduleLinked) ...[
-            const SizedBox(height: 10),
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              _GlassBtn(icon: Icons.remove, color: theme.inkColor, onTap: () => notifier.setModulePreset(timer.modulePresetMins - 5)),
-              const SizedBox(width: 12),
-              Text('${timer.modulePresetMins}m', style: TextStyle(color: theme.inkColor, fontSize: 15, fontWeight: FontWeight.w800)),
-              const SizedBox(width: 12),
-              _GlassBtn(icon: Icons.add, color: theme.inkColor, onTap: () => notifier.setModulePreset(timer.modulePresetMins + 5)),
-            ]),
-          ],
-
-          const Spacer(),
-
-          // ── BIG TIMER DISPLAY ─────────────────────────────────────────
-          Text(
-            _fmtFull(displaySecs),
-            style: TextStyle(
-              fontSize: 76,
-              fontWeight: FontWeight.w900,
-              fontFamily: 'monospace',
-              color: theme.inkColor,
-              letterSpacing: -2,
-              height: 1.0,
-            ),
-          ),
-
-          const SizedBox(height: 6),
-
-          // Phase label
-          Text(
-            timer.isBreak ? '☕  BREAK' : timer.isRunning ? '🔥  FOCUSING' : '○  READY',
-            style: TextStyle(
-              fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.4,
-              color: timer.isBreak ? Colors.orange.shade400
-                  : timer.isRunning ? Colors.green.shade400
-                  : theme.inkColor.withOpacity(0.4)),
-          ),
-
-          const SizedBox(height: 18),
-
-          // ── BREAK + TOTAL (plain text, no box) ───────────────────────
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Text('Break  ', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
-              color: theme.inkColor.withOpacity(0.4))),
-            Text(_fmt(timer.breakSecondsElapsed),
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800,
-                fontFamily: 'monospace', color: theme.inkColor.withOpacity(0.6))),
-            Text('   ·   Total  ', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
-              color: theme.inkColor.withOpacity(0.4))),
-            Text(_fmt(timer.focusSecondsElapsed + timer.breakSecondsElapsed),
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800,
-                fontFamily: 'monospace', color: theme.accentColor)),
-          ]),
-
-          const Spacer(),
-
-          // ── BOTTOM CONTROLS ───────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-            child: Row(children: [
-              // Break toggle
-              _ControlBtn(
-                icon: timer.isBreak ? Icons.coffee_rounded : Icons.coffee_outlined,
-                label: timer.isBreak ? 'End Break' : 'Break',
-                color: timer.isBreak ? theme.accentColor : theme.inkColor.withOpacity(0.7),
-                bg: theme.inkColor.withOpacity(0.08),
-                onTap: notifier.toggleBreak,
-              ),
-              const SizedBox(width: 12),
-
-              // Main play/pause — bigger with visible glass border
-              Expanded(child: GestureDetector(
-                onTap: notifier.startOrPause,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: timer.isRunning
-                            ? theme.inkColor.withOpacity(0.85)
-                            : theme.accentColor.withOpacity(0.85),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.4),
-                          width: 1.6,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: (timer.isRunning ? theme.inkColor : theme.accentColor).withOpacity(0.35),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
+                          const SizedBox(height: 4),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 28),
+                            child: Text(
+                              timer.hasTarget
+                                  ? (timer.chapterName.isNotEmpty
+                                      ? '${timer.chapterName} · ${timer.topicTitle}'
+                                      : timer.topicTitle)
+                                  : 'Select a study target & mode to start',
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: isLight ? const Color(0xFF64748B) : Colors.white.withOpacity(0.85),
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                        Icon(timer.isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                          color: Colors.white, size: 26),
-                        const SizedBox(width: 6),
-                        Text(timer.isRunning ? 'PAUSE' : 'START',
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: 0.8)),
-                      ]),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // 3. Study Time: Heading
+                    Text(
+                      'Study Time:',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.4,
+                        color: isLight ? const Color(0xFF0F172A) : Colors.white,
+                      ),
+                    ),
+
+                    const SizedBox(height: 6),
+
+                    // 4. BIG TIMER DISPLAY (00:00:00) — Dead-Center, Monospace, No Shadows
+                    Container(
+                      key: TourTargetRegistry.keyFor(TourTargetId.timerDisplay),
+                      child: Text(
+                        _fmtFull(displaySecs),
+                        style: TextStyle(
+                          fontSize: 66,
+                          fontWeight: FontWeight.w900,
+                          fontFamily: 'monospace',
+                          color: isLight ? const Color(0xFF0F172A) : Colors.white,
+                          letterSpacing: -1,
+                          height: 1.0,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    // 5. Total Break Readout
+                    Text(
+                      'Total Break: ${_fmtFull(timer.breakSecondsElapsed)}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'monospace',
+                        color: isLight ? const Color(0xFF64748B) : Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+
+                    // 6. Total Time Readout
+                    Text(
+                      'Total Time (Current): ${_fmtFull(timer.focusSecondsElapsed + timer.breakSecondsElapsed)}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'monospace',
+                        color: isLight ? const Color(0xFF64748B) : Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // 7. Phase Label Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: (!timer.hasTarget
+                                ? const Color(0xFF64748B)
+                                : (timer.isBreak
+                                    ? const Color(0xFFF59E0B)
+                                    : (timer.isRunning
+                                        ? const Color(0xFF10B981)
+                                        : theme.accentColor)))
+                            .withOpacity(isLight ? 0.12 : 0.20),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        !timer.hasTarget
+                            ? '○  AWAITING TARGET'
+                            : (timer.isBreak
+                                ? '●  BREAK'
+                                : (timer.isRunning ? '●  FOCUSING' : '○  READY')),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.2,
+                          color: !timer.hasTarget
+                              ? (isLight ? const Color(0xFF64748B) : Colors.white.withOpacity(0.70))
+                              : (timer.isBreak
+                                  ? (isLight ? const Color(0xFFD97706) : Colors.orange.shade300)
+                                  : (timer.isRunning
+                                      ? (isLight ? const Color(0xFF059669) : Colors.green.shade300)
+                                      : (isLight ? theme.accentColor : Colors.white))),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // ── TOP CONTROLS: CENTER-UP PILL & RIGHT VERTICAL ACTIONS DOCK ─
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: Stack(
+                    alignment: Alignment.topCenter,
+                    clipBehavior: Clip.none,
+                    children: [
+                      // ── CENTER-UP: "SET-UP" Config Pill (True Horizontal Center)
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: ApplePressable(
+                          onTap: () => _SessionConfigSheet.show(
+                            context,
+                            onShowCustomDialog: _showCustomMinutesDialog,
+                          ),
+                          pressedScale: 0.94,
+                          borderRadius: BorderRadius.circular(30),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: isLight ? Colors.white : Colors.black.withOpacity(0.38),
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(
+                                color: isLight ? const Color(0xFFE2E8F0) : Colors.white.withOpacity(0.35),
+                                width: 1.3,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: isLight ? const Color(0x14000000) : Colors.black.withOpacity(0.30),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.tune_rounded,
+                                  size: 16,
+                                  color: theme.accentColor,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'SET-UP',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 1.2,
+                                    color: isLight ? const Color(0xFF0F172A) : Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // ── RIGHT VERTICAL DOCK: X, Palette, Sound, Fullscreen ─
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            // 1. Close "X" Button (topmost)
+                            _GlassBtn(
+                              icon: Icons.close_rounded,
+                              isLight: isLight,
+                              color: isLight ? const Color(0xFF0F172A) : Colors.white,
+                              onTap: () {
+                                if (context.canPop()) {
+                                  context.pop();
+                                } else {
+                                  context.go('/');
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 10),
+
+                            // 2. Background Theme Palette Button (below X)
+                            _GlassBtn(
+                              icon: Icons.palette_outlined,
+                              isLight: isLight,
+                              color: isLight ? const Color(0xFF0F172A) : theme.inkColor,
+                              onTap: () => TimerBackgroundPicker.show(
+                                context,
+                                activeTheme: theme,
+                                onSelectTheme: (newTheme) {
+                                  notifier.setTheme(newTheme);
+                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    _syncBackgroundVideo();
+                                  });
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+
+                            // 3. Ambient Sound Button (below Palette)
+                            _GlassBtn(
+                              icon: sndActive ? Icons.graphic_eq_rounded : Icons.volume_off_rounded,
+                              isLight: isLight,
+                              color: sndActive
+                                  ? const Color(0xFF6C3BAA)
+                                  : (isLight ? const Color(0xFF0F172A) : theme.inkColor),
+                              pulsing: sndActive,
+                              onTap: () => AmbientSoundSheet.show(
+                                context,
+                                activeSoundId: timer.activeSoundId,
+                                onSelectSound: (id) {
+                                  notifier.setSound(id);
+                                  AmbientAudioService.instance.playSound(id);
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+
+                            // 4. Fullscreen Flip Clock Button (below Sound)
+                            _GlassBtn(
+                              icon: Icons.fullscreen_rounded,
+                              isLight: isLight,
+                              color: isLight ? const Color(0xFF0F172A) : theme.inkColor,
+                              onTap: () => Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                  opaque: true,
+                                  transitionDuration: const Duration(milliseconds: 340),
+                                  reverseTransitionDuration: const Duration(milliseconds: 240),
+                                  pageBuilder: (_, __, ___) => const FullscreenTimerScreen(),
+                                  transitionsBuilder: (_, anim, __, child) {
+                                    final curved = CurvedAnimation(
+                                      parent: anim,
+                                      curve: Curves.easeOutCubic,
+                                      reverseCurve: Curves.easeInCubic,
+                                    );
+                                    return ScaleTransition(
+                                      scale: Tween<double>(begin: 0.88, end: 1.0).animate(curved),
+                                      child: FadeTransition(opacity: curved, child: child),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // ── BOTTOM CONTROLS (BALANCED & ERGONOMIC) ────────────────────
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 26),
+                  child: Container(
+                    key: TourTargetRegistry.keyFor(TourTargetId.timerActionDock),
+                    child: Row(
+                      children: [
+                        // Break toggle
+                        _ControlBtn(
+                          icon: timer.isBreak ? Icons.coffee_rounded : Icons.coffee_outlined,
+                          label: timer.isBreak ? 'End Break' : 'Break',
+                          isLight: isLight,
+                          color: timer.isBreak
+                              ? theme.accentColor
+                              : (isLight ? const Color(0xFF0F172A) : Colors.white),
+                          bg: isLight ? Colors.white : Colors.white.withOpacity(0.12),
+                          borderColor: isLight ? const Color(0xFFE2E8F0) : Colors.white.withOpacity(0.30),
+                          onTap: notifier.toggleBreak,
+                        ),
+                        const SizedBox(width: 12),
+
+                        // Main Play/Pause Button (48 height, dynamic theme accent or slate)
+                        Expanded(
+                          child: ApplePressable(
+                            pressedScale: 0.95,
+                            borderRadius: BorderRadius.circular(24),
+                            onTap: () {
+                              if (!timer.hasTarget && !timer.isRunning) {
+                                _SessionConfigSheet.show(
+                                  context,
+                                  onShowCustomDialog: _showCustomMinutesDialog,
+                                );
+                                return;
+                              }
+                              notifier.startOrPause();
+                            },
+                            child: Container(
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: timer.isRunning
+                                    ? const Color(0xFF0F172A)
+                                    : theme.accentColor,
+                                borderRadius: BorderRadius.circular(24),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: (timer.isRunning
+                                            ? const Color(0xFF0F172A)
+                                            : theme.accentColor)
+                                        .withOpacity(0.28),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    timer.isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                    color: Colors.white,
+                                    size: 22,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    timer.isRunning ? 'PAUSE' : 'START',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 13,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(width: 12),
+
+                        // Finish Button
+                        _ControlBtn(
+                          icon: Icons.check_rounded,
+                          label: 'Finish',
+                          isLight: isLight,
+                          color: timer.sessionActive
+                              ? theme.accentColor
+                              : (isLight ? const Color(0xFF94A3B8) : Colors.white.withOpacity(0.4)),
+                          bg: isLight ? Colors.white : Colors.white.withOpacity(0.12),
+                          borderColor: isLight ? const Color(0xFFE2E8F0) : Colors.white.withOpacity(0.30),
+                          onTap: timer.sessionActive ? () => _handleFinish(context) : null,
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              )),
-
-              const SizedBox(width: 12),
-
-              // Finish
-              _ControlBtn(
-                icon: Icons.check_rounded,
-                label: 'Finish',
-                color: timer.sessionActive ? Colors.green.shade400 : theme.inkColor.withOpacity(0.3),
-                bg: theme.inkColor.withOpacity(0.08),
-                onTap: timer.sessionActive ? () => _handleFinish(context) : null,
               ),
-            ]),
-          ),
-        ])),
-      ]),
-    ),
-  );
-}
+            ),
+            const TourSpotlightOverlay(),
+          ],
+        ),
+      ),
+    );
+  }
 
   IconData _topicIcon(String type) {
     switch (type) {
@@ -455,15 +797,514 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> {
   }
 }
 
-// ── Helper widgets ────────────────────────────────────────────────────────────
+// ── Unified Session Config Bottom Sheet ───────────────────────────────────────
+class _SessionConfigSheet extends ConsumerWidget {
+  final Function({
+    required BuildContext context,
+    required String title,
+    required int currentMins,
+    required int minMins,
+    required int maxMins,
+    required ValueChanged<int> onSave,
+  }) onShowCustomDialog;
+
+  const _SessionConfigSheet({
+    required this.onShowCustomDialog,
+  });
+
+  static void show(
+    BuildContext context, {
+    required Function({
+      required BuildContext context,
+      required String title,
+      required int currentMins,
+      required int minMins,
+      required int maxMins,
+      required ValueChanged<int> onSave,
+    }) onShowCustomDialog,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      sheetAnimationStyle: const AnimationStyle(
+        duration: Duration(milliseconds: 300),
+        reverseDuration: Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+      ),
+      builder: (_) => _SessionConfigSheet(
+        onShowCustomDialog: onShowCustomDialog,
+      ),
+    );
+  }
+
+  IconData _topicIcon(String type) {
+    switch (type) {
+      case 'video': return Icons.play_arrow_rounded;
+      case 'qbank': return Icons.quiz_outlined;
+      case 'notes': return Icons.menu_book_outlined;
+      default: return Icons.task_alt_rounded;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final timer = ref.watch(focusTimerProvider);
+    final notifier = ref.read(focusTimerProvider.notifier);
+    final theme = timer.theme;
+
+    final bg = AppTheme.paperBackground;
+    final cardBg = AppTheme.cardWhite;
+    final border = AppTheme.borderLight;
+    final ink = AppTheme.inkForeground;
+    final secondary = AppTheme.mutedText;
+    final accent = theme.accentColor;
+
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.88,
+      ),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      padding: EdgeInsets.fromLTRB(20, 14, 20, MediaQuery.of(context).viewInsets.bottom + 28),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Drag handle
+          Center(
+            child: Container(
+              width: 44,
+              height: 5,
+              decoration: BoxDecoration(
+                color: AppTheme.borderLight,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          // Header
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: accent.withOpacity(0.10),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: Icon(Icons.tune_rounded, color: accent, size: 18),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Session Setup',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: ink),
+                  ),
+                  Text(
+                    'Pick topic, mode & timer variables',
+                    style: TextStyle(fontSize: 11, color: secondary),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // ── SECTION 1: Topic ──────────────────────────────────────────────
+          _sectionLabel('TOPIC', secondary),
+          const SizedBox(height: 8),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              Navigator.pop(context);
+              TaskPickerSheet.show(context, theme: theme, onSelect: (task) {
+                notifier.setTask(
+                  subjectId: task.subjectId,
+                  subjectName: task.subjectName,
+                  topicId: task.topicId,
+                  topicTitle: task.topicTitle,
+                  chapterName: task.chapterName,
+                  topicType: task.topicType,
+                  durationMins: task.presetDurationMins,
+                );
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: cardBg,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: border, width: 1.2),
+              ),
+              child: Row(
+                children: [
+                  Icon(_topicIcon(timer.topicType), color: accent, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          timer.hasTarget
+                              ? timer.subjectName.toUpperCase().replaceAll(' ', '.')
+                              : 'CHOOSE STUDY TARGET',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.0,
+                            color: accent,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          timer.hasTarget
+                              ? (timer.chapterName.isNotEmpty
+                                  ? '${timer.chapterName} · ${timer.topicTitle}'
+                                  : timer.topicTitle)
+                              : 'Tap to pick from desk tasks or curriculum',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: ink,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right_rounded, color: secondary, size: 18),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // ── SECTION 2: Mode ───────────────────────────────────────────────
+          _sectionLabel('FOCUS MODE', secondary),
+          const SizedBox(height: 8),
+          ...[
+            (TimerMode.pomodoro, Icons.timer_outlined, 'Pomodoro', 'Custom focus & break intervals'),
+            (TimerMode.countUp, Icons.arrow_upward_rounded, 'Count-Up', 'Open stopwatch — tracks study time'),
+            (TimerMode.moduleLinked, Icons.bookmark_border_rounded, 'Module-Linked', 'Synced from video / QBank / notes'),
+          ].map(((TimerMode m, IconData icon, String name, String desc) r) {
+            final sel = r.$1 == timer.mode;
+            return GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => notifier.changeMode(r.$1),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 160),
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: sel ? accent.withOpacity(0.06) : cardBg,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: sel ? accent : border,
+                    width: sel ? 1.8 : 1.0,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(r.$2, size: 20, color: sel ? accent : secondary),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            r.$3,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              color: sel ? accent : ink,
+                            ),
+                          ),
+                          Text(
+                            r.$4,
+                            style: TextStyle(fontSize: 11, color: secondary),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (sel)
+                      Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(shape: BoxShape.circle, color: accent),
+                        child: const Icon(Icons.check_rounded, color: Colors.white, size: 13),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          }),
+          const SizedBox(height: 16),
+
+          // ── SECTION 3: Variables (only for pomodoro / module-linked) ─────
+          if (timer.mode == TimerMode.pomodoro) ...[
+            _sectionLabel('TIMER VARIABLES', secondary),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: cardBg,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: border, width: 1.2),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildStepper(
+                      context: context,
+                      label: 'FOCUS',
+                      value: timer.pomodoroMinutes,
+                      onDec: () => notifier.adjustPomodoroMinutes(-1),
+                      onInc: () => notifier.adjustPomodoroMinutes(1),
+                      onTap: () => onShowCustomDialog(
+                        context: context,
+                        title: 'Focus Duration',
+                        currentMins: timer.pomodoroMinutes,
+                        minMins: 1,
+                        maxMins: 180,
+                        onSave: notifier.setPomodoroMinutes,
+                      ),
+                    ),
+                  ),
+                  Container(width: 1, height: 40, margin: const EdgeInsets.symmetric(horizontal: 12), color: border),
+                  Expanded(
+                    child: _buildStepper(
+                      context: context,
+                      label: 'BREAK',
+                      value: timer.pomodoroBreakMins,
+                      onDec: () => notifier.adjustPomodoroBreakMinutes(-1),
+                      onInc: () => notifier.adjustPomodoroBreakMinutes(1),
+                      onTap: () => onShowCustomDialog(
+                        context: context,
+                        title: 'Break Duration',
+                        currentMins: timer.pomodoroBreakMins,
+                        minMins: 1,
+                        maxMins: 60,
+                        onSave: notifier.setPomodoroBreakMinutes,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else if (timer.mode == TimerMode.moduleLinked) ...[
+            _sectionLabel('TARGET DURATION', secondary),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: cardBg,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: border, width: 1.2),
+              ),
+              child: _buildStepper(
+                context: context,
+                label: 'MODULE TARGET',
+                value: timer.modulePresetMins,
+                onDec: () => notifier.setModulePreset(timer.modulePresetMins - 1),
+                onInc: () => notifier.setModulePreset(timer.modulePresetMins + 1),
+                onTap: () => onShowCustomDialog(
+                  context: context,
+                  title: 'Module Target Duration',
+                  currentMins: timer.modulePresetMins,
+                  minMins: 1,
+                  maxMins: 180,
+                  onSave: notifier.setModulePreset,
+                ),
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 16),
+
+          // ── SECTION 4: Keep Screen Awake ───────────────────────────────────
+          _sectionLabel('DISPLAY', secondary),
+          const SizedBox(height: 8),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => notifier.setKeepScreenAwake(!timer.keepScreenAwake),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: cardBg,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: border, width: 1.2),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: timer.keepScreenAwake
+                          ? accent.withOpacity(0.12)
+                          : const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      timer.keepScreenAwake
+                          ? Icons.smartphone_rounded
+                          : Icons.screen_lock_portrait_rounded,
+                      color: timer.keepScreenAwake ? accent : secondary,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Keep Screen Awake',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: ink,
+                          ),
+                        ),
+                        Text(
+                          'Prevent display from sleeping during session',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: secondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  CupertinoSwitch(
+                    value: timer.keepScreenAwake,
+                    activeColor: accent,
+                    trackColor: AppTheme.borderLight,
+                    thumbColor: Colors.white,
+                    onChanged: (val) {
+                      notifier.setKeepScreenAwake(val);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+  }
+
+  Widget _sectionLabel(String text, Color color) => Text(
+        text,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.0,
+          color: color,
+        ),
+      );
+
+  Widget _buildStepper({
+    required BuildContext context,
+    required String label,
+    required int value,
+    required VoidCallback onDec,
+    required VoidCallback onInc,
+    required VoidCallback onTap,
+  }) {
+    final ink = AppTheme.inkForeground;
+    final secondary = AppTheme.mutedText;
+    final border = AppTheme.borderLight;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(label, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 0.7, color: secondary)),
+        const SizedBox(height: 6),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _SheetStepBtn(icon: Icons.remove_rounded, onTap: onDec),
+            const SizedBox(width: 8),
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onTap,
+              child: Container(
+                width: 52,
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppTheme.parchmentSurface,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: border),
+                ),
+                child: Center(
+                  child: Text(
+                    '${value}m',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: ink),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            _SheetStepBtn(icon: Icons.add_rounded, onTap: onInc),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// Small step button used inside _SessionConfigSheet
+class _SheetStepBtn extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _SheetStepBtn({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    onTap: onTap,
+    child: Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        color: AppTheme.cardWhite,
+        borderRadius: BorderRadius.circular(9),
+        border: Border.all(color: AppTheme.borderLight),
+      ),
+      child: Center(child: Icon(icon, size: 16, color: AppTheme.inkForeground)),
+    ),
+  );
+}
+
+// ── Helper widget _buildTaskCard stub kept for compile safety ──────────────────
+// (All real task-picking logic moved into _SessionConfigSheet above)
 
 class _GlassBtn extends StatelessWidget {
   final IconData icon;
   final Color color;
   final VoidCallback? onTap;
   final bool pulsing;
+  final bool isLight;
 
-  const _GlassBtn({required this.icon, required this.color, this.onTap, this.pulsing = false});
+  const _GlassBtn({
+    required this.icon,
+    required this.color,
+    this.onTap,
+    this.pulsing = false,
+    this.isLight = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -471,32 +1312,29 @@ class _GlassBtn extends StatelessWidget {
     if (pulsing) {
       iconW = SoundHumIcon(isActive: true, color: color, size: 20);
     }
-    return GestureDetector(
+    return ApplePressable(
       onTap: onTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-          child: Container(
-            width: 40, height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withOpacity(0.35),
-                width: 1.6,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.18),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Center(child: iconW),
+      pressedScale: 0.90,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: isLight ? Colors.white : Colors.white.withOpacity(0.08),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isLight ? const Color(0xFFE2E8F0) : Colors.white.withOpacity(0.35),
+            width: 1.2,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: isLight ? const Color(0x0A0F172A) : Colors.black.withOpacity(0.18),
+              blurRadius: 6,
+              offset: const Offset(0, 1),
+            ),
+          ],
         ),
+        child: Center(child: iconW),
       ),
     );
   }
@@ -507,243 +1345,340 @@ class _ControlBtn extends StatelessWidget {
   final String label;
   final Color color;
   final Color bg;
+  final Color borderColor;
   final VoidCallback? onTap;
+  final bool isLight;
 
-  const _ControlBtn({required this.icon, required this.label, required this.color, required this.bg, this.onTap});
+  const _ControlBtn({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.bg,
+    required this.borderColor,
+    this.onTap,
+    this.isLight = true,
+  });
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
+  Widget build(BuildContext context) => ApplePressable(
     onTap: onTap,
-    child: ClipRRect(
-      borderRadius: BorderRadius.circular(18),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          width: 66, height: 56,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.10),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.35),
-              width: 1.6,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.15),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
+    pressedScale: 0.92,
+    borderRadius: BorderRadius.circular(20),
+    child: Container(
+      width: 72,
+      height: 48,
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: isLight ? const Color(0x0A0F172A) : Colors.black.withOpacity(0.15),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(height: 2),
-            Text(label, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: color)),
-          ]),
-        ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 1),
+          Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: color)),
+        ],
       ),
     ),
   );
 }
 
-class _ModeButton extends StatelessWidget {
-  final TimerMode mode;
-  final dynamic theme;
-  final ValueChanged<TimerMode> onChanged;
 
-  const _ModeButton({required this.mode, required this.theme, required this.onChanged});
 
-  String get _label {
-    switch (mode) {
-      case TimerMode.pomodoro: return '⏱  Pomodoro';
-      case TimerMode.countUp: return '⬆  Count-Up';
-      case TimerMode.moduleLinked: return '📌  Module-Linked';
-    }
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.transparent,
-          sheetAnimationStyle: const AnimationStyle(
-            duration: Duration(milliseconds: 280),
-            reverseDuration: Duration(milliseconds: 220),
-          ),
-          builder: (_) => _ModePicker(current: mode, theme: theme, onSelect: (m) {
-            onChanged(m);
-            Navigator.pop(context);
-          }),
-        );
-      },
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.35),
-                width: 1.6,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.12),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text(_label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: theme.inkColor)),
-              Icon(Icons.keyboard_arrow_down_rounded, color: theme.inkColor.withOpacity(0.7), size: 18),
-            ]),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
-class _ModePicker extends StatelessWidget {
-  final TimerMode current;
-  final dynamic theme;
-  final ValueChanged<TimerMode> onSelect;
-
-  const _ModePicker({required this.current, required this.theme, required this.onSelect});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.backgroundColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border.all(color: theme.inkColor.withOpacity(0.15)),
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 40),
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Container(width: 44, height: 5,
-          decoration: BoxDecoration(color: theme.inkColor.withOpacity(0.2), borderRadius: BorderRadius.circular(3))),
-        const SizedBox(height: 18),
-        ...[
-          (TimerMode.pomodoro, '⏱', 'Pomodoro', 'Countdown with preset lengths 15/25/45/60 min'),
-          (TimerMode.countUp, '⬆', 'Count-Up', "Open stopwatch — tracks how long you've studied"),
-          (TimerMode.moduleLinked, '📌', 'Module-Linked', 'Pre-seeded from a specific video/QBank/Notes'),
-        ].map(((TimerMode m, String emoji, String name, String desc) r) {
-          final sel = r.$1 == current;
-          return GestureDetector(
-            onTap: () => onSelect(r.$1),
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: sel ? theme.accentColor.withOpacity(0.15) : theme.inkColor.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: sel ? theme.accentColor.withOpacity(0.6) : Colors.transparent,
-                  width: 1.5),
-              ),
-              child: Row(children: [
-                Text(r.$2, style: const TextStyle(fontSize: 24)),
-                const SizedBox(width: 14),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(r.$3, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: theme.inkColor)),
-                  Text(r.$4, style: TextStyle(fontSize: 11, color: theme.inkColor.withOpacity(0.55))),
-                ])),
-                if (sel) Icon(Icons.check_circle_rounded, color: theme.accentColor),
-              ]),
-            ),
-          );
-        }),
-      ]),
-    );
-  }
-}
-
-// In-file session done dialog to avoid navigation context issues
 class _SessionDoneDialog extends StatelessWidget {
   final String subjectName;
   final String topicTitle;
   final int focusSecs;
   final int breakSecs;
   final String modeName;
+  final TimerThemeData theme;
+  final bool isLight;
+  final VoidCallback onDone;
   final VoidCallback onViewAnalytics;
   final VoidCallback onStartAnother;
 
   const _SessionDoneDialog({
-    required this.subjectName, required this.topicTitle, required this.focusSecs,
-    required this.breakSecs, required this.modeName,
-    required this.onViewAnalytics, required this.onStartAnother,
+    required this.subjectName,
+    required this.topicTitle,
+    required this.focusSecs,
+    required this.breakSecs,
+    required this.modeName,
+    required this.theme,
+    required this.isLight,
+    required this.onDone,
+    required this.onViewAnalytics,
+    required this.onStartAnother,
   });
 
   String _fmt(int s) {
-    final m = s ~/ 60; final sec = s % 60;
+    final m = s ~/ 60;
+    final sec = s % 60;
     return '${m}m ${sec}s';
   }
 
   @override
   Widget build(BuildContext context) {
+    final accent = theme.accentColor;
+    final textPrimary = isLight ? const Color(0xFF0F172A) : Colors.white;
+    final textSecondary = isLight ? const Color(0xFF64748B) : Colors.white.withOpacity(0.70);
+    final border = isLight ? const Color(0xFFE2E8F0) : Colors.white.withOpacity(0.14);
+
     return Dialog(
       backgroundColor: Colors.transparent,
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFFFCFBF8),
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: const [BoxShadow(color: Color(0x221C1C1C), offset: Offset(4, 6), blurRadius: 0)],
-          border: Border.all(color: const Color(0xFF1C1C1C), width: 1.8),
+      elevation: 0,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+          child: Container(
+            decoration: BoxDecoration(
+              color: isLight
+                  ? Colors.white.withOpacity(0.82)
+                  : const Color(0xFF14141E).withOpacity(0.48),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(
+                color: isLight ? const Color(0x22000000) : Colors.white.withOpacity(0.18),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.28),
+                  blurRadius: 30,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.fromLTRB(24, 26, 24, 22),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Clean session completion badge
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: accent.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: accent.withOpacity(0.3),
+                      width: 1.5,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.check_rounded,
+                    color: accent,
+                    size: 34,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Session Complete!',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: textPrimary,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: accent.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: accent.withOpacity(0.22), width: 1.0),
+                  ),
+                  child: Text(
+                    subjectName.isNotEmpty ? subjectName.toUpperCase() : 'FOCUS SESSION',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.0,
+                      color: isLight ? accent : Colors.white.withOpacity(0.92),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  topicTitle,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 18),
+
+                // Translucent Stat tiles
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isLight ? const Color(0xFFF8FAFC) : Colors.white.withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: border,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'FOCUS TIME',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.9,
+                                color: textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _fmt(focusSecs),
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w900,
+                                fontFamily: 'monospace',
+                                color: isLight ? accent : Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isLight ? const Color(0xFFF8FAFC) : Colors.white.withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: border,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'BREAK TIME',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.9,
+                                color: textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _fmt(breakSecs),
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w900,
+                                fontFamily: 'monospace',
+                                color: textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                // Refined semi-translucent "Done" Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: onDone,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isLight ? accent : accent.withOpacity(0.75),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        side: BorderSide(
+                          color: isLight ? Colors.transparent : Colors.white.withOpacity(0.20),
+                          width: 1.0,
+                        ),
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.check_rounded, size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          'Done',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, letterSpacing: 0.4),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // Secondary Actions
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: onViewAnalytics,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: textPrimary,
+                          backgroundColor: isLight ? Colors.white : Colors.white.withOpacity(0.06),
+                          side: BorderSide(
+                            color: border,
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text('Analytics', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: onStartAnother,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: textPrimary,
+                          backgroundColor: isLight ? Colors.white : Colors.white.withOpacity(0.06),
+                          side: BorderSide(
+                            color: border,
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text('Again', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
-        padding: const EdgeInsets.all(24),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(width: 54, height: 54,
-            decoration: const BoxDecoration(color: Color(0xFFDCFCE7), shape: BoxShape.circle),
-            child: const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 32)),
-          const SizedBox(height: 14),
-          const Text('Session Done!', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF1C1C1C))),
-          const SizedBox(height: 4),
-          Text(topicTitle, textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 13, color: Color(0xFF555555))),
-          const SizedBox(height: 16),
-
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Column(children: [
-              Text('FOCUS', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Colors.grey.shade500)),
-              Text(_fmt(focusSecs), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, fontFamily: 'monospace', color: Color(0xFF16A34A))),
-            ]),
-            const SizedBox(width: 28),
-            Column(children: [
-              Text('BREAK', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Colors.grey.shade500)),
-              Text(_fmt(breakSecs), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, fontFamily: 'monospace', color: Colors.grey.shade600)),
-            ]),
-          ]),
-
-          const SizedBox(height: 22),
-          Row(children: [
-            Expanded(child: OutlinedButton(
-              onPressed: onViewAnalytics,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF1C1C1C),
-                side: const BorderSide(color: Color(0xFF1C1C1C), width: 1.5),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-              child: const Text('Analytics', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
-            )),
-            const SizedBox(width: 10),
-            Expanded(child: ElevatedButton(
-              onPressed: onStartAnother,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1C1C1C), foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-              child: const Text('Again', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
-            )),
-          ]),
-        ]),
       ),
     );
   }
 }
+

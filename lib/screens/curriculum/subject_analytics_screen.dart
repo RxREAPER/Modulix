@@ -8,6 +8,7 @@ import '../../providers/syllabus_provider.dart';
 import '../../providers/time_log_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../data/subjects_metadata.dart';
+import '../../widgets/curriculum/subject_sketch_icon.dart';
 import '../../widgets/focus_timer_sheet.dart';
 
 class SubjectAnalyticsScreen extends ConsumerWidget {
@@ -22,7 +23,7 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
     final subjectLogs = timeLogs.where((l) => l.subjectId == subjectId).toList();
 
     return subjectAsync.when(
-      loading: () => const Scaffold(
+      loading: () => Scaffold(
         backgroundColor: AppTheme.paperBackground,
         body: Center(child: CircularProgressIndicator()),
       ),
@@ -32,7 +33,7 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
       ),
       data: (subject) {
         if (subject == null) {
-          return const Scaffold(
+          return Scaffold(
             backgroundColor: AppTheme.paperBackground,
             body: Center(child: Text('Subject not found')),
           );
@@ -80,7 +81,7 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
             appBar: AppBar(
               backgroundColor: AppTheme.paperBackground,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.inkForeground),
+                icon: Icon(Icons.arrow_back_rounded, color: AppTheme.inkForeground),
                 onPressed: () {
                   if (context.canPop()) {
                     context.pop();
@@ -91,7 +92,7 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
               ),
               title: Text(
                 '${subject.displayName} Analytics',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.inkForeground,
@@ -150,7 +151,7 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -159,11 +160,11 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
                                 fontSize: 9,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 0.8,
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white.withValues(alpha: 0.9),
                               ),
                             ),
                           ),
-                          Icon(meta.icon, color: Colors.white, size: 28),
+                          SubjectSketchIcon(subjectId: subject.id, color: Colors.white, size: 28),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -193,7 +194,7 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
 
                 // Distribution Chart
-                const Text(
+                Text(
                   'Time Distribution',
                   style: TextStyle(
                     fontSize: 16,
@@ -206,7 +207,7 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: AppTheme.sketchDecoration(
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppTheme.cardWhite,
                     borderRadius: 20,
                   ),
                   child: totalSecs == 0
@@ -233,46 +234,48 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
                         )
                       : Column(
                           children: [
-                            SizedBox(
-                              height: 160,
-                              child: PieChart(
-                                PieChartData(
-                                  sectionsSpace: 3,
-                                  centerSpaceRadius: 40,
-                                  sections: [
-                                    if (videoSecs > 0)
-                                      PieChartSectionData(
-                                        value: videoSecs.toDouble(),
-                                        title: '${((videoSecs / totalSecs) * 100).round()}%',
-                                        color: AppTheme.primaryBlue,
-                                        radius: 36,
-                                        titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
-                                      ),
-                                    if (qbankSecs > 0)
-                                      PieChartSectionData(
-                                        value: qbankSecs.toDouble(),
-                                        title: '${((qbankSecs / totalSecs) * 100).round()}%',
-                                        color: Colors.teal.shade600,
-                                        radius: 36,
-                                        titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
-                                      ),
-                                    if (notesSecs > 0)
-                                      PieChartSectionData(
-                                        value: notesSecs.toDouble(),
-                                        title: '${((notesSecs / totalSecs) * 100).round()}%',
-                                        color: Colors.amber.shade700,
-                                        radius: 36,
-                                        titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
-                                      ),
-                                    if (standaloneSecs > 0)
-                                      PieChartSectionData(
-                                        value: standaloneSecs.toDouble(),
-                                        title: '${((standaloneSecs / totalSecs) * 100).round()}%',
-                                        color: Colors.purple.shade600,
-                                        radius: 36,
-                                        titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
-                                      ),
-                                  ],
+                            RepaintBoundary(
+                              child: SizedBox(
+                                height: 160,
+                                child: PieChart(
+                                  PieChartData(
+                                    sectionsSpace: 3,
+                                    centerSpaceRadius: 40,
+                                    sections: [
+                                      if (videoSecs > 0)
+                                        PieChartSectionData(
+                                          value: videoSecs.toDouble(),
+                                          title: '${((videoSecs / totalSecs) * 100).round()}%',
+                                          color: AppTheme.primaryBlue,
+                                          radius: 36,
+                                          titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+                                        ),
+                                      if (qbankSecs > 0)
+                                        PieChartSectionData(
+                                          value: qbankSecs.toDouble(),
+                                          title: '${((qbankSecs / totalSecs) * 100).round()}%',
+                                          color: Colors.teal.shade600,
+                                          radius: 36,
+                                          titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+                                        ),
+                                      if (notesSecs > 0)
+                                        PieChartSectionData(
+                                          value: notesSecs.toDouble(),
+                                          title: '${((notesSecs / totalSecs) * 100).round()}%',
+                                          color: Colors.amber.shade700,
+                                          radius: 36,
+                                          titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+                                        ),
+                                      if (standaloneSecs > 0)
+                                        PieChartSectionData(
+                                          value: standaloneSecs.toDouble(),
+                                          title: '${((standaloneSecs / totalSecs) * 100).round()}%',
+                                          color: Colors.purple.shade600,
+                                          radius: 36,
+                                          titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+                                        ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -296,7 +299,7 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
 
                 // Per-Unit Study Logs
-                const Text(
+                Text(
                   'Unit-by-Unit Study Sessions',
                   style: TextStyle(
                     fontSize: 16,
@@ -313,7 +316,7 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
                   return Container(
                     margin: const EdgeInsets.only(bottom: 10),
                     decoration: AppTheme.sketchDecoration(
-                      backgroundColor: Colors.white,
+                      backgroundColor: AppTheme.cardWhite,
                       borderRadius: 14,
                       shadowOffset: 2.5,
                     ),

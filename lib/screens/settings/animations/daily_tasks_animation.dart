@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../theme/app_theme.dart';
-import '../../../widgets/nori_companion.dart';
 
 class DailyTasksAnimationWidget extends StatefulWidget {
   const DailyTasksAnimationWidget({super.key});
@@ -39,13 +38,15 @@ class _DailyTasksAnimationWidgetState extends State<DailyTasksAnimationWidget>
         // Phase 1 (0.0 to 0.25): Initial desk pad
         // Phase 2 (0.25 to 0.50): Task 1 checked + strike
         // Phase 3 (0.50 to 0.75): Task 2 checked + strike
-        // Phase 4 (0.75 to 1.00): Streak saved badge + Nori joy
+        // Phase 4 (0.75 to 1.00): Streak saved badge + momentum secured
 
         final bool task1Done = t >= 0.25;
-        final double strike1 = t < 0.25 ? 0.0 : ((t - 0.25) / 0.15).clamp(0.0, 1.0);
+        final double strike1 =
+            t < 0.25 ? 0.0 : ((t - 0.25) / 0.15).clamp(0.0, 1.0);
 
         final bool task2Done = t >= 0.55;
-        final double strike2 = t < 0.55 ? 0.0 : ((t - 0.55) / 0.15).clamp(0.0, 1.0);
+        final double strike2 =
+            t < 0.55 ? 0.0 : ((t - 0.55) / 0.15).clamp(0.0, 1.0);
 
         final bool allDone = t >= 0.75;
 
@@ -68,14 +69,14 @@ class _DailyTasksAnimationWidgetState extends State<DailyTasksAnimationWidget>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // FlowMD Home Desk Pad Header
+              // Modulix Home Desk Pad Header
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         "Today's tasks",
                         style: TextStyle(
                           fontSize: 14,
@@ -84,17 +85,27 @@ class _DailyTasksAnimationWidgetState extends State<DailyTasksAnimationWidget>
                         ),
                       ),
                       Text(
-                        allDone ? '2 of 2 completed' : (task1Done ? '1 of 2 completed' : '0 of 2 completed'),
-                        style: TextStyle(fontSize: 9, color: Colors.grey.shade600, fontWeight: FontWeight.w600),
+                        allDone
+                            ? '2 of 2 completed'
+                            : (task1Done
+                                ? '1 of 2 completed'
+                                : '0 of 2 completed'),
+                        style: TextStyle(
+                            fontSize: 9,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
-                  // Real FlowMD Streak badge
+                  // Real Modulix Streak badge
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 250),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: allDone ? Colors.orange.shade100 : Colors.grey.shade100,
+                      color: allDone
+                          ? Colors.orange.shade100
+                          : Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: allDone ? Colors.orange : Colors.grey.shade300,
@@ -110,11 +121,13 @@ class _DailyTasksAnimationWidgetState extends State<DailyTasksAnimationWidget>
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          allDone ? 'STREAK SAVED! 🔥' : 'Streak Pending',
+                          allDone ? 'STREAK SAVED!' : 'Streak Pending',
                           style: TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.w900,
-                            color: allDone ? Colors.orange.shade900 : Colors.grey.shade600,
+                            color: allDone
+                                ? Colors.orange.shade900
+                                : Colors.grey.shade600,
                           ),
                         ),
                       ],
@@ -125,8 +138,8 @@ class _DailyTasksAnimationWidgetState extends State<DailyTasksAnimationWidget>
 
               const SizedBox(height: 8),
 
-              // Exact FlowMD StudyTaskCard 1
-              _buildFlowMDTaskCard(
+              // Exact Modulix StudyTaskCard 1
+              _buildModulixTaskCard(
                 title: '50 Grand Test MCQs (Review Errors)',
                 subtitle: 'Study Goal #1',
                 isCompleted: task1Done,
@@ -135,8 +148,8 @@ class _DailyTasksAnimationWidgetState extends State<DailyTasksAnimationWidget>
 
               const SizedBox(height: 6),
 
-              // Exact FlowMD StudyTaskCard 2
-              _buildFlowMDTaskCard(
+              // Exact Modulix StudyTaskCard 2
+              _buildModulixTaskCard(
                 title: 'Review ECG & Arrhythmia Pearls',
                 subtitle: 'Study Goal #2',
                 isCompleted: task2Done,
@@ -145,9 +158,10 @@ class _DailyTasksAnimationWidgetState extends State<DailyTasksAnimationWidget>
 
               const Spacer(),
 
-              // Real Nori Desk Companion Row
+              // Daily Progress Status Row
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
@@ -155,17 +169,26 @@ class _DailyTasksAnimationWidgetState extends State<DailyTasksAnimationWidget>
                 ),
                 child: Row(
                   children: [
-                    const NoriCompanion(size: 34),
-                    const SizedBox(width: 10),
+                    Icon(
+                      allDone
+                          ? Icons.check_circle_rounded
+                          : Icons.radio_button_unchecked,
+                      size: 18,
+                      color:
+                          allDone ? Colors.green.shade700 : AppTheme.mutedText,
+                    ),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         allDone
-                            ? 'Nori is energized! Any task completed fuels your streak.'
-                            : 'Checking off spontaneous targets keeps Nori happy.',
+                            ? 'All tasks completed! Daily momentum secured.'
+                            : 'Checking off spontaneous targets fuels your streak.',
                         style: TextStyle(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w700,
-                          color: allDone ? Colors.green.shade800 : AppTheme.mutedText,
+                          color: allDone
+                              ? Colors.green.shade800
+                              : AppTheme.mutedText,
                         ),
                       ),
                     ),
@@ -179,8 +202,8 @@ class _DailyTasksAnimationWidgetState extends State<DailyTasksAnimationWidget>
     );
   }
 
-  // Exact FlowMD StudyTaskCard replica
-  Widget _buildFlowMDTaskCard({
+  // Exact Modulix StudyTaskCard replica
+  Widget _buildModulixTaskCard({
     required String title,
     required String subtitle,
     required bool isCompleted,
@@ -191,13 +214,14 @@ class _DailyTasksAnimationWidgetState extends State<DailyTasksAnimationWidget>
         backgroundColor: isCompleted ? const Color(0xFFF9F9F8) : Colors.white,
         borderRadius: 12,
         shadowOffset: isCompleted ? 1 : 2.5,
-        borderColor: isCompleted ? Colors.grey.shade300 : AppTheme.sketchBorderColor,
+        borderColor:
+            isCompleted ? Colors.grey.shade300 : AppTheme.sketchBorderColor,
         borderWidth: 1.4,
       ),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       child: Row(
         children: [
-          // Square Sketch Checkbox (FlowMD signature)
+          // Square Sketch Checkbox (Modulix signature)
           Container(
             width: 18,
             height: 18,
@@ -205,7 +229,9 @@ class _DailyTasksAnimationWidgetState extends State<DailyTasksAnimationWidget>
               color: isCompleted ? AppTheme.inkForeground : Colors.white,
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
-                color: isCompleted ? AppTheme.inkForeground : AppTheme.sketchBorderColor,
+                color: isCompleted
+                    ? AppTheme.inkForeground
+                    : AppTheme.sketchBorderColor,
                 width: 1.6,
               ),
             ),
@@ -232,7 +258,9 @@ class _DailyTasksAnimationWidgetState extends State<DailyTasksAnimationWidget>
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: isCompleted ? Colors.grey.shade400 : AppTheme.inkForeground,
+                        color: isCompleted
+                            ? Colors.grey.shade400
+                            : AppTheme.inkForeground,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -249,7 +277,10 @@ class _DailyTasksAnimationWidgetState extends State<DailyTasksAnimationWidget>
                 ),
                 Text(
                   subtitle,
-                  style: TextStyle(fontSize: 8, color: Colors.grey.shade500, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                      fontSize: 8,
+                      color: Colors.grey.shade500,
+                      fontWeight: FontWeight.w600),
                 ),
               ],
             ),

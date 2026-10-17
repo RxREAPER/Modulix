@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../services/tour/app_tour_controller.dart';
 import '../../theme/app_theme.dart';
 import 'animations/timer_dock_animation.dart';
 import 'animations/timer_modes_animation.dart';
@@ -29,7 +31,7 @@ class LearnTheAppSheet extends StatelessWidget {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.92,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppTheme.paperBackground,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         border: Border(
@@ -70,12 +72,12 @@ class LearnTheAppSheet extends StatelessWidget {
                       color: Colors.purple, size: 22),
                 ),
                 const SizedBox(width: 14),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'FLOWMD MASTERCLASS',
+                        'MODULIX MASTERCLASS',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
@@ -98,14 +100,87 @@ class LearnTheAppSheet extends StatelessWidget {
             ),
           ),
 
-          const Divider(height: 1, color: AppTheme.borderLight),
+          Divider(height: 1, color: AppTheme.borderLight),
 
           // Scrollable Feature Guides (No top filter pills)
           Expanded(
             child: ListView(
-              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+              physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics()),
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
               children: [
+                // ── Interactive App Tour Launcher Banner ──────────────────────
+                Consumer(
+                  builder: (context, ref, _) {
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFF2DD4BF), width: 1.5),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x302DD4BF),
+                            blurRadius: 12,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () {
+                            Navigator.pop(context);
+                            ref.read(appTourProvider.notifier).startTour(context);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0x202DD4BF),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFF2DD4BF), size: 20),
+                                ),
+                                const SizedBox(width: 14),
+                                const Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Start Interactive App Tour',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w800,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      SizedBox(height: 2),
+                                      Text(
+                                        'Live spotlight tour across all 7 core features',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                          color: Color(0xFF94A3B8),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Icon(Icons.arrow_forward_rounded, color: Color(0xFF2DD4BF), size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
                 // ── 1. PACE ENGINE & STUDY PLAN ──────────────────────────────
                 _FeatureCard(
                   title: 'Automated Module Tracker',
@@ -118,9 +193,9 @@ class LearnTheAppSheet extends StatelessWidget {
                   diagramWidget: const PaceEngineAnimationWidget(),
                   steps: const [
                     'Set your exam deadline and target subject in "Configure Study Plan".',
-                    'FlowMD automatically measures remaining videos and sets your daily target pace (e.g. 4.2 v/d).',
+                    'Modulix automatically measures remaining videos and sets your daily target pace (e.g. 4.2 v/d).',
                     'Your daily suggested video queue on Home advances as you mark videos complete.',
-                    'If life happens and you miss a day, FlowMD alerts you with "Behind Pace" so you can recalibrate without guessing.',
+                    'If life happens and you miss a day, Modulix alerts you with "Behind Pace" so you can recalibrate without guessing.',
                   ],
                   proTip:
                       'Pro Tip: Inside any chapter, tap "Bulk Mark Complete" to instantly check off lectures you previously watched offline on Marrow.',
@@ -144,9 +219,9 @@ class LearnTheAppSheet extends StatelessWidget {
                       'Select the exact clinical timer tailored for active recall, marathons, or specific lecture lengths.',
                   diagramWidget: const TimerModesAnimationWidget(),
                   steps: const [
-                    '⏱ Pomodoro: Standard countdown (15m, 25m, 45m, 60m) with structured rest breaks for active MCQ practice.',
-                    '⬆ Count-Up: Open-ended stopwatch tracking total study hours without bell interruptions.',
-                    '📌 Module-Linked: Directly anchors to a syllabus video length (e.g. 38 mins) and automatically marks it finished upon completion.',
+                    'Pomodoro: Standard countdown (15m, 25m, 45m, 60m) with structured rest breaks for active MCQ practice.',
+                    'Count-Up: Open-ended stopwatch tracking total study hours without bell interruptions.',
+                    'Module-Linked: Directly anchors to a syllabus video length (e.g. 38 mins) and automatically marks it finished upon completion.',
                   ],
                   proTip:
                       'Pro Tip: Tap the ambient sound icon to play looping offline rain, lofi, or bird audio with a pulsing rhythm visualizer.',
@@ -235,7 +310,7 @@ class LearnTheAppSheet extends StatelessWidget {
                   actionIcon: Icons.menu_book_rounded,
                   onAction: () {
                     Navigator.pop(context);
-                    context.push('/curriculum');
+                    context.go('/curriculum');
                   },
                 ),
                 const SizedBox(height: 14),
@@ -252,7 +327,7 @@ class LearnTheAppSheet extends StatelessWidget {
                   diagramWidget: _buildDayBoundaryDiagram(),
                   steps: const [
                     'Traditional apps cut off at 12:00 AM midnight, punishing doctors who study post-duty or into the early morning.',
-                    'FlowMD lets your study day run until 5:00 AM. Study sessions clocked at 1:30 AM or 3:00 AM count towards today\'s streak.',
+                    'Modulix lets your study day run until 5:00 AM. Study sessions clocked at 1:30 AM or 3:00 AM count towards today\'s streak.',
                     'Your daily desk pad tasks and daily target meters only reset once the 5:00 AM boundary passes.',
                     'You can customize this reset hour (from 3:00 AM to 7:00 AM) in your Settings tab.',
                   ],
@@ -277,9 +352,9 @@ class LearnTheAppSheet extends StatelessWidget {
                       'Direct answers to common questions about offline storage, edition switching, and data backups.',
                   diagramWidget: null,
                   steps: const [
-                    'Does FlowMD send my data to a server?\nNo. FlowMD is 100% offline-sovereign. Everything is stored directly on your phone.',
+                    'Does Modulix send my data to a server?\nNo. Modulix is 100% offline-sovereign. Everything is stored directly on your phone.',
                     'How do I switch between Marrow 8 and 6.5?\nGo to Settings and tap "Marrow Edition 8" or "Marrow Edition 6.5". Your progress in each edition is kept safely separate!',
-                    'What if I take a day off?\nFlowMD automatically shifts your projected finish date. You can re-adjust your daily video target anytime.',
+                    'What if I take a day off?\nModulix automatically shifts your projected finish date. You can re-adjust your daily video target anytime.',
                     'How do I backup my progress?\nIn Settings, tap "Data & Privacy" > "Export Backup File" to share a JSON file to Google Drive, WhatsApp, or email.',
                   ],
                   proTip:
@@ -330,9 +405,9 @@ class LearnTheAppSheet extends StatelessWidget {
             children: [
               _timeNode('11:00 PM', 'Studying', false),
               _connector(true),
-              _timeNode('1:30 AM', 'Still Today! ✓', true),
+              _timeNode('1:30 AM', 'Still Today!', true),
               _connector(false),
-              _timeNode('5:00 AM', 'New Day ☀️', false),
+              _timeNode('5:00 AM', 'New Day', false),
             ],
           ),
         ],
@@ -347,7 +422,7 @@ class LearnTheAppSheet extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             decoration: BoxDecoration(
-              color: highlight ? Colors.indigo : Colors.white,
+              color: highlight ? Colors.indigo : AppTheme.cardWhite,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: highlight ? Colors.indigo : Colors.indigo.shade200,
@@ -423,7 +498,7 @@ class _FeatureCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: AppTheme.sketchDecoration(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.cardWhite,
         borderRadius: 18,
         shadowOffset: 3,
       ),
@@ -433,8 +508,7 @@ class _FeatureCard extends StatelessWidget {
         ),
         child: ExpansionTile(
           initiallyExpanded: initiallyExpanded,
-          tilePadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           leading: Container(
             padding: const EdgeInsets.all(9),
             decoration: BoxDecoration(
@@ -446,7 +520,7 @@ class _FeatureCard extends StatelessWidget {
           ),
           title: Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w900,
               color: AppTheme.inkForeground,
@@ -463,13 +537,13 @@ class _FeatureCard extends StatelessWidget {
           ),
           childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           children: [
-            const Divider(height: 1, color: AppTheme.borderLight),
+            Divider(height: 1, color: AppTheme.borderLight),
             const SizedBox(height: 12),
 
             // Headline
             Text(
               headline,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.inkForeground,
@@ -534,8 +608,7 @@ class _FeatureCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.amber.shade50,
                 borderRadius: BorderRadius.circular(12),
-                border:
-                    Border.all(color: Colors.amber.shade300, width: 1.2),
+                border: Border.all(color: Colors.amber.shade300, width: 1.2),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -565,7 +638,7 @@ class _FeatureCard extends StatelessWidget {
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.inkForeground,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppTheme.paperBackground,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

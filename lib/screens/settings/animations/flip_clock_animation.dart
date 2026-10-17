@@ -40,7 +40,9 @@ class _FlipClockRotateAnimationWidgetState
         final bool isLandscape = t >= 0.30 && t < 0.88;
         final double rotProgress = t < 0.25
             ? 0.0
-            : (t < 0.38 ? (t - 0.25) / 0.13 : (t < 0.85 ? 1.0 : 1.0 - (t - 0.85) / 0.15));
+            : (t < 0.38
+                ? (t - 0.25) / 0.13
+                : (t < 0.85 ? 1.0 : 1.0 - (t - 0.85) / 0.15));
 
         // Flip angle
         final double flipAngle = (t >= 0.48 && t < 0.75)
@@ -77,7 +79,8 @@ class _FlipClockRotateAnimationWidgetState
                     color: const Color(0xFF1C1C1E),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: isLandscape ? AppTheme.primaryBlue : Colors.white24,
+                      color:
+                          isLandscape ? AppTheme.primaryBlue : Colors.white24,
                       width: 1.6,
                     ),
                     boxShadow: [
@@ -90,7 +93,7 @@ class _FlipClockRotateAnimationWidgetState
                   ),
                   child: Stack(
                     children: [
-                      // FlowMD Fullscreen Floating Top Header
+                      // Modulix Fullscreen Floating Top Header
                       Positioned(
                         top: 8,
                         left: 10,
@@ -101,7 +104,7 @@ class _FlipClockRotateAnimationWidgetState
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'CARDIOLOGY',
                                   style: TextStyle(
                                     fontSize: 6.5,
@@ -126,15 +129,17 @@ class _FlipClockRotateAnimationWidgetState
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.12),
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white.withOpacity(0.35)),
+                                border: Border.all(
+                                    color: Colors.white.withOpacity(0.35)),
                               ),
-                              child: const Icon(Icons.close_rounded, color: Colors.white, size: 10),
+                              child: const Icon(Icons.close_rounded,
+                                  color: Colors.white, size: 10),
                             ),
                           ],
                         ),
                       ),
 
-                      // Dead-Center Flip Clock Tiles (FlowMD signature)
+                      // Dead-Center Flip Clock Tiles (Modulix signature)
                       Center(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -150,28 +155,33 @@ class _FlipClockRotateAnimationWidgetState
                               ),
                             ),
                             const SizedBox(width: 4),
-                            _buildSquarishTile(flipAngle > math.pi / 2 ? '58' : '59'),
+                            _buildSquarishTile(
+                                flipAngle > math.pi / 2 ? '58' : '59'),
                           ],
                         ),
                       ),
 
-                      // FlowMD Floating Bottom Control Pill
+                      // Modulix Floating Bottom Control Pill
                       Positioned(
                         bottom: 8,
                         left: 0,
                         right: 0,
                         child: Center(
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.14),
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: Colors.white.withOpacity(0.38), width: 1.2),
+                              border: Border.all(
+                                  color: Colors.white.withOpacity(0.38),
+                                  width: 1.2),
                             ),
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.pause_rounded, color: Colors.white, size: 11),
+                                Icon(Icons.pause_rounded,
+                                    color: Colors.white, size: 11),
                                 SizedBox(width: 4),
                                 Text(
                                   'PAUSE',
@@ -197,7 +207,8 @@ class _FlipClockRotateAnimationWidgetState
                 top: 8,
                 left: 10,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: isLandscape ? AppTheme.primaryBlue : Colors.black54,
                     borderRadius: BorderRadius.circular(6),
@@ -226,8 +237,13 @@ class _FlipClockRotateAnimationWidgetState
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      isLandscape ? 'Dead-centered in landscape' : 'Rotate phone for desk clock',
-                      style: const TextStyle(color: Colors.white70, fontSize: 9, fontWeight: FontWeight.w600),
+                      isLandscape
+                          ? 'Dead-centered in landscape'
+                          : 'Rotate phone for desk clock',
+                      style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),

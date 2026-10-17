@@ -1,28 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/app_state.dart';
-import '../../models/syllabus.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/syllabus_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../data/subjects_metadata.dart';
+import 'subject_sketch_icon.dart';
+import '../animations/apple_pressable.dart';
 
 class ConfigurePlanSheet extends ConsumerStatefulWidget {
   const ConfigurePlanSheet({super.key});
 
   static Future<void> show(BuildContext context) {
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      sheetAnimationStyle: const AnimationStyle(
-        duration: Duration(milliseconds: 280),
-        reverseDuration: Duration(milliseconds: 220),
-      ),
-      builder: (ctx) => const ConfigurePlanSheet(),
-    );
+    return context.push('/plan');
   }
 
   @override
@@ -78,12 +71,16 @@ class _ConfigurePlanSheetState extends ConsumerState<ConfigurePlanSheet> {
                 .length)
         : 0;
 
-    final daysRemaining = _targetDate.difference(DateTime.now()).inDays.clamp(1, 1000);
+    final now = DateTime.now();
+    final daysRemaining = DateTime.utc(_targetDate.year, _targetDate.month, _targetDate.day)
+        .difference(DateTime.utc(now.year, now.month, now.day))
+        .inDays
+        .clamp(1, 1000);
     final neededPerDay = (totalVids / daysRemaining).ceil();
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.90,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppTheme.paperBackground,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -111,7 +108,7 @@ class _ConfigurePlanSheetState extends ConsumerState<ConfigurePlanSheet> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Module Based Study Plan',
                       style: TextStyle(
                         fontSize: 20,
@@ -158,7 +155,8 @@ class _ConfigurePlanSheetState extends ConsumerState<ConfigurePlanSheet> {
                       final isSelected = sub.id == _targetSubject;
                       final meta = subjectMeta(sub.id);
 
-                      return GestureDetector(
+                      return ApplePressable(
+                        pressedScale: 0.94,
                         onTap: () {
                           setState(() {
                             _targetSubject = sub.id;
@@ -170,10 +168,10 @@ class _ConfigurePlanSheetState extends ConsumerState<ConfigurePlanSheet> {
                           width: 86,
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: isSelected ? meta.accent.withOpacity(0.12) : Colors.white,
+                            color: isSelected ? meta.accent.withOpacity(0.12) : AppTheme.cardWhite,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: isSelected ? AppTheme.sketchBorderColor : Colors.grey.shade300,
+                              color: isSelected ? AppTheme.sketchBorderColor : AppTheme.borderLight,
                               width: isSelected ? 2.0 : 1.2,
                             ),
                             boxShadow: isSelected
@@ -193,10 +191,16 @@ class _ConfigurePlanSheetState extends ConsumerState<ConfigurePlanSheet> {
                                 width: 34,
                                 height: 34,
                                 decoration: BoxDecoration(
-                                  color: meta.accent.withOpacity(0.18),
+                                  color: meta.accent.withValues(alpha: 0.18),
                                   shape: BoxShape.circle,
                                 ),
-                                child: Icon(meta.icon, color: meta.accent, size: 18),
+                                child: Center(
+                                  child: SubjectSketchIcon(
+                                    subjectId: sub.id,
+                                    color: meta.accent,
+                                    size: 18,
+                                  ),
+                                ),
                               ),
                               const SizedBox(height: 6),
                               Text(
@@ -227,7 +231,7 @@ class _ConfigurePlanSheetState extends ConsumerState<ConfigurePlanSheet> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: AppTheme.sketchDecoration(
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppTheme.cardWhite,
                     borderRadius: 16,
                   ),
                   child: Column(
@@ -251,7 +255,7 @@ class _ConfigurePlanSheetState extends ConsumerState<ConfigurePlanSheet> {
                               const SizedBox(height: 4),
                               Text(
                                 DateFormat('EEE, d MMM yyyy').format(_targetDate),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w800,
                                   color: AppTheme.inkForeground,
@@ -259,7 +263,7 @@ class _ConfigurePlanSheetState extends ConsumerState<ConfigurePlanSheet> {
                               ),
                               Text(
                                 '$daysRemaining days remaining',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11,
                                   color: AppTheme.primaryBlue,
                                   fontWeight: FontWeight.w600,
@@ -285,7 +289,7 @@ class _ConfigurePlanSheetState extends ConsumerState<ConfigurePlanSheet> {
                               backgroundColor: AppTheme.paperBackground,
                               foregroundColor: AppTheme.inkForeground,
                               elevation: 0,
-                              side: const BorderSide(color: AppTheme.sketchBorderColor, width: 1.5),
+                              side: BorderSide(color: AppTheme.sketchBorderColor, width: 1.5),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             ),
                           ),
@@ -352,7 +356,7 @@ class _ConfigurePlanSheetState extends ConsumerState<ConfigurePlanSheet> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: AppTheme.sketchDecoration(
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppTheme.cardWhite,
                     borderRadius: 16,
                   ),
                   child: Column(
@@ -366,7 +370,7 @@ class _ConfigurePlanSheetState extends ConsumerState<ConfigurePlanSheet> {
                           ),
                           Text(
                             '${_dailyHours.toStringAsFixed(1)} hrs/day',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w800,
                               fontFamily: 'monospace',
@@ -394,14 +398,15 @@ class _ConfigurePlanSheetState extends ConsumerState<ConfigurePlanSheet> {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              GestureDetector(
+                              ApplePressable(
+                                pressedScale: 0.85,
                                 onTap: _revisionCycles > 1
                                     ? () => setState(() => _revisionCycles--)
                                     : null,
                                 child: Container(
                                   padding: const EdgeInsets.all(4),
                                   decoration: BoxDecoration(
-                                    color: _revisionCycles > 1 ? Colors.grey.shade100 : Colors.transparent,
+                                    color: _revisionCycles > 1 ? AppTheme.parchmentSurface : Colors.transparent,
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
@@ -421,14 +426,15 @@ class _ConfigurePlanSheetState extends ConsumerState<ConfigurePlanSheet> {
                                   ),
                                 ),
                               ),
-                              GestureDetector(
+                              ApplePressable(
+                                pressedScale: 0.85,
                                 onTap: _revisionCycles < 5
                                     ? () => setState(() => _revisionCycles++)
                                     : null,
                                 child: Container(
                                   padding: const EdgeInsets.all(4),
                                   decoration: BoxDecoration(
-                                    color: _revisionCycles < 5 ? Colors.grey.shade100 : Colors.transparent,
+                                    color: _revisionCycles < 5 ? AppTheme.parchmentSurface : Colors.transparent,
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
@@ -471,14 +477,14 @@ class _ConfigurePlanSheetState extends ConsumerState<ConfigurePlanSheet> {
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                            color: isSelected ? AppTheme.inkForeground : Colors.grey.shade800,
+                            color: isSelected ? AppTheme.inkForeground : AppTheme.mutedText,
                           ),
                         ),
                         selected: isSelected,
                         selectedColor: AppTheme.highlightCoral,
-                        backgroundColor: Colors.white,
+                        backgroundColor: AppTheme.cardWhite,
                         side: BorderSide(
-                          color: isSelected ? AppTheme.sketchBorderColor : Colors.grey.shade300,
+                          color: isSelected ? AppTheme.sketchBorderColor : AppTheme.borderLight,
                           width: 1.2,
                         ),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -499,25 +505,29 @@ class _ConfigurePlanSheetState extends ConsumerState<ConfigurePlanSheet> {
                 const SizedBox(height: 32),
 
                 // Save Action Button
-                ElevatedButton.icon(
-                  onPressed: _saving ? null : _savePlan,
-                  icon: _saving
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                        )
-                      : const Icon(Icons.check_circle_outline_rounded, size: 20),
-                  label: Text(
-                    _saving ? 'Saving...' : 'Lock In Study Plan',
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.inkForeground,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    elevation: 0,
+                ApplePressable(
+                  pressedScale: 0.97,
+                  onTap: _saving ? null : _savePlan,
+                  child: ElevatedButton.icon(
+                    onPressed: _saving ? null : _savePlan,
+                    icon: _saving
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          )
+                        : const Icon(Icons.check_circle_outline_rounded, size: 20),
+                    label: Text(
+                      _saving ? 'Saving...' : 'Lock In Study Plan',
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.inkForeground,
+                      foregroundColor: AppTheme.paperBackground,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      elevation: 0,
+                    ),
                   ),
                 ),
               ],
@@ -535,7 +545,7 @@ class _ConfigurePlanSheetState extends ConsumerState<ConfigurePlanSheet> {
         const SizedBox(width: 8),
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w800,
             color: AppTheme.inkForeground,
@@ -564,7 +574,7 @@ class _ConfigurePlanSheetState extends ConsumerState<ConfigurePlanSheet> {
     await ref.read(appStateProvider.notifier).setBatch([]);
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('flowmd_module_batch_date');
+      await prefs.remove('modulix_module_batch_date'); await prefs.remove('flowmd_module_batch_date');
     } catch (_) {}
     setState(() => _saving = false);
 

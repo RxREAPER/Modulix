@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../providers/app_state_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../theme/modulix_theme.dart';
 import '../../services/notification_service.dart';
+import 'appearance_theme_sheet.dart';
+import '../../widgets/animations/apple_pressable.dart';
 
 class PreferencesSheet extends ConsumerWidget {
   const PreferencesSheet({super.key});
@@ -21,8 +25,6 @@ class PreferencesSheet extends ConsumerWidget {
     );
   }
 
-
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appStateAsync = ref.watch(appStateProvider);
@@ -31,7 +33,7 @@ class PreferencesSheet extends ConsumerWidget {
     if (appState == null) {
       return Container(
         height: 300,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppTheme.paperBackground,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
@@ -45,7 +47,7 @@ class PreferencesSheet extends ConsumerWidget {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.90,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppTheme.paperBackground,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         border: Border(
@@ -82,11 +84,11 @@ class PreferencesSheet extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: AppTheme.primaryBlue, width: 1.5),
                   ),
-                  child: const Icon(Icons.tune_rounded,
+                  child: Icon(Icons.tune_rounded,
                       color: AppTheme.primaryBlue, size: 22),
                 ),
                 const SizedBox(width: 14),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -114,16 +116,17 @@ class PreferencesSheet extends ConsumerWidget {
             ),
           ),
 
-          const Divider(height: 1, color: AppTheme.borderLight),
+          Divider(height: 1, color: AppTheme.borderLight),
 
           // Body
           Expanded(
             child: ListView(
-              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+              physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics()),
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
               children: [
                 // ── 1. Profile Section ─────────────────────────────────────
-                const Text(
+                Text(
                   'PROFILE & CURRICULUM SOURCE',
                   style: TextStyle(
                     fontSize: 11,
@@ -136,7 +139,7 @@ class PreferencesSheet extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: AppTheme.sketchDecoration(
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppTheme.cardWhite,
                     borderRadius: 18,
                     shadowOffset: 3,
                   ),
@@ -148,10 +151,10 @@ class PreferencesSheet extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
+                              color: AppTheme.parchmentSurface,
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Icon(Icons.person_rounded,
+                            child: Icon(Icons.person_rounded,
                                 size: 18, color: AppTheme.inkForeground),
                           ),
                           const SizedBox(width: 12),
@@ -159,14 +162,14 @@ class PreferencesSheet extends ConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Doctor Name',
+                                Text('Doctor Name',
                                     style: TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w700,
                                         color: AppTheme.mutedText)),
                                 Text(
                                   appState.doctorName,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w800,
                                       color: AppTheme.inkForeground),
@@ -175,13 +178,14 @@ class PreferencesSheet extends ConsumerWidget {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.edit_rounded,
+                            icon: Icon(Icons.edit_rounded,
                                 size: 18, color: AppTheme.primaryBlue),
-                            onPressed: () => _editDoctorName(context, notifier, appState.doctorName),
+                            onPressed: () => _editDoctorName(
+                                context, notifier, appState.doctorName),
                           ),
                         ],
                       ),
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.symmetric(vertical: 8),
                         child: Divider(height: 1, color: AppTheme.borderLight),
                       ),
@@ -191,14 +195,14 @@ class PreferencesSheet extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
+                              color: AppTheme.parchmentSurface,
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Icon(Icons.menu_book_rounded,
+                            child: Icon(Icons.menu_book_rounded,
                                 size: 18, color: AppTheme.inkForeground),
                           ),
                           const SizedBox(width: 12),
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -210,8 +214,7 @@ class PreferencesSheet extends ConsumerWidget {
                                 Text(
                                   'Curriculum source data',
                                   style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppTheme.mutedText),
+                                      fontSize: 12, color: AppTheme.mutedText),
                                 ),
                               ],
                             ),
@@ -242,12 +245,108 @@ class PreferencesSheet extends ConsumerWidget {
                   ),
                 ),
 
+                const SizedBox(height: 24),
 
+                // ── 2. Theme & Appearance ──────────────────────────────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'THEME & APPEARANCE',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.0,
+                        color: AppTheme.inkForeground,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => AppearanceThemeSheet.show(context),
+                      child: Text(
+                        'Theme Studio →',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.primaryBlue,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                ApplePressable(
+                  pressedScale: 0.98,
+                  onTap: () => AppearanceThemeSheet.show(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: AppTheme.sketchDecoration(
+                      backgroundColor: AppTheme.cardWhite,
+                      borderRadius: 16,
+                      shadowOffset: 2,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: PalettePreset.fromId(appState.palettePresetId).scaffoldBackground,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: PalettePreset.fromId(appState.palettePresetId).borderSubtle,
+                              width: 1.2,
+                            ),
+                          ),
+                          child: Center(
+                            child: Container(
+                              width: 18,
+                              height: 18,
+                              decoration: BoxDecoration(
+                                color: AccentPigment.fromId(appState.accentColorId).color,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                PalettePreset.fromId(appState.palettePresetId).label,
+                                style: TextStyle(
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.inkForeground,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Accent: ${AccentPigment.fromId(appState.accentColorId).label} · ${appState.themePref.name.toUpperCase()}',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppTheme.mutedText,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          color: AppTheme.mutedText,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
 
                 const SizedBox(height: 24),
 
                 // ── 3. Start of the Day (Study Rhythm) ─────────────────────
-                const Text(
+                Text(
                   'START OF THE STUDY DAY',
                   style: TextStyle(
                     fontSize: 11,
@@ -257,7 +356,7 @@ class PreferencesSheet extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   'Calculates your daily streaks, focus timer resets, and desk pad boundaries',
                   style: TextStyle(fontSize: 12, color: AppTheme.mutedText),
                 ),
@@ -265,7 +364,7 @@ class PreferencesSheet extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: AppTheme.sketchDecoration(
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppTheme.cardWhite,
                     borderRadius: 18,
                     shadowOffset: 3,
                   ),
@@ -280,7 +379,7 @@ class PreferencesSheet extends ConsumerWidget {
                               const Icon(Icons.wb_twilight_rounded,
                                   size: 18, color: Colors.orange),
                               const SizedBox(width: 8),
-                              const Text('Day resets at:',
+                              Text('Day resets at:',
                                   style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w700,
@@ -293,7 +392,8 @@ class PreferencesSheet extends ConsumerWidget {
                             decoration: BoxDecoration(
                               color: Colors.orange.withOpacity(0.12),
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.orange, width: 1.2),
+                              border:
+                                  Border.all(color: Colors.orange, width: 1.2),
                             ),
                             child: Text(
                               '${appState.dayStartHour}:00 AM',
@@ -320,7 +420,9 @@ class PreferencesSheet extends ConsumerWidget {
                             labelStyle: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: isSelected ? Colors.white : AppTheme.inkForeground,
+                              color: isSelected
+                                  ? AppTheme.paperBackground
+                                  : AppTheme.inkForeground,
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -340,7 +442,7 @@ class PreferencesSheet extends ConsumerWidget {
                 const SizedBox(height: 24),
 
                 // ── 4. Notifications Corner ────────────────────────────────
-                const Text(
+                Text(
                   'NOTIFICATIONS & REMINDERS',
                   style: TextStyle(
                     fontSize: 11,
@@ -353,7 +455,7 @@ class PreferencesSheet extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: AppTheme.sketchDecoration(
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppTheme.cardWhite,
                     borderRadius: 18,
                     shadowOffset: 3,
                   ),
@@ -397,16 +499,16 @@ class PreferencesSheet extends ConsumerWidget {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
                                           const SnackBar(
-                                            content: Text(
-                                                'Test notification sent!'),
+                                            content:
+                                                Text('Test notification sent!'),
                                             duration: Duration(seconds: 2),
                                           ),
                                         );
                                       }
                                     },
-                                    icon: const Icon(Icons.notifications_active,
+                                    icon: Icon(Icons.notifications_active,
                                         size: 14, color: AppTheme.primaryBlue),
-                                    label: const Text(
+                                    label: Text(
                                       'Test',
                                       style: TextStyle(
                                         fontSize: 12,
@@ -471,7 +573,7 @@ class PreferencesSheet extends ConsumerWidget {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -507,17 +609,19 @@ class PreferencesSheet extends ConsumerWidget {
                                   color: AppTheme.primaryBlue.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                      color: AppTheme.primaryBlue.withOpacity(0.3)),
+                                      color: AppTheme.primaryBlue
+                                          .withOpacity(0.3)),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(Icons.access_time_rounded,
+                                    Icon(Icons.access_time_rounded,
                                         size: 14, color: AppTheme.primaryBlue),
                                     const SizedBox(width: 4),
                                     Text(
-                                      _formatTimeStr(appState.studyReminderTime),
-                                      style: const TextStyle(
+                                      _formatTimeStr(
+                                          appState.studyReminderTime),
+                                      style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w800,
                                         color: AppTheme.primaryBlue,
@@ -528,20 +632,22 @@ class PreferencesSheet extends ConsumerWidget {
                               ),
                             ),
                           const SizedBox(width: 8),
-                          Switch(
+                          CupertinoSwitch(
                             activeColor: AppTheme.primaryBlue,
+                            trackColor: AppTheme.borderLight,
+                            thumbColor: Colors.white,
                             value: appState.dailyReminderEnabled,
                             onChanged: (val) => notifier.setDailyReminder(val),
                           ),
                         ],
                       ),
-                      const Divider(height: 16, color: AppTheme.borderLight),
+                      Divider(height: 16, color: AppTheme.borderLight),
 
                       // 2. Streak at Risk Alert
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -586,7 +692,8 @@ class PreferencesSheet extends ConsumerWidget {
                                         size: 14, color: Colors.orange),
                                     const SizedBox(width: 4),
                                     Text(
-                                      _formatTimeStr(appState.streakReminderTime),
+                                      _formatTimeStr(
+                                          appState.streakReminderTime),
                                       style: const TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w800,
@@ -598,20 +705,22 @@ class PreferencesSheet extends ConsumerWidget {
                               ),
                             ),
                           const SizedBox(width: 8),
-                          Switch(
+                          CupertinoSwitch(
                             activeColor: Colors.orange,
+                            trackColor: AppTheme.borderLight,
+                            thumbColor: Colors.white,
                             value: appState.streakReminderEnabled,
                             onChanged: (val) => notifier.setStreakReminder(val),
                           ),
                         ],
                       ),
-                      const Divider(height: 16, color: AppTheme.borderLight),
+                      Divider(height: 16, color: AppTheme.borderLight),
 
                       // 3. Module Daily Tasks Reminder
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -656,7 +765,8 @@ class PreferencesSheet extends ConsumerWidget {
                                         size: 14, color: Colors.teal),
                                     const SizedBox(width: 4),
                                     Text(
-                                      _formatTimeStr(appState.moduleTasksReminderTime),
+                                      _formatTimeStr(
+                                          appState.moduleTasksReminderTime),
                                       style: const TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w800,
@@ -668,21 +778,23 @@ class PreferencesSheet extends ConsumerWidget {
                               ),
                             ),
                           const SizedBox(width: 8),
-                          Switch(
+                          CupertinoSwitch(
                             activeColor: Colors.teal,
+                            trackColor: AppTheme.borderLight,
+                            thumbColor: Colors.white,
                             value: appState.moduleTasksReminderEnabled,
                             onChanged: (val) =>
                                 notifier.setModuleTasksReminder(val),
                           ),
                         ],
                       ),
-                      const Divider(height: 16, color: AppTheme.borderLight),
+                      Divider(height: 16, color: AppTheme.borderLight),
 
                       // 4. Focus Timer Alerts
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -703,8 +815,10 @@ class PreferencesSheet extends ConsumerWidget {
                               ],
                             ),
                           ),
-                          Switch(
+                          CupertinoSwitch(
                             activeColor: AppTheme.primaryBlue,
+                            trackColor: AppTheme.borderLight,
+                            thumbColor: Colors.white,
                             value: appState.focusTimerAlertsEnabled,
                             onChanged: (val) =>
                                 notifier.setFocusTimerAlerts(val),
@@ -727,13 +841,14 @@ class PreferencesSheet extends ConsumerWidget {
     required bool selected,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return ApplePressable(
+      pressedScale: 0.95,
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? AppTheme.inkForeground : Colors.white,
+          color: selected ? AppTheme.inkForeground : AppTheme.cardWhite,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected ? AppTheme.inkForeground : AppTheme.borderLight,
@@ -746,7 +861,7 @@ class PreferencesSheet extends ConsumerWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w800,
-              color: selected ? Colors.white : AppTheme.inkForeground,
+              color: selected ? AppTheme.paperBackground : AppTheme.inkForeground,
             ),
           ),
         ),
@@ -754,15 +869,16 @@ class PreferencesSheet extends ConsumerWidget {
     );
   }
 
-  void _editDoctorName(BuildContext context, AppStateNotifier notifier, String current) {
+  void _editDoctorName(
+      BuildContext context, AppStateNotifier notifier, String current) {
     final ctrl = TextEditingController(text: current);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.cardWhite,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppTheme.sketchBorderColor, width: 1.8),
+          side: BorderSide(color: AppTheme.sketchBorderColor, width: 1.8),
         ),
         title: const Text('Edit Doctor Name',
             style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
@@ -777,13 +893,13 @@ class PreferencesSheet extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel',
+            child: Text('Cancel',
                 style: TextStyle(color: AppTheme.mutedText)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.inkForeground,
-              foregroundColor: Colors.white,
+              foregroundColor: AppTheme.paperBackground,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
             ),
