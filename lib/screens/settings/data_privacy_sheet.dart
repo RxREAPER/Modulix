@@ -1,17 +1,8 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
-import '../../models/app_state.dart';
-import '../../providers/app_state_provider.dart';
 import '../../providers/daily_tasks_provider.dart';
 import '../../providers/time_log_provider.dart';
-import '../../services/storage_service.dart';
 import '../../services/backup_service.dart';
-import '../../services/database_service.dart';
 import '../../theme/app_theme.dart';
 
 class DataPrivacySheet extends ConsumerWidget {
@@ -23,8 +14,8 @@ class DataPrivacySheet extends ConsumerWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       sheetAnimationStyle: const AnimationStyle(
-        duration: Duration(milliseconds: 280),
-        reverseDuration: Duration(milliseconds: 220),
+        duration: Duration(milliseconds: 200),
+        reverseDuration: Duration(milliseconds: 150),
       ),
       builder: (_) => const DataPrivacySheet(),
     );
@@ -32,16 +23,13 @@ class DataPrivacySheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final appStateAsync = ref.watch(appStateProvider);
-    final appState = appStateAsync.value;
-
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.90,
       ),
       decoration: BoxDecoration(
         color: AppTheme.paperBackground,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         border: Border(
           top: BorderSide(color: AppTheme.sketchBorderColor, width: 2),
           left: BorderSide(color: AppTheme.sketchBorderColor, width: 2),
@@ -72,7 +60,7 @@ class DataPrivacySheet extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.teal.withOpacity(0.12),
+                    color: Colors.teal.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: Colors.teal, width: 1.5),
                   ),
@@ -84,7 +72,7 @@ class DataPrivacySheet extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'BACKUP & SOVEREIGNTY',
                         style: TextStyle(
                           fontSize: 10,
@@ -242,7 +230,7 @@ class DataPrivacySheet extends ConsumerWidget {
                           leading: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: AppTheme.primaryBlue.withOpacity(0.12),
+                              color: AppTheme.primaryBlue.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(Icons.upload_file_rounded,
@@ -267,7 +255,7 @@ class DataPrivacySheet extends ConsumerWidget {
                           leading: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.12),
+                              color: Colors.green.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(Icons.download_rounded,
@@ -326,7 +314,7 @@ class DataPrivacySheet extends ConsumerWidget {
                           leading: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.orange.withOpacity(0.12),
+                              color: Colors.orange.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(Icons.timer_off_outlined,
@@ -349,7 +337,7 @@ class DataPrivacySheet extends ConsumerWidget {
                           leading: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.teal.withOpacity(0.12),
+                              color: Colors.teal.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(Icons.playlist_remove_rounded,

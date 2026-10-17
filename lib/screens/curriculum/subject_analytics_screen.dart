@@ -122,74 +122,76 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Top Banner Card
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        meta.accent,
-                        meta.accent.withValues(alpha: 0.85),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(22),
-                    border: Border.all(color: AppTheme.sketchBorderColor, width: 2.0),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x241C1C1C),
-                        offset: Offset(4, 5),
-                        blurRadius: 0,
+                RepaintBoundary(
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          meta.accent,
+                          meta.accent.withValues(alpha: 0.85),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              'TOTAL STUDY TIME LOGGED',
-                              style: TextStyle(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.8,
-                                color: Colors.white.withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(color: AppTheme.sketchBorderColor, width: 2.0),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x241C1C1C),
+                          offset: Offset(4, 5),
+                          blurRadius: 0,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'TOTAL STUDY TIME LOGGED',
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.8,
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                ),
                               ),
                             ),
+                            SubjectSketchIcon(subjectId: subject.id, color: Colors.white, size: 28),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          _formatHoursMinutes(totalSecs),
+                          style: const TextStyle(
+                            fontSize: 34,
+                            fontWeight: FontWeight.w900,
+                            fontFamily: 'monospace',
+                            color: Colors.white,
+                            letterSpacing: -0.5,
                           ),
-                          SubjectSketchIcon(subjectId: subject.id, color: Colors.white, size: 28),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        _formatHoursMinutes(totalSecs),
-                        style: const TextStyle(
-                          fontSize: 34,
-                          fontWeight: FontWeight.w900,
-                          fontFamily: 'monospace',
-                          color: Colors.white,
-                          letterSpacing: -0.5,
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Across ${subjectLogs.length} logged study sessions',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.white.withValues(alpha: 0.85),
-                          fontWeight: FontWeight.w600,
+                        const SizedBox(height: 4),
+                        Text(
+                          'Across ${subjectLogs.length} logged study sessions',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white.withValues(alpha: 0.85),
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
 

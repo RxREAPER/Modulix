@@ -149,40 +149,42 @@ class CurriculumScreen extends ConsumerWidget {
                             ],
                           ),
                           const SizedBox(height: 12),
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: [
-                                _CurriculumSortFilterChip(
-                                  label: 'Default',
-                                  icon: Icons.grid_view_rounded,
-                                  isSelected:
-                                      sortMode == CurriculumSortMode.defaultOrder,
-                                  onTap: () => ref
-                                      .read(curriculumSortProvider.notifier)
-                                      .setMode(CurriculumSortMode.defaultOrder),
-                                ),
-                                const SizedBox(width: 8),
-                                _CurriculumSortFilterChip(
-                                  label: 'Most Recent',
-                                  icon: Icons.history_rounded,
-                                  isSelected:
-                                      sortMode == CurriculumSortMode.mostRecent,
-                                  onTap: () => ref
-                                      .read(curriculumSortProvider.notifier)
-                                      .setMode(CurriculumSortMode.mostRecent),
-                                ),
-                                const SizedBox(width: 8),
-                                _CurriculumSortFilterChip(
-                                  label: 'Year Wise',
-                                  icon: Icons.school_rounded,
-                                  isSelected:
-                                      sortMode == CurriculumSortMode.yearWise,
-                                  onTap: () => ref
-                                      .read(curriculumSortProvider.notifier)
-                                      .setMode(CurriculumSortMode.yearWise),
-                                ),
-                              ],
+                          RepaintBoundary(
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  _CurriculumSortFilterChip(
+                                    label: 'Default',
+                                    icon: Icons.grid_view_rounded,
+                                    isSelected:
+                                        sortMode == CurriculumSortMode.defaultOrder,
+                                    onTap: () => ref
+                                        .read(curriculumSortProvider.notifier)
+                                        .setMode(CurriculumSortMode.defaultOrder),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _CurriculumSortFilterChip(
+                                    label: 'Most Recent',
+                                    icon: Icons.history_rounded,
+                                    isSelected:
+                                        sortMode == CurriculumSortMode.mostRecent,
+                                    onTap: () => ref
+                                        .read(curriculumSortProvider.notifier)
+                                        .setMode(CurriculumSortMode.mostRecent),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _CurriculumSortFilterChip(
+                                    label: 'Year Wise',
+                                    icon: Icons.school_rounded,
+                                    isSelected:
+                                        sortMode == CurriculumSortMode.yearWise,
+                                    onTap: () => ref
+                                        .read(curriculumSortProvider.notifier)
+                                        .setMode(CurriculumSortMode.yearWise),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],

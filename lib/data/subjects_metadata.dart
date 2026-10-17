@@ -3,7 +3,6 @@ import '../models/syllabus.dart';
 import 'syllabus_marrow8.dart';
 import 'syllabus_marrow65.dart';
 import 'syllabus_qbank.dart';
-import 'standard_resources.dart';
 
 // ─── Subject palette ─────────────────────────────────────────────────────────
 // Each subject gets a deterministic accent color + icon glyph
@@ -247,7 +246,6 @@ List<Subject> _buildSubjectsFromRaw(List<Map<String, dynamic>> raw) {
     final chaptersRaw =
         (subjectMap['chapters'] as List<dynamic>?) ?? [];
 
-    final standardBooks = standardTextbooks[id] ?? ['Standard Reference Textbook'];
     final qbankChapters = _qbankChaptersMap[id] ?? const <Chapter>[];
 
     final chapters = chaptersRaw.asMap().entries.map((chEntry) {

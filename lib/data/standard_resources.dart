@@ -1,5 +1,3 @@
-import '../models/syllabus.dart';
-
 /// Standard Indian MBBS textbooks for each NEET-PG subject
 const Map<String, List<String>> standardTextbooks = {
   'anatomy': [

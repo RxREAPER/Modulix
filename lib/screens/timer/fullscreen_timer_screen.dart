@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/focus_timer_provider.dart';
-import '../../models/timer_theme.dart';
 
 class FullscreenTimerScreen extends ConsumerStatefulWidget {
   const FullscreenTimerScreen({super.key});

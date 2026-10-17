@@ -9,7 +9,6 @@ import '../../theme/app_theme.dart';
 import '../../theme/modulix_theme.dart';
 import '../../services/notification_service.dart';
 import '../../widgets/profile/profile_customization.dart';
-import 'appearance_theme_sheet.dart';
 import 'learn_the_app_sheet.dart';
 import 'data_privacy_sheet.dart';
 import 'about_support_sheet.dart';

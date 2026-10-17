@@ -40,16 +40,18 @@ class StorageService {
 
   Future<void> save(AppState state) async {
     final json = jsonEncode(state.toJson());
-    if (_prefs != null) {
-      await _prefs!.setString(_kAppStateKey, json);
+    final prefs = _prefs;
+    if (prefs != null) {
+      await prefs.setString(_kAppStateKey, json);
     } else {
       _fallbackMemory[_kAppStateKey] = json;
     }
   }
 
   Future<void> clear() async {
-    if (_prefs != null) {
-      await _prefs!.remove(_kAppStateKey);
+    final prefs = _prefs;
+    if (prefs != null) {
+      await prefs.remove(_kAppStateKey);
     }
     _fallbackMemory.remove(_kAppStateKey);
   }
@@ -72,8 +74,9 @@ class StorageService {
     final map = getRecentSubjectTimestamps();
     map[subjectId] = DateTime.now().millisecondsSinceEpoch;
     final encoded = jsonEncode(map);
-    if (_prefs != null) {
-      await _prefs!.setString(_kRecentSubjectsKey, encoded);
+    final prefs = _prefs;
+    if (prefs != null) {
+      await prefs.setString(_kRecentSubjectsKey, encoded);
     } else {
       _fallbackMemory[_kRecentSubjectsKey] = encoded;
     }
@@ -88,8 +91,9 @@ class StorageService {
   }
 
   Future<void> setCurriculumSortMode(String mode) async {
-    if (_prefs != null) {
-      await _prefs!.setString(_kSortModeKey, mode);
+    final prefs = _prefs;
+    if (prefs != null) {
+      await prefs.setString(_kSortModeKey, mode);
     } else {
       _fallbackMemory[_kSortModeKey] = mode;
     }

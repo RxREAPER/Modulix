@@ -8,6 +8,41 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-016] Systematic Bug Testing, 7 Domain Test Suites & Complete Warning Eradication
+- **Timestamp:** 2026-10-17 19:45 UTC
+- **Category:** Bug Testing / Quality Assurance / Code Health / Zero Warnings
+- **Files Modified:**
+  - `lib/services/storage_service.dart`
+  - `lib/screens/home/home_screen.dart`
+  - `lib/screens/curriculum/curriculum_screen.dart`
+  - `lib/data/subjects_metadata.dart`
+  - `lib/data/standard_resources.dart`
+  - `lib/screens/timer/focus_timer_screen.dart`
+  - `lib/screens/timer/fullscreen_timer_screen.dart`
+  - `lib/screens/curriculum/subject_analytics_screen.dart`
+  - `lib/screens/settings/data_privacy_sheet.dart`
+  - `lib/screens/settings/settings_screen.dart`
+  - `lib/screens/onboarding/widgets/onboarding_illustrations.dart`
+  - `test/domain1_startup_lifecycle_test.dart`
+  - `test/domain2_home_tasks_test.dart`
+  - `test/domain3_curriculum_virtualization_test.dart`
+  - `test/domain4_pacing_engine_test.dart`
+  - `test/domain5_focus_timer_sqlite_test.dart`
+  - `test/domain6_analytics_sheets_test.dart`
+  - `test/domain7_backup_privacy_test.dart`
+- **Summary:** Systematic module-by-module test suite creation, edge-case hardening, and total elimination of all static analysis warnings across `lib/`:
+  - **Domain 1 (Startup Lifecycle & State Hydration):** Safe null promotion on `SharedPreferences` in `StorageService` eliminating unchecked non-null assertions. Created `domain1_startup_lifecycle_test.dart` verifying empty state defaults, automatic legacy key migration (`flowmd_flutter_app_state` -> `modulix_app_state`), and direct routing to Home Desk.
+  - **Domain 2 (Home Desk & Task System):** Removed unsupported `cacheExtent` parameter on `SingleChildScrollView`. Created `domain2_home_tasks_test.dart` verifying 5 AM day start boundary calculation, streak computation, and `DailyDeskTask` JSON roundtrip.
+  - **Domain 3 (Curriculum & Syllabus Virtualization):** Wrapped horizontal sort chips row in `RepaintBoundary` in `CurriculumScreen`. Eradicated unused `standardBooks` variable in `subjects_metadata.dart` and unused `models/syllabus.dart` import in `standard_resources.dart`. Created `domain3_curriculum_virtualization_test.dart` verifying syllabus parsers and sort ordering.
+  - **Domain 4 (Study Plan & Pacing Engine):** Verified and hardened `MetricsService.calculateETA` divide-by-zero protection (clamp pace to >= 1), past deadline safety, on-track status, and unit filters in `domain4_pacing_engine_test.dart`.
+  - **Domain 5 (Focus Timer & Audio Engine):** Removed unused `_fmt` method, unreferenced `_topicIcon` method, and redundant `log` variable in `FocusTimerScreen`. Removed unused `timer_theme.dart` import in `FullscreenTimerScreen`. Created `domain5_focus_timer_sqlite_test.dart` verifying `TimeLog` serialization, SQLite date-range filtering, and phase modeling.
+  - **Domain 6 (Analytics Hub & Sheets):** Wrapped top banner card in `RepaintBoundary` for render isolation in `SubjectAnalyticsScreen`. Created `domain6_analytics_sheets_test.dart` verifying log aggregation by topic type, 5 AM study day attribution, and progress bounds clamping.
+  - **Domain 7 (Settings, Privacy & Warning Elimination):** Cleaned up 8 unused imports, removed unused `appState` variable, accelerated sheet animations to 200ms/150ms, and migrated all deprecated `withOpacity` to `withValues(alpha: ...)` in `DataPrivacySheet`. Removed unused `appearance_theme_sheet.dart` in `SettingsScreen` and unused `dart:async` in `OnboardingIllustrations`. Created `domain7_backup_privacy_test.dart` verifying backup schema integrity.
+- **Verification:** `flutter analyze lib/` passed with **0 errors and 0 warnings** (100% clean); all 43 test suites passed (**227/227 tests green**).
+- **Build Status:** Pending APK Build (Ready for commit & push)
+
+---
+
 ### [CKPT-015] Async Startup, MultiSliver Timeline Virtualization, Plan Gesture Isolation & Sheet Caching
 - **Timestamp:** 2026-10-17 17:45 UTC
 - **Category:** Performance / Virtualization / Async Startup / 120 FPS Scrolling

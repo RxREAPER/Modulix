@@ -138,12 +138,6 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
     }
   }
 
-  String _fmt(int secs) {
-    final m = secs ~/ 60;
-    final s = secs % 60;
-    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
-  }
-
   String _fmtFull(int secs) {
     final h = secs ~/ 3600;
     final m = (secs % 3600) ~/ 60;
@@ -154,7 +148,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
   void _handleFinish(BuildContext ctx) async {
     final notifier = ref.read(focusTimerProvider.notifier);
     final timerState = ref.read(focusTimerProvider);
-    final log = await notifier.finishSession();
+    await notifier.finishSession();
 
     if (!mounted || !ctx.mounted) return;
 
@@ -784,15 +778,6 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
         ),
       ),
     );
-  }
-
-  IconData _topicIcon(String type) {
-    switch (type) {
-      case 'video': return Icons.play_arrow_rounded;
-      case 'qbank': return Icons.quiz_outlined;
-      case 'notes': return Icons.menu_book_outlined;
-      default: return Icons.task_alt_rounded;
-    }
   }
 }
 
