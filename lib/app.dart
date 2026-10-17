@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'models/app_state.dart';
 import 'providers/app_state_provider.dart';
 import 'providers/focus_timer_provider.dart';
 import 'screens/onboarding/onboarding_screen.dart';
@@ -33,32 +32,30 @@ final _shellNavigatorKeyAnalytics = GlobalKey<NavigatorState>(debugLabel: 'shell
 final _shellNavigatorKeySettings = GlobalKey<NavigatorState>(debugLabel: 'shellSettings');
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final listenable = ValueNotifier<AsyncValue<AppState>>(const AsyncLoading());
-  ref.listen<AsyncValue<AppState>>(appStateProvider, (_, next) {
-    listenable.value = next;
-  });
+  final listenable = ValueNotifier<bool>(false);
+  ref.listen<bool>(
+    appStateProvider.select((s) => s.valueOrNull?.onboardingDone ?? false),
+    (_, next) {
+      listenable.value = next;
+    },
+  );
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     refreshListenable: listenable,
     initialLocation: '/',
     redirect: (context, state) {
-      final appState = ref.read(appStateProvider);
-      return appState.when(
-        loading: () => null,
-        error: (_, __) => null,
-        data: (data) {
-          if (!data.onboardingDone && state.matchedLocation != '/onboarding') {
-            return '/onboarding';
-          }
-          if (data.onboardingDone &&
-              state.matchedLocation == '/onboarding' &&
-              state.uri.queryParameters['replay'] != 'true') {
-            return '/';
-          }
-          return null;
-        },
-      );
+      final appState = ref.read(appStateProvider).valueOrNull;
+      if (appState == null) return null;
+      if (!appState.onboardingDone && state.matchedLocation != '/onboarding') {
+        return '/onboarding';
+      }
+      if (appState.onboardingDone &&
+          state.matchedLocation == '/onboarding' &&
+          state.uri.queryParameters['replay'] != 'true') {
+        return '/';
+      }
+      return null;
     },
     routes: [
       GoRoute(
@@ -354,10 +351,11 @@ class _MainShellState extends ConsumerState<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(appThemeDataProvider);
-    final timerState = ref.watch(focusTimerProvider);
+    final isSessionActive = ref.watch(
+      focusTimerProvider.select((s) => s.sessionActive),
+    );
     final currentIndex = widget.navigationShell.currentIndex;
-    final showMiniOverlay = timerState.sessionActive;
+    final showMiniOverlay = isSessionActive;
 
     final currentBranchNavKey = switch (currentIndex) {
       0 => _shellNavigatorKeyHome,
@@ -397,7 +395,7 @@ class _MainShellState extends ConsumerState<MainShell> {
             bottomNavigationBar: RepaintBoundary(
               child: LovableNavBar(
                 currentIndex: currentIndex,
-                isSessionActive: timerState.sessionActive,
+                isSessionActive: isSessionActive,
                 onTap: (index) {
                   widget.navigationShell.goBranch(
                     index,

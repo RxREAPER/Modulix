@@ -209,7 +209,7 @@ class CurriculumScreen extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: _yearBadgeColor(year).withOpacity(0.12),
+                            color: _yearBadgeColor(year).withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: _yearBadgeColor(year),
@@ -261,12 +261,8 @@ class CurriculumScreen extends ConsumerWidget {
                         final card = SquareSubjectCard(
                           subject: subject,
                           completion: completion,
-                          onTap: () {
-                            ref
-                                .read(recentSubjectsProvider.notifier)
-                                .recordVisit(subject.id);
-                            context.go('/curriculum/${subject.id}');
-                          },
+                          onTap: () =>
+                              context.go('/curriculum/${subject.id}'),
                         );
 
                         if (year == kCurriculumYears.first) {
@@ -318,12 +314,8 @@ class CurriculumScreen extends ConsumerWidget {
                       final card = SquareSubjectCard(
                         subject: subject,
                         completion: completion,
-                        onTap: () {
-                          ref
-                              .read(recentSubjectsProvider.notifier)
-                              .recordVisit(subject.id);
-                          context.go('/curriculum/${subject.id}');
-                        },
+                        onTap: () =>
+                            context.go('/curriculum/${subject.id}'),
                       );
 
                       if (index == 0) {

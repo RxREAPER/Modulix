@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../models/app_state.dart';
@@ -33,7 +34,7 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
     final current = state.value ?? AppState.empty;
     final updated = updater(current);
     state = AsyncData(updated);
-    await StorageService.instance.save(updated);
+    unawaited(StorageService.instance.save(updated));
     SyncService.instance.schedulePush(ref);
   }
 
@@ -407,50 +408,72 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
 
 // ─── Theme Data & Appearance ──────────────────────────────────────────────────
 
+@immutable
 class ModulixAppThemeData {
   final ThemeData lightTheme;
   final ThemeData darkTheme;
   final ThemeMode themeMode;
   final ModulixThemeExtension extension;
+  final String presetId;
 
   const ModulixAppThemeData({
     required this.lightTheme,
     required this.darkTheme,
     required this.themeMode,
     required this.extension,
+    this.presetId = 'paper',
   });
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is ModulixAppThemeData &&
+        other.presetId == presetId &&
+        other.themeMode == themeMode;
+  }
+
+  @override
+  int get hashCode => Object.hash(presetId, themeMode);
 }
 
 /// Backward compatibility alias for FlowMDAppThemeData
 typedef FlowMDAppThemeData = ModulixAppThemeData;
 
 final appThemeDataProvider = Provider<ModulixAppThemeData>((ref) {
-  final appState = ref.watch(appStateProvider).valueOrNull ?? AppState.empty;
-  final preset = PalettePreset.fromId(appState.palettePresetId);
+  final presetId = ref.watch(appStateProvider.select(
+    (s) => s.valueOrNull?.palettePresetId ?? 'paper',
+  ));
+  final themePref = ref.watch(appStateProvider.select(
+    (s) => s.valueOrNull?.themePref ?? ThemePref.system,
+  ));
 
+  final preset = PalettePreset.fromId(presetId);
   final activeExt = ModulixThemeExtension.from(preset: preset);
   final activeTheme = ModulixThemeFactory.build(preset: preset);
-  final themeMode = preset.isDark ? ThemeMode.dark : ThemeMode.light;
+  final themeMode = switch (themePref) {
+    ThemePref.light => ThemeMode.light,
+    ThemePref.dark => ThemeMode.dark,
+    ThemePref.system => preset.isDark ? ThemeMode.dark : ThemeMode.light,
+  };
 
   return ModulixAppThemeData(
     lightTheme: activeTheme,
     darkTheme: activeTheme,
     themeMode: themeMode,
     extension: activeExt,
+    presetId: preset.id,
   );
 });
 
 final themeModeProvider = Provider<ThemeMode>((ref) {
-  final appState = ref.watch(appStateProvider);
-  return appState.when(
-    loading: () => ThemeMode.system,
-    error: (_, __) => ThemeMode.system,
-    data: (state) => switch (state.themePref) {
-      ThemePref.light => ThemeMode.light,
-      ThemePref.dark => ThemeMode.dark,
-      ThemePref.system => ThemeMode.system,
-    },
-  );
+  final themePref = ref.watch(appStateProvider.select(
+    (s) => s.valueOrNull?.themePref ?? ThemePref.system,
+  ));
+  return switch (themePref) {
+    ThemePref.light => ThemeMode.light,
+    ThemePref.dark => ThemeMode.dark,
+    ThemePref.system => ThemeMode.system,
+  };
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

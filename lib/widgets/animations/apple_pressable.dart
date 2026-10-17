@@ -41,29 +41,8 @@ class ApplePressable extends StatefulWidget {
   State<ApplePressable> createState() => _ApplePressableState();
 }
 
-class _ApplePressableState extends State<ApplePressable>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl;
+class _ApplePressableState extends State<ApplePressable> {
   bool _isPressed = false;
-
-  static const _pressCurve = Curves.easeInOut;
-  static const _springReleaseCurve = Cubic(0.175, 0.885, 0.32, 1.275);
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 100),
-      reverseDuration: const Duration(milliseconds: 220),
-    );
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
 
   void _triggerHaptic(HapticStyle style) {
     if (!widget.enableHaptic) return;
@@ -82,25 +61,6 @@ class _ApplePressableState extends State<ApplePressable>
     }
   }
 
-  void _onPointerDown(PointerDownEvent _) {
-    _isPressed = true;
-    _ctrl.animateTo(1.0, duration: const Duration(milliseconds: 100), curve: _pressCurve);
-  }
-
-  void _onPointerUp(PointerUpEvent _) {
-    if (_isPressed) {
-      _isPressed = false;
-      _ctrl.animateTo(0.0, duration: const Duration(milliseconds: 220), curve: _springReleaseCurve);
-    }
-  }
-
-  void _onPointerCancel(PointerCancelEvent _) {
-    if (_isPressed) {
-      _isPressed = false;
-      _ctrl.animateTo(0.0, duration: const Duration(milliseconds: 150), curve: Curves.easeOut);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final effectiveTap = widget.effectiveTap;
@@ -108,40 +68,38 @@ class _ApplePressableState extends State<ApplePressable>
       return widget.child;
     }
 
-    Widget content = AnimatedBuilder(
-      animation: _ctrl,
-      builder: (_, child) {
-        final scale = 1.0 - (1.0 - widget.pressedScale) * _ctrl.value;
-
-        return Transform.scale(
-          scale: scale,
-          child: child,
-        );
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTapDown: (_) {
+        if (!_isPressed) {
+          setState(() => _isPressed = true);
+        }
       },
-      child: widget.child,
-    );
-
-    return Listener(
-      onPointerDown: _onPointerDown,
-      onPointerUp: _onPointerUp,
-      onPointerCancel: _onPointerCancel,
-      child: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTapCancel: () {
-          if (_isPressed) {
-            _isPressed = false;
-            _ctrl.animateTo(0.0, duration: const Duration(milliseconds: 100), curve: Curves.easeOut);
-          }
-        },
-        onTap: () {
-          effectiveTap?.call();
-          _triggerHaptic(widget.hapticStyle);
-        },
-        onLongPress: widget.onLongPress != null ? () {
-          widget.onLongPress!();
-          _triggerHaptic(HapticStyle.medium);
-        } : null,
-        child: content,
+      onTapUp: (_) {
+        if (_isPressed) {
+          setState(() => _isPressed = false);
+        }
+      },
+      onTapCancel: () {
+        if (_isPressed) {
+          setState(() => _isPressed = false);
+        }
+      },
+      onTap: () {
+        effectiveTap?.call();
+        _triggerHaptic(widget.hapticStyle);
+      },
+      onLongPress: widget.onLongPress != null
+          ? () {
+              widget.onLongPress!();
+              _triggerHaptic(HapticStyle.medium);
+            }
+          : null,
+      child: AnimatedScale(
+        scale: _isPressed ? widget.pressedScale : 1.0,
+        duration: Duration(milliseconds: _isPressed ? 100 : 200),
+        curve: _isPressed ? Curves.easeInOut : const Cubic(0.175, 0.885, 0.32, 1.275),
+        child: widget.child,
       ),
     );
   }

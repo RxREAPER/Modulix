@@ -8,8 +8,25 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
-### [CKPT-010] Performance & Latency Restoration: Zero-Lag Interactions, Root Clip Removal & Painter Optimization
-- **Timestamp:** 2026-10-17 10:05 UTC
+### [CKPT-011] Root Reactive Rebuild Storm Elimination & Asynchronous Storage Engine
+- **Timestamp:** 2026-10-17 10:30 UTC
+- **Category:** Architecture / State Management / Performance
+- **Files Modified:**
+  - `lib/app.dart`
+  - `lib/providers/app_state_provider.dart`
+  - `lib/widgets/animations/apple_pressable.dart`
+  - `lib/screens/curriculum/curriculum_screen.dart`
+- **Summary:** Completely eradicated the root cause of app-wide tap latency and navigation sluggishness:
+  - **Scoped GoRouter Refresh:** Removed coarse `refreshListenable` watching the monolithic `appStateProvider`. `routerProvider` now selectively observes only `onboardingDone`, preventing full router path matching and route rebuild cascades on every user tap/check/interaction.
+  - **Eliminated Root MaterialApp Rebuild Cascade:** Implemented value equality (`operator ==` and `hashCode`) on `ModulixAppThemeData` and scoped `appThemeDataProvider` via `.select` exclusively to `palettePresetId` and `themePref`. State mutations no longer re-evaluate the root `MaterialApp.router` or force rebuilds across all 4 `IndexedStack` branch trees.
+  - **Scoped Shell State Subscriptions:** Removed redundant `ref.watch(appThemeDataProvider)` from `MainShell` and scoped `focusTimerProvider` watching to `sessionActive`.
+  - **Non-blocking Asynchronous Storage:** Wrapped `StorageService.instance.save(updated)` in `unawaited(...)` inside `AppStateNotifier._update`, preventing JSON serialization and SharedPreferences I/O from blocking tap response on the main UI thread.
+  - **Removed Redundant Card Tap I/O:** Removed synchronous `recordVisit()` from `SquareSubjectCard.onTap` which was triggering disk I/O and grid re-sorting during push transitions.
+  - **Zero-Ticker Pressable:** Replaced `AnimationController` and `Listener` in `ApplePressable` with native `GestureDetector` and compositor `AnimatedScale`.
+- **Verification:** `flutter analyze` passed with 0 issues on all modified files; test suite passed (37/37 tests green across `apple_pressable_test.dart`, `tab_persistence_test.dart`, `theme_system_test.dart`, `curriculum_sort_test.dart`, `chapter_screen_test.dart`, `lovable_nav_bar_test.dart`).
+- **Build Status:** ⏳ Pending APK Build
+
+---
 - **Category:** Performance / Graphics / Touch Latency
 - **Files Modified:**
   - `lib/widgets/animations/apple_pressable.dart`
