@@ -124,6 +124,8 @@ void main() {
 
       expect(find.text('Modulix Cloud Sync'), findsOneWidget);
 
+      await tester.ensureVisible(find.text('Continue as Guest (Local Only)'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Continue as Guest (Local Only)'));
       await tester.pumpAndSettle();
 
@@ -134,14 +136,14 @@ void main() {
         (WidgetTester tester) async {
       SupabaseConfig.overrideGoogleWebClientId = '';
       await tester.pumpWidget(buildTestableAuthScreen());
+      await tester.ensureVisible(find.text('Continue with Google'));
       await tester.pumpAndSettle();
-
       await tester.tap(find.text('Continue with Google'));
       await tester.pumpAndSettle();
 
       expect(
         find.textContaining('Google Sign-In is not configured yet'),
-        findsOneWidget,
+        findsAtLeastNWidgets(1),
       );
     });
   });

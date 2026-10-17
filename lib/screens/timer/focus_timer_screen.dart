@@ -15,8 +15,6 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import 'fullscreen_timer_screen.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
-import '../../services/tour/app_tour_controller.dart';
-import '../../widgets/tour/tour_spotlight_overlay.dart';
 import '../../widgets/in_situ_hint_pill.dart';
 import '../../widgets/discovery_pulse.dart';
 
@@ -432,9 +430,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                     const SizedBox(height: 6),
 
                     // 4. BIG TIMER DISPLAY (00:00:00) — Dead-Center, Monospace, No Shadows
-                    Container(
-                      key: TourTargetRegistry.keyFor(TourTargetId.timerDisplay),
-                      child: Text(
+                    Text(
                         _fmtFull(displaySecs),
                         style: TextStyle(
                           fontSize: 66,
@@ -445,7 +441,6 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                           height: 1.0,
                         ),
                       ),
-                    ),
 
                     const SizedBox(height: 18),
 
@@ -702,9 +697,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                 top: false,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 26),
-                  child: Container(
-                    key: TourTargetRegistry.keyFor(TourTargetId.timerActionDock),
-                    child: Row(
+                  child: Row(
                       children: [
                         // Break toggle
                         _ControlBtn(
@@ -793,11 +786,9 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                         ),
                       ],
                     ),
-                  ),
                 ),
               ),
             ),
-            const TourSpotlightOverlay(),
           ],
         ),
       ),

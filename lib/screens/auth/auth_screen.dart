@@ -2,10 +2,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../config/supabase_config.dart';
 import '../../services/auth_service.dart';
 import '../../services/sync_service.dart';
+import '../../services/error_translator_service.dart';
+import '../../widgets/errors/diagnostic_telemetry_drawer.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
 
@@ -18,12 +21,10 @@ enum AuthMode {
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
 
+  /// Navigates to the full-page Auth screen.
   static Future<void> show(BuildContext context) {
-    return showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => const AuthScreen(),
+    return Navigator.of(context).push<void>(
+      MaterialPageRoute(builder: (_) => const AuthScreen()),
     );
   }
 
@@ -43,7 +44,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   bool _obscurePassword = true;
   bool _loading = false;
   bool _otpSent = false;
-  String? _errorMessage;
+  bool _acceptedTerms = true;
+
+  dynamic _lastError;
+  StackTrace? _lastStackTrace;
   String? _infoMessage;
 
   @override
@@ -70,7 +74,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     HapticFeedback.lightImpact();
     setState(() {
       _loading = true;
-      _errorMessage = null;
+      _lastError = null;
+      _lastStackTrace = null;
       _infoMessage = null;
     });
 
@@ -81,7 +86,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     if (email.isEmpty || !email.contains('@')) {
       setState(() {
         _loading = false;
-        _errorMessage = 'Please enter a valid email address.';
+        _lastError = 'Please enter a valid email address.';
       });
       return;
     }
@@ -92,13 +97,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           await AuthService.instance.signInWithOtp(email: email);
           setState(() {
             _otpSent = true;
-            _infoMessage = 'Magic link sent to $email. Tap the sign-in link in your email on this device to sign in automatically, or enter the code if provided.';
+            _infoMessage =
+                'Magic link sent to $email. Tap the link in your email to sign in automatically, or enter the code below.';
           });
         } else {
           final token = _otpController.text.trim();
           if (token.isEmpty) {
             setState(() {
-              _errorMessage = 'Please enter the verification code.';
+              _lastError = 'Please enter the 6-digit verification code.';
             });
             return;
           }
@@ -109,17 +115,24 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         if (password.isEmpty) {
           setState(() {
             _loading = false;
-            _errorMessage = 'Please enter your password.';
+            _lastError = 'Please enter your password.';
           });
           return;
         }
         await AuthService.instance.signInWithEmail(email: email, password: password);
         if (mounted) _onAuthSuccess();
       } else if (_mode == AuthMode.signUp) {
+        if (!_acceptedTerms) {
+          setState(() {
+            _loading = false;
+            _lastError = 'Please agree to the Terms of Service to create an account.';
+          });
+          return;
+        }
         if (password.length < 6) {
           setState(() {
             _loading = false;
-            _errorMessage = 'Password must be at least 6 characters.';
+            _lastError = 'Password must be at least 6 characters.';
           });
           return;
         }
@@ -137,20 +150,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           });
         }
       }
-    } on AuthException catch (e) {
-      String msg = e.message;
-      final lower = e.message.toLowerCase();
-      if (lower.contains('email not confirmed')) {
-        msg = 'Email confirmation required. Please click the link sent to your email, or disable "Confirm email" in Supabase Auth.';
-      } else if (lower.contains('invalid login credentials')) {
-        msg = 'Invalid email or password. Please verify your credentials or select "Create Account".';
-      }
+    } catch (e, st) {
       setState(() {
-        _errorMessage = msg;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Authentication failed: ${e.toString()}';
+        _lastError = e;
+        _lastStackTrace = st;
       });
     } finally {
       if (mounted) {
@@ -165,14 +168,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     HapticFeedback.lightImpact();
     setState(() {
       _loading = true;
-      _errorMessage = null;
+      _lastError = null;
+      _lastStackTrace = null;
       _infoMessage = null;
     });
 
     if (SupabaseConfig.googleWebClientId.isEmpty) {
       setState(() {
         _loading = false;
-        _errorMessage = 'Google Sign-In is not configured yet. Configure the Google Web Client ID in Supabase and Google Cloud Console.';
+        _lastError = 'Google Sign-In is not configured yet. Configure the Google Web Client ID in Supabase.';
       });
       return;
     }
@@ -180,22 +184,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     try {
       await AuthService.instance.signInWithGoogle();
       if (mounted) _onAuthSuccess();
-    } on AuthException catch (e) {
+    } catch (e, st) {
       setState(() {
-        _errorMessage = e.message;
+        _lastError = e;
+        _lastStackTrace = st;
       });
-    } catch (e) {
-      final errText = e.toString();
-      if (errText.contains('10') || errText.toLowerCase().contains('developer_error')) {
-        setState(() {
-          _errorMessage =
-              'Google Sign-In configuration mismatch (Error 10): Please add an Android OAuth client in Google Cloud Console with package name "com.modulix.app" and your SHA-1 fingerprint, and verify the test user is added.';
-        });
-      } else {
-        setState(() {
-          _errorMessage = 'Google Sign-In failed: $e';
-        });
-      }
     } finally {
       if (mounted) {
         setState(() {
@@ -208,10 +201,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   void _onAuthSuccess() {
     if (_succeeded || !mounted) return;
     _succeeded = true;
-    Navigator.of(context).pop();
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    } else {
+      context.go('/settings');
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Signed in as ${AuthService.instance.currentUserEmail ?? "Doctor"}. Syncing progress...'),
+        content: Text(
+            'Signed in as ${AuthService.instance.currentUserEmail ?? "Doctor"}. Syncing study records...'),
         backgroundColor: AppTheme.accentPrimary,
         behavior: SnackBarBehavior.floating,
       ),
@@ -221,366 +219,694 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final isDark = AppTheme.current.isDark;
 
-    return Container(
-      padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        top: 20,
-        bottom: bottomInset + 24,
-      ),
-      decoration: BoxDecoration(
-        color: AppTheme.cardBackground,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border(
-          top: BorderSide(color: AppTheme.cardBorder, width: 1.5),
-        ),
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Drag Handle
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: AppTheme.mutedText.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+    return Scaffold(
+      backgroundColor: AppTheme.paperBackground,
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          // Artsy Curved Wave Header inspired by mockup
+          SliverToBoxAdapter(
+            child: _ArtsyWaveHeader(
+              onBack: () {
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                } else {
+                  context.go('/settings');
+                }
+              },
             ),
+          ),
 
-            // Header Row
-            Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentSubtle,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.accentPrimary.withValues(alpha: 0.3)),
+          // Main Form Body
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Segmented Mode Switcher
+                  _AuthModeSwitcher(
+                    currentMode: _mode,
+                    onModeChanged: (mode) {
+                      setState(() {
+                        _mode = mode;
+                        _lastError = null;
+                        _infoMessage = null;
+                        _otpSent = false;
+                      });
+                    },
                   ),
-                  child: Icon(
-                    Icons.cloud_sync_rounded,
-                    color: AppTheme.accentPrimary,
-                    size: 24,
+
+                  const SizedBox(height: 24),
+
+                  // Error Banner with Translation & Telemetry
+                  if (_lastError != null) ...[
+                    _DoctorErrorBanner(
+                      error: _lastError!,
+                      stackTrace: _lastStackTrace,
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Info Message Banner
+                  if (_infoMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                            color: Colors.blue.withValues(alpha: 0.3), width: 1.2),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.info_outline_rounded,
+                              color: Colors.blue, size: 20),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              _infoMessage!,
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.lightBlueAccent : Colors.blue.shade900,
+                                height: 1.35,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Full Name Field (Sign Up Only)
+                  if (_mode == AuthMode.signUp) ...[
+                    _SketchInputField(
+                      controller: _nameController,
+                      label: 'Doctor Name',
+                      hintText: 'e.g. Dr. Ayesha Khan',
+                      icon: Icons.person_outline_rounded,
+                      textCapitalization: TextCapitalization.words,
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+
+                  // Email Field
+                  _SketchInputField(
+                    controller: _emailController,
+                    label: 'Email Address',
+                    hintText: 'doctor@hospital.org',
+                    icon: Icons.alternate_email_rounded,
+                    keyboardType: TextInputType.emailAddress,
                   ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Modulix Cloud Sync',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.inkForeground,
+
+                  const SizedBox(height: 14),
+
+                  // Password Field (Sign In & Sign Up)
+                  if (_mode != AuthMode.magicLink) ...[
+                    _SketchInputField(
+                      controller: _passwordController,
+                      label: 'Password',
+                      hintText: '••••••••',
+                      icon: Icons.lock_outline_rounded,
+                      obscureText: _obscurePassword,
+                      trailing: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                          size: 20,
+                          color: AppTheme.mutedText,
+                        ),
+                        onPressed: () =>
+                            setState(() => _obscurePassword = !_obscurePassword),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+
+                  // OTP Field (Magic Link mode after OTP is sent)
+                  if (_mode == AuthMode.magicLink && _otpSent) ...[
+                    _SketchInputField(
+                      controller: _otpController,
+                      label: '6-Digit Verification Code',
+                      hintText: '123456',
+                      icon: Icons.key_rounded,
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+
+                  // Terms & Conditions Checkbox (Sign Up Only)
+                  if (_mode == AuthMode.signUp) ...[
+                    InkWell(
+                      onTap: () => setState(() => _acceptedTerms = !_acceptedTerms),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: Checkbox(
+                                value: _acceptedTerms,
+                                activeColor: AppTheme.inkForeground,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                onChanged: (val) =>
+                                    setState(() => _acceptedTerms = val ?? false),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'I accept the study companion terms & offline data privacy policy',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  color: AppTheme.mutedText,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Seamless study tracking across Android devices',
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+
+                  const SizedBox(height: 8),
+
+                  // Primary Submit Button
+                  ApplePressable(
+                    pressedScale: 0.98,
+                    onPressed: _loading ? null : _submit,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      decoration: BoxDecoration(
+                        color: AppTheme.inkForeground,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.inkForeground.withValues(alpha: 0.18),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: _loading
+                            ? SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      AppTheme.paperBackground),
+                                ),
+                              )
+                            : Text(
+                                _mode == AuthMode.signIn
+                                    ? 'Sign In & Sync'
+                                    : _mode == AuthMode.signUp
+                                        ? 'Create Account'
+                                        : _otpSent
+                                            ? 'Verify & Sign In'
+                                            : 'Send Magic Link',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.paperBackground,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Divider
+                  Row(
+                    children: [
+                      Expanded(
+                          child: Divider(color: AppTheme.borderLight, height: 1)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        child: Text(
+                          'or continue with',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.mutedText,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                          child: Divider(color: AppTheme.borderLight, height: 1)),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Google Sign-In Button
+                  ApplePressable(
+                    pressedScale: 0.98,
+                    onPressed: _loading ? null : _submitGoogle,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      decoration: BoxDecoration(
+                        color: AppTheme.cardWhite,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppTheme.borderLight, width: 1.4),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _GoogleLogoBadge(),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Continue with Google',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.inkForeground,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Continue as Guest (Local Only) Button
+                  Center(
+                    child: TextButton(
+                      onPressed: () {
+                        if (Navigator.of(context).canPop()) {
+                          Navigator.of(context).pop();
+                        } else {
+                          context.go('/settings');
+                        }
+                      },
+                      child: Text(
+                        'Continue as Guest (Local Only)',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
                           color: AppTheme.mutedText,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Bottom Mode Switch Prompt
+                  Center(
+                    child: _mode == AuthMode.signIn
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Don't have an account?",
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppTheme.mutedText,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _mode = AuthMode.signUp;
+                                    _lastError = null;
+                                  });
+                                },
+                                child: Text(
+                                  'Register',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppTheme.primaryBlue,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Already have an account?',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppTheme.mutedText,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _mode = AuthMode.signIn;
+                                    _lastError = null;
+                                  });
+                                },
+                                child: Text(
+                                  'Sign In',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppTheme.primaryBlue,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Offline reassurance notice
+                  Center(
+                    child: Text(
+                      'Modulix works 100% offline. Account sync is optional.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppTheme.mutedText.withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Artsy Curved Wave Header ──────────────────────────────────────────
+class _ArtsyWaveHeader extends StatelessWidget {
+  final VoidCallback onBack;
+
+  const _ArtsyWaveHeader({required this.onBack});
+
+  @override
+  Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
+    final isDark = AppTheme.current.isDark;
+
+    return SizedBox(
+      height: 230 + topPadding,
+      child: Stack(
+        children: [
+          // Background organic wave painter
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _WavePainter(
+                waveColor: isDark ? const Color(0xFF1B2430) : const Color(0xFF1E293B),
+                accentLineColor: AppTheme.primaryBlue.withValues(alpha: 0.35),
+              ),
+            ),
+          ),
+
+          // Header Content
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Back button
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back_rounded,
+                          color: Colors.white, size: 22),
+                      onPressed: onBack,
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  // Modulix Logo & Title
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x33000000),
+                              blurRadius: 10,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            'M',
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w900,
+                              color: isDark
+                                  ? const Color(0xFF1B2430)
+                                  : const Color(0xFF1E293B),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Modulix Cloud Sync',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: -0.4,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Seamless study tracking across Android devices',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFFCBD5E1),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close_rounded),
-                  color: AppTheme.mutedText,
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Mode Selector Tabs
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: AppTheme.scaffoldBg,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.cardBorder),
-              ),
-              child: Row(
-                children: [
-                  _buildTab(AuthMode.signIn, 'Sign In'),
-                  _buildTab(AuthMode.signUp, 'Create Account'),
-                  _buildTab(AuthMode.magicLink, 'Magic Link'),
+                  const SizedBox(height: 28),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-
-            // Error & Info Banners
-            if (_errorMessage != null)
-              Container(
-                margin: const EdgeInsets.only(bottom: 14),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.red.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.error_outline_rounded, size: 18, color: Colors.red),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        _errorMessage!,
-                        style: const TextStyle(fontSize: 12, color: Colors.red, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-            if (_infoMessage != null)
-              Container(
-                margin: const EdgeInsets.only(bottom: 14),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                decoration: BoxDecoration(
-                  color: AppTheme.accentSubtle,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppTheme.accentPrimary.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.check_circle_outline_rounded, size: 18, color: AppTheme.accentPrimary),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        _infoMessage!,
-                        style: TextStyle(fontSize: 12, color: AppTheme.accentPrimary, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-            // Input Fields
-            if (_mode == AuthMode.signUp) ...[
-              _buildTextField(
-                controller: _nameController,
-                label: 'Doctor Name',
-                hint: 'e.g. Dr. House',
-                icon: Icons.person_outline_rounded,
-              ),
-              const SizedBox(height: 12),
-            ],
-
-            _buildTextField(
-              controller: _emailController,
-              label: 'Email Address',
-              hint: 'doctor@hospital.org',
-              icon: Icons.alternate_email_rounded,
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 12),
-
-            if (_mode != AuthMode.magicLink) ...[
-              _buildTextField(
-                controller: _passwordController,
-                label: 'Password',
-                hint: '••••••••',
-                icon: Icons.lock_outline_rounded,
-                obscureText: _obscurePassword,
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                    size: 18,
-                    color: AppTheme.mutedText,
-                  ),
-                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ] else if (_otpSent) ...[
-              Container(
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(bottom: 14),
-                decoration: BoxDecoration(
-                  color: AppTheme.scaffoldBg,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppTheme.cardBorder),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.mark_email_read_outlined, size: 20, color: AppTheme.accentPrimary),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Tap the button in your email on this device to sign in instantly, or enter the code below if your email included one.',
-                        style: TextStyle(fontSize: 12, color: AppTheme.inkForeground, height: 1.3),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              _buildTextField(
-                controller: _otpController,
-                label: 'Verification Code (or tap email link)',
-                hint: 'Enter 6-digit code',
-                icon: Icons.pin_rounded,
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 16),
-            ] else
-              const SizedBox(height: 8),
-
-            // Primary Action Button
-            ElevatedButton(
-              onPressed: _loading ? null : _submit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.inkForeground,
-                foregroundColor: AppTheme.cardBackground,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
-              ),
-              child: _loading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                    )
-                  : Text(
-                      _mode == AuthMode.signIn
-                          ? 'Sign In & Sync'
-                          : _mode == AuthMode.signUp
-                              ? 'Create Account'
-                              : _otpSent
-                                  ? 'Verify & Sign In'
-                                  : 'Send Magic Link',
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-                    ),
-            ),
-            const SizedBox(height: 14),
-
-            // Divider OR
-            Row(
-              children: [
-                Expanded(child: Divider(color: AppTheme.cardBorder)),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(
-                    'OR',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.mutedText),
-                  ),
-                ),
-                Expanded(child: Divider(color: AppTheme.cardBorder)),
-              ],
-            ),
-            const SizedBox(height: 14),
-
-            // Google Sign-In Button
-            OutlinedButton.icon(
-              onPressed: _loading ? null : _submitGoogle,
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                side: BorderSide(color: AppTheme.cardBorder, width: 1.2),
-              ),
-              icon: const Icon(Icons.g_mobiledata_rounded, size: 24),
-              label: Text(
-                'Continue with Google',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                  color: AppTheme.inkForeground,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Continue as Guest Option
-            Center(
-              child: TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(
-                  'Continue as Guest (Local Only)',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.mutedText,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
+}
 
-  Widget _buildTab(AuthMode mode, String label) {
-    final active = _mode == mode;
+class _WavePainter extends CustomPainter {
+  final Color waveColor;
+  final Color accentLineColor;
+
+  _WavePainter({
+    required this.waveColor,
+    required this.accentLineColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = waveColor
+      ..style = PaintingStyle.fill;
+
+    final path = Path();
+    path.lineTo(0, size.height - 40);
+
+    // Organic wave curve matching design inspiration
+    path.quadraticBezierTo(
+      size.width * 0.25,
+      size.height - 10,
+      size.width * 0.55,
+      size.height - 35,
+    );
+    path.quadraticBezierTo(
+      size.width * 0.85,
+      size.height - 60,
+      size.width,
+      size.height - 20,
+    );
+    path.lineTo(size.width, 0);
+    path.close();
+
+    canvas.drawPath(path, paint);
+
+    // Sketch accent stroke line
+    final strokePaint = Paint()
+      ..color = accentLineColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+
+    final strokePath = Path();
+    strokePath.moveTo(0, size.height - 40);
+    strokePath.quadraticBezierTo(
+      size.width * 0.25,
+      size.height - 10,
+      size.width * 0.55,
+      size.height - 35,
+    );
+    strokePath.quadraticBezierTo(
+      size.width * 0.85,
+      size.height - 60,
+      size.width,
+      size.height - 20,
+    );
+
+    canvas.drawPath(strokePath, strokePaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// ── Segmented Mode Switcher ───────────────────────────────────────────
+class _AuthModeSwitcher extends StatelessWidget {
+  final AuthMode currentMode;
+  final ValueChanged<AuthMode> onModeChanged;
+
+  const _AuthModeSwitcher({
+    required this.currentMode,
+    required this.onModeChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppTheme.parchmentSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.borderLight, width: 1.2),
+      ),
+      child: Row(
+        children: [
+          _ModePill(
+            label: 'Sign In',
+            isSelected: currentMode == AuthMode.signIn,
+            onTap: () => onModeChanged(AuthMode.signIn),
+          ),
+          _ModePill(
+            label: 'Create Account',
+            isSelected: currentMode == AuthMode.signUp,
+            onTap: () => onModeChanged(AuthMode.signUp),
+          ),
+          _ModePill(
+            label: 'Magic Link',
+            isSelected: currentMode == AuthMode.magicLink,
+            onTap: () => onModeChanged(AuthMode.magicLink),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ModePill extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _ModePill({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Expanded(
       child: ApplePressable(
-        onTap: () {
-          HapticFeedback.selectionClick();
-          setState(() {
-            _mode = mode;
-            _errorMessage = null;
-            _infoMessage = null;
-          });
-        },
         pressedScale: 0.95,
-        borderRadius: BorderRadius.circular(8),
+        onPressed: onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: active ? AppTheme.cardBackground : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: active
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
+            color: isSelected ? AppTheme.inkForeground : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: active ? FontWeight.w800 : FontWeight.w600,
-              color: active ? AppTheme.inkForeground : AppTheme.mutedText,
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w800,
+                color: isSelected
+                    ? AppTheme.paperBackground
+                    : AppTheme.mutedText,
+              ),
             ),
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData icon,
-    bool obscureText = false,
-    TextInputType? keyboardType,
-    Widget? suffixIcon,
-  }) {
+// ── Sketch Input Field ────────────────────────────────────────────────
+class _SketchInputField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final String hintText;
+  final IconData icon;
+  final bool obscureText;
+  final Widget? trailing;
+  final TextInputType? keyboardType;
+  final TextCapitalization textCapitalization;
+
+  const _SketchInputField({
+    required this.controller,
+    required this.label,
+    required this.hintText,
+    required this.icon,
+    this.obscureText = false,
+    this.trailing,
+    this.keyboardType,
+    this.textCapitalization = TextCapitalization.none,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -588,42 +914,143 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           label,
           style: TextStyle(
             fontSize: 12,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
             color: AppTheme.inkForeground,
+            letterSpacing: -0.1,
           ),
         ),
         const SizedBox(height: 6),
-        TextField(
-          controller: controller,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.inkForeground,
+        Container(
+          decoration: BoxDecoration(
+            color: AppTheme.cardWhite,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppTheme.borderLight, width: 1.3),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              fontSize: 13,
-              color: AppTheme.mutedText.withValues(alpha: 0.7),
+          child: TextField(
+            controller: controller,
+            obscureText: obscureText,
+            keyboardType: keyboardType,
+            textCapitalization: textCapitalization,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.inkForeground,
             ),
-            prefixIcon: Icon(icon, size: 18, color: AppTheme.mutedText),
-            suffixIcon: suffixIcon,
-            filled: true,
-            fillColor: AppTheme.scaffoldBg,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: AppTheme.cardBorder),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: AppTheme.inkForeground, width: 1.5),
+            decoration: InputDecoration(
+              prefixIcon: Icon(icon, size: 18, color: AppTheme.mutedText),
+              suffixIcon: trailing,
+              hintText: hintText,
+              hintStyle: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppTheme.mutedText.withValues(alpha: 0.6),
+              ),
+              border: InputBorder.none,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+// ── Google Logo Badge ────────────────────────────────────────────────
+class _GoogleLogoBadge extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 20,
+      height: 20,
+      alignment: Alignment.center,
+      child: const Text(
+        'G',
+        style: TextStyle(
+          fontSize: 17,
+          fontWeight: FontWeight.w900,
+          color: Color(0xFF4285F4),
+          fontFamily: 'sans-serif',
+        ),
+      ),
+    );
+  }
+}
+
+// ── Doctor Error Banner with Telemetry ───────────────────────────────
+class _DoctorErrorBanner extends StatelessWidget {
+  final dynamic error;
+  final StackTrace? stackTrace;
+
+  const _DoctorErrorBanner({
+    required this.error,
+    this.stackTrace,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final translation = ErrorTranslatorService.translate(
+      error,
+      stackTrace: stackTrace,
+      domain: 'auth',
+    );
+
+    final displayHeadline =
+        error is String ? (error as String) : translation.headline;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppTheme.parchmentSurface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.borderLight, width: 1.3),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(translation.icon, size: 18, color: AppTheme.inkForeground),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  displayHeadline,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.inkForeground,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (error is! String) ...[
+            const SizedBox(height: 6),
+            Text(
+              translation.explanation,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: AppTheme.mutedText,
+                height: 1.35,
+              ),
+            ),
+          ],
+          if (translation.technicalDetails.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            DiagnosticTelemetryDrawer(
+              technicalDetails: translation.technicalDetails,
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

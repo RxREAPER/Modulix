@@ -9,17 +9,14 @@ import '../../theme/app_theme.dart';
 import '../../theme/modulix_theme.dart';
 import '../../services/notification_service.dart';
 import '../../widgets/profile/profile_customization.dart';
-import 'learn_the_app_sheet.dart';
 import 'data_privacy_sheet.dart';
 import 'about_support_sheet.dart';
-import '../../services/tour/app_tour_controller.dart';
 import '../../services/auth_service.dart';
 import '../../services/sync_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/sync_provider.dart';
 import '../../widgets/sync_status_badge.dart';
 import '../../widgets/animations/apple_pressable.dart';
-import '../auth/auth_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   final String? from;
@@ -54,6 +51,7 @@ class SettingsScreen extends StatelessWidget {
             fontSize: 24,
             fontWeight: FontWeight.w900,
             color: activeTheme.inkForeground,
+            letterSpacing: -0.4,
           ),
         ),
       ),
@@ -70,55 +68,10 @@ class SettingsScreen extends StatelessWidget {
           SizedBox(height: 24),
           _SyllabusEditionSection(),
           SizedBox(height: 24),
-          _StartOfDaySection(),
-          SizedBox(height: 24),
-          _NotificationsSection(),
+          _RoutineAndAlertsSection(),
           SizedBox(height: 28),
           _ResourceHubsSection(),
-          SizedBox(height: 32),
-          _DangerZoneSection(),
         ],
-      ),
-    );
-  }
-
-  static Widget pillChoice({
-    required String label,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    return ApplePressable(
-      onTap: onTap,
-      pressedScale: 0.94,
-      borderRadius: BorderRadius.circular(14),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: selected ? AppTheme.inkForeground : AppTheme.cardWhite,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: selected ? AppTheme.inkForeground : AppTheme.borderLight,
-            width: 1.4,
-          ),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x101C1C1C),
-              offset: Offset(0, 2),
-              blurRadius: 4,
-            ),
-          ],
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              color: selected ? AppTheme.paperBackground : AppTheme.inkForeground,
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -170,96 +123,9 @@ class SettingsScreen extends StatelessWidget {
       ),
     );
   }
-
-  static void confirmReset(BuildContext context, WidgetRef ref) {
-    final textCtrl = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) {
-          final isConfirmed = textCtrl.text.trim().toUpperCase() == 'RESET';
-
-          return AlertDialog(
-            backgroundColor: AppTheme.cardWhite,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(22),
-              side: const BorderSide(color: Colors.redAccent, width: 2),
-            ),
-            title: const Row(
-              children: [
-                Icon(Icons.warning_rounded, color: Colors.redAccent, size: 24),
-                SizedBox(width: 8),
-                Text('Danger: Reset Progress',
-                    style:
-                        TextStyle(fontWeight: FontWeight.w900, fontSize: 17)),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'This action CANNOT be undone. Type RESET below to permanently clear your completion records.',
-                  style: TextStyle(fontSize: 13, color: AppTheme.mutedText),
-                ),
-                const SizedBox(height: 14),
-                TextField(
-                  controller: textCtrl,
-                  autofocus: true,
-                  onChanged: (_) => setState(() {}),
-                  decoration: InputDecoration(
-                    hintText: 'Type RESET',
-                    filled: true,
-                    fillColor: AppTheme.current.isDark ? const Color(0xFF2D1515) : Colors.red.shade50,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.redAccent),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text('Cancel',
-                    style: TextStyle(color: AppTheme.mutedText)),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      isConfirmed ? Colors.redAccent : Colors.grey.shade300,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                ),
-                onPressed: isConfirmed
-                    ? () async {
-                        await ref
-                            .read(appStateProvider.notifier)
-                            .resetAllProgress();
-                        if (context.mounted) {
-                          Navigator.pop(ctx);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content:
-                                  Text('All progress records have been reset'),
-                            ),
-                          );
-                        }
-                      }
-                    : null,
-                child: const Text('Confirm Reset'),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
 }
 
-// ── 1. Doctor Profile Card ──────────────────────────────────────
+// ── 1. Elevated Doctor Profile Card ─────────────────────────────
 class _DoctorProfileCard extends ConsumerWidget {
   const _DoctorProfileCard();
 
@@ -270,57 +136,86 @@ class _DoctorProfileCard extends ConsumerWidget {
 
     final doctorName =
         appState.doctorName.isNotEmpty ? appState.doctorName : 'Doctor';
+    final isEdition8 = appState.activeEdition == 'marrow_8';
 
     return Container(
-      key: TourTargetRegistry.keyFor(TourTargetId.settingsProfileCard),
-      padding: const EdgeInsets.all(16),
-      decoration: AppTheme.sketchDecoration(
-        backgroundColor: AppTheme.cardWhite,
-        borderRadius: 20,
-        shadowOffset: 3,
-      ),
-      child: Row(
-        children: [
-          ProfileAvatar(
-            size: 58,
-            colorId: appState.avatarColorId,
-            iconId: appState.avatarIconId,
-            doctorName: doctorName,
-            onTap: () => ProfileCustomizeSheet.show(context),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.cardWhite,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.borderLight, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  doctorName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    color: AppTheme.inkForeground,
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              // 72px avatar with double circular accent border
+              Container(
+                padding: const EdgeInsets.all(3.5),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppTheme.primaryBlue.withValues(alpha: 0.35),
+                    width: 2.2,
                   ),
                 ),
-                const SizedBox(height: 3),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 4,
+                child: ProfileAvatar(
+                  size: 68,
+                  colorId: appState.avatarColorId,
+                  iconId: appState.avatarIconId,
+                  doctorName: doctorName,
+                  onTap: () => ProfileCustomizeSheet.show(context),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text(
+                      doctorName.startsWith('Dr') ? doctorName : 'Dr. $doctorName',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: AppTheme.inkForeground,
+                        letterSpacing: -0.4,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'NEET-PG Aspirant • Physician',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.mutedText,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
+                          horizontal: 9, vertical: 3.5),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryBlue.withValues(alpha: 0.12),
+                        color: AppTheme.primaryBlue.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: AppTheme.primaryBlue.withValues(alpha: 0.25),
+                          width: 1,
+                        ),
                       ),
                       child: Text(
-                        appState.activeEdition == 'marrow_8'
-                            ? 'Marrow Ed 8'
-                            : 'Marrow Ed 6.5',
+                        isEdition8 ? 'Marrow Edition 8' : 'Marrow Edition 6.5',
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 10.5,
                           fontWeight: FontWeight.w800,
                           color: AppTheme.primaryBlue,
                         ),
@@ -328,14 +223,31 @@ class _DoctorProfileCard extends ConsumerWidget {
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          _ProfileCardAction(
-            icon: Icons.tune_rounded,
-            label: 'Customize',
-            onTap: () => ProfileCustomizeSheet.show(context),
+          const SizedBox(height: 18),
+          Divider(height: 1, color: AppTheme.borderLight),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _ProfileCardAction(
+                  icon: Icons.palette_outlined,
+                  label: 'Customize Persona',
+                  onTap: () => ProfileCustomizeSheet.show(context),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _ProfileCardAction(
+                  icon: Icons.edit_outlined,
+                  label: 'Edit Name',
+                  onTap: () => SettingsScreen.editDoctorName(
+                      context, ref.read(appStateProvider.notifier), doctorName),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -343,7 +255,7 @@ class _DoctorProfileCard extends ConsumerWidget {
   }
 }
 
-// Small stacked action chip used in the profile card
+// Stacked action chip used in the profile card
 class _ProfileCardAction extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -359,26 +271,31 @@ class _ProfileCardAction extends StatelessWidget {
   Widget build(BuildContext context) {
     return ApplePressable(
       onTap: onTap,
-      pressedScale: 0.92,
-      borderRadius: BorderRadius.circular(10),
+      pressedScale: 0.94,
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: AppTheme.parchmentSurface,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppTheme.borderLight, width: 1.2),
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 14, color: AppTheme.primaryBlue),
             const SizedBox(width: 5),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                color: AppTheme.inkForeground,
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.inkForeground,
+                ),
               ),
             ),
           ],
@@ -388,7 +305,7 @@ class _ProfileCardAction extends StatelessWidget {
   }
 }
 
-// ── Cloud Sync & Multi-Device Section ─────────────────────────────
+// ── 2. Cloud Sync & Multi-Device Section ─────────────────────────
 class _CloudSyncSection extends ConsumerWidget {
   const _CloudSyncSection();
 
@@ -399,62 +316,66 @@ class _CloudSyncSection extends ConsumerWidget {
     final syncStatus = ref.watch(syncStatusProvider);
 
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: AppTheme.sketchDecoration(
-        backgroundColor: AppTheme.cardWhite,
-        borderRadius: 20,
-        shadowOffset: 3,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppTheme.cardWhite,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.borderLight, width: 1.4),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: AppTheme.accentSubtle,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.accentPrimary.withValues(alpha: 0.3),
+                    width: 1.2,
+                  ),
+                ),
+                child: Icon(
+                  Icons.cloud_sync_rounded,
+                  color: AppTheme.accentPrimary,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
               Expanded(
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: AppTheme.accentSubtle,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: AppTheme.accentPrimary.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.cloud_sync_rounded,
-                        color: AppTheme.accentPrimary,
-                        size: 20,
+                    Text(
+                      'Cloud Sync & Multi-Device',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: AppTheme.inkForeground,
+                        letterSpacing: -0.2,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Cloud Sync & Devices',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                              color: AppTheme.inkForeground,
-                            ),
-                          ),
-                          Text(
-                            isAuthenticated
-                                ? (currentUser?.email ?? 'Logged in')
-                                : 'Guest Mode · Local storage only',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppTheme.mutedText,
-                            ),
-                          ),
-                        ],
+                    const SizedBox(height: 2),
+                    Text(
+                      isAuthenticated
+                          ? (currentUser?.email ?? 'Connected & Synced')
+                          : 'Guest Mode • Local storage only',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isAuthenticated ? Colors.green.shade700 : AppTheme.mutedText,
                       ),
                     ),
                   ],
@@ -467,8 +388,12 @@ class _CloudSyncSection extends ConsumerWidget {
           const SizedBox(height: 12),
           if (isAuthenticated) ...[
             Text(
-              'Your study progress, timer history, and daily tasks sync automatically across all your Android devices.',
-              style: TextStyle(fontSize: 12, color: AppTheme.mutedText, height: 1.3),
+              'Your video checklists, daily study desk tasks, and focus timer records are continuously backed up.',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppTheme.mutedText,
+                height: 1.35,
+              ),
             ),
             const SizedBox(height: 14),
             Row(
@@ -477,24 +402,38 @@ class _CloudSyncSection extends ConsumerWidget {
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                       side: BorderSide(color: AppTheme.cardBorder),
                     ),
                     onPressed: syncStatus == SyncStatus.syncing
                         ? null
                         : () => SyncService.instance.syncFull(ref),
-                    icon: Icon(Icons.refresh_rounded, size: 16, color: AppTheme.inkForeground),
+                    icon: syncStatus == SyncStatus.syncing
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Icon(Icons.refresh_rounded,
+                            size: 16, color: AppTheme.inkForeground),
                     label: Text(
-                      'Sync Now',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.inkForeground),
+                      syncStatus == SyncStatus.syncing ? 'Syncing...' : 'Sync Now',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.inkForeground,
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 10),
                 OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     side: BorderSide(color: Colors.red.withValues(alpha: 0.3)),
                   ),
                   onPressed: () async {
@@ -502,14 +441,16 @@ class _CloudSyncSection extends ConsumerWidget {
                       context: context,
                       builder: (ctx) => AlertDialog(
                         backgroundColor: AppTheme.cardWhite,
-                        title: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.w800)),
+                        title: const Text('Sign Out',
+                            style: TextStyle(fontWeight: FontWeight.w800)),
                         content: const Text(
                           'Your study progress will remain safely on this device and in the cloud.',
                         ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, false),
-                            child: Text('Cancel', style: TextStyle(color: AppTheme.mutedText)),
+                            child: Text('Cancel',
+                                style: TextStyle(color: AppTheme.mutedText)),
                           ),
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
@@ -528,30 +469,53 @@ class _CloudSyncSection extends ConsumerWidget {
                   },
                   child: const Text(
                     'Sign Out',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.redAccent),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.redAccent,
+                    ),
                   ),
                 ),
               ],
             ),
           ] else ...[
             Text(
-              'Sign in or create a Modulix account to sync your study plan, video checklists, and focus timer records with other devices.',
-              style: TextStyle(fontSize: 12, color: AppTheme.mutedText, height: 1.3),
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.inkForeground,
-                foregroundColor: AppTheme.cardWhite,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                elevation: 0,
+              'Sign in or register a free Modulix account to sync your study plan, video checklists, and focus timer records seamlessly across all your devices.',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppTheme.mutedText,
+                height: 1.35,
               ),
-              onPressed: () => AuthScreen.show(context),
-              icon: const Icon(Icons.login_rounded, size: 16),
-              label: const Text(
-                'Sign In or Create Account',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 14),
+            ApplePressable(
+              pressedScale: 0.98,
+              onPressed: () => context.push('/auth'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppTheme.inkForeground,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.login_rounded,
+                        size: 16, color: AppTheme.paperBackground),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Sign In or Create Account',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.paperBackground,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(Icons.arrow_forward_rounded,
+                        size: 15, color: AppTheme.paperBackground),
+                  ],
+                ),
               ),
             ),
           ],
@@ -561,7 +525,7 @@ class _CloudSyncSection extends ConsumerWidget {
   }
 }
 
-// ── Theme & Appearance ───────────────────────────────────────────
+// ── 3. Theme & Appearance (Customize Theme Box) ──────────────────
 class _ThemeAppearanceSection extends ConsumerWidget {
   const _ThemeAppearanceSection();
 
@@ -575,18 +539,17 @@ class _ThemeAppearanceSection extends ConsumerWidget {
     final themeAccent = preset.isDark ? preset.accentDark : preset.accent;
 
     return Column(
-      key: TourTargetRegistry.keyFor(TourTargetId.settingsThemeSection),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'APPEARANCE & THEME',
+              'CUSTOMIZE THEME',
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
-                letterSpacing: 1.0,
+                letterSpacing: 1.1,
                 color: activeTheme.mutedText,
               ),
             ),
@@ -608,19 +571,27 @@ class _ThemeAppearanceSection extends ConsumerWidget {
         ApplePressable(
           onTap: () => context.push('/theme-studio'),
           pressedScale: 0.98,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(20),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-            decoration: AppTheme.sketchDecoration(
-              borderRadius: 18,
-              shadowOffset: 2.5,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.cardWhite,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppTheme.borderLight, width: 1.4),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Row(
               children: [
                 // Multi-tier theme preview capsule
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: 50,
+                  height: 50,
                   decoration: BoxDecoration(
                     color: preset.scaffoldBackground,
                     borderRadius: BorderRadius.circular(14),
@@ -628,8 +599,8 @@ class _ThemeAppearanceSection extends ConsumerWidget {
                     boxShadow: [
                       BoxShadow(
                         color: activeTheme.inkForeground.withValues(alpha: 0.08),
-                        offset: const Offset(0, 1),
-                        blurRadius: 3,
+                        offset: const Offset(0, 2),
+                        blurRadius: 4,
                       ),
                     ],
                   ),
@@ -640,7 +611,8 @@ class _ThemeAppearanceSection extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: preset.cardBackground,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: preset.borderSubtle, width: 1.0),
+                        border:
+                            Border.all(color: preset.borderSubtle, width: 1.0),
                       ),
                       child: Center(
                         child: Container(
@@ -687,7 +659,8 @@ class _ThemeAppearanceSection extends ConsumerWidget {
                 ),
                 const SizedBox(width: 10),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
                   decoration: BoxDecoration(
                     color: activeTheme.surfaceSubtle,
                     borderRadius: BorderRadius.circular(10),
@@ -725,153 +698,150 @@ class _ThemeAppearanceSection extends ConsumerWidget {
   }
 }
 
-// ── 2. Syllabus Edition Selection ────────────────────────────────
+// ── 4. Dedicated Syllabus Edition Selection ───────────────────────
 class _SyllabusEditionSection extends ConsumerWidget {
   const _SyllabusEditionSection();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final activeEdition =
-        ref.watch(appStateProvider.select((s) => s.valueOrNull?.activeEdition));
-    final notifier = ref.read(appStateProvider.notifier);
+        ref.watch(appStateProvider.select((s) => s.valueOrNull?.activeEdition)) ??
+            'marrow_8';
+    final isEdition8 = activeEdition == 'marrow_8';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'ACTIVE SYLLABUS EDITION',
+          'SYLLABUS & CURRICULUM',
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w800,
-            letterSpacing: 1.0,
-            color: AppTheme.inkForeground,
+            letterSpacing: 1.1,
+            color: AppTheme.mutedText,
           ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: SettingsScreen.pillChoice(
-                label: 'Marrow Edition 8',
-                selected: activeEdition == 'marrow_8',
-                onTap: () => notifier.switchEdition('marrow_8'),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: SettingsScreen.pillChoice(
-                label: 'Marrow Edition 6.5',
-                selected: activeEdition == 'marrow_6_5',
-                onTap: () => notifier.switchEdition('marrow_6_5'),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-// ── 4. Start of the Study Day ────────────────────────────────────
-class _StartOfDaySection extends ConsumerWidget {
-  const _StartOfDaySection();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final dayStartHour = ref.watch(
-        appStateProvider.select((s) => s.valueOrNull?.dayStartHour ?? 5));
-    final notifier = ref.read(appStateProvider.notifier);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'START OF THE STUDY DAY',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.0,
-            color: AppTheme.inkForeground,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'Configures your daily streak rollover, focus timer resets, and desk pad boundaries',
-          style: TextStyle(fontSize: 12, color: AppTheme.mutedText),
         ),
         const SizedBox(height: 10),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: AppTheme.sketchDecoration(
-            backgroundColor: AppTheme.cardWhite,
-            borderRadius: 18,
-            shadowOffset: 3,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
+        ApplePressable(
+          pressedScale: 0.98,
+          onPressed: () => context.push('/syllabus-edition'),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.cardWhite,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppTheme.borderLight, width: 1.4),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: (isEdition8 ? AppTheme.primaryBlue : Colors.teal)
+                        .withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: (isEdition8 ? AppTheme.primaryBlue : Colors.teal)
+                          .withValues(alpha: 0.3),
+                      width: 1.2,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.school_outlined,
+                    color: isEdition8 ? AppTheme.primaryBlue : Colors.teal,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.wb_twilight_rounded,
-                          size: 18, color: Colors.orange),
-                      SizedBox(width: 8),
-                      Text('Day resets at:',
-                          style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: AppTheme.inkForeground)),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              isEdition8
+                                  ? 'Marrow Edition 8'
+                                  : 'Marrow Edition 6.5',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                color: AppTheme.inkForeground,
+                                letterSpacing: -0.2,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              'ACTIVE',
+                              style: TextStyle(
+                                fontSize: 8.5,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.green,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        isEdition8
+                            ? '19 MBBS Subjects • 848 Lectures'
+                            : '19 MBBS Subjects • 792 Foundation Lectures',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.mutedText,
+                        ),
+                      ),
                     ],
                   ),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.orange, width: 1.2),
-                    ),
-                    child: Text(
-                      '$dayStartHour:00 AM',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w900,
-                        fontFamily: 'monospace',
-                        color: Colors.orange,
-                      ),
-                    ),
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppTheme.parchmentSurface,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppTheme.borderLight, width: 1.2),
                   ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Wrap(
-                spacing: 8,
-                children: [3, 4, 5, 6, 7].map((hour) {
-                  final isSelected = dayStartHour == hour;
-                  return ChoiceChip(
-                    label: Text('$hour:00 AM'),
-                    selected: isSelected,
-                    onSelected: (_) => notifier.setDayStartHour(hour),
-                    selectedColor: AppTheme.inkForeground,
-                    labelStyle: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: isSelected ? AppTheme.paperBackground : AppTheme.inkForeground,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(
-                        color: isSelected
-                            ? AppTheme.inkForeground
-                            : AppTheme.borderLight,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Change',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.inkForeground,
+                        ),
                       ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
+                      const SizedBox(width: 3),
+                      Icon(Icons.arrow_forward_ios_rounded,
+                          size: 10, color: AppTheme.mutedText),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -879,9 +849,9 @@ class _StartOfDaySection extends ConsumerWidget {
   }
 }
 
-// ── 5. Notifications & Alerts ────────────────────────────────────
-class _NotificationsSection extends ConsumerWidget {
-  const _NotificationsSection();
+// ── 5. Unified Clinical Routine & Alerts Section ──────────────────
+class _RoutineAndAlertsSection extends ConsumerWidget {
+  const _RoutineAndAlertsSection();
 
   String _formatTimeStr(String timeStr) {
     try {
@@ -925,29 +895,126 @@ class _NotificationsSection extends ConsumerWidget {
     final notifier = ref.read(appStateProvider.notifier);
 
     if (appState == null) return const SizedBox.shrink();
+    final dayStartHour = appState.dayStartHour;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'NOTIFICATIONS & ALERTS',
+          'CLINICAL ROUTINE & ALERTS',
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w800,
-            letterSpacing: 1.0,
-            color: AppTheme.inkForeground,
+            letterSpacing: 1.1,
+            color: AppTheme.mutedText,
           ),
         ),
         const SizedBox(height: 10),
         Container(
-          padding: const EdgeInsets.all(16),
-          decoration: AppTheme.sketchDecoration(
-            backgroundColor: AppTheme.cardWhite,
-            borderRadius: 18,
-            shadowOffset: 3,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: AppTheme.cardWhite,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppTheme.borderLight, width: 1.4),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Day Start Rollover
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.wb_twilight_rounded,
+                            size: 16, color: Colors.orange),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Day Start & Rollover',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.inkForeground,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.orange, width: 1.2),
+                    ),
+                    child: Text(
+                      '$dayStartHour:00 AM',
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w900,
+                        fontFamily: 'monospace',
+                        color: Colors.orange,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Preserves midnight post-duty sessions on the previous day until this hour.',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  color: AppTheme.mutedText,
+                  height: 1.35,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                children: [3, 4, 5, 6, 7].map((hour) {
+                  final isSelected = dayStartHour == hour;
+                  return ChoiceChip(
+                    label: Text('$hour:00 AM'),
+                    selected: isSelected,
+                    onSelected: (_) => notifier.setDayStartHour(hour),
+                    selectedColor: AppTheme.inkForeground,
+                    labelStyle: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: isSelected
+                          ? AppTheme.paperBackground
+                          : AppTheme.inkForeground,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: BorderSide(
+                        color: isSelected
+                            ? AppTheme.inkForeground
+                            : AppTheme.borderLight,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+
+              const SizedBox(height: 16),
+              Divider(height: 1, color: AppTheme.borderLight),
+              const SizedBox(height: 14),
+
               // Permission banner & Test button
               FutureBuilder<bool>(
                 future: NotificationService.instance.hasPermission(),
@@ -959,10 +1026,10 @@ class _NotificationsSection extends ConsumerWidget {
                       child: Row(
                         children: [
                           const Icon(Icons.check_circle_rounded,
-                              color: Colors.green, size: 18),
+                              color: Colors.green, size: 16),
                           const SizedBox(width: 8),
                           const Text(
-                            'Notifications Enabled',
+                            'Notifications Active',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -1025,7 +1092,7 @@ class _NotificationsSection extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.amber.withOpacity(0.12),
+                        color: Colors.amber.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
                         border:
                             Border.all(color: Colors.amber.shade700, width: 1),
@@ -1064,12 +1131,12 @@ class _NotificationsSection extends ConsumerWidget {
                         Text(
                           'Daily Study Reminder',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 13.5,
                             fontWeight: FontWeight.w800,
                             color: AppTheme.inkForeground,
                           ),
                         ),
-                        SizedBox(height: 2),
+                        const SizedBox(height: 2),
                         Text(
                           'Prompt to start your syllabus goals',
                           style: TextStyle(
@@ -1090,16 +1157,17 @@ class _NotificationsSection extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryBlue.withOpacity(0.1),
+                          color: AppTheme.primaryBlue.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                              color: AppTheme.primaryBlue.withOpacity(0.3)),
+                              color: AppTheme.primaryBlue
+                                  .withValues(alpha: 0.3)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.access_time_rounded,
-                                size: 14, color: AppTheme.primaryBlue),
+                                size: 13, color: AppTheme.primaryBlue),
                             const SizedBox(width: 4),
                             Text(
                               _formatTimeStr(appState.studyReminderTime),
@@ -1136,12 +1204,12 @@ class _NotificationsSection extends ConsumerWidget {
                         Text(
                           'Streak at Risk Alert',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 13.5,
                             fontWeight: FontWeight.w800,
                             color: AppTheme.inkForeground,
                           ),
                         ),
-                        SizedBox(height: 2),
+                        const SizedBox(height: 2),
                         Text(
                           'Evening alert if no progress made today',
                           style: TextStyle(
@@ -1162,16 +1230,16 @@ class _NotificationsSection extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.1),
+                          color: Colors.orange.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
-                          border:
-                              Border.all(color: Colors.orange.withOpacity(0.3)),
+                          border: Border.all(
+                              color: Colors.orange.withValues(alpha: 0.3)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(Icons.access_time_rounded,
-                                size: 14, color: Colors.orange),
+                                size: 13, color: Colors.orange),
                             const SizedBox(width: 4),
                             Text(
                               _formatTimeStr(appState.streakReminderTime),
@@ -1206,14 +1274,14 @@ class _NotificationsSection extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Module Daily Tasks',
+                          'Module Daily Tasks Queue',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 13.5,
                             fontWeight: FontWeight.w800,
                             color: AppTheme.inkForeground,
                           ),
                         ),
-                        SizedBox(height: 2),
+                        const SizedBox(height: 2),
                         Text(
                           'Morning queue briefing & goal completion',
                           style: TextStyle(
@@ -1234,16 +1302,16 @@ class _NotificationsSection extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.teal.withOpacity(0.1),
+                          color: Colors.teal.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
-                          border:
-                              Border.all(color: Colors.teal.withOpacity(0.3)),
+                          border: Border.all(
+                              color: Colors.teal.withValues(alpha: 0.3)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(Icons.access_time_rounded,
-                                size: 14, color: Colors.teal),
+                                size: 13, color: Colors.teal),
                             const SizedBox(width: 4),
                             Text(
                               _formatTimeStr(appState.moduleTasksReminderTime),
@@ -1280,14 +1348,14 @@ class _NotificationsSection extends ConsumerWidget {
                         Text(
                           'Focus Timer Alerts & Sound',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 13.5,
                             fontWeight: FontWeight.w800,
                             color: AppTheme.inkForeground,
                           ),
                         ),
-                        SizedBox(height: 2),
+                        const SizedBox(height: 2),
                         Text(
-                          'Background alerts for session & break finishes',
+                          'Alerts for session completions and rest intervals',
                           style: TextStyle(
                               fontSize: 11, color: AppTheme.mutedText),
                         ),
@@ -1311,7 +1379,7 @@ class _NotificationsSection extends ConsumerWidget {
   }
 }
 
-// ── 6. Resource Hubs (Learn the App, Data & Privacy, About) ──────
+// ── 6. Resource Hubs (Welcome, Data & Privacy, About) ─────────────
 class _ResourceHubsSection extends ConsumerWidget {
   const _ResourceHubsSection();
 
@@ -1321,28 +1389,15 @@ class _ResourceHubsSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'RESOURCES & SOVEREIGNTY',
+          'RESOURCES & LEGAL',
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w800,
-            letterSpacing: 1.2,
+            letterSpacing: 1.1,
             color: AppTheme.mutedText,
           ),
         ),
         const SizedBox(height: 12),
-
-        // Interactive Feature Tour Card
-        _SleekHubCard(
-          title: 'Interactive Feature Tour',
-          subtitle: 'Step-by-step spotlight tour across Desk Clock, Tasks, Curriculum, Analytics & Focus Timer',
-          tag: 'GUIDED',
-          icon: Icons.auto_awesome_rounded,
-          iconColor: const Color(0xFF2DD4BF),
-          iconBg: const Color(0x202DD4BF),
-          onTap: () => ref.read(appTourProvider.notifier).startTour(context),
-        ),
-
-        const SizedBox(height: 10),
 
         // Welcome Tour Card
         _SleekHubCard(
@@ -1353,20 +1408,6 @@ class _ResourceHubsSection extends ConsumerWidget {
           iconColor: AppTheme.primaryBlue,
           iconBg: AppTheme.primaryBlue.withValues(alpha: 0.12),
           onTap: () => context.push('/onboarding?replay=true'),
-        ),
-
-        const SizedBox(height: 10),
-
-        // App Guide & Reference Card
-        _SleekHubCard(
-          title: 'App Guide & Reference',
-          subtitle:
-              'Replay spotlight tour, core mechanics & medico FAQs',
-          tag: 'REFERENCE',
-          icon: Icons.menu_book_rounded,
-          iconColor: Colors.purple,
-          iconBg: Colors.purple.withValues(alpha: 0.12),
-          onTap: () => LearnTheAppSheet.show(context),
         ),
 
         const SizedBox(height: 10),
@@ -1384,99 +1425,15 @@ class _ResourceHubsSection extends ConsumerWidget {
 
         const SizedBox(height: 10),
 
-        // About & Support Card
+        // About & Support Card (Now includes relocated Danger Zone)
         _SleekHubCard(
           title: 'About & Support',
-          subtitle: 'Version 1.0.0, feedback contact & app sharing',
+          subtitle: 'Version info, medical disclaimer & reset progress',
           tag: 'ABOUT',
           icon: Icons.info_outline_rounded,
           iconColor: Colors.blueGrey,
           iconBg: Colors.blueGrey.withValues(alpha: 0.12),
           onTap: () => AboutSupportSheet.show(context),
-        ),
-      ],
-    );
-  }
-}
-
-// ── 7. Danger Zone ───────────────────────────────────────────────
-class _DangerZoneSection extends ConsumerWidget {
-  const _DangerZoneSection();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'DANGER ZONE',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.2,
-            color: Colors.redAccent,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: Colors.red.shade50.withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: Colors.red.shade200, width: 1.4),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Row(
-                children: [
-                  Icon(Icons.warning_amber_rounded,
-                      color: Colors.redAccent, size: 20),
-                  SizedBox(width: 8),
-                  Text(
-                    'Reset All Study Progress',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.redAccent,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Wipes all completed video marks, daily task history, and time logs across all syllabus editions.',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.red.shade900,
-                  height: 1.35,
-                ),
-              ),
-              const SizedBox(height: 14),
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.redAccent, width: 1.4),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  backgroundColor: AppTheme.cardWhite,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                ),
-                icon: const Icon(Icons.delete_forever_rounded,
-                    color: Colors.redAccent, size: 18),
-                label: const Text(
-                  'Reset Progress...',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.redAccent,
-                  ),
-                ),
-                onPressed: () => SettingsScreen.confirmReset(context, ref),
-              ),
-            ],
-          ),
         ),
       ],
     );
@@ -1509,10 +1466,17 @@ class _SleekHubCard extends StatelessWidget {
       onPressed: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: AppTheme.sketchDecoration(
-          backgroundColor: AppTheme.cardWhite,
-          borderRadius: 16,
-          shadowOffset: 2.5,
+        decoration: BoxDecoration(
+          color: AppTheme.cardWhite,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.borderLight, width: 1.3),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -1521,7 +1485,7 @@ class _SleekHubCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: iconBg,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: iconColor, width: 1.3),
+                border: Border.all(color: iconColor.withValues(alpha: 0.4), width: 1.2),
               ),
               child: Icon(icon, color: iconColor, size: 20),
             ),
@@ -1554,9 +1518,9 @@ class _SleekHubCard extends StatelessWidget {
                         child: Text(
                           tag,
                           style: TextStyle(
-                            fontSize: 8,
+                            fontSize: 8.5,
                             fontWeight: FontWeight.w900,
-                            letterSpacing: 0.8,
+                            letterSpacing: 0.6,
                             color: iconColor,
                           ),
                         ),
@@ -1569,8 +1533,8 @@ class _SleekHubCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w500,
                       color: AppTheme.mutedText,
                     ),
                   ),

@@ -61,9 +61,9 @@ class ThemeStudioScreen extends ConsumerWidget {
         ),
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 120),
         children: [
-          // Banner styled consistently with the rest of the app
+          // Cool Minimalist Visual Focus Message
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
               color: activeTheme.cardBackground,
               borderRadius: BorderRadius.circular(16),
@@ -81,8 +81,8 @@ class ThemeStudioScreen extends ConsumerWidget {
             child: Row(
               children: [
                 Container(
-                  width: 40,
-                  height: 40,
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
                     color: activeTheme.surfaceSubtle,
                     borderRadius: BorderRadius.circular(10),
@@ -91,34 +91,21 @@ class ThemeStudioScreen extends ConsumerWidget {
                     ),
                   ),
                   child: Icon(
-                    Icons.palette_outlined,
+                    Icons.auto_awesome_outlined,
                     color: activeTheme.accent,
-                    size: 22,
+                    size: 18,
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Study Atmospheres',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
-                          color: activeTheme.inkForeground,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Select your visual theme. All canvases, card borders, and paired accents adapt instantly.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          height: 1.3,
-                          color: activeTheme.mutedText,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    'Calibrated for extended medical reading. Reduced glare, zero eye strain.',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: activeTheme.inkForeground,
+                      letterSpacing: -0.1,
+                    ),
                   ),
                 ),
               ],

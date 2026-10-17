@@ -8,6 +8,48 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-019] Settings Redesign, Full-Page Artsy Auth Screen, Dedicated Syllabus Edition Screen & Danger Zone Relocation
+- **Timestamp:** 2026-10-18 04:45 UTC
+- **Category:** UI / Redesign / Auth Architecture / Syllabus Management / Settings
+- **Files Modified:**
+  - `lib/screens/settings/syllabus_edition_screen.dart` (NEW)
+  - `lib/screens/settings/settings_screen.dart`
+  - `lib/screens/auth/auth_screen.dart`
+  - `lib/screens/settings/about_support_sheet.dart`
+  - `lib/screens/settings/theme_studio_screen.dart`
+  - `lib/screens/timer/focus_timer_screen.dart`
+  - `lib/app.dart`
+  - `test/auth_screen_test.dart`
+- **Summary:** Complete redesign of the Settings screen, transformation of authentication into an artsy full-page experience, dedicated syllabus edition management, and architecture cleanup:
+  - **Elevated Doctor Profile Card:**
+    - Expanded badge with 68px/72px avatar, bold physician title, NEET-PG Aspirant subtitle, and active syllabus edition pill.
+    - Side-by-side action chips for "Customize Persona" and "Edit Name" with responsive `Flexible` protection against viewport overflows.
+  - **Cloud Sync & Multi-Device Card:**
+    - Redesigned status card with active guest/authenticated state, clear benefits explanation, and direct CTA navigating to the dedicated auth page.
+  - **Full-Page Artsy Auth Screen (`/auth`):**
+    - Converted from a modal bottom sheet into a dedicated full-page screen matching user mockup specifications.
+    - Custom organic header curve (`_ArtsyWaveHeader`), hand-drawn sketch insignia/logo, segmented mode switcher (`Sign In` | `Create Account` | `Magic Link`), sketch form fields with visibility toggles, branded Google Sign-In button, Domain A error shielding via `ErrorTranslatorService`, and "Continue as Guest" fallback.
+  - **Dedicated Syllabus Edition Screen (`/syllabus-edition`):**
+    - Created dedicated full page for switching between Marrow Edition 8 (Current Standard) and Edition 6.5 (Classic Foundation).
+    - Progress Isolation Guarantee banner explaining that video marks, notes, and task queues are preserved independently per edition.
+    - Responsive stat badges and activation buttons with Wrap auto-flow.
+  - **Theme Studio Text Refinement:**
+    - Condensed verbose study atmospheres copy into a sleek clinical card: *"Calibrated for extended medical reading. Reduced glare, zero eye strain."*
+    - "Customize Theme" preview box in Settings displaying active theme swatches and direct navigation to Theme Studio.
+  - **Clinical Routine & Alerts Section:**
+    - Unified day start & rollover boundary (3 AM to 7 AM time pills) with notification reminder switches and time pickers.
+  - **Feature Cleanup & Danger Zone Relocation:**
+    - Removed legacy "Interactive Feature Tour" card and `TourSpotlightOverlay` mounts.
+    - Removed "App Guide & Reference" card.
+    - Relocated Danger Zone ("Reset All Study Progress") into the About & Support sheet with strict confirmation dialog (`RESET`).
+- **Verification:**
+  - `flutter analyze lib/` passed with **0 errors and 0 warnings** (288 clean infos).
+  - All unit & widget tests passed 100% (`test/auth_screen_test.dart`, `test/theme_system_test.dart`, `test/domain7_backup_privacy_test.dart`).
+  - Full debug APK built in 141.8s, installed on OnePlus 13R (`ba009d81`), and visually verified via screenshots (`settings_perfect_verified_ckpt19.png`, `auth_screen_verified_ckpt19.png`, `syllabus_edition_clean_verified_ckpt19.png`, `theme_studio_screen_verified_ckpt19.png`, `about_support_sheet_verified_ckpt19.png`).
+- **Build Status:** ✅ Included in Build v1.2.5 (app-debug.apk installed & verified on OnePlus 13R ba009d81)
+
+---
+
 ### [CKPT-018] Centralized Error Translation Engine, Crash Shield, Route 404, Shimmer Skeletons & Desk Bubble Prompt
 - **Timestamp:** 2026-10-18 03:50 UTC
 - **Category:** Architecture / Error Handling / Crash Shield / Shimmer Skeletons / UX Polish

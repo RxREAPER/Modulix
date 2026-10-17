@@ -13,13 +13,14 @@ import 'screens/curriculum/module_tasks_screen.dart';
 import 'screens/curriculum/subject_analytics_screen.dart';
 import 'screens/analytics/analytics_screen.dart';
 import 'screens/plan/plan_screen.dart';
+import 'screens/auth/auth_screen.dart';
+import 'screens/settings/syllabus_edition_screen.dart';
 import 'screens/settings/settings_screen.dart';
 import 'screens/settings/theme_studio_screen.dart';
 import 'screens/timer/focus_timer_screen.dart';
 import 'theme/app_theme.dart';
 import 'widgets/lovable_nav_bar.dart';
 import 'widgets/timer/mini_timer_overlay.dart';
-import 'widgets/tour/tour_spotlight_overlay.dart';
 import 'widgets/errors/route_error_view.dart';
 
 /// Provider for coordinating the iOS modal sheet background recess effect
@@ -210,6 +211,22 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           );
         },
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/auth',
+        pageBuilder: (context, state) => _buildSlideUpTransitionPage(
+          state: state,
+          child: const AuthScreen(),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/syllabus-edition',
+        pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+          state: state,
+          child: const SyllabusEditionScreen(),
+        ),
       ),
     ],
   );
@@ -453,7 +470,6 @@ class _MainShellState extends ConsumerState<MainShell> {
               ),
             ),
           ),
-          const TourSpotlightOverlay(),
         ],
       ),
     );

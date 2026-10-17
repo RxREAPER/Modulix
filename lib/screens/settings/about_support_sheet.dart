@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../providers/app_state_provider.dart';
 import '../../theme/app_theme.dart';
 
-class AboutSupportSheet extends StatelessWidget {
+class AboutSupportSheet extends ConsumerWidget {
   const AboutSupportSheet({super.key});
 
   static Future<void> show(BuildContext context) {
@@ -21,7 +23,7 @@ class AboutSupportSheet extends StatelessWidget {
   static const String feedbackEmail = 'ezioauditore9553@gmail.com';
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
@@ -338,10 +340,162 @@ class AboutSupportSheet extends StatelessWidget {
                     ],
                   ),
                 ),
+                const SizedBox(height: 24),
+
+                // Relocated Danger Zone Section
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.red.shade200, width: 1.4),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.warning_amber_rounded,
+                              color: Colors.redAccent, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Danger Zone: Reset Progress',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.redAccent,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Wipes all completed video marks, daily task history, and study time logs across all syllabus editions.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.red.shade900,
+                          height: 1.35,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.redAccent, width: 1.3),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          backgroundColor: AppTheme.cardWhite,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 8),
+                        ),
+                        icon: const Icon(Icons.delete_forever_rounded,
+                            color: Colors.redAccent, size: 16),
+                        label: const Text(
+                          'Reset Progress...',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.redAccent,
+                          ),
+                        ),
+                        onPressed: () => _confirmReset(context, ref),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  static void _confirmReset(BuildContext context, WidgetRef ref) {
+    final textCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) {
+          final isConfirmed = textCtrl.text.trim().toUpperCase() == 'RESET';
+
+          return AlertDialog(
+            backgroundColor: AppTheme.cardWhite,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(22),
+              side: const BorderSide(color: Colors.redAccent, width: 2),
+            ),
+            title: const Row(
+              children: [
+                Icon(Icons.warning_rounded, color: Colors.redAccent, size: 24),
+                SizedBox(width: 8),
+                Text('Danger: Reset Progress',
+                    style:
+                        TextStyle(fontWeight: FontWeight.w900, fontSize: 17)),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'This action CANNOT be undone. Type RESET below to permanently clear your completion records.',
+                  style: TextStyle(fontSize: 13, color: AppTheme.mutedText),
+                ),
+                const SizedBox(height: 14),
+                TextField(
+                  controller: textCtrl,
+                  autofocus: true,
+                  onChanged: (_) => setState(() {}),
+                  decoration: InputDecoration(
+                    hintText: 'Type RESET',
+                    filled: true,
+                    fillColor: AppTheme.current.isDark
+                        ? const Color(0xFF2D1515)
+                        : Colors.red.shade50,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.redAccent),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child:
+                    Text('Cancel', style: TextStyle(color: AppTheme.mutedText)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      isConfirmed ? Colors.redAccent : Colors.grey.shade300,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+                onPressed: isConfirmed
+                    ? () async {
+                        await ref
+                            .read(appStateProvider.notifier)
+                            .resetAllProgress();
+                        if (context.mounted) {
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content:
+                                  Text('All progress records have been reset'),
+                            ),
+                          );
+                        }
+                      }
+                    : null,
+                child: const Text('Confirm Reset'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
