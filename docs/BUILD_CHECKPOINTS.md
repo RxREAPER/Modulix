@@ -8,6 +8,23 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-021] Uniform Card Layouts, Trailing Chevrons & Ellipsis Elimination
+- **Timestamp:** 2026-10-18 05:40 UTC
+- **Category:** UI Polish / Settings UX / Mobile Verification
+- **Files Modified:**
+  - `lib/screens/settings/settings_screen.dart`
+- **Summary:**
+  - Standardized all navigation cards (`Appearance & Theme`, `Syllabus & Curriculum`, `Notifications & Preferences`) to use clean `Icons.chevron_right_rounded` trailing indicators, matching the resource hub cards.
+  - Eliminated all text truncation across cards on real devices: "Notifications & Preferences" title, "Study reminders, streak & routine alerts" subtitle, and "Marrow Edition 8" now render completely with zero ellipsis.
+  - Subtitle on Theme Appearance simplified to "Active Atmosphere" for crisp readability.
+- **Verification:**
+  - Static analysis (`flutter analyze`) passed with **0 errors and 0 warnings**.
+  - Compiled debug APK and installed on connected physical device **OnePlus 13R** (`ba009d81`).
+  - Physically verified on device with full-screen capture (`settings_top_verified_v3.png`, `settings_scrolled_verified_v3.png`).
+- **Build Status:** ✅ Included in Build v1.2.7
+
+---
+
 ### [CKPT-020] Minimalist Settings Cards, Full Customize Persona Text, Creative Theme Swatches, Clean Theme Studio & Dedicated Notifications Page
 - **Timestamp:** 2026-10-18 05:20 UTC
 - **Category:** UI Polish / Settings UX / Theme Studio / Syllabus Edition / Notifications Architecture

@@ -605,7 +605,7 @@ class _ThemeAppearanceSection extends ConsumerWidget {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        'Active Atmosphere • Tap to customize',
+                        'Active Atmosphere',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -618,30 +618,10 @@ class _ThemeAppearanceSection extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppTheme.parchmentSurface,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppTheme.borderLight, width: 1.2),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Studio',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w800,
-                          color: activeTheme.accent,
-                        ),
-                      ),
-                      const SizedBox(width: 3),
-                      Icon(Icons.arrow_forward_ios_rounded,
-                          size: 10, color: activeTheme.accent),
-                    ],
-                  ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 22,
+                  color: activeTheme.mutedText,
                 ),
               ],
             ),
@@ -768,31 +748,11 @@ class _SyllabusEditionSection extends ConsumerWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 10),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppTheme.parchmentSurface,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppTheme.borderLight, width: 1.2),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Change',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.inkForeground,
-                        ),
-                      ),
-                      const SizedBox(width: 3),
-                      Icon(Icons.arrow_forward_ios_rounded,
-                          size: 10, color: AppTheme.mutedText),
-                    ],
-                  ),
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 22,
+                  color: AppTheme.mutedText,
                 ),
               ],
             ),
@@ -866,17 +826,17 @@ class _NotificationsPreferencesSection extends StatelessWidget {
                       Text(
                         'Notifications & Preferences',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 15,
                           fontWeight: FontWeight.w900,
                           color: AppTheme.inkForeground,
-                          letterSpacing: -0.2,
+                          letterSpacing: -0.3,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        'Study reminders, streak alerts & timing',
+                        'Study reminders, streak & routine alerts',
                         style: TextStyle(
                           fontSize: 12,
                           color: AppTheme.mutedText,
@@ -888,30 +848,10 @@ class _NotificationsPreferencesSection extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppTheme.parchmentSurface,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppTheme.borderLight, width: 1.2),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Open',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.inkForeground,
-                        ),
-                      ),
-                      const SizedBox(width: 3),
-                      Icon(Icons.arrow_forward_ios_rounded,
-                          size: 10, color: AppTheme.mutedText),
-                    ],
-                  ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 22,
+                  color: AppTheme.mutedText,
                 ),
               ],
             ),
