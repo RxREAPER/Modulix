@@ -8,6 +8,50 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-036] Multi-Track Ambient Desk Mixer, Medical Sinus Rhythm Visualizer & 65MB Audio Footprint Optimization
+- **Timestamp:** 2026-10-23 04:20 UTC
+- **Category:** Focus Timer / Audio Engine / Multi-Track Desk Mixer / Medical Wave Visualizer / Footprint Optimization
+- **Files Added (1 file):**
+  - `lib/widgets/timer/medical_wave_visualizer.dart` (CustomPainter rendering real-time undulating medical ECG sinus rhythm synchronized with active multi-track ambient volume; calms to flat isoelectric baseline on pause)
+- **Files Deleted (6 legacy audio files, -71MB removed):**
+  - `assets/audio/lofi.mp3`
+  - `assets/audio/t-brown-noise-.mp3`
+  - `assets/audio/deep-white-noise-7.mp3`
+  - `assets/audio/-forest-sound-.mp3`
+  - `assets/audio/quiet-stream-9.mp3`
+  - `assets/audio/e-fireplace-.mp3`
+- **Files Added (10 curated lightweight audio loops from vipulasri/Serene, +5.6MB):**
+  - `assets/audio/rain_on_window.mp3`
+  - `assets/audio/rain_light.mp3`
+  - `assets/audio/forest_creek.mp3`
+  - `assets/audio/forest_fire.mp3`
+  - `assets/audio/forest_birds.mp3`
+  - `assets/audio/forest_wind.mp3`
+  - `assets/audio/meditation_brown_noise.mp3`
+  - `assets/audio/meditation_white_noise.mp3`
+  - `assets/audio/city_keyboard.mp3`
+  - `assets/audio/meditation_bowl.mp3`
+- **Files Modified (5 files):**
+  - `lib/services/ambient_audio_service.dart` (multi-channel audio engine with Map<String, AudioPlayer>, individual track sliders, master fader, background looping, AudioFocus gainTransientMayDuck for call ducking/auto-resume, 4 clinical presets with IconData icons, headless bypassNativeAudio flag)
+  - `lib/widgets/timer/ambient_sound_sheet.dart` (redesigned into modern multi-track desk mixer sheet with active channel count, mute toggle, 1-tap atmosphere preset carousel, master volume deck, clean category filter chips, volume sliders per track, and live medical sinus wave footer)
+  - `lib/screens/timer/focus_timer_screen.dart` (integrated MedicalWaveVisualizer centerpiece, live ambient sound button with active track badge counter)
+  - `lib/screens/timer/fullscreen_timer_screen.dart` (integrated MedicalWaveVisualizer into Zen flip clock, added top-bar quick ambient desk mixer action)
+  - `lib/providers/focus_timer_provider.dart` (synchronized timer start/pause/complete events with AmbientAudioService)
+- **Tests Added / Updated (2 files):**
+  - `test/ambient_audio_service_test.dart` (8 comprehensive unit and widget tests for track volume clamping, master volume, preset application, mute toggling, pause retention, MedicalWaveVisualizer, and AmbientSoundSheet)
+  - `test/all_screens_animation_theme_test.dart` (updated AmbientSoundSheet zero-emojis test suite with bypassNativeAudio and viewport sizing)
+- **Summary:**
+  - **Lightweight Audio Loop Footprint Overhaul:** Replaced 6 monolithic audio tracks (~71MB) with 10 high-quality seamless loops (~5.6MB) from `vipulasri/Serene`, saving over 65MB of APK download size.
+  - **Multi-Track Audio Engine & Call Interruption Handling:** Allows users to play multiple ambient channels concurrently (e.g., Rain on Window + Keyboard + Brown Noise). Configured Android `gainTransientMayDuck` and iOS `AVAudioSessionCategory.playback` for background audio and automatic pause/duck on incoming phone calls with smooth resume.
+  - **Medical Sinus Rhythm Wave Visualizer:** Created custom ECG-styled acoustic wave visualizer undulating dynamically in proportion to master & active track volume intensity, flattening to a gentle isoelectric baseline when paused.
+  - **Aesthetics & Zero Emojis:** Conformed strictly to AGENTS.md Rule 2 and design guidelines, using IconData for all preset chips and clean typography for category filters.
+- **Verification:**
+  - `flutter analyze lib/ test/` passed with **0 errors, 0 warnings, 0 infos**.
+  - All 46 test suites passed 100% (**282 / 282 tests passed**).
+- **Build Status:** Pending APK Build
+
+---
+
 ### [CKPT-035] App Store & GDPR Cloud Data Sovereignty, Account Erasure & App Lifecycle Resume Auto-Sync
 - **Timestamp:** 2026-10-23 03:35 UTC
 - **Category:** Cloud Synchronization / Supabase RLS / App Store & GDPR Compliance / Lifecycle Automation

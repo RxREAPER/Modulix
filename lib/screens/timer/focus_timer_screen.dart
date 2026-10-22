@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/timer_theme.dart';
 import '../../providers/focus_timer_provider.dart';
-import '../../services/ambient_audio_service.dart';
 import '../../widgets/timer/ambient_sound_sheet.dart';
 import '../../widgets/timer/timer_background_picker.dart';
 import '../../widgets/timer/task_picker_sheet.dart';
@@ -17,6 +16,7 @@ import '../../theme/app_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/in_situ_hint_pill.dart';
 import '../../widgets/discovery_pulse.dart';
+import '../../widgets/timer/medical_wave_visualizer.dart';
 
 class FocusTimerScreen extends ConsumerStatefulWidget {
   final String? initialSubjectId;
@@ -296,7 +296,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
     final notifier = ref.read(focusTimerProvider.notifier);
     final theme = timer.theme;
     final isLight = theme.isLight;
-    final sndActive = timer.activeSoundId != 'none';
+    final sndActive = timer.activeSoundId != 'none' || AmbientAudioService.instance.isPlaying;
 
     final displaySecs = !timer.hasTarget
         ? 0
@@ -442,7 +442,19 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                         ),
                       ),
 
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 10),
+
+                    // Acoustic ECG / Frequency Waveform Visualizer
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 52),
+                      child: MedicalWaveVisualizer(
+                        height: 22,
+                        color: isLight ? theme.accentColor : Colors.tealAccent.shade200,
+                        showBaseline: true,
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
 
                     // 5. Total Break Readout
                     Text(

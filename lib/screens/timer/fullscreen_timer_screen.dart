@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/focus_timer_provider.dart';
+import '../../widgets/timer/ambient_sound_sheet.dart';
+import '../../widgets/timer/medical_wave_visualizer.dart';
 import '../../widgets/timer/sketch_flip_digit.dart';
 import '../../widgets/animations/apple_pressable.dart';
 
@@ -106,6 +108,16 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
                   ),
                 ),
 
+                // ── Medical Wave Visualizer ──
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 4),
+                  child: MedicalWaveVisualizer(
+                    height: 18,
+                    color: Colors.white.withValues(alpha: 0.55),
+                    showBaseline: false,
+                  ),
+                ),
+
                 // ── Bottom: Dedicated Resume / Pause button below ──
                 _buildBottomResumePauseButton(t),
               ],
@@ -117,6 +129,7 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
   }
 
   Widget _buildTopBar(bool isLandscape) {
+    final isAudioActive = AmbientAudioService.instance.isPlaying;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Row(
@@ -143,34 +156,66 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
             tooltip: 'Exit Fullscreen',
             onPressed: () => Navigator.pop(context),
           ),
-          if (!isLandscape)
-            IconButton(
-              icon: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E1F22),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.16),
-                    width: 1.0,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: isAudioActive
+                        ? const Color(0xFF0D9488).withValues(alpha: 0.25)
+                        : const Color(0xFF1E1F22),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isAudioActive
+                          ? const Color(0xFF14B8A6)
+                          : Colors.white.withValues(alpha: 0.16),
+                      width: 1.0,
+                    ),
+                  ),
+                  child: Icon(
+                    isAudioActive ? Icons.graphic_eq_rounded : Icons.volume_off_rounded,
+                    color: isAudioActive ? const Color(0xFF2DD4BF) : Colors.white70,
+                    size: 20,
                   ),
                 ),
-                child: Icon(
-                  _forceRotatedPortrait
-                      ? Icons.screen_lock_rotation_rounded
-                      : Icons.screen_rotation_rounded,
-                  color: Colors.white70,
-                  size: 20,
-                ),
+                tooltip: 'Ambient Desk Mixer',
+                onPressed: () => AmbientSoundSheet.show(context),
               ),
-              tooltip: 'Toggle 90° Desk Mode',
-              onPressed: () {
-                setState(() {
-                  _forceRotatedPortrait = !_forceRotatedPortrait;
-                });
-              },
-            ),
+              if (!isLandscape) ...[
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E1F22),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.16),
+                        width: 1.0,
+                      ),
+                    ),
+                    child: Icon(
+                      _forceRotatedPortrait
+                          ? Icons.screen_lock_rotation_rounded
+                          : Icons.screen_rotation_rounded,
+                      color: Colors.white70,
+                      size: 20,
+                    ),
+                  ),
+                  tooltip: 'Toggle 90° Desk Mode',
+                  onPressed: () {
+                    setState(() {
+                      _forceRotatedPortrait = !_forceRotatedPortrait;
+                    });
+                  },
+                ),
+              ],
+            ],
+          ),
         ],
       ),
     );

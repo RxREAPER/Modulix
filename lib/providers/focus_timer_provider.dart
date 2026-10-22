@@ -10,6 +10,7 @@ import 'daily_tasks_provider.dart';
 import '../services/notification_service.dart';
 import '../services/analytics_service.dart';
 import '../services/sync_service.dart';
+import '../services/ambient_audio_service.dart';
 
 enum TimerMode { pomodoro, countUp, moduleLinked }
 enum TimerPhase { idle, focusing, onBreak }
@@ -252,6 +253,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
       _lastTickWallTime = null;
       NotificationService.instance.cancelFocusTimerEnd();
       NotificationService.instance.cancelFocusTimerRunning();
+      AmbientAudioService.instance.onTimerPause();
       state = state.copyWith(isRunning: false);
     } else {
       final newPhase = state.phase == TimerPhase.idle ? TimerPhase.focusing : state.phase;
@@ -291,6 +293,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
         }
       }
       _ticker = Timer.periodic(const Duration(milliseconds: 200), (_) => _tick());
+      AmbientAudioService.instance.onTimerStartOrResume();
     }
   }
 
@@ -351,6 +354,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     _lastTickWallTime = null;
     NotificationService.instance.cancelFocusTimerEnd();
     NotificationService.instance.cancelFocusTimerRunning();
+    AmbientAudioService.instance.onTimerPause();
     if (state.focusSecondsElapsed == 0) {
       reset();
       return null;
@@ -435,6 +439,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     _lastTickWallTime = null;
     NotificationService.instance.cancelFocusTimerEnd();
     NotificationService.instance.cancelFocusTimerRunning();
+    AmbientAudioService.instance.onTimerPause();
     state = FocusTimerState(
       theme: state.theme,
       activeSoundId: state.activeSoundId,
@@ -450,6 +455,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     _lastTickWallTime = null;
     NotificationService.instance.cancelFocusTimerEnd();
     NotificationService.instance.cancelFocusTimerRunning();
+    AmbientAudioService.instance.onTimerPause();
     final rem = state.mode == TimerMode.pomodoro
         ? state.pomodoroPresetMins * 60
         : (state.mode == TimerMode.moduleLinked ? state.modulePresetMins * 60 : 0);
@@ -569,6 +575,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     _lastTickWallTime = null;
     NotificationService.instance.cancelFocusTimerEnd();
     NotificationService.instance.cancelFocusTimerRunning();
+    AmbientAudioService.instance.onTimerPause();
 
     final alertsEnabled =
         _ref.read(appStateProvider).valueOrNull?.focusTimerAlertsEnabled ?? true;

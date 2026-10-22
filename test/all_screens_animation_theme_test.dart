@@ -105,11 +105,18 @@ void main() {
     });
 
     testWidgets('AmbientSoundSheet uses IconData and ApplePressable (zero emojis)', (tester) async {
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      AmbientAudioService.instance.bypassNativeAudio = true;
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: AmbientSoundSheet(
-              activeSoundId: 'forest',
+              activeSoundId: 'forest_birds',
               onSelectSound: (_) {},
             ),
           ),
@@ -118,7 +125,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('Ambient Sounds'), findsOneWidget);
+      expect(find.text('Multi-Track Desk Mixer'), findsOneWidget);
       expect(find.text('Forest Canopy'), findsOneWidget);
       expect(find.text('Cozy Fireplace'), findsOneWidget);
 
