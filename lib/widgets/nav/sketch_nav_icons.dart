@@ -33,16 +33,33 @@ class SketchNavIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final assetPath = switch (type) {
+      SketchNavIconType.home => 'assets/icons/navbar/nav_home.png',
+      SketchNavIconType.library || SketchNavIconType.curriculum => 'assets/icons/navbar/nav_library.png',
+      SketchNavIconType.focus || SketchNavIconType.stopwatch || SketchNavIconType.pomodoro => 'assets/icons/navbar/nav_timer.png',
+      SketchNavIconType.progress || SketchNavIconType.analytics => 'assets/icons/navbar/nav_progress.png',
+      SketchNavIconType.profile => 'assets/icons/navbar/nav_profile.png',
+    };
+
     return SizedBox(
       width: size,
       height: size,
-      child: CustomPaint(
-        painter: _ModernNavIconPainter(
-          type: type,
-          color: color,
-          isSelected: isSelected,
-          strokeWidth: strokeWidth,
-        ),
+      child: Image.asset(
+        assetPath,
+        width: size,
+        height: size,
+        color: color,
+        filterQuality: FilterQuality.high,
+        errorBuilder: (context, error, stackTrace) {
+          return CustomPaint(
+            painter: _ModernNavIconPainter(
+              type: type,
+              color: color,
+              isSelected: isSelected,
+              strokeWidth: strokeWidth,
+            ),
+          );
+        },
       ),
     );
   }
@@ -236,35 +253,37 @@ class _ModernNavIconPainter extends CustomPainter {
     canvas.drawPath(lowerSand, p);
   }
 
-  // ── 4. Progress (Trophy cup with 2 side handles, star, and base) ─────────────
+  // ── 4. Progress (Badge Medallion with Star and Ribbon Tails from 004-badge.png)
   void _paintProgress(Canvas canvas, double w, double h, Paint p) {
-    // Trophy Cup Rim & Bowl
-    final cup = Path()
-      ..moveTo(w * 0.28, h * 0.22)
-      ..lineTo(w * 0.72, h * 0.22)
-      ..lineTo(w * 0.69, h * 0.44)
-      ..cubicTo(w * 0.65, h * 0.56, w * 0.35, h * 0.56, w * 0.31, h * 0.44)
-      ..close();
-    canvas.drawPath(cup, p);
+    // Left Ribbon Tail
+    final leftRibbon = Path()
+      ..moveTo(w * 0.32, h * 0.52)
+      ..lineTo(w * 0.18, h * 0.86)
+      ..lineTo(w * 0.32, h * 0.76) // V-notch center
+      ..lineTo(w * 0.44, h * 0.86)
+      ..lineTo(w * 0.43, h * 0.60);
+    canvas.drawPath(leftRibbon, p);
 
-    // Left Handle Loop
-    final leftHandle = Path()
-      ..moveTo(w * 0.28, h * 0.25)
-      ..cubicTo(w * 0.10, h * 0.25, w * 0.10, h * 0.46, w * 0.32, h * 0.46);
-    canvas.drawPath(leftHandle, p);
+    // Right Ribbon Tail
+    final rightRibbon = Path()
+      ..moveTo(w * 0.68, h * 0.52)
+      ..lineTo(w * 0.82, h * 0.86)
+      ..lineTo(w * 0.68, h * 0.76) // V-notch center
+      ..lineTo(w * 0.56, h * 0.86)
+      ..lineTo(w * 0.57, h * 0.60);
+    canvas.drawPath(rightRibbon, p);
 
-    // Right Handle Loop
-    final rightHandle = Path()
-      ..moveTo(w * 0.72, h * 0.25)
-      ..cubicTo(w * 0.90, h * 0.25, w * 0.90, h * 0.46, w * 0.68, h * 0.46);
-    canvas.drawPath(rightHandle, p);
+    // Medallion Circle
+    final center = Offset(w * 0.50, h * 0.38);
+    final radius = w * 0.26;
+    canvas.drawCircle(center, radius, p);
 
-    // Star in Center of Cup
+    // 5-Pointed Star in Center of Medallion
     final star = Path();
-    final cx = w * 0.50;
-    final cy = h * 0.36;
-    final rOuter = w * 0.085;
-    final rInner = w * 0.040;
+    final cx = center.dx;
+    final cy = center.dy;
+    final rOuter = w * 0.125;
+    final rInner = w * 0.055;
     for (int i = 0; i < 10; i++) {
       final r = i.isEven ? rOuter : rInner;
       final angle = (i * 36 - 90) * math.pi / 180;
@@ -278,30 +297,6 @@ class _ModernNavIconPainter extends CustomPainter {
     }
     star.close();
     canvas.drawPath(star, p);
-
-    // Stem
-    canvas.drawLine(Offset(w * 0.50, h * 0.56), Offset(w * 0.50, h * 0.68), p);
-
-    // Stepped Pedestal Base (2-Tier)
-    final tier1 = RRect.fromRectAndRadius(
-      Rect.fromCenter(
-        center: Offset(w * 0.50, h * 0.71),
-        width: w * 0.30,
-        height: h * 0.055,
-      ),
-      const Radius.circular(1.5),
-    );
-    canvas.drawRRect(tier1, p);
-
-    final tier2 = RRect.fromRectAndRadius(
-      Rect.fromCenter(
-        center: Offset(w * 0.50, h * 0.79),
-        width: w * 0.52,
-        height: h * 0.08,
-      ),
-      const Radius.circular(2.0),
-    );
-    canvas.drawRRect(tier2, p);
   }
 
   // ── 5. Profile (Minimalist Head and Shoulder Bust Outline) ───────────────────

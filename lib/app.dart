@@ -89,6 +89,22 @@ final routerProvider = Provider<GoRouter>((ref) {
                   state: state,
                   child: const HomeScreen(),
                 ),
+                routes: [
+                  GoRoute(
+                    path: 'module-tasks',
+                    pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+                      state: state,
+                      child: const ModuleTasksScreen(),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'plan',
+                    pageBuilder: (context, state) => _buildFadeTransitionPage(
+                      state: state,
+                      child: const PlanScreen(),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -182,26 +198,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
-        path: '/plan',
-        pageBuilder: (context, state) => _buildFadeTransitionPage(
-          state: state,
-          child: const PlanScreen(),
-        ),
-      ),
-      GoRoute(
-        parentNavigatorKey: _rootNavigatorKey,
         path: '/theme-studio',
         pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
           state: state,
           child: const ThemeStudioScreen(),
-        ),
-      ),
-      GoRoute(
-        parentNavigatorKey: _rootNavigatorKey,
-        path: '/module-tasks',
-        pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
-          state: state,
-          child: const ModuleTasksScreen(),
         ),
       ),
       GoRoute(

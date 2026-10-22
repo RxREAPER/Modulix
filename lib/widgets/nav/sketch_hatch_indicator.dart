@@ -17,8 +17,8 @@ class SketchHatchIndicator extends StatefulWidget {
     required this.targetRect,
     this.hatchColor,
     this.borderRadius = 22.0,
-    this.duration = const Duration(milliseconds: 240),
-    this.curve = Curves.easeOutCubic,
+    this.duration = const Duration(milliseconds: 200),
+    this.curve = Curves.fastOutSlowIn,
     this.child,
   });
 
@@ -56,15 +56,7 @@ class _SketchHatchIndicatorState extends State<SketchHatchIndicator>
   void didUpdateWidget(covariant SketchHatchIndicator oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.targetRect != widget.targetRect) {
-      if (_controller.isAnimating && _renderedRect != null) {
-        _fromRect = Rect.fromCenter(
-          center: _renderedRect!.center,
-          width: widget.targetRect.width,
-          height: widget.targetRect.height,
-        );
-      } else {
-        _fromRect = _renderedRect ?? oldWidget.targetRect;
-      }
+      _fromRect = _renderedRect ?? oldWidget.targetRect;
       _toRect = widget.targetRect;
       _controller.duration = widget.duration;
       _animation = CurvedAnimation(

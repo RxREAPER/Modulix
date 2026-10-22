@@ -8,6 +8,39 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-027] Collection Icons (Home, Library Books, Hourglass, Badge Star, Profile User), Liquid Droplet Morph & Expand Motion, Subpage Navigation Trigger & Professional Jiggle-Free Bubble
+- **Timestamp:** 2026-10-22 17:26 UTC
+- **Category:** Navigation / Icon Assets & Vector Fidelity / Motion Physics / Subpage Lifecycle
+- **Files Modified:**
+  - `assets/icons/navbar/nav_home.png` (NEW - copied from `/home/safi/Documents/mycollection/png/001-home.png`)
+  - `assets/icons/navbar/nav_library.png` (NEW - copied from `/home/safi/Documents/mycollection/png/002-book.png`)
+  - `assets/icons/navbar/nav_timer.png` (NEW - copied from `/home/safi/Documents/mycollection/png/003-hour-glass.png`)
+  - `assets/icons/navbar/nav_progress.png` (NEW - copied from `/home/safi/Documents/mycollection/png/004-badge.png`)
+  - `assets/icons/navbar/nav_profile.png` (NEW - copied from `/home/safi/Documents/mycollection/png/005-user.png`)
+  - `lib/widgets/nav/sketch_nav_icons.dart`
+  - `lib/widgets/nav/sketch_hatch_indicator.dart`
+  - `lib/widgets/lovable_nav_bar.dart`
+  - `lib/app.dart`
+- **Summary:**
+  - **Flaticon Collection Icons:** Directly integrated the 5 user-provided collection icons from `/home/safi/Documents/mycollection/png/` (Home, Books, Hourglass, Badge, User) into `assets/icons/navbar/` with automatic dynamic theme tinting (`colorFilter`). Updated `_ModernNavIconPainter` vector geometry to accurately draw the Badge medallion with 5-point star and notched ribbon tails (`004-badge.png`), hourglass silhouette (`003-hour-glass.png`), and books (`002-book.png`).
+  - **Liquid Droplet Motion Physics (Startup & Return):**
+    - On startup and return to main pages: starts 92px below the screen edge, condensed horizontally to a 0.40 scale liquid bead, then rises and blossoms outward to 1.05 scale with organic fluid overshoot into the floating capsule dock.
+    - On minimize (navigating to subpages): condenses inward horizontally into a 0.40 droplet while gliding down 92px into the bottom edge with `Curves.easeInOutCubic` (300ms duration) and completely frees touch events (`SizedBox.shrink()` when minimized).
+  - **Subpage Navigation Trigger (`/module-tasks`, `/plan`, etc.):**
+    - Routed `module-tasks` and `plan` as first-class sub-routes inside Branch 0 so navigating to them sets `canBranchPop = true` and `isMainPage = false`.
+    - Triggers the bottom navigation bar to smoothly minimize and drop off-screen when opening Module-Based Tasks, Plan, or Curriculum chapters, and expand back into default when popping back.
+  - **Professional Jiggle-Free Selection Bubble:**
+    - Eliminated vertical hopping (`translationValues: (0, isSelected ? -2 : 0, 0)` removed) and reduced touch squish (`pressedScale: 0.97`).
+    - Tuned sliding indicator to `Curves.fastOutSlowIn` (200ms) with anchored geometry and crisp border stroke, creating a clean, professional glide between tabs.
+  - **Theme Adaptive Minimalist Text:**
+    - Zero text labels on default inactive tabs; active tab smoothly reveals its title text directly beneath the icon.
+- **Verification:**
+  - `flutter analyze` on modified files: **No issues found!** (0 errors, 0 warnings, 0 lints).
+  - Automated unit tests (`lovable_nav_bar_test.dart`, `tab_persistence_test.dart`): **All 5 tests passed 100%!**
+- **Build Status:** Pending APK Build (Verified via flutter analyze & unit tests)
+
+---
+
 ### [CKPT-026] Modern Sleek Floating Bottom Navigation Dock, Reference-Accurate Vector Icons, Drop & Expand Lifecycle Motion, Subpage Minimize & Page Renamings (Library / Progress / Focus)
 - **Timestamp:** 2026-10-22 16:55 UTC
 - **Category:** Navigation Architecture / UI Redesign / Motion & Lifecycle / A11y & Aesthetics

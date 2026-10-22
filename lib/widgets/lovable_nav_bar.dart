@@ -66,7 +66,8 @@ class _LovableNavBarState extends State<LovableNavBar>
     // Drop & Expand entrance animation
     _motionController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 460),
+      duration: const Duration(milliseconds: 440),
+      reverseDuration: const Duration(milliseconds: 300),
     );
 
     // Ambient pulse controller for active focus sessions
@@ -190,22 +191,30 @@ class _LovableNavBarState extends State<LovableNavBar>
     return AnimatedBuilder(
       animation: _motionController,
       builder: (context, child) {
-        // Drop-and-expand motion physics:
-        // Starts 96px below viewport, scaled down like a droplet, then rises
-        // and expands outward with a refined overshoot.
         final t = _motionController.value;
-        final curve = _motionController.status == AnimationStatus.reverse
-            ? Curves.easeInOutCubic.transform(t)
-            : const Cubic(0.34, 1.35, 0.64, 1.0).transform(t);
+        if (t <= 0.001 && !widget.isVisible) {
+          return const SizedBox.shrink();
+        }
 
-        final yOffset = (1.0 - curve) * 96.0;
-        final scale = 0.72 + (0.28 * curve);
-        final opacity = t.clamp(0.0, 1.0);
+        final isReverse = _motionController.status == AnimationStatus.reverse;
+        final double curve = isReverse
+            ? Curves.easeInOutCubic.transform(t)
+            : const Cubic(0.20, 1.28, 0.36, 1.0).transform(t);
+
+        // Vertical drop/rise glide: rises from 92px below edge
+        final double yOffset = (1.0 - curve) * 92.0;
+
+        // Droplet horizontal & vertical morph:
+        // Condenses horizontally to 0.40 (compact round droplet) when minimized,
+        // blooms and expands outward to 1.00 when entering/active.
+        final double scaleX = (0.40 + (0.60 * curve)).clamp(0.0, 1.05);
+        final double scaleY = (0.62 + (0.38 * curve)).clamp(0.0, 1.02);
+        final double opacity = Curves.easeIn.transform(t.clamp(0.0, 1.0));
 
         return Transform.translate(
           offset: Offset(0, yOffset),
-          child: Transform.scale(
-            scale: scale,
+          child: Transform(
+            transform: Matrix4.diagonal3Values(scaleX, scaleY, 1.0),
             alignment: Alignment.bottomCenter,
             child: Opacity(
               opacity: opacity,
@@ -409,20 +418,16 @@ class _ModernTabItem extends StatelessWidget {
       selected: isSelected,
       button: true,
       child: ApplePressable(
-        pressedScale: 0.90,
-        pressedOpacity: 0.85,
+        pressedScale: 0.97,
+        pressedOpacity: 0.92,
         hapticStyle: HapticStyle.none,
         onTap: onTap,
         borderRadius: BorderRadius.circular(22),
         child: Center(
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOutCubic,
-            transform: Matrix4.translationValues(0, isSelected ? -2 : 0, 0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
                 SketchNavIcon(
                   type: sketchType,
                   color: iconColor,
@@ -434,7 +439,7 @@ class _ModernTabItem extends StatelessWidget {
                   const SizedBox(height: 2),
                   AnimatedOpacity(
                     opacity: isSelected ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 180),
+                    duration: const Duration(milliseconds: 160),
                     child: Text(
                       label,
                       maxLines: 1,
@@ -452,8 +457,7 @@ class _ModernTabItem extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 }
 
@@ -485,8 +489,8 @@ class _ModernFocusItem extends StatelessWidget {
       selected: isSelected,
       button: true,
       child: ApplePressable(
-        pressedScale: 0.90,
-        pressedOpacity: 0.85,
+        pressedScale: 0.97,
+        pressedOpacity: 0.92,
         hapticStyle: HapticStyle.none,
         onTap: onTap,
         borderRadius: BorderRadius.circular(22),
@@ -516,41 +520,36 @@ class _ModernFocusItem extends StatelessWidget {
                     );
                   },
                 ),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 220),
-                curve: Curves.easeOutCubic,
-                transform: Matrix4.translationValues(0, isSelected ? -2 : 0, 0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SketchNavIcon(
-                      type: SketchNavIconType.focus,
-                      color: iconColor,
-                      size: isSelected ? 21.0 : 22.0,
-                      isSelected: isSelected || isSessionActive,
-                      strokeWidth: (isSelected || isSessionActive) ? 1.9 : 1.7,
-                    ),
-                    if (isSelected) ...[
-                      const SizedBox(height: 2),
-                      AnimatedOpacity(
-                        opacity: isSelected ? 1.0 : 0.0,
-                        duration: const Duration(milliseconds: 180),
-                        child: Text(
-                          'Focus',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 10.0,
-                            fontWeight: FontWeight.w700,
-                            color: activeColor,
-                            letterSpacing: 0.2,
-                          ),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SketchNavIcon(
+                    type: SketchNavIconType.focus,
+                    color: iconColor,
+                    size: isSelected ? 21.0 : 22.0,
+                    isSelected: isSelected || isSessionActive,
+                    strokeWidth: (isSelected || isSessionActive) ? 1.9 : 1.7,
+                  ),
+                  if (isSelected) ...[
+                    const SizedBox(height: 2),
+                    AnimatedOpacity(
+                      opacity: isSelected ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 160),
+                      child: Text(
+                        'Focus',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 10.0,
+                          fontWeight: FontWeight.w700,
+                          color: activeColor,
+                          letterSpacing: 0.2,
                         ),
                       ),
-                    ],
+                    ),
                   ],
-                ),
+                ],
               ),
             ],
           ),
