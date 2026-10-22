@@ -52,16 +52,16 @@ class StudyPlan {
       };
 
   factory StudyPlan.fromJson(Map<String, dynamic> json) => StudyPlan(
-        targetSubject: json['targetSubject'] as String? ?? '',
-        targetDate: json['targetDate'] as String? ?? '',
-        videosPerDay: json['videosPerDay'] as int?,
+        targetSubject: json['targetSubject']?.toString() ?? '',
+        targetDate: json['targetDate']?.toString() ?? '',
+        videosPerDay: (json['videosPerDay'] as num?)?.toInt(),
         targetUnits: (json['targetUnits'] as List<dynamic>?)
-                ?.map((e) => e as String)
+                ?.map((e) => e.toString())
                 .toList() ??
             [],
-        focusChapterName: json['focusChapterName'] as String?,
+        focusChapterName: json['focusChapterName']?.toString(),
         dailyHours: (json['dailyHours'] as num?)?.toDouble() ?? 4.0,
-        revisionCycles: json['revisionCycles'] as int? ?? 1,
+        revisionCycles: (json['revisionCycles'] as num?)?.toInt() ?? 1,
       );
 
   static const empty = StudyPlan();
@@ -128,34 +128,37 @@ class EditionState {
       };
 
   factory EditionState.fromJson(Map<String, dynamic> json) => EditionState(
-        plan: json['plan'] != null
-            ? StudyPlan.fromJson(json['plan'] as Map<String, dynamic>)
+        plan: json['plan'] != null && json['plan'] is Map
+            ? StudyPlan.fromJson(Map<String, dynamic>.from(json['plan'] as Map))
             : StudyPlan.empty,
-        completedVideos:
-            (json['completedVideos'] as Map<String, dynamic>?) ?? {},
-        completedQBanks:
-            (json['completedQBanks'] as Map<String, dynamic>?) ?? {},
-        completedNotes:
-            (json['completedNotes'] as Map<String, dynamic>?) ?? {},
-        dailyHistory: (json['dailyHistory'] as Map<String, dynamic>?)
-                ?.map((k, v) => MapEntry(k, v as int)) ??
+        completedVideos: json['completedVideos'] is Map
+            ? Map<String, dynamic>.from(json['completedVideos'] as Map)
+            : {},
+        completedQBanks: json['completedQBanks'] is Map
+            ? Map<String, dynamic>.from(json['completedQBanks'] as Map)
+            : {},
+        completedNotes: json['completedNotes'] is Map
+            ? Map<String, dynamic>.from(json['completedNotes'] as Map)
+            : {},
+        dailyHistory: (json['dailyHistory'] as Map?)
+                ?.map((k, v) => MapEntry(k.toString(), (v as num?)?.toInt() ?? 0)) ??
             {},
         bulkCompletedChapters:
             (json['bulkCompletedChapters'] as List<dynamic>?)
-                    ?.map((e) => e as String)
+                    ?.map((e) => e.toString())
                     .toList() ??
                 [],
         queueBatchVideoIds:
             (json['queueBatchVideoIds'] as List<dynamic>?)
-                    ?.map((e) => e as String)
+                    ?.map((e) => e.toString())
                     .toList() ??
                 [],
         staleBatchVideoIds:
             (json['staleBatchVideoIds'] as List<dynamic>?)
-                    ?.map((e) => e as String)
+                    ?.map((e) => e.toString())
                     .toList() ??
                 [],
-        queueCompletedInBatch: json['queueCompletedInBatch'] as int? ?? 0,
+        queueCompletedInBatch: (json['queueCompletedInBatch'] as num?)?.toInt() ?? 0,
       );
 
   static const empty = EditionState();
@@ -278,31 +281,36 @@ class AppState {
 
   factory AppState.fromJson(Map<String, dynamic> json) => AppState(
         onboardingDone: json['onboardingDone'] as bool? ?? false,
-        doctorName: json['doctorName'] as String? ?? 'Dr',
-        activeEdition: json['activeEdition'] as String? ?? 'marrow_8',
+        doctorName: json['doctorName']?.toString() ?? 'Dr',
+        activeEdition: json['activeEdition']?.toString() ?? 'marrow_8',
         themePref: ThemePref.values.firstWhere(
           (e) => e.name == json['themePref'],
           orElse: () => ThemePref.system,
         ),
-        palettePresetId: json['palettePresetId'] as String? ?? 'paper',
-        accentColorId: json['accentColorId'] as String? ?? 'cobalt',
-        avatarColorId: json['avatarColorId'] as String? ?? 'indigo',
-        avatarIconId: json['avatarIconId'] as String? ?? 'letter',
-        dayStartHour: json['dayStartHour'] as int? ?? 5,
+        palettePresetId: json['palettePresetId']?.toString() ?? 'paper',
+        accentColorId: json['accentColorId']?.toString() ?? 'cobalt',
+        avatarColorId: json['avatarColorId']?.toString() ?? 'indigo',
+        avatarIconId: json['avatarIconId']?.toString() ?? 'letter',
+        dayStartHour: (json['dayStartHour'] as num?)?.toInt() ?? 5,
         dailyReminderEnabled: json['dailyReminderEnabled'] as bool? ?? true,
-        studyReminderTime: json['studyReminderTime'] as String? ?? '09:00',
+        studyReminderTime: json['studyReminderTime']?.toString() ?? '09:00',
         streakReminderEnabled: json['streakReminderEnabled'] as bool? ?? true,
-        streakReminderTime: json['streakReminderTime'] as String? ?? '20:00',
+        streakReminderTime: json['streakReminderTime']?.toString() ?? '20:00',
         moduleTasksReminderEnabled:
             json['moduleTasksReminderEnabled'] as bool? ?? true,
         moduleTasksReminderTime:
-            json['moduleTasksReminderTime'] as String? ?? '08:00',
+            json['moduleTasksReminderTime']?.toString() ?? '08:00',
         focusTimerAlertsEnabled:
             json['focusTimerAlertsEnabled'] as bool? ?? true,
-        editions: (json['editions'] as Map?)?.map(
-              (k, v) => MapEntry(
-                  k as String,
-                  EditionState.fromJson(Map<String, dynamic>.from(v as Map))),
+        editions: (json['editions'] as Map?)?.entries.fold<Map<String, EditionState>>(
+              {},
+              (acc, entry) {
+                if (entry.value is Map) {
+                  acc[entry.key.toString()] = EditionState.fromJson(
+                      Map<String, dynamic>.from(entry.value as Map));
+                }
+                return acc;
+              },
             ) ??
             {},
       );

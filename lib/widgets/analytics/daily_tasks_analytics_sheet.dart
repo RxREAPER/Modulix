@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../providers/app_state_provider.dart';
@@ -142,7 +143,7 @@ class DailyTasksAnalyticsSheet extends ConsumerWidget {
               durationMs: 180,
               slideY: 10.0,
               child: ListView(
-                cacheExtent: 400.0,
+                scrollCacheExtent: const ScrollCacheExtent.pixels(400.0),
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
                 children: [
                 // Today's Completion Card

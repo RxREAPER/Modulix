@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -520,7 +521,7 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
             ),
             body: CustomScrollView(
               controller: _scrollController,
-              cacheExtent: 450.0,
+              scrollCacheExtent: const ScrollCacheExtent.pixels(450.0),
               physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
               slivers: [
                 SliverPadding(

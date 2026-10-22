@@ -1,3 +1,4 @@
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names
 import 'package:flutter/material.dart';
 
 /// Modulix Curated Unified Themes (Paired Canvas & Non-Glare Dim Accents)

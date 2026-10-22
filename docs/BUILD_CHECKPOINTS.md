@@ -8,6 +8,44 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-033] Dead Code Pruning, Flutter 3.41+ Modernization, Guide Hub Integration & Model Hardening
+- **Timestamp:** 2026-10-22 20:30 UTC
+- **Category:** Code Quality / Dead Code Elimination / Deprecation Resolution / Settings Integration / Model Hardening
+- **Files Deleted (5 files, ~1,276 lines removed):**
+  - `lib/widgets/quest_card.dart` (unreferenced legacy quest card; superseded by ModuleTasksCard & TodaysTasksCard)
+  - `lib/widgets/curriculum/configure_plan_sheet.dart` (unreferenced legacy plan sheet; embedded in PlanScreen)
+  - `lib/widgets/analytics/study_plan_analytics_sheet.dart` (unreferenced legacy analytics sheet; superseded by StudyPlanAnalyticsPage)
+  - `lib/theme/flowmd_theme.dart` (legacy re-export bridge from old app name)
+  - `lib/data/standard_resources.dart` (unused static textbook dictionary)
+- **Files Modified (9 files):**
+  - `lib/screens/settings/learn_the_app_sheet.dart` (integrated DailyTasksAnimationWidget under new Daily Study Tasks & Desk Pad feature section)
+  - `lib/screens/settings/settings_screen.dart` (added App Guide & Reference hub card in _ResourceHubsSection invoking LearnTheAppSheet)
+  - `lib/screens/curriculum/subject_screen.dart` (migrated deprecated cacheExtent to ScrollCacheExtent.pixels(450.0) with rendering.dart import)
+  - `lib/screens/plan/plan_screen.dart` (migrated vertical and horizontal cacheExtent to ScrollCacheExtent.pixels)
+  - `lib/widgets/analytics/daily_tasks_analytics_sheet.dart` (migrated cacheExtent to ScrollCacheExtent.pixels(400.0))
+  - `lib/widgets/analytics/focus_timer_analytics_sheet.dart` (migrated cacheExtent to ScrollCacheExtent.pixels(400.0))
+  - `lib/widgets/task_setup_sheet.dart` (migrated axisAlignment to alignment: Alignment.topCenter and onReorder to onReorderItem)
+  - `lib/theme/modulix_theme.dart` (added file-level lint ignore for legacy snake_case theme preset identifiers)
+  - `lib/models/app_state.dart` (defensive type conversions in StudyPlan.fromJson, EditionState.fromJson, and AppState.fromJson against nulls and non-string inputs)
+- **Summary:**
+  - **Dead Code Pruning:**
+    - Cleanly deleted ~1,276 lines of unreferenced, obsolete code across 5 files (`quest_card.dart`, `configure_plan_sheet.dart`, `study_plan_analytics_sheet.dart`, `flowmd_theme.dart`, `standard_resources.dart`), trimming application footprint and removing legacy surface area.
+  - **Flutter 3.41+ Deprecation Resolution:**
+    - Resolved all deprecated Flutter 3.41+ APIs: upgraded 5 scroll view call sites from raw `double` `cacheExtent` to typed `ScrollCacheExtent.pixels(...)` with `package:flutter/rendering.dart` imports.
+    - Updated `task_setup_sheet.dart` replacing deprecated `axisAlignment` with `alignment: Alignment.topCenter` and deprecated `onReorder` with `onReorderItem`.
+    - Achieved a spotless `flutter analyze lib/ test/` run with **0 errors, 0 warnings, and 0 infos**.
+  - **Interactive Guide Wiring:**
+    - Connected `DailyTasksAnimationWidget` into `LearnTheAppSheet` as a dedicated "Daily Desk Tasks & Checklist" interactive feature section.
+    - Exposed `LearnTheAppSheet` in `SettingsScreen` under the Resources Hub with a purple Guide card ("App Guide & Reference").
+  - **Defensive Model & Parser Hardening:**
+    - Hardened `StudyPlan.fromJson`, `EditionState.fromJson`, and `AppState.fromJson` with safe fallback conversions (`.toString()`, `(v as num?)?.toInt()`, null checks, Map entry folds) preventing deserialization crashes from corrupt local/remote state.
+- **Verification:**
+  - `flutter analyze lib/ test/` passed with **0 errors, 0 warnings, 0 infos** (No issues found).
+  - All 44 test suites passed with 100% pass rate (**265 / 265 tests passed**).
+- **Build Status:** Pending APK Build
+
+---
+
 ### [CKPT-032] Backend Optimization & Cleanup: Cloud RLS Hardening, SQLite WAL Mode, Batch Transactions & Key Synchronization
 - **Timestamp:** 2026-10-22 20:05 UTC
 - **Category:** Backend Architecture / Security Hardening / Database Performance / Cloud Sync

@@ -149,7 +149,6 @@ class _TaskSetupSheetState extends State<TaskSetupSheet>
   void _reorderTasks(int oldIndex, int newIndex) {
     HapticFeedback.selectionClick();
     setState(() {
-      if (newIndex > oldIndex) newIndex -= 1;
       final task = _tasks.removeAt(oldIndex);
       _tasks.insert(newIndex, task);
     });
@@ -272,7 +271,7 @@ class _TaskSetupSheetState extends State<TaskSetupSheet>
             // Animated Modality Palette (Expands from the dock when tapped)
             SizeTransition(
               sizeFactor: _pickerExpandAnim,
-              axisAlignment: -1.0,
+              alignment: Alignment.topCenter,
               child: Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.all(6),
@@ -655,7 +654,7 @@ class _TaskSetupSheetState extends State<TaskSetupSheet>
         physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         buildDefaultDragHandles: false,
         itemCount: _tasks.length,
-        onReorder: _reorderTasks,
+        onReorderItem: _reorderTasks,
         itemBuilder: (context, index) {
           final task = _tasks[index];
           return Container(

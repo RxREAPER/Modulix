@@ -8,6 +8,7 @@ import '../../theme/modulix_theme.dart';
 import '../../widgets/profile/profile_customization.dart';
 import 'data_privacy_sheet.dart';
 import 'about_support_sheet.dart';
+import 'learn_the_app_sheet.dart';
 import '../../services/auth_service.dart';
 import '../../services/sync_service.dart';
 import '../../providers/auth_provider.dart';
@@ -891,6 +892,19 @@ class _ResourceHubsSection extends ConsumerWidget {
           iconColor: AppTheme.primaryBlue,
           iconBg: AppTheme.primaryBlue.withValues(alpha: 0.12),
           onTap: () => context.push('/onboarding?replay=true'),
+        ),
+
+        const SizedBox(height: 10),
+
+        // App Guide & Reference Card
+        _SleekHubCard(
+          title: 'App Guide & Reference',
+          subtitle: 'Interactive feature guide, pacing engine & timer tips',
+          tag: 'GUIDE',
+          icon: Icons.menu_book_rounded,
+          iconColor: Colors.purple,
+          iconBg: Colors.purple.withValues(alpha: 0.12),
+          onTap: () => LearnTheAppSheet.show(context),
         ),
 
         const SizedBox(height: 10),

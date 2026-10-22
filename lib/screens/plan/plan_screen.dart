@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -186,7 +187,7 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
             onRetry: () => ref.refresh(activeSyllabusProvider),
           ),
           data: (subjectsList) => ListView(
-            cacheExtent: 450.0,
+            scrollCacheExtent: const ScrollCacheExtent.pixels(450.0),
             physics: const BouncingScrollPhysics(
                 parent: AlwaysScrollableScrollPhysics()),
             padding: const EdgeInsets.fromLTRB(18, 16, 18, 100),
@@ -203,7 +204,7 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                 height: 106,
                 child: RepaintBoundary(
                   child: ListView.separated(
-                    cacheExtent: 350.0,
+                    scrollCacheExtent: const ScrollCacheExtent.pixels(350.0),
                     physics: const BouncingScrollPhysics(
                         parent: AlwaysScrollableScrollPhysics()),
                     scrollDirection: Axis.horizontal,

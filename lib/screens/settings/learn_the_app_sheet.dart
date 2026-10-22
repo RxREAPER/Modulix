@@ -8,6 +8,8 @@ import 'animations/timer_modes_animation.dart';
 import 'animations/flip_clock_animation.dart';
 import 'animations/pace_engine_animation.dart';
 import 'animations/bulk_complete_animation.dart';
+import 'animations/daily_tasks_animation.dart';
+
 
 class LearnTheAppSheet extends StatelessWidget {
   const LearnTheAppSheet({super.key});
@@ -315,7 +317,34 @@ class LearnTheAppSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
 
-                // ── 6. 5:00 AM DAY RESET BOUNDARY ───────────────────────────
+                // ── 6. DAILY STUDY TASKS & DESK PAD ─────────────────────────
+                _FeatureCard(
+                  title: 'Daily Desk Tasks & Checklist',
+                  tag: 'HABIT LOOP',
+                  icon: Icons.checklist_rounded,
+                  color: const Color(0xFF0EA5E9),
+                  initiallyExpanded: false,
+                  headline:
+                      'Organize daily targets into clean clinical modalities (MCQ, Revision, Notes, Video).',
+                  diagramWidget: const DailyTasksAnimationWidget(),
+                  steps: const [
+                    'Tap the Desk Pad icon or Setup on the Home screen to configure your tasks.',
+                    'Tag tasks with modalities (MCQ, Revision, Notes, Video) for instant visual clarity.',
+                    'Check off tasks with realistic tactile feedback and animated strikethrough styling.',
+                    'Reorder tasks dynamically via long-press drag to prioritize your high-yield focus.',
+                  ],
+                  proTip:
+                      'Pro Tip: Completed tasks automatically record toward your daily study analytics ring.',
+                  actionLabel: 'Go to Home',
+                  actionIcon: Icons.home_rounded,
+                  onAction: () {
+                    Navigator.pop(context);
+                    context.go('/');
+                  },
+                ),
+                const SizedBox(height: 14),
+
+                // ── 7. 5:00 AM DAY RESET BOUNDARY ───────────────────────────
                 _FeatureCard(
                   title: 'The 5:00 AM Study Day Boundary',
                   tag: 'MEDICO LOGIC',
@@ -341,7 +370,7 @@ class LearnTheAppSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
 
-                // ── 7. MEDICO FAQS & TROUBLESHOOTING ────────────────────────
+                // ── 8. MEDICO FAQS & TROUBLESHOOTING ────────────────────────
                 _FeatureCard(
                   title: 'Frequently Asked Questions',
                   tag: 'FAQ',
