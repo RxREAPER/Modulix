@@ -30,3 +30,24 @@ Decide how much testing to do based on the size of the request:
 - **Incremental Checkpoints:** For every change or feature (small tweaks or big changes), register an entry in `docs/BUILD_CHECKPOINTS.md` specifying ID, category, modified files, summary, and verification status (`flutter analyze` / hot reload / test).
 - **Git Commit Checkpoint:** Create a matching git commit (`checkpoint(<category>): <summary>`) so no edits can be lost or hallucinated.
 - **Derive Context on APK Build:** When an APK build is triggered (`"build apk"`, `"release"`, `"test it"`), collate all `Pending APK Build` checkpoints since the previous build into a structured **Build Manifest** (release notes), verify the build, and update the checkpoints to `✅ Included in Build`.
+
+## 4. Flutter 3.41+ Modernization & Defensive Hardening Standards
+
+### A. Scroll Cache Extent Migration
+- Never pass a raw `double` to `scrollCacheExtent`.
+- Always use `const ScrollCacheExtent.pixels(...)` or `ScrollCacheExtent.viewport(...)`.
+- Always import `package:flutter/rendering.dart` when using `ScrollCacheExtent`.
+
+### B. ReorderableListView Callback Migration
+- When modernizing from `onReorder` to `onReorderItem`, **DO NOT** perform index adjustment (`if (newIndex > oldIndex) newIndex -= 1`).
+- The framework's `onReorderItem` already adjusts `newIndex` after item removal at `oldIndex`.
+
+### C. SizeTransition Alignment
+- Replace deprecated `axisAlignment: -1.0` with `alignment: Alignment.topCenter` (or `Alignment.topLeft`).
+
+### D. Defensive Model & State Deserialization
+- Never perform unsafe casts like `json['field'] as int` or `json['field'] as String`.
+- For numbers: use `(json['field'] as num?)?.toInt()` or `(json['field'] as num?)?.toDouble()`.
+- For strings: use `json['field']?.toString() ?? 'fallback'`.
+- For lists and maps: safely fold or map elements with `.toString()` / null checks to prevent unhandled runtime `TypeError` crashes.
+
