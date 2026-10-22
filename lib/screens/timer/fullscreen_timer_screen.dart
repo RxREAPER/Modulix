@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/focus_timer_provider.dart';
+import '../../widgets/timer/sketch_flip_digit.dart';
 
 class FullscreenTimerScreen extends ConsumerStatefulWidget {
   const FullscreenTimerScreen({super.key});
@@ -11,23 +12,7 @@ class FullscreenTimerScreen extends ConsumerStatefulWidget {
   ConsumerState<FullscreenTimerScreen> createState() => _FullscreenTimerScreenState();
 }
 
-class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen>
-    with TickerProviderStateMixin {
-  final Map<String, AnimationController> _ctrls = {};
-  final Map<String, String> _prev = {};
-
-  AnimationController _ctrl(String k) {
-    return _ctrls.putIfAbsent(k, () =>
-        AnimationController(vsync: this, duration: const Duration(milliseconds: 320)));
-  }
-
-  void _flip(String k, String d) {
-    if (_prev[k] != d) {
-      _prev[k] = d;
-      _ctrl(k).forward(from: 0);
-    }
-  }
-
+class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
   @override
   void initState() {
     super.initState();
@@ -37,7 +22,6 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen>
   @override
   void dispose() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    for (final c in _ctrls.values) { c.dispose(); }
     super.dispose();
   }
 
@@ -52,10 +36,6 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen>
     final mStr = m.toString().padLeft(2, '0');
     final sStr = sec.toString().padLeft(2, '0');
     final hStr = h > 0 ? h.toString().padLeft(2, '0') : null;
-
-    if (hStr != null) { _flip('h0', hStr[0]); _flip('h1', hStr[1]); }
-    _flip('m0', mStr[0]); _flip('m1', mStr[1]);
-    _flip('s0', sStr[0]); _flip('s1', sStr[1]);
 
     final bg = t.theme.id == 'paper' ? const Color(0xFF181818) : t.theme.backgroundColor;
 
@@ -122,7 +102,7 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen>
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white.withOpacity(0.85),
+                              color: Colors.white.withValues(alpha: 0.85),
                             ),
                           ),
                         ],
@@ -138,15 +118,15 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen>
                             width: 40,
                             height: 40,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.12),
+                              color: Colors.white.withValues(alpha: 0.12),
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.38),
+                                color: Colors.white.withValues(alpha: 0.38),
                                 width: 1.6,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
+                                  color: Colors.black.withValues(alpha: 0.2),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
@@ -185,13 +165,13 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 28, vertical: 12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.14),
+                            color: Colors.white.withValues(alpha: 0.14),
                             borderRadius: BorderRadius.circular(40),
                             border: Border.all(
-                                color: Colors.white.withOpacity(0.38), width: 1.6),
+                                color: Colors.white.withValues(alpha: 0.38), width: 1.6),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
+                                color: Colors.black.withValues(alpha: 0.3),
                                 blurRadius: 16,
                                 offset: const Offset(0, 4),
                               ),
@@ -280,35 +260,84 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen>
 
   Widget _tile(String label, String digits, String k0, String k1,
       double w, double h, FocusTimerState t) {
-    final fontSize = (h * 0.54).clamp(32.0, 120.0);
-    return SizedBox(width: w, height: h,
-      child: Stack(children: [
-        Container(decoration: BoxDecoration(
-          color: const Color(0xFF282828),
-          borderRadius: BorderRadius.circular(22))),
-        Positioned(top: h / 2 - 1.5, left: 0, right: 0,
-          child: Container(height: 2.5, color: Colors.black.withOpacity(0.35))),
-        Positioned(top: 10, left: 0, right: 0,
-          child: Center(child: Text(label.toUpperCase(),
-            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
-              letterSpacing: 1.2, color: Colors.white.withOpacity(0.4))))),
-        Center(child: Row(mainAxisSize: MainAxisSize.min, children: [
-          _digitAnim(k0, digits[0], fontSize),
-          _digitAnim(k1, digits[1], fontSize),
-        ])),
-      ]));
-  }
+    final availableW = w - 24;
+    final cardW = (availableW - 8) / 2;
+    final cardH = h - 36;
+    final fontSize = (cardH * 0.65).clamp(28.0, 120.0);
+    final textStyle = TextStyle(
+      fontSize: fontSize,
+      fontWeight: FontWeight.w900,
+      color: Colors.white,
+      fontFeatures: const [FontFeature.tabularFigures()],
+      height: 1.0,
+    );
 
-  Widget _digitAnim(String k, String d, double sz) {
-    return AnimatedBuilder(animation: _ctrl(k), builder: (_, __) {
-      final v = _ctrl(k).value;
-      final scale = 1.0 - (v < 0.5 ? v * 0.28 : (1 - v) * 0.28);
-      final opacity = (v < 0.5 ? 1 - v * 1.8 : (v - 0.5) * 2.0).clamp(0.0, 1.0);
-      return Opacity(opacity: opacity,
-        child: Transform(alignment: Alignment.center,
-          transform: Matrix4.identity()..scale(1.0, scale),
-          child: Text(d, style: TextStyle(fontSize: sz, fontWeight: FontWeight.w800,
-            color: Colors.white, height: 1.0))));
-    });
+    return SizedBox(
+      width: w,
+      height: h,
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF1C1C1E),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            top: 10,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Text(
+                label.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.2,
+                  color: Colors.white.withValues(alpha: 0.4),
+                ),
+              ),
+            ),
+          ),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 22),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SketchFlipDigit(
+                    key: ValueKey('flip_$k0'),
+                    digit: digits[0],
+                    width: cardW,
+                    height: cardH,
+                    textStyle: textStyle,
+                    cardColor: const Color(0xFF262628),
+                    borderColor: const Color(0xFF3A3A3C),
+                  ),
+                  const SizedBox(width: 8),
+                  SketchFlipDigit(
+                    key: ValueKey('flip_$k1'),
+                    digit: digits[1],
+                    width: cardW,
+                    height: cardH,
+                    textStyle: textStyle,
+                    cardColor: const Color(0xFF262628),
+                    borderColor: const Color(0xFF3A3A3C),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

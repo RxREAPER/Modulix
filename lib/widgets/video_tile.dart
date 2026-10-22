@@ -49,37 +49,24 @@ class VideoTile extends StatelessWidget {
                 height: 42,
                 decoration: BoxDecoration(
                   color: isCompleted
-                      ? Colors.green.withValues(alpha: 0.15)
+                      ? Colors.green.withValues(alpha: 0.16)
                       : tileColor.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
+                  border: isCompleted
+                      ? Border.all(
+                          color: Colors.green.withValues(alpha: 0.5),
+                          width: 1.5,
+                        )
+                      : null,
                 ),
                 child: Center(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      AnimatedOpacity(
-                        opacity: isCompleted ? 0.0 : 1.0,
-                        duration: const Duration(milliseconds: 180),
-                        child: Text(
-                          '$serialNumber',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w900,
-                            color: tileColor,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      AnimatedOpacity(
-                        opacity: isCompleted ? 1.0 : 0.0,
-                        duration: const Duration(milliseconds: 180),
-                        child: AnimatedCheckStroke(
-                          checked: isCompleted,
-                          size: 22,
-                          color: Colors.green,
-                          strokeWidth: 2.4,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    '$serialNumber',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      color: isCompleted ? Colors.green.shade800 : tileColor,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
               ),

@@ -53,6 +53,12 @@ class SubjectScrollHelper {
     }
     return offset;
   }
+
+  static double calculateUnitCardOffset({
+    required int chapterIndex,
+  }) {
+    return headerBaseOffset + (chapterIndex * 152.0);
+  }
 }
 
 class SubjectScreen extends ConsumerStatefulWidget {
@@ -101,17 +107,13 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
         final relDy = box.localToGlobal(Offset.zero, ancestor: scrollable).dy;
         targetOffset = _scrollController.offset + relDy;
       } else {
-        targetOffset = SubjectScrollHelper.calculateUnitOffset(
+        targetOffset = SubjectScrollHelper.calculateUnitCardOffset(
           chapterIndex: chapterIndex,
-          subject: subject,
-          activeTab: activeTab,
         );
       }
     } else {
-      targetOffset = SubjectScrollHelper.calculateUnitOffset(
+      targetOffset = SubjectScrollHelper.calculateUnitCardOffset(
         chapterIndex: chapterIndex,
-        subject: subject,
-        activeTab: activeTab,
       );
     }
 
@@ -167,7 +169,6 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
   }
 
   Future<void> _openIndexSheet({
-    required BuildContext context,
     required Subject subject,
     String activeTab = 'videos',
     required Map<String, dynamic> completedVideos,
@@ -175,28 +176,35 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
     required Map<String, dynamic> completedNotes,
   }) async {
     HapticFeedback.selectionClick();
-    final displayChapters = (activeTab == 'qbank' && subject.qbankChapters.isNotEmpty)
-        ? subject.qbankChapters
-        : subject.chapters;
+    // Strictly align with subject.chapters to eliminate mismatch across module types
+    final displayChapters = subject.chapters;
 
     // Precompute unit stats once to eliminate per-frame recalculations during scrolling
     final unitStats = List.generate(displayChapters.length, (idx) {
       final chapter = displayChapters[idx];
-      int totalCount = 0;
-      int doneCount = 0;
-      if (activeTab == 'videos') {
-        totalCount = chapter.videos.length;
-        doneCount = chapter.videos.where((v) => completedVideos.containsKey(v.id)).length;
-      } else if (activeTab == 'qbank') {
-        totalCount = chapter.qbanks.length;
-        doneCount = chapter.qbanks.where((q) => completedQBanks.containsKey(q.id)).length;
-      } else {
-        totalCount = chapter.notes.length;
-        doneCount = chapter.notes.where((n) => completedNotes.containsKey(n.id)).length;
-      }
+      final totalVideos = chapter.videos.length;
+      final doneVideos = chapter.videos.where((v) => completedVideos.containsKey(v.id)).length;
+      final totalQBanks = chapter.qbanks.length;
+      final doneQBanks = chapter.qbanks.where((q) => completedQBanks.containsKey(q.id)).length;
+      final totalNotes = chapter.notes.length;
+      final doneNotes = chapter.notes.where((n) => completedNotes.containsKey(n.id)).length;
+
+      final totalCount = totalVideos + totalQBanks + totalNotes;
+      final doneCount = doneVideos + doneQBanks + doneNotes;
       final isComplete = totalCount > 0 && doneCount == totalCount;
       final percent = totalCount > 0 ? (doneCount / totalCount) : 0.0;
-      return (totalCount: totalCount, doneCount: doneCount, isComplete: isComplete, percent: percent);
+      return (
+        totalCount: totalCount,
+        doneCount: doneCount,
+        isComplete: isComplete,
+        percent: percent,
+        totalVideos: totalVideos,
+        doneVideos: doneVideos,
+        totalQBanks: totalQBanks,
+        doneQBanks: doneQBanks,
+        totalNotes: totalNotes,
+        doneNotes: doneNotes,
+      );
     });
 
     final selectedUnit = await showModalBottomSheet<int>(
@@ -208,18 +216,12 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
         reverseDuration: Duration(milliseconds: 150),
       ),
       builder: (ctx) {
-        final categoryTitle = activeTab == 'videos'
-            ? 'Videos'
-            : activeTab == 'qbank'
-                ? 'Q-Bank Topics'
-                : 'Notes';
-
         final categoryColor = AppTheme.accentPrimary;
 
         return DraggableScrollableSheet(
-          initialChildSize: 0.65,
+          initialChildSize: 0.70,
           minChildSize: 0.4,
-          maxChildSize: 0.90,
+          maxChildSize: 0.92,
           builder: (_, scrollController) {
             return RepaintBoundary(
               child: Container(
@@ -255,10 +257,10 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.format_list_bulleted_rounded, size: 14, color: categoryColor),
+                              Icon(Icons.layers_outlined, size: 14, color: categoryColor),
                               const SizedBox(width: 4),
                               Text(
-                                categoryTitle.toUpperCase(),
+                                'UNITS',
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w800,
@@ -319,8 +321,8 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                               children: [
                                 // Unit Number Tag
                                 Container(
-                                  width: 32,
-                                  height: 32,
+                                  width: 34,
+                                  height: 34,
                                   decoration: BoxDecoration(
                                     color: isComplete
                                         ? AppTheme.accentSubtle
@@ -338,7 +340,7 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                                         : Text(
                                             '${idx + 1}',
                                             style: TextStyle(
-                                              fontSize: 11,
+                                              fontSize: 12,
                                               fontWeight: FontWeight.w800,
                                               fontFamily: 'monospace',
                                               color: Colors.grey.shade700,
@@ -347,7 +349,7 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 12),
-                                // Title and progress bar
+                                // Title, progress bar and module action pills
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -383,11 +385,63 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                                           ),
                                         ),
                                       ),
+                                      const SizedBox(height: 6),
+                                      // Module chips row for quick jumping
+                                      Row(
+                                        children: [
+                                          if (stat.totalVideos > 0)
+                                            _buildIndexChip(
+                                              label: '${stat.doneVideos}/${stat.totalVideos} Videos',
+                                              icon: Icons.play_circle_outline_rounded,
+                                              color: AppTheme.accentPrimary,
+                                              isComplete: stat.doneVideos == stat.totalVideos,
+                                              onTap: () {
+                                                Navigator.pop(ctx);
+                                                _scrollToUnit(idx, subject);
+                                                try {
+                                                  context.push('/curriculum/${subject.id}/$idx?tab=videos');
+                                                } catch (_) {}
+                                              },
+                                            ),
+                                          if (stat.totalQBanks > 0) ...[
+                                            const SizedBox(width: 4),
+                                            _buildIndexChip(
+                                              label: '${stat.doneQBanks}/${stat.totalQBanks} Q-Bank',
+                                              icon: Icons.quiz_outlined,
+                                              color: const Color(0xFFF97316),
+                                              isComplete: stat.doneQBanks == stat.totalQBanks,
+                                              onTap: () {
+                                                Navigator.pop(ctx);
+                                                _scrollToUnit(idx, subject);
+                                                try {
+                                                  context.push('/curriculum/${subject.id}/$idx?tab=qbank');
+                                                } catch (_) {}
+                                              },
+                                            ),
+                                          ],
+                                          if (stat.totalNotes > 0) ...[
+                                            const SizedBox(width: 4),
+                                            _buildIndexChip(
+                                              label: '${stat.doneNotes}/${stat.totalNotes} Notes',
+                                              icon: Icons.menu_book_rounded,
+                                              color: const Color(0xFF10B981),
+                                              isComplete: stat.doneNotes == stat.totalNotes,
+                                              onTap: () {
+                                                Navigator.pop(ctx);
+                                                _scrollToUnit(idx, subject);
+                                                try {
+                                                  context.push('/curriculum/${subject.id}/$idx?tab=notes');
+                                                } catch (_) {}
+                                              },
+                                            ),
+                                          ],
+                                        ],
+                                      ),
                                     ],
                                   ),
                                 ),
-                                const SizedBox(width: 12),
-                                // Count badge
+                                const SizedBox(width: 10),
+                                // Unit Count badge
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                                   decoration: BoxDecoration(
@@ -396,32 +450,16 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                                         : AppTheme.parchmentSurface,
                                     borderRadius: BorderRadius.circular(6),
                                   ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        '$doneCount/$totalCount',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w800,
-                                          fontFamily: 'monospace',
-                                          color: isComplete
-                                              ? AppTheme.accentPrimary
-                                              : Colors.grey.shade700,
-                                        ),
-                                      ),
-                                      if (chapter.durationLabel.isNotEmpty) ...[
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          '· ${chapter.durationLabel}',
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w700,
-                                            color: Colors.grey.shade600,
-                                          ),
-                                        ),
-                                      ],
-                                    ],
+                                  child: Text(
+                                    '$doneCount/$totalCount',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                      fontFamily: 'monospace',
+                                      color: isComplete
+                                          ? AppTheme.accentPrimary
+                                          : Colors.grey.shade700,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 4),
@@ -443,11 +481,57 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
   );
 
     if (selectedUnit != null && mounted) {
-      await Future.delayed(const Duration(milliseconds: 120));
-      if (mounted) {
-        _scrollToUnit(selectedUnit, subject, activeTab);
-      }
+      _scrollToUnit(selectedUnit, subject, activeTab);
+      try {
+        context.push('/curriculum/${subject.id}/$selectedUnit');
+      } catch (_) {}
     }
+  }
+
+  Widget _buildIndexChip({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required bool isComplete,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+          decoration: BoxDecoration(
+            color: isComplete
+                ? color.withValues(alpha: 0.16)
+                : color.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: isComplete
+                  ? color.withValues(alpha: 0.5)
+                  : color.withValues(alpha: 0.25),
+              width: 0.8,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 10, color: color),
+              const SizedBox(width: 3),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -551,7 +635,6 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                   icon: Icon(Icons.format_list_bulleted_rounded, color: AppTheme.inkForeground),
                   tooltip: 'Unit Index',
                   onPressed: () => _openIndexSheet(
-                    context: context,
                     subject: subject,
                     completedVideos: completedVideos,
                     completedQBanks: completedQBanks,
@@ -610,7 +693,6 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                               color: Colors.transparent,
                               child: InkWell(
                                 onTap: () => _openIndexSheet(
-                                  context: context,
                                   subject: subject,
                                   completedVideos: completedVideos,
                                   completedQBanks: completedQBanks,

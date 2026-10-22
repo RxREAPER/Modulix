@@ -217,6 +217,10 @@ class UnitCard extends StatelessWidget {
                     doneLabel: doneVideos > 0 ? '$doneVideos/$totalVideos' : null,
                     color: AppTheme.accentPrimary,
                     isDone: totalVideos > 0 && doneVideos == totalVideos,
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      context.push('/curriculum/${subject.id}/$unitIndex?tab=videos');
+                    },
                   ),
 
                 // Q-Bank Pill
@@ -229,6 +233,10 @@ class UnitCard extends StatelessWidget {
                     doneLabel: doneQBanks > 0 ? '$doneQBanks/$totalQBanks' : null,
                     color: const Color(0xFFF97316),
                     isDone: totalQBanks > 0 && doneQBanks == totalQBanks,
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      context.push('/curriculum/${subject.id}/$unitIndex?tab=qbank');
+                    },
                   ),
 
                 // Notes Pill
@@ -239,6 +247,10 @@ class UnitCard extends StatelessWidget {
                     doneLabel: doneNotes > 0 ? '$doneNotes/$totalNotes' : null,
                     color: const Color(0xFF10B981),
                     isDone: totalNotes > 0 && doneNotes == totalNotes,
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      context.push('/curriculum/${subject.id}/$unitIndex?tab=notes');
+                    },
                   ),
               ],
             ),
@@ -309,6 +321,7 @@ class _ContentPill extends StatelessWidget {
   final String? doneLabel;
   final Color color;
   final bool isDone;
+  final VoidCallback? onTap;
 
   const _ContentPill({
     required this.icon,
@@ -316,11 +329,12 @@ class _ContentPill extends StatelessWidget {
     this.doneLabel,
     required this.color,
     this.isDone = false,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final pillWidget = Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: isDone
@@ -365,6 +379,16 @@ class _ContentPill extends StatelessWidget {
           ],
         ],
       ),
+    );
+
+    if (onTap == null) return pillWidget;
+
+    return ApplePressable(
+      pressedScale: 0.94,
+      hapticStyle: HapticStyle.selection,
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(7),
+      child: pillWidget,
     );
   }
 }

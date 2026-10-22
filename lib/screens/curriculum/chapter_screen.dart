@@ -19,11 +19,15 @@ import '../../widgets/loading/app_shimmer.dart';
 class ChapterScreen extends ConsumerStatefulWidget {
   final String subjectId;
   final int chapterIndex;
+  final String? initialTab;
+  final String? targetItemId;
 
   const ChapterScreen({
     super.key,
     required this.subjectId,
     required this.chapterIndex,
+    this.initialTab,
+    this.targetItemId,
   });
 
   @override
@@ -32,6 +36,30 @@ class ChapterScreen extends ConsumerStatefulWidget {
 
 class _ChapterScreenState extends ConsumerState<ChapterScreen> {
   String? _activeTab;
+  late final ScrollController _scrollController;
+  bool _hasAutoScrolled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    if (widget.initialTab != null) {
+      final tab = widget.initialTab!.toLowerCase();
+      if (tab == 'qbank' || tab == 'qbanks') {
+        _activeTab = 'qbank';
+      } else if (tab == 'notes' || tab == 'note') {
+        _activeTab = 'notes';
+      } else if (tab == 'videos' || tab == 'video') {
+        _activeTab = 'videos';
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,6 +138,29 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
 
         final categoryCount =
             (hasVideos ? 1 : 0) + (hasQBanks ? 1 : 0) + (hasNotes ? 1 : 0);
+
+        if (!_hasAutoScrolled && widget.targetItemId != null) {
+          _hasAutoScrolled = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            int targetIdx = -1;
+            if (activeTab == 'qbank') {
+              targetIdx = chapter.qbanks.indexWhere((q) => q.id == widget.targetItemId);
+            } else if (activeTab == 'notes') {
+              targetIdx = chapter.notes.indexWhere((n) => n.id == widget.targetItemId);
+            } else {
+              targetIdx = chapter.videos.indexWhere((v) => v.id == widget.targetItemId);
+            }
+            if (targetIdx > 0 && _scrollController.hasClients) {
+              final targetOffset = (targetIdx * 82.0).clamp(0.0, _scrollController.position.maxScrollExtent);
+              _scrollController.animateTo(
+                targetOffset,
+                duration: const Duration(milliseconds: 360),
+                curve: Curves.easeOutCubic,
+              );
+            }
+          });
+        }
 
         final canPop = ModalRoute.of(context)?.canPop ?? false;
         return PopScope(
@@ -383,14 +434,16 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
         );
       }
       return ListView.builder(
+        controller: _scrollController,
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
         itemCount: chapter.qbanks.length,
         itemBuilder: (context, i) {
           final qbank = chapter.qbanks[i];
           final isCompleted = completedQBanks.containsKey(qbank.id);
           final completedAt = completedQBanks[qbank.id];
+          final isTarget = widget.targetItemId != null && widget.targetItemId == qbank.id;
 
-          return _QBankTopicTile(
+          final tile = _QBankTopicTile(
             topic: qbank,
             serialNumber:
                 qbank.serialNumber > 0 ? qbank.serialNumber : (i + 1),
@@ -413,6 +466,18 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
               });
             },
           );
+
+          if (!isTarget) return tile;
+
+          return Container(
+            margin: const EdgeInsets.symmetric(vertical: 3),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: meta.accent, width: 2.0),
+              color: meta.accent.withValues(alpha: 0.08),
+            ),
+            child: tile,
+          );
         },
       );
     } else if (activeTab == 'notes') {
@@ -425,14 +490,16 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
         );
       }
       return ListView.builder(
+        controller: _scrollController,
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
         itemCount: chapter.notes.length,
         itemBuilder: (context, i) {
           final note = chapter.notes[i];
           final isCompleted = completedNotes.containsKey(note.id);
           final completedAt = completedNotes[note.id];
+          final isTarget = widget.targetItemId != null && widget.targetItemId == note.id;
 
-          return _NotesItemTile(
+          final tile = _NotesItemTile(
             note: note,
             serialNumber: i + 1,
             isCompleted: isCompleted,
@@ -453,24 +520,38 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
               });
             },
           );
+
+          if (!isTarget) return tile;
+
+          return Container(
+            margin: const EdgeInsets.symmetric(vertical: 3),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: meta.accent, width: 2.0),
+              color: meta.accent.withValues(alpha: 0.08),
+            ),
+            child: tile,
+          );
         },
       );
     }
 
     // Default: Videos
     return ListView.builder(
+      controller: _scrollController,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
       itemCount: chapter.videos.length,
       itemBuilder: (context, i) {
         final video = chapter.videos[i];
         final isCompleted = completedVideos.containsKey(video.id);
         final completedAt = completedVideos[video.id];
+        final isTarget = widget.targetItemId != null && widget.targetItemId == video.id;
 
         final globalNumber = video.serialNumber > 0
             ? video.serialNumber
             : (subject.allVideos.indexWhere((v) => v.id == video.id) + 1);
 
-        return VideoTile(
+        final tile = VideoTile(
           video: video,
           serialNumber: globalNumber > 0 ? globalNumber : (i + 1),
           isCompleted: isCompleted,
@@ -485,6 +566,18 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
               ref.read(appStateProvider.notifier).markVideoComplete(video.id);
             }
           },
+        );
+
+        if (!isTarget) return tile;
+
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 3),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: meta.accent, width: 2.0),
+            color: meta.accent.withValues(alpha: 0.08),
+          ),
+          child: tile,
         );
       },
     );
@@ -708,37 +801,24 @@ class _QBankTopicTile extends StatelessWidget {
                 height: 42,
                 decoration: BoxDecoration(
                   color: isCompleted
-                      ? Colors.green.withValues(alpha: 0.15)
+                      ? Colors.green.withValues(alpha: 0.16)
                       : badgeColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
+                  border: isCompleted
+                      ? Border.all(
+                          color: Colors.green.withValues(alpha: 0.5),
+                          width: 1.5,
+                        )
+                      : null,
                 ),
                 child: Center(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      AnimatedOpacity(
-                        opacity: isCompleted ? 0.0 : 1.0,
-                        duration: const Duration(milliseconds: 180),
-                        child: Text(
-                          '$serialNumber',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w900,
-                            color: badgeColor,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                      AnimatedOpacity(
-                        opacity: isCompleted ? 1.0 : 0.0,
-                        duration: const Duration(milliseconds: 180),
-                        child: AnimatedCheckStroke(
-                          checked: isCompleted,
-                          size: 22,
-                          color: Colors.green,
-                          strokeWidth: 2.4,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    '$serialNumber',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      color: isCompleted ? Colors.green.shade800 : badgeColor,
+                      fontSize: 15,
+                    ),
                   ),
                 ),
               ),
@@ -879,37 +959,24 @@ class _NotesItemTile extends StatelessWidget {
                 height: 42,
                 decoration: BoxDecoration(
                   color: isCompleted
-                      ? Colors.green.withValues(alpha: 0.15)
+                      ? Colors.green.withValues(alpha: 0.16)
                       : badgeColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
+                  border: isCompleted
+                      ? Border.all(
+                          color: Colors.green.withValues(alpha: 0.5),
+                          width: 1.5,
+                        )
+                      : null,
                 ),
                 child: Center(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      AnimatedOpacity(
-                        opacity: isCompleted ? 0.0 : 1.0,
-                        duration: const Duration(milliseconds: 180),
-                        child: Text(
-                          '$serialNumber',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w900,
-                            color: badgeColor,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                      AnimatedOpacity(
-                        opacity: isCompleted ? 1.0 : 0.0,
-                        duration: const Duration(milliseconds: 180),
-                        child: AnimatedCheckStroke(
-                          checked: isCompleted,
-                          size: 22,
-                          color: Colors.green,
-                          strokeWidth: 2.4,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    '$serialNumber',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      color: isCompleted ? Colors.green.shade800 : badgeColor,
+                      fontSize: 15,
+                    ),
                   ),
                 ),
               ),

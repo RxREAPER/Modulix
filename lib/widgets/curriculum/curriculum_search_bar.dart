@@ -39,10 +39,11 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
   Widget build(BuildContext context) {
     final queryLower = _query.trim().toLowerCase();
 
-    // Filter results across subjects, units, videos, and qbanks
+    // Filter results across subjects, units, videos, qbanks, and notes
     final matchedSubjects = <Subject>[];
     final matchedVideos = <Map<String, dynamic>>[];
     final matchedQBanks = <Map<String, dynamic>>[];
+    final matchedNotes = <Map<String, dynamic>>[];
     final matchedChapters = <Map<String, dynamic>>[];
 
     if (queryLower.isNotEmpty) {
@@ -57,12 +58,16 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
           matchedSubjects.add(s);
         }
 
-        for (final ch in s.chapters) {
+        for (int chIdx = 0; chIdx < s.chapters.length; chIdx++) {
+          final ch = s.chapters[chIdx];
           if (ch.name.toLowerCase().contains(queryLower)) {
             matchedChapters.add({
               'subject': s,
               'chapterName': ch.name,
+              'chapterIndex': chIdx,
               'videosCount': ch.totalVideos,
+              'qbanksCount': ch.totalQBanks,
+              'notesCount': ch.totalNotes,
             });
           }
 
@@ -75,7 +80,21 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
               matchedVideos.add({
                 'subject': s,
                 'chapterName': ch.name,
+                'chapterIndex': chIdx,
                 'video': v,
+              });
+            }
+          }
+
+          for (final n in ch.notes) {
+            final matchesTitle = n.title.toLowerCase().contains(queryLower);
+            final matchesId = n.id.toLowerCase().contains(queryLower);
+            if (matchesTitle || matchesId) {
+              matchedNotes.add({
+                'subject': s,
+                'chapterName': ch.name,
+                'chapterIndex': chIdx,
+                'note': n,
               });
             }
           }
@@ -87,9 +106,21 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
           final matchesNum = (queryNum != null && (q.serialNumber == queryNum || q.assignedNumber == queryNum)) ||
               (isNumericQuery && '#${q.assignedNumber ?? q.serialNumber}'.toLowerCase().contains(queryLower));
           if (matchesTitle || matchesId || matchesNum) {
+            int chIndex = s.chapters.indexWhere((c) => c.qbanks.any((item) => item.id == q.id));
+            if (chIndex == -1) {
+              chIndex = s.chapters.indexWhere((c) => c.name.toLowerCase() == q.chapterName.toLowerCase());
+            }
+            if (chIndex == -1) {
+              chIndex = s.chapters.indexWhere((c) =>
+                  c.name.toLowerCase().contains(q.chapterName.toLowerCase()) ||
+                  q.chapterName.toLowerCase().contains(c.name.toLowerCase()));
+            }
+            if (chIndex == -1) chIndex = 0;
+
             matchedQBanks.add({
               'subject': s,
               'chapterName': q.chapterName,
+              'chapterIndex': chIndex,
               'qbank': q,
             });
           }
@@ -100,7 +131,8 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
     final hasResults = matchedSubjects.isNotEmpty ||
         matchedChapters.isNotEmpty ||
         matchedVideos.isNotEmpty ||
-        matchedQBanks.isNotEmpty;
+        matchedQBanks.isNotEmpty ||
+        matchedNotes.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,6 +275,7 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
                               matchedChapters: matchedChapters,
                               matchedVideos: matchedVideos,
                               matchedQBanks: matchedQBanks,
+                              matchedNotes: matchedNotes,
                             ),
                           ),
                   ),
@@ -258,6 +291,7 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
     required List<Map<String, dynamic>> matchedChapters,
     required List<Map<String, dynamic>> matchedVideos,
     required List<Map<String, dynamic>> matchedQBanks,
+    required List<Map<String, dynamic>> matchedNotes,
   }) {
     final items = <Widget>[];
     int cascadeIndex = 0;
@@ -279,8 +313,8 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
             query: _query,
             child: ListTile(
               leading: Container(
-                width: 32,
-                height: 32,
+                width: 34,
+                height: 34,
                 decoration: BoxDecoration(
                   color: meta.accent.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
@@ -293,9 +327,16 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
                   ),
                 ),
               ),
-              title: Text(
-                s.displayName,
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      s.displayName,
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                    ),
+                  ),
+                  _typeBadge('SUBJECT', meta.accent),
+                ],
               ),
               subtitle: Text(
                 '${s.totalVideos} videos · ${s.totalHours.toStringAsFixed(1)} hrs',
@@ -303,9 +344,10 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
               ),
               trailing: const Icon(Icons.chevron_right, size: 18),
               onTap: () {
+                _focusNode.unfocus();
                 _controller.clear();
                 setState(() => _isSearching = false);
-                context.go('/curriculum/${s.id}');
+                context.push('/curriculum/${s.id}');
               },
             ),
           ),
@@ -325,25 +367,45 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
       for (final item in matchedChapters.take(5)) {
         final s = item['subject'] as Subject;
         final chName = item['chapterName'] as String;
+        final chIndex = item['chapterIndex'] as int;
         final vCount = item['videosCount'] as int;
         items.add(
           _CascadingItem(
             index: cascadeIndex++,
             query: _query,
             child: ListTile(
-              leading: Icon(Icons.bookmark_border_rounded, size: 20, color: AppTheme.primaryBlue),
-              title: Text(
-                chName,
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              leading: Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryBlue.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Icon(Icons.layers_outlined, size: 18, color: AppTheme.primaryBlue),
+                ),
+              ),
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      chName,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                    ),
+                  ),
+                  _typeBadge('UNIT', AppTheme.primaryBlue),
+                ],
               ),
               subtitle: Text(
-                '${s.displayName} · $vCount videos',
+                '${s.displayName} · Unit ${chIndex + 1} · $vCount videos',
                 style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
               ),
+              trailing: const Icon(Icons.chevron_right, size: 18),
               onTap: () {
+                _focusNode.unfocus();
                 _controller.clear();
                 setState(() => _isSearching = false);
-                context.go('/curriculum/${s.id}');
+                context.push('/curriculum/${s.id}/$chIndex');
               },
             ),
           ),
@@ -363,16 +425,17 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
       for (final item in matchedVideos.take(8)) {
         final s = item['subject'] as Subject;
         final v = item['video'] as Video;
+        final chIndex = item['chapterIndex'] as int;
         items.add(
           _CascadingItem(
             index: cascadeIndex++,
             query: _query,
             child: ListTile(
               leading: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
                 decoration: BoxDecoration(
                   color: s.accentColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: s.accentColor.withValues(alpha: 0.3), width: 1),
                 ),
                 child: Text(
@@ -384,20 +447,29 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
                   ),
                 ),
               ),
-              title: Text(
-                v.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      v.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                    ),
+                  ),
+                  _typeBadge('VIDEO', s.accentColor),
+                ],
               ),
               subtitle: Text(
-                '${s.displayName} · ${v.chapterName} · ${v.durationLabel}',
+                '${s.displayName} · ${item['chapterName']} · ${v.durationLabel}',
                 style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
               ),
+              trailing: const Icon(Icons.chevron_right, size: 18),
               onTap: () {
+                _focusNode.unfocus();
                 _controller.clear();
                 setState(() => _isSearching = false);
-                context.go('/curriculum/${s.id}');
+                context.push('/curriculum/${s.id}/$chIndex?tab=videos&itemId=${v.id}');
               },
             ),
           ),
@@ -417,41 +489,111 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
       for (final item in matchedQBanks.take(6)) {
         final s = item['subject'] as Subject;
         final q = item['qbank'] as QBankTopic;
+        final chIndex = item['chapterIndex'] as int;
         items.add(
           _CascadingItem(
             index: cascadeIndex++,
             query: _query,
             child: ListTile(
               leading: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.teal.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: Colors.teal.withValues(alpha: 0.3), width: 1),
+                  color: const Color(0xFFF97316).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFF97316).withValues(alpha: 0.3), width: 1),
                 ),
                 child: Text(
                   '#${q.assignedNumber ?? q.serialNumber}',
                   style: const TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 11,
-                    color: Colors.teal,
+                    color: Color(0xFFF97316),
                   ),
                 ),
               ),
-              title: Text(
-                q.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      q.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                    ),
+                  ),
+                  _typeBadge('Q-BANK', const Color(0xFFF97316)),
+                ],
               ),
               subtitle: Text(
-                '${s.displayName} · ${q.chapterName} · ${q.totalMcqs} MCQs',
+                '${s.displayName} · ${item['chapterName']} · ${q.totalMcqs} MCQs',
                 style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
               ),
+              trailing: const Icon(Icons.chevron_right, size: 18),
               onTap: () {
+                _focusNode.unfocus();
                 _controller.clear();
                 setState(() => _isSearching = false);
-                context.go('/curriculum/${s.id}');
+                context.push('/curriculum/${s.id}/$chIndex?tab=qbank&itemId=${q.id}');
+              },
+            ),
+          ),
+        );
+      }
+    }
+
+    // Matched Notes
+    if (matchedNotes.isNotEmpty) {
+      items.add(
+        _CascadingItem(
+          index: cascadeIndex++,
+          query: _query,
+          child: _resultHeader('NOTES & TEXTS (${matchedNotes.length})'),
+        ),
+      );
+      for (final item in matchedNotes.take(6)) {
+        final s = item['subject'] as Subject;
+        final n = item['note'] as NotesItem;
+        final chIndex = item['chapterIndex'] as int;
+        items.add(
+          _CascadingItem(
+            index: cascadeIndex++,
+            query: _query,
+            child: ListTile(
+              leading: Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3), width: 1),
+                ),
+                child: const Center(
+                  child: Icon(Icons.menu_book_rounded, size: 18, color: Color(0xFF10B981)),
+                ),
+              ),
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      n.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                    ),
+                  ),
+                  _typeBadge('NOTES', const Color(0xFF10B981)),
+                ],
+              ),
+              subtitle: Text(
+                '${s.displayName} · ${item['chapterName']} · ${n.pages} pages',
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+              ),
+              trailing: const Icon(Icons.chevron_right, size: 18),
+              onTap: () {
+                _focusNode.unfocus();
+                _controller.clear();
+                setState(() => _isSearching = false);
+                context.push('/curriculum/${s.id}/$chIndex?tab=notes&itemId=${n.id}');
               },
             ),
           ),
@@ -460,6 +602,27 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
     }
 
     return items;
+  }
+
+  Widget _typeBadge(String label, Color color) {
+    return Container(
+      margin: const EdgeInsets.only(left: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 0.8),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 9,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
+          color: color,
+        ),
+      ),
+    );
   }
 
   Widget _resultHeader(String title) {

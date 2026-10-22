@@ -282,7 +282,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
           );
         }
       }
-      _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+      _ticker = Timer.periodic(const Duration(milliseconds: 200), (_) => _tick());
     }
   }
 
@@ -482,16 +482,15 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     }
 
     if (_sessionTargetEndTime != null) {
-      final remaining = _sessionTargetEndTime!.difference(now).inSeconds;
-      if (remaining <= 0) {
+      final diffMs = _sessionTargetEndTime!.difference(now).inMilliseconds;
+      if (diffMs <= 0) {
         // Countdown completed while in background
         _onCountdownComplete();
       } else {
-        final elapsed = _lastTickWallTime != null
-            ? now.difference(_lastTickWallTime!).inSeconds
-            : (state.remainingSeconds - remaining);
-        _lastTickWallTime = now;
+        final remaining = (diffMs / 1000.0).ceil();
+        final elapsed = state.remainingSeconds - remaining;
         final safeElapsed = elapsed > 0 ? elapsed : 0;
+        _lastTickWallTime = now;
 
         if (state.phase == TimerPhase.onBreak) {
           state = state.copyWith(
@@ -513,51 +512,46 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     if (!state.isRunning) return;
 
     final now = DateTime.now();
-    _lastTickWallTime ??= now;
-    final elapsed = now.difference(_lastTickWallTime!).inSeconds;
-    if (elapsed <= 0) return;
+
+    if (state.mode == TimerMode.countUp) {
+      _lastTickWallTime ??= now;
+      final elapsedDiff = now.difference(_lastTickWallTime!).inMilliseconds;
+      if (elapsedDiff < 1000) return;
+      final wholeSeconds = elapsedDiff ~/ 1000;
+      _lastTickWallTime = _lastTickWallTime!.add(Duration(seconds: wholeSeconds));
+
+      state = state.copyWith(
+        focusSecondsElapsed: state.focusSecondsElapsed + wholeSeconds,
+        remainingSeconds: state.remainingSeconds + wholeSeconds,
+      );
+      return;
+    }
+
+    if (_sessionTargetEndTime == null) return;
+
+    final diffMs = _sessionTargetEndTime!.difference(now).inMilliseconds;
+    if (diffMs <= 0) {
+      _onCountdownComplete();
+      return;
+    }
+
+    final remaining = (diffMs / 1000.0).ceil();
+    if (remaining == state.remainingSeconds) return;
+
+    final delta = state.remainingSeconds - remaining;
+    if (delta <= 0) return;
+
     _lastTickWallTime = now;
-
-    final s = state;
-    if (s.phase == TimerPhase.onBreak) {
-      final newBreak = s.breakSecondsElapsed + elapsed;
-      if (s.mode != TimerMode.countUp) {
-        final remaining = _sessionTargetEndTime != null
-            ? _sessionTargetEndTime!.difference(now).inSeconds
-            : s.remainingSeconds - elapsed;
-
-        if (remaining <= 0) {
-          _onCountdownComplete();
-        } else {
-          state = s.copyWith(
-            breakSecondsElapsed: newBreak,
-            remainingSeconds: remaining,
-          );
-        }
-      } else {
-        state = s.copyWith(breakSecondsElapsed: newBreak);
-      }
+    if (state.phase == TimerPhase.onBreak) {
+      state = state.copyWith(
+        breakSecondsElapsed: state.breakSecondsElapsed + delta,
+        remainingSeconds: remaining,
+      );
     } else {
-      final newFocus = s.focusSecondsElapsed + elapsed;
-      if (s.mode == TimerMode.countUp) {
-        state = s.copyWith(
-          focusSecondsElapsed: newFocus,
-          remainingSeconds: s.remainingSeconds + elapsed,
-        );
-      } else {
-        final remaining = _sessionTargetEndTime != null
-            ? _sessionTargetEndTime!.difference(now).inSeconds
-            : s.remainingSeconds - elapsed;
-
-        if (remaining <= 0) {
-          _onCountdownComplete();
-        } else {
-          state = s.copyWith(
-            focusSecondsElapsed: newFocus,
-            remainingSeconds: remaining,
-          );
-        }
-      }
+      state = state.copyWith(
+        focusSecondsElapsed: state.focusSecondsElapsed + delta,
+        remainingSeconds: remaining,
+      );
     }
   }
 

@@ -8,6 +8,31 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-023] Curriculum Unit Index Navigation, Deep Search Linking, Number Visibility & 3D Split-Flap Clock Precision
+- **Timestamp:** 2026-10-22 13:25 UTC
+- **Category:** Bug Fixes / Search & Deep-Linking / Accessibility / 3D Mechanical Flip Clock
+- **Files Modified:**
+  - `lib/widgets/video_tile.dart`
+  - `lib/screens/curriculum/chapter_screen.dart`
+  - `lib/widgets/curriculum/unit_card.dart`
+  - `lib/screens/curriculum/subject_screen.dart`
+  - `lib/widgets/curriculum/curriculum_search_bar.dart`
+  - `lib/app.dart`
+  - `lib/providers/focus_timer_provider.dart`
+  - `lib/widgets/timer/sketch_flip_digit.dart` (NEW)
+  - `lib/screens/timer/fullscreen_timer_screen.dart`
+- **Summary:**
+  - **Unit Index Links (Bug 1):** Fixed index sheet in `SubjectScreen` to strictly align with canonical `subject.chapters`, preventing mismatched offsets across different tab states. Added direct unit route navigation (`context.push`) and interactive module pills (`Videos`, `Q-Bank`, `Notes`) per sheet item, ensuring seamless deep jumps to specific unit module tabs.
+  - **Search Feature Deep-Linking & Notes Indexing (Bug 2):** Indexed all unit notes (`ch.notes`) into `CurriculumSearchBar` alongside videos and Q-Banks. Resolved exact unit indices for every module type and upgraded routing from top-level subject pages to deep links `/curriculum/${s.id}/$chIndex?tab=${type}&itemId=${id}`. Updated `ChapterScreen` to ingest initial module tab and target item ID, automatically activating the corresponding module view, scrolling to the item, and highlighting it with a distinct border. Added badge chips (`SUBJECT`, `UNIT`, `VIDEO`, `Q-BANK`, `NOTES`) to search result rows.
+  - **Module Number Visibility on Complete (Bug 3):** Removed opacity 0.0 hiding of serial number badges in `video_tile.dart` and `chapter_screen.dart`. When marked complete, serial numbers remain 100% visible and sharp with a gentle green tint background, while the trailing checkbox handles the smooth check stroke animation without occluding the index.
+  - **Flip Clock Accuracy & 3D Mechanical Split-Flap Engine (Bug 5):** Fixed skipped seconds and jitter in `FocusTimerNotifier` by upgrading ticker to a 200ms periodic pulse with wall-clock delta `ceil()` calculation against `_sessionTargetEndTime`, emitting state updates only on integer second boundary crossings. Integrated pro 3D mechanical split-flap flip digit widget (`SketchFlipDigit`) featuring upper flap $0^\circ \to -90^\circ$ and lower flap $90^\circ \to 0^\circ$ perspective rotations, card seam dividers, side hinge notches, and ambient drop shadows.
+- **Verification:**
+  - Static analysis (`flutter analyze`) on all modified files passed with **0 errors and 0 warnings**.
+  - Unit and widget test suite (`test/chapter_screen_test.dart`, `test/subject_unit_index_test.dart`, `test/focus_timer_idempotency_test.dart`, `test/domain5_focus_timer_sqlite_test.dart`, `test/domain3_curriculum_virtualization_test.dart`, `test/all_screens_animation_theme_test.dart`, `test/m2_regression_test.dart`) passed 100% (**47/47 tests passed**).
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### [CKPT-022] Unified Individual Unit Cards with Embedded Video, Q-Bank & Notes Modules and Focus Timer Shortcut
 - **Timestamp:** 2026-10-22 11:00 UTC
 - **Category:** Curriculum Architecture / UI Overhaul / Focus Timer Integration

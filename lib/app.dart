@@ -121,16 +121,23 @@ final routerProvider = Provider<GoRouter>((ref) {
                       ),
                       GoRoute(
                         path: ':chapterIndex',
-                        pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
-                          state: state,
-                          child: ChapterScreen(
-                            subjectId: state.pathParameters['subjectId'] ?? '',
-                            chapterIndex: int.tryParse(
-                                    state.pathParameters['chapterIndex'] ??
-                                        '') ??
-                                -1,
-                          ),
-                        ),
+                        pageBuilder: (context, state) {
+                          final extra = state.extra as Map<String, dynamic>?;
+                          final initialTab = state.uri.queryParameters['tab'] ?? extra?['tab'] as String?;
+                          final targetItemId = state.uri.queryParameters['itemId'] ?? extra?['itemId'] as String?;
+                          return _buildSlideHorizontalTransitionPage(
+                            state: state,
+                            child: ChapterScreen(
+                              subjectId: state.pathParameters['subjectId'] ?? '',
+                              chapterIndex: int.tryParse(
+                                      state.pathParameters['chapterIndex'] ??
+                                          '') ??
+                                  -1,
+                              initialTab: initialTab,
+                              targetItemId: targetItemId,
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
