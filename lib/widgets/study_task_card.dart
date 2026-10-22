@@ -51,26 +51,31 @@ class StudyTaskCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
-                // Square Sketch Checkbox
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  curve: Curves.easeOutCubic,
-                  width: 26,
-                  height: 26,
-                  decoration: BoxDecoration(
-                    color: isCompleted ? AppTheme.accentPrimary : AppTheme.cardWhite,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: isCompleted ? AppTheme.accentPrimary : AppTheme.sketchBorderColor,
-                      width: 2,
+                // Square Sketch Checkbox with Tactile Spring Bounce
+                AnimatedScale(
+                  scale: isCompleted ? 1.05 : 1.0,
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutBack,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeOutCubic,
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      color: isCompleted ? AppTheme.accentPrimary : AppTheme.cardWhite,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: isCompleted ? AppTheme.accentPrimary : AppTheme.sketchBorderColor,
+                        width: 2,
+                      ),
                     ),
-                  ),
-                  child: Center(
-                    child: AnimatedCheckStroke(
-                      checked: isCompleted,
-                      size: 16,
-                      color: AppTheme.onAccent,
-                      strokeWidth: 2.2,
+                    child: Center(
+                      child: AnimatedCheckStroke(
+                        checked: isCompleted,
+                        size: 16,
+                        color: AppTheme.onAccent,
+                        strokeWidth: 2.2,
+                      ),
                     ),
                   ),
                 ),

@@ -55,6 +55,7 @@ dependencies:
   flutter_animate: ^4.5.2
   sprung: ^3.0.1
   sliver_tools: ^0.2.12
+  animations: ^2.0.11
 
 dev_dependencies:
   flutter_test:

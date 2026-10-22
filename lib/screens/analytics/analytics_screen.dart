@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../models/time_log.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/daily_tasks_provider.dart';
 import '../../providers/syllabus_provider.dart';
@@ -31,6 +32,15 @@ class AnalyticsScreen extends ConsumerWidget {
       return '${h}h ${m}m';
     }
     return '${m}m';
+  }
+
+  static Map<String, int> _aggregateDailyFocusSecs(List<TimeLog> logs) {
+    final map = <String, int>{};
+    for (final log in logs) {
+      final key = DateFormat('yyyy-MM-dd').format(log.timestamp);
+      map[key] = (map[key] ?? 0) + log.durationSecs;
+    }
+    return map;
   }
 
   @override
@@ -405,56 +415,13 @@ class AnalyticsScreen extends ConsumerWidget {
 
             const SizedBox(height: 28),
 
-            // ── Heatmap Calendar Section ─────────────────────────────────────
-            Text(
-              '12-WEEK STUDY ACTIVITY',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.2,
-                color: AppTheme.mutedText,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: AppTheme.sketchDecoration(
-                backgroundColor: AppTheme.cardWhite,
-                borderRadius: 20,
-                shadowOffset: 4,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Daily Consistency Matrix',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.inkForeground,
-                        ),
-                      ),
-                      Text(
-                        '${edition.dailyHistory.values.fold<int>(0, (a, b) => a + b)} completed',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.mutedText,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  HeatmapCalendar(
-                    dailyHistory: edition.dailyHistory,
-                    accentColor: AppTheme.accentPrimary,
-                  ),
-                ],
-              ),
+            // ── NEET-PG Consistency Matrix Section ───────────────────────────
+            NeetConsistencyMatrix(
+              dailyVideos: edition.dailyHistory,
+              dailyFocusSecs: _aggregateDailyFocusSecs(timeLogs),
+              dailyTasks: dailyTasksState.dateHistory,
+              accentColor: AppTheme.accentPrimary,
+              weeksCount: 52,
             ),
           ],
         ),

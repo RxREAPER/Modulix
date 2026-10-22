@@ -253,6 +253,13 @@ void main() {
 
   group('Dedicated Full Page Views Tests', () {
     testWidgets('StudyPlanAnalyticsPage renders what-if pace slider and unit matrix', (tester) async {
+      tester.view.physicalSize = const Size(800, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [

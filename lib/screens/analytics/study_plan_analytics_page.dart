@@ -10,6 +10,7 @@ import '../../theme/app_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/analytics/progress_radial_gauge.dart';
+import '../../widgets/analytics/pacing_velocity_chart.dart';
 
 class StudyPlanAnalyticsPage extends ConsumerStatefulWidget {
   const StudyPlanAnalyticsPage({super.key});
@@ -268,7 +269,18 @@ class _StudyPlanAnalyticsPageState
 
             const SizedBox(height: 20),
 
-            // ── 2. Interactive What-If Velocity Simulator ──────────────────
+            // ── 2. Pacing Velocity & Trajectory Chart ──────────────────────
+            PacingVelocityChart(
+              totalModules: totalVideos,
+              completedModules: completedVideos,
+              dailyHistory: edition.dailyHistory,
+              dailyQuota: plan.videosPerDay?.toDouble() ?? 4.0,
+              targetDateStr: plan.targetDate,
+            ),
+
+            const SizedBox(height: 20),
+
+            // ── 3. Interactive What-If Velocity Simulator ──────────────────
             Text(
               'WHAT-IF VELOCITY SIMULATOR',
               style: TextStyle(

@@ -8,6 +8,36 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-037] Daily Desk Pad Fluid Container Morphing, NEET-PG Consistency Matrix & Pacing Velocity Burn-Up Chart
+- **Timestamp:** 2026-10-23 04:50 UTC
+- **Category:** UI/UX Fluid Animations / Container Morphing / NEET-PG Consistency Heatmap / Pacing Trajectory & Burn-Up Charts / Flutter 3.41+ Modernization
+- **Files Added (3 files):**
+  - `lib/widgets/analytics/neet_consistency_matrix.dart` (52-week horizontal scrollable calendar heatmap matrix with weekday indicators M/W/F, 5-tier intensity color ramp, multi-metric switcher between Videos, Focus Time, and Tasks, and interactive daily consistency inspection bottom sheet)
+  - `lib/widgets/analytics/pacing_velocity_chart.dart` (60fps velocity burn-up curves using `fl_chart` with target linear trajectory, actual cumulative curve with gradient area fill, and 5-day extrapolation forecast line with overflow-defended layout)
+  - `test/clinical_analytics_widgets_test.dart` (5 comprehensive unit and widget tests verifying NeetConsistencyMatrix, multi-metric toggle, PacingVelocityChart trajectory rendering, and zero-state edge handling)
+- **Files Modified (8 files):**
+  - `pubspec.yaml` & `pubspec.lock` (added `animations: ^2.0.11` for high-performance Material container transforms)
+  - `lib/widgets/automated_module_tracker.dart` (wrapped automated module card with `OpenContainer` for fluid 360ms container morphing from Home Desk Pad into `ModuleTasksScreen` without jarring page jumps)
+  - `lib/screens/home/home_screen.dart` (modernized `ReorderableListView.builder` callback to `onReorderItem` per Flutter 3.41+ and AGENTS.md Rule 4B)
+  - `lib/providers/daily_tasks_provider.dart` (updated `reorderTasks` to match `onReorderItem` framework contract without redundant index decrement)
+  - `lib/widgets/study_task_card.dart` (added tactile spring bounce `AnimatedScale` with `Curves.easeOutBack` to checkbox toggles)
+  - `lib/widgets/heatmap_calendar.dart` (updated as a backwards-compatible wrapper forwarding to `NeetConsistencyMatrix`)
+  - `lib/screens/analytics/study_plan_analytics_page.dart` (embedded `PacingVelocityChart` directly below hero progress gauge)
+  - `lib/screens/analytics/analytics_screen.dart` (embedded `NeetConsistencyMatrix` into Performance Hub)
+  - `test/progress_overhaul_test.dart` (configured standard 2400px test physical size for full-page analytics view test)
+- **Summary:**
+  - **Fluid Desk Pad Container Morphing:** Leveraged `package:animations` `OpenContainer` container transform on `AutomatedModuleTracker` to deliver smooth, tactile transitions from the Home Desk Pad into the focused `ModuleTasksScreen`.
+  - **Flutter 3.41+ ReorderableListView Modernization:** Migrated `ReorderableListView` in `HomeScreen` to `onReorderItem` and streamlined `DailyTasksNotifier.reorderTasks` strictly following `AGENTS.md` Rule 4B without manual index offset math.
+  - **Tactile Checkbox Spring Bounce:** Added spring bounce physics (`Curves.easeOutBack`) to `StudyTaskCard` checkboxes for immediate tactile positive reinforcement when checking off clinical study goals.
+  - **52-Week NEET-PG Consistency Matrix:** Designed and implemented a responsive 52-week horizontal calendar heatmap supporting multi-metric switching across completed videos, deep work focus seconds, and daily desk tasks, complete with weekday guides, 5-tier intensity gradients, and interactive day inspection bottom sheets with zero emojis.
+  - **Clinical Pacing Velocity Burn-Up Chart:** Built 60fps velocity burn-up curves using `fl_chart`, depicting actual cumulative completion against scheduled target pace and dynamic 5-day extrapolation forecasting.
+- **Verification:**
+  - `flutter analyze lib/ test/` passed with **0 errors, 0 warnings, 0 infos**.
+  - All 47 test suites passed 100% (**287 / 287 tests passed**).
+- **Build Status:** Pending APK Build
+
+---
+
 ### [CKPT-036] Multi-Track Ambient Desk Mixer, Medical Sinus Rhythm Visualizer & 65MB Audio Footprint Optimization
 - **Timestamp:** 2026-10-23 04:20 UTC
 - **Category:** Focus Timer / Audio Engine / Multi-Track Desk Mixer / Medical Wave Visualizer / Footprint Optimization

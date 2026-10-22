@@ -8,6 +8,8 @@ import '../models/app_state.dart';
 import '../models/syllabus.dart';
 import '../providers/app_state_provider.dart';
 import '../theme/app_theme.dart';
+import 'package:animations/animations.dart';
+import '../screens/curriculum/module_tasks_screen.dart';
 import 'curriculum/subject_sketch_icon.dart';
 import 'in_situ_hint_pill.dart';
 import 'animations/apple_pressable.dart';
@@ -393,14 +395,28 @@ class AutomatedModuleTracker extends ConsumerWidget {
     final meta = subjectMeta(subjectId);
     final isAllDone = batchVideos.isNotEmpty && completedBatchCount >= batchVideos.length;
 
-    return ApplePressable(
-      pressedScale: 0.97,
-      pressedOpacity: 0.93,
-      hapticStyle: HapticStyle.light,
-      onTap: () => context.push('/module-tasks'),
-      borderRadius: BorderRadius.circular(18),
-      child: Container(
-        width: double.infinity,
+    return OpenContainer(
+      transitionType: ContainerTransitionType.fadeThrough,
+      transitionDuration: const Duration(milliseconds: 360),
+      closedElevation: 0,
+      openElevation: 0,
+      closedColor: Colors.transparent,
+      openColor: AppTheme.paperBackground,
+      middleColor: AppTheme.cardWhite,
+      closedShape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+      ),
+      openShape: const RoundedRectangleBorder(),
+      openBuilder: (context, _) => const ModuleTasksScreen(),
+      closedBuilder: (context, openContainer) {
+        return ApplePressable(
+          pressedScale: 0.97,
+          pressedOpacity: 0.93,
+          hapticStyle: HapticStyle.light,
+          onTap: openContainer,
+          borderRadius: BorderRadius.circular(18),
+          child: Container(
+            width: double.infinity,
           decoration: AppTheme.sketchDecoration(
             backgroundColor: AppTheme.cardWhite,
             borderRadius: 18,
@@ -625,7 +641,9 @@ class AutomatedModuleTracker extends ConsumerWidget {
           ),
         ),
       );
-    }
+    },
+  );
+}
 
   /// Rollover check: 2 stale + 2 fresh = 4 total capped at user quota
   Future<void> _checkAndRefreshDailyBatch({

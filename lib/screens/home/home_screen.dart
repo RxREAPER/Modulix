@@ -320,8 +320,7 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: deskTasks.length,
-            // ignore: deprecated_member_use
-            onReorder: (oldIndex, newIndex) {
+            onReorderItem: (oldIndex, newIndex) {
               HapticFeedback.lightImpact();
               ref.read(dailyTasksProvider.notifier).reorderTasks(oldIndex, newIndex);
             },

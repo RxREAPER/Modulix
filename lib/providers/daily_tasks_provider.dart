@@ -301,11 +301,9 @@ class DailyTasksNotifier extends StateNotifier<DailyTasksState> {
     await _loadFuture;
     if (oldIndex < 0 || oldIndex >= state.tasks.length) return;
     final updatedTasks = List<DailyDeskTask>.from(state.tasks);
-    if (newIndex > oldIndex) {
-      newIndex -= 1;
-    }
+    final targetIndex = newIndex.clamp(0, updatedTasks.length - 1);
     final item = updatedTasks.removeAt(oldIndex);
-    updatedTasks.insert(newIndex, item);
+    updatedTasks.insert(targetIndex, item);
     state = state.copyWith(tasks: updatedTasks);
     await _persist();
   }
