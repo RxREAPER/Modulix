@@ -36,7 +36,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Verification:**
   - Static analysis (`flutter analyze`) on all modified files passed with **0 errors, 0 warnings, and 0 lints**.
   - Unit test suites (`lovable_nav_bar_test.dart`, `tab_persistence_test.dart`) passed 100%.
-- **Build Status:** Pending APK Build (Verified via flutter analyze & unit tests)
+- **Build Status:** ✅ Included in Build v1.4.0 (Installed & Verified on OnePlus 13R ba009d81 — Live Hot Reload Active)
 
 ---
 
@@ -60,7 +60,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
     - **Multi-Module Support:** Added interactive filter switcher chips (`All`, `Videos`, `Q-Bank`, `Notes`) so users can switch seamlessly between curriculum resource types for daily tasks.
 - **Verification:**
   - Static analysis (`flutter analyze`) on all modified files passed with **0 errors and 0 warnings**.
-- **Build Status:** Pending APK Build (Verified via flutter analyze)
+- **Build Status:** ✅ Included in Build v1.4.0 (Installed & Verified on OnePlus 13R ba009d81)
 
 ---
 
@@ -81,7 +81,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Verification:**
   - `flutter analyze lib/screens/timer/fullscreen_timer_screen.dart` passed with **0 errors and 0 warnings**.
   - Verified on live physical device (**OnePlus 13R**, `ba009d81`) across Desk Mode, Upright Mode, live counting seconds, play/pause toggle, and exit button navigation with physical screencap artifacts.
-- **Build Status:** Pending APK Build (Verified via Live Hot Reload on OnePlus 13R ba009d81)
+- **Build Status:** ✅ Included in Build v1.4.0 (Installed & Verified on OnePlus 13R ba009d81)
 
 ---
 
