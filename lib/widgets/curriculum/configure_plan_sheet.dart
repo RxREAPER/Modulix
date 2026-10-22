@@ -82,7 +82,7 @@ class _ConfigurePlanSheetState extends ConsumerState<ConfigurePlanSheet> {
       height: MediaQuery.of(context).size.height * 0.90,
       decoration: BoxDecoration(
         color: AppTheme.paperBackground,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: Column(
         children: [
@@ -168,7 +168,7 @@ class _ConfigurePlanSheetState extends ConsumerState<ConfigurePlanSheet> {
                           width: 86,
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: isSelected ? meta.accent.withOpacity(0.12) : AppTheme.cardWhite,
+                            color: isSelected ? meta.accent.withValues(alpha: 0.12) : AppTheme.cardWhite,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: isSelected ? AppTheme.sketchBorderColor : AppTheme.borderLight,

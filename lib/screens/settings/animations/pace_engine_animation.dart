@@ -141,7 +141,7 @@ class _PaceEngineAnimationWidgetState extends State<PaceEngineAnimationWidget>
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 decoration: BoxDecoration(
                   color: (isOnTrack ? Colors.green : Colors.orange)
-                      .withOpacity(0.12),
+                      .withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isOnTrack ? Colors.green : Colors.orange,
@@ -209,7 +209,7 @@ class _PaceEngineAnimationWidgetState extends State<PaceEngineAnimationWidget>
                     Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryBlue.withOpacity(0.12),
+                        color: AppTheme.primaryBlue.withValues(alpha: 0.12),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(Icons.playlist_play_rounded,

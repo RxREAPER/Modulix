@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../theme/app_theme.dart';
 
@@ -69,10 +68,10 @@ class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.08),
+                          color: Colors.white.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                              color: Colors.white.withOpacity(0.35),
+                              color: Colors.white.withValues(alpha: 0.35),
                               width: 1.5),
                         ),
                         child: Row(
@@ -91,7 +90,7 @@ class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
                               ),
                             ),
                             Icon(Icons.keyboard_arrow_down_rounded,
-                                color: Colors.white.withOpacity(0.7), size: 16),
+                                color: Colors.white.withValues(alpha: 0.7), size: 16),
                           ],
                         ),
                       ),
@@ -103,10 +102,10 @@ class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
                           horizontal: 8, vertical: 6),
                       decoration: BoxDecoration(
                         color: modeIndex == 0
-                            ? Colors.orange.withOpacity(0.2)
+                            ? Colors.orange.withValues(alpha: 0.2)
                             : (modeIndex == 1
-                                ? Colors.blue.withOpacity(0.2)
-                                : const Color(0xFF8B5CF6).withOpacity(0.2)),
+                                ? Colors.blue.withValues(alpha: 0.2)
+                                : const Color(0xFF8B5CF6).withValues(alpha: 0.2)),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: modeIndex == 0
@@ -160,13 +159,13 @@ class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
                       child: Container(
                         height: 34,
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryBlue.withOpacity(0.85),
+                          color: AppTheme.primaryBlue.withValues(alpha: 0.85),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                              color: Colors.white.withOpacity(0.4), width: 1.4),
+                              color: Colors.white.withValues(alpha: 0.4), width: 1.4),
                           boxShadow: [
                             BoxShadow(
-                              color: AppTheme.primaryBlue.withOpacity(0.3),
+                              color: AppTheme.primaryBlue.withValues(alpha: 0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -219,13 +218,13 @@ class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
               decoration: BoxDecoration(
                 color: sel
-                    ? AppTheme.primaryBlue.withOpacity(0.85)
-                    : Colors.white.withOpacity(0.08),
+                    ? AppTheme.primaryBlue.withValues(alpha: 0.85)
+                    : Colors.white.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: sel
-                      ? Colors.white.withOpacity(0.6)
-                      : Colors.white.withOpacity(0.2),
+                      ? Colors.white.withValues(alpha: 0.6)
+                      : Colors.white.withValues(alpha: 0.2),
                   width: 1.2,
                 ),
               ),
@@ -303,17 +302,17 @@ class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
+            color: Colors.white.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.white.withOpacity(0.25), width: 1),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.play_arrow_rounded,
                   color: AppTheme.primaryBlue, size: 12),
-              SizedBox(width: 4),
-              Text(
+              const SizedBox(width: 4),
+              const Text(
                 'Cardiology · Heart Failure (38 mins)',
                 style: TextStyle(
                     fontSize: 8.5,
@@ -352,9 +351,9 @@ class _TimerModesAnimationWidgetState extends State<TimerModesAnimationWidget>
       width: 42,
       height: 34,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.10),
+        color: Colors.white.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.35), width: 1.2),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1.2),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

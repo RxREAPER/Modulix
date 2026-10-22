@@ -85,7 +85,7 @@ class _FlipClockRotateAnimationWidgetState
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.45),
+                        color: Colors.black.withValues(alpha: 0.45),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -118,7 +118,7 @@ class _FlipClockRotateAnimationWidgetState
                                   style: TextStyle(
                                     fontSize: 8,
                                     fontWeight: FontWeight.w700,
-                                    color: Colors.white.withOpacity(0.85),
+                                    color: Colors.white.withValues(alpha: 0.85),
                                   ),
                                 ),
                               ],
@@ -127,10 +127,10 @@ class _FlipClockRotateAnimationWidgetState
                               width: 18,
                               height: 18,
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.12),
+                                color: Colors.white.withValues(alpha: 0.12),
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                    color: Colors.white.withOpacity(0.35)),
+                                    color: Colors.white.withValues(alpha: 0.35)),
                               ),
                               child: const Icon(Icons.close_rounded,
                                   color: Colors.white, size: 10),
@@ -171,10 +171,10 @@ class _FlipClockRotateAnimationWidgetState
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 14, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.14),
+                              color: Colors.white.withValues(alpha: 0.14),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                  color: Colors.white.withOpacity(0.38),
+                                  color: Colors.white.withValues(alpha: 0.38),
                                   width: 1.2),
                             ),
                             child: const Row(
@@ -262,7 +262,7 @@ class _FlipClockRotateAnimationWidgetState
       decoration: BoxDecoration(
         color: const Color(0xFF222226),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withOpacity(0.12), width: 1.2),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12), width: 1.2),
       ),
       child: Stack(
         alignment: Alignment.center,

@@ -121,7 +121,7 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: Colors.black.withOpacity(0.06)),
+          side: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
         ),
       ),
       appBarTheme: AppBarTheme(
@@ -139,7 +139,7 @@ class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: _cardLight,
-        indicatorColor: _primaryPurple.withOpacity(0.15),
+        indicatorColor: _primaryPurple.withValues(alpha: 0.15),
         labelTextStyle: WidgetStateProperty.all(
           const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
         ),
@@ -150,7 +150,7 @@ class AppTheme {
           return IconThemeData(color: Colors.grey.shade500, size: 22);
         }),
         elevation: 0,
-        shadowColor: Colors.black.withOpacity(0.08),
+        shadowColor: Colors.black.withValues(alpha: 0.08),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -162,7 +162,7 @@ class AppTheme {
         ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: _primaryPurple.withOpacity(0.08),
+        backgroundColor: _primaryPurple.withValues(alpha: 0.08),
         selectedColor: _primaryPurple,
         labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -170,7 +170,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: _primaryPurple.withOpacity(0.05),
+        fillColor: _primaryPurple.withValues(alpha: 0.05),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -178,7 +178,7 @@ class AppTheme {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.black.withOpacity(0.08)),
+          borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.08)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -208,7 +208,7 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: Colors.white.withOpacity(0.07)),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.07)),
         ),
       ),
       appBarTheme: AppBarTheme(
@@ -226,7 +226,7 @@ class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: _cardDark,
-        indicatorColor: const Color(0xFF9D71DF).withOpacity(0.2),
+        indicatorColor: const Color(0xFF9D71DF).withValues(alpha: 0.2),
         labelTextStyle: WidgetStateProperty.all(
           const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
         ),
@@ -249,7 +249,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white.withOpacity(0.05),
+        fillColor: Colors.white.withValues(alpha: 0.05),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -257,7 +257,7 @@ class AppTheme {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),

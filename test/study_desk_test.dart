@@ -149,7 +149,7 @@ void main() {
           home: Scaffold(
             body: SingleChildScrollView(
               child: AutomatedModuleTracker(
-                editionState: EditionState(plan: plan),
+                editionState: const EditionState(plan: plan),
                 editionName: 'marrow_8',
                 subjects: [testSubject],
               ),
@@ -209,7 +209,7 @@ void main() {
       targetUnits: ['Upper Limb'],
     );
 
-    final state = AppState(
+    const state = AppState(
       activeEdition: 'marrow_8',
       editions: {
         'marrow_8': EditionState(
@@ -223,7 +223,7 @@ void main() {
       ProviderScope(
         overrides: [
           appStateProvider.overrideWith(() => _FakeAppStateNotifier(state)),
-          activeSyllabusProvider.overrideWithValue(AsyncValue.data([testSubject])),
+          activeSyllabusProvider.overrideWithValue(const AsyncValue.data([testSubject])),
         ],
         child: const MaterialApp(
           home: ModuleTasksScreen(),
@@ -297,7 +297,7 @@ void main() {
       targetUnits: ['Upper Limb'],
     );
 
-    final state = AppState(
+    const state = AppState(
       activeEdition: 'marrow_8',
       editions: {
         'marrow_8': EditionState(
@@ -312,7 +312,7 @@ void main() {
       ProviderScope(
         overrides: [
           appStateProvider.overrideWith(() => _FakeAppStateNotifier(state)),
-          activeSyllabusProvider.overrideWithValue(AsyncValue.data([testSubject])),
+          activeSyllabusProvider.overrideWithValue(const AsyncValue.data([testSubject])),
         ],
         child: const MaterialApp(
           home: AnalyticsScreen(),

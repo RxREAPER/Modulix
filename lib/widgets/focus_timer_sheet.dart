@@ -138,7 +138,7 @@ class _FocusTimerSheetState extends ConsumerState<FocusTimerSheet> {
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.paperBackground,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       padding: EdgeInsets.fromLTRB(
         20,

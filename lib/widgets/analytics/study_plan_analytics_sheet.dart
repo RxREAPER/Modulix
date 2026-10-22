@@ -40,7 +40,7 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
         height: 300,
         decoration: BoxDecoration(
           color: AppTheme.paperBackground,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: const Center(child: CircularProgressIndicator()),
       );
@@ -131,7 +131,7 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
         ),
       decoration: BoxDecoration(
         color: AppTheme.paperBackground,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         border: Border(
           top: BorderSide(color: AppTheme.sketchBorderColor, width: 2),
           left: BorderSide(color: AppTheme.sketchBorderColor, width: 2),
@@ -211,7 +211,7 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.edit_rounded, size: 14, color: AppTheme.inkForeground),
-                        SizedBox(width: 4),
+                        const SizedBox(width: 4),
                         Text('Edit',
                             style: TextStyle(
                                 fontSize: 11,
@@ -302,7 +302,7 @@ class StudyPlanAnalyticsSheet extends ConsumerWidget {
                               color: (eta.isOnTrack
                                       ? Colors.green
                                       : Colors.orange)
-                                  .withOpacity(0.1),
+                                  .withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: eta.isOnTrack

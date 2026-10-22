@@ -45,29 +45,29 @@ void main() {
     });
 
     test('computeDailyBatch with unit filters picks only targeted unit videos', () {
-      final v1 = const Video(id: 'v1', title: 'Video 1', durationMins: 30, serialNumber: 1, subjectId: 'anatomy', chapterName: 'Embryology');
-      final v2 = const Video(id: 'v2', title: 'Video 2', durationMins: 45, serialNumber: 2, subjectId: 'anatomy', chapterName: 'Embryology');
-      final v3 = const Video(id: 'v3', title: 'Video 3', durationMins: 20, serialNumber: 3, subjectId: 'anatomy', chapterName: 'Neuroanatomy');
+      const v1 = Video(id: 'v1', title: 'Video 1', durationMins: 30, serialNumber: 1, subjectId: 'anatomy', chapterName: 'Embryology');
+      const v2 = Video(id: 'v2', title: 'Video 2', durationMins: 45, serialNumber: 2, subjectId: 'anatomy', chapterName: 'Embryology');
+      const v3 = Video(id: 'v3', title: 'Video 3', durationMins: 20, serialNumber: 3, subjectId: 'anatomy', chapterName: 'Neuroanatomy');
 
-      final anatomy = Subject(
+      const anatomy = Subject(
         id: 'anatomy',
         name: 'Anatomy',
         displayName: 'Human Anatomy',
-        accent: const Color(0xFF3B82F6),
+        accent: Color(0xFF3B82F6),
         chapters: [
           Chapter(name: 'Embryology', videos: [v1, v2]),
           Chapter(name: 'Neuroanatomy', videos: [v3]),
         ],
       );
 
-      final plan = const StudyPlan(
+      const plan = StudyPlan(
         targetSubject: 'anatomy',
         targetDate: '2026-12-31',
         videosPerDay: 5,
         targetUnits: ['Embryology'],
       );
 
-      final edState = const EditionState();
+      const edState = EditionState();
       final batch = MetricsService.computeDailyBatch(edState, plan, [anatomy]);
 
       expect(batch.length, 2);
@@ -76,26 +76,26 @@ void main() {
     });
 
     test('computeDailyBatch excludes already completed videos', () {
-      final v1 = const Video(id: 'v1', title: 'Video 1', durationMins: 30, serialNumber: 1, subjectId: 'anatomy', chapterName: 'General');
-      final v2 = const Video(id: 'v2', title: 'Video 2', durationMins: 30, serialNumber: 2, subjectId: 'anatomy', chapterName: 'General');
+      const v1 = Video(id: 'v1', title: 'Video 1', durationMins: 30, serialNumber: 1, subjectId: 'anatomy', chapterName: 'General');
+      const v2 = Video(id: 'v2', title: 'Video 2', durationMins: 30, serialNumber: 2, subjectId: 'anatomy', chapterName: 'General');
 
-      final anatomy = Subject(
+      const anatomy = Subject(
         id: 'anatomy',
         name: 'Anatomy',
         displayName: 'Human Anatomy',
-        accent: const Color(0xFF3B82F6),
+        accent: Color(0xFF3B82F6),
         chapters: [
           Chapter(name: 'General', videos: [v1, v2]),
         ],
       );
 
-      final plan = const StudyPlan(
+      const plan = StudyPlan(
         targetSubject: 'anatomy',
         targetDate: '2026-12-31',
         videosPerDay: 5,
       );
 
-      final edState = const EditionState(
+      const edState = EditionState(
         completedVideos: {'v1': '2026-01-01T10:00:00Z'},
       );
 

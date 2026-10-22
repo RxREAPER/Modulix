@@ -46,7 +46,7 @@ class TaskPickerSheet extends ConsumerStatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.55),
+      barrierColor: Colors.black.withValues(alpha: 0.55),
       sheetAnimationStyle: const AnimationStyle(
         duration: Duration(milliseconds: 280),
         reverseDuration: Duration(milliseconds: 220),
@@ -138,7 +138,7 @@ class _TaskPickerSheetState extends ConsumerState<TaskPickerSheet>
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: accent.withOpacity(0.14),
+                        color: accent.withValues(alpha: 0.14),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Center(
@@ -146,7 +146,7 @@ class _TaskPickerSheetState extends ConsumerState<TaskPickerSheet>
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Expanded(
+                    const Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -208,7 +208,7 @@ class _TaskPickerSheetState extends ConsumerState<TaskPickerSheet>
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: accent.withOpacity(0.35),
+                        color: accent.withValues(alpha: 0.35),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -274,7 +274,7 @@ class _TaskPickerSheetState extends ConsumerState<TaskPickerSheet>
             ),
             child: Column(
               children: [
-                Icon(Icons.checklist_rounded, size: 36, color: accent.withOpacity(0.8)),
+                Icon(Icons.checklist_rounded, size: 36, color: accent.withValues(alpha: 0.8)),
                 const SizedBox(height: 10),
                 Text(
                   'No desk tasks set for today yet',
@@ -323,12 +323,12 @@ class _TaskPickerSheetState extends ConsumerState<TaskPickerSheet>
                 margin: const EdgeInsets.only(bottom: 10),
                 decoration: BoxDecoration(
                   color: isDone
-                      ? (isLight ? const Color(0xFFF0FDF4) : const Color(0xFF14532D).withOpacity(0.25))
+                      ? (isLight ? const Color(0xFFF0FDF4) : const Color(0xFF14532D).withValues(alpha: 0.25))
                       : cardBg,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isDone
-                        ? const Color(0xFF10B981).withOpacity(0.40)
+                        ? const Color(0xFF10B981).withValues(alpha: 0.40)
                         : border,
                     width: 1.2,
                   ),
@@ -341,7 +341,7 @@ class _TaskPickerSheetState extends ConsumerState<TaskPickerSheet>
                     decoration: BoxDecoration(
                       color: isDone
                           ? const Color(0xFF10B981)
-                          : accent.withOpacity(0.18),
+                          : accent.withValues(alpha: 0.18),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -518,7 +518,7 @@ class _TaskPickerSheetState extends ConsumerState<TaskPickerSheet>
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: accent.withOpacity(0.35),
+                              color: accent.withValues(alpha: 0.35),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -795,7 +795,7 @@ class _TaskPickerSheetState extends ConsumerState<TaskPickerSheet>
                 margin: const EdgeInsets.only(top: 4),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.12),
+                  color: iconColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -842,7 +842,7 @@ class _TaskPickerSheetState extends ConsumerState<TaskPickerSheet>
           padding: const EdgeInsets.symmetric(vertical: 7),
           decoration: BoxDecoration(
             color: isSelected
-                ? color.withOpacity(0.14)
+                ? color.withValues(alpha: 0.14)
                 : cardBg,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
@@ -893,7 +893,7 @@ class _TaskPickerSheetState extends ConsumerState<TaskPickerSheet>
       ),
       child: Text(
         text,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w800,
           letterSpacing: 0.8,

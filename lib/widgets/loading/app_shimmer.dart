@@ -117,28 +117,28 @@ class CurriculumSkeletonView extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: AppTheme.borderLight, width: 1.2),
             ),
-            child: Column(
+            child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const ShimmerBox(width: 40, height: 40, borderRadius: 10),
-                    const SizedBox(width: 12),
+                    ShimmerBox(width: 40, height: 40, borderRadius: 10),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           ShimmerBox(width: 140, height: 16, borderRadius: 4),
                           SizedBox(height: 6),
                           ShimmerBox(width: 90, height: 12, borderRadius: 4),
                         ],
                       ),
                     ),
-                    const ShimmerBox(width: 48, height: 22, borderRadius: 12),
+                    ShimmerBox(width: 48, height: 22, borderRadius: 12),
                   ],
                 ),
-                const SizedBox(height: 14),
-                const ShimmerBox(height: 6, borderRadius: 3),
+                SizedBox(height: 14),
+                ShimmerBox(height: 6, borderRadius: 3),
               ],
             ),
           );
@@ -168,21 +168,21 @@ class ModuleTimelineSkeletonView extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: AppTheme.borderLight, width: 1.0),
             ),
-            child: Row(
+            child: const Row(
               children: [
-                const ShimmerBox(width: 24, height: 24, borderRadius: 6),
-                const SizedBox(width: 14),
+                ShimmerBox(width: 24, height: 24, borderRadius: 6),
+                SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       ShimmerBox(width: 180, height: 15, borderRadius: 4),
                       SizedBox(height: 6),
                       ShimmerBox(width: 100, height: 11, borderRadius: 4),
                     ],
                   ),
                 ),
-                const ShimmerBox(width: 32, height: 16, borderRadius: 4),
+                ShimmerBox(width: 32, height: 16, borderRadius: 4),
               ],
             ),
           );
@@ -204,9 +204,9 @@ class DeskTasksSkeletonView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
+              children: [
                 ShimmerBox(width: 120, height: 18, borderRadius: 6),
                 ShimmerBox(width: 60, height: 18, borderRadius: 6),
               ],
@@ -221,14 +221,14 @@ class DeskTasksSkeletonView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppTheme.borderLight, width: 1.0),
                 ),
-                child: Row(
+                child: const Row(
                   children: [
-                    const ShimmerBox(width: 20, height: 20, borderRadius: 4),
-                    const SizedBox(width: 12),
+                    ShimmerBox(width: 20, height: 20, borderRadius: 4),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           ShimmerBox(width: 160, height: 14, borderRadius: 4),
                           SizedBox(height: 6),
                           ShimmerBox(width: 80, height: 10, borderRadius: 4),
@@ -259,8 +259,8 @@ class AnalyticsSkeletonView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: const [
+            const Row(
+              children: [
                 Expanded(child: ShimmerBox(height: 80, borderRadius: 14)),
                 SizedBox(width: 12),
                 Expanded(child: ShimmerBox(height: 80, borderRadius: 14)),

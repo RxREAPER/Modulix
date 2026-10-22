@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../theme/app_theme.dart';
 
@@ -93,7 +92,7 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: AppTheme.primaryBlue.withOpacity(0.12),
+                                color: AppTheme.primaryBlue.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text('Marrow Ed 8',
@@ -189,17 +188,17 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.08),
+                            color: Colors.white.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                                color: Colors.white.withOpacity(0.32),
+                                color: Colors.white.withValues(alpha: 0.32),
                                 width: 1.2),
                           ),
                           child: Row(
                             children: [
                               Icon(Icons.play_arrow_rounded,
                                   color: AppTheme.primaryBlue, size: 14),
-                              SizedBox(width: 6),
+                              const SizedBox(width: 6),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -210,7 +209,7 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                                             fontWeight: FontWeight.w900,
                                             color: AppTheme.primaryBlue,
                                             letterSpacing: 0.8)),
-                                    Text('Heart Failure Clinical Management',
+                                    const Text('Heart Failure Clinical Management',
                                         maxLines: 1,
                                         style: TextStyle(
                                             fontSize: 9,
@@ -219,7 +218,7 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                                   ],
                                 ),
                               ),
-                              Icon(Icons.tune_rounded,
+                              const Icon(Icons.tune_rounded,
                                   color: Colors.white54, size: 12),
                             ],
                           ),
@@ -253,10 +252,10 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                               child: Container(
                                 height: 32,
                                 decoration: BoxDecoration(
-                                  color: AppTheme.primaryBlue.withOpacity(0.85),
+                                  color: AppTheme.primaryBlue.withValues(alpha: 0.85),
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
-                                      color: Colors.white.withOpacity(0.4),
+                                      color: Colors.white.withValues(alpha: 0.4),
                                       width: 1.4),
                                 ),
                                 child: const Row(
@@ -352,7 +351,7 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                           Container(
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
-                                color: AppTheme.primaryBlue.withOpacity(0.25),
+                                color: AppTheme.primaryBlue.withValues(alpha: 0.25),
                                 shape: BoxShape.circle),
                             child: Icon(Icons.pause_rounded,
                                 color: AppTheme.primaryBlue, size: 12),
@@ -432,7 +431,7 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                     height: 26,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.35),
+                      color: Colors.white.withValues(alpha: 0.35),
                       border: Border.all(color: Colors.white, width: 2),
                     ),
                   ),
@@ -447,7 +446,7 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: isDocked
-                        ? Colors.green.withOpacity(0.9)
+                        ? Colors.green.withValues(alpha: 0.9)
                         : Colors.black87,
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(color: Colors.white30),
@@ -476,14 +475,14 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
       height: 22,
       decoration: BoxDecoration(
         color: isHighlight
-            ? Colors.redAccent.withOpacity(0.4)
+            ? Colors.redAccent.withValues(alpha: 0.4)
             : (isAccent
-                ? AppTheme.primaryBlue.withOpacity(0.3)
-                : Colors.white.withOpacity(0.08)),
+                ? AppTheme.primaryBlue.withValues(alpha: 0.3)
+                : Colors.white.withValues(alpha: 0.08)),
         shape: BoxShape.circle,
         border: Border.all(
             color:
-                isHighlight ? Colors.redAccent : Colors.white.withOpacity(0.35),
+                isHighlight ? Colors.redAccent : Colors.white.withValues(alpha: 0.35),
             width: 1.2),
       ),
       child: Icon(icon,
@@ -497,9 +496,9 @@ class _TimerDockAnimationWidgetState extends State<TimerDockAnimationWidget>
       width: 38,
       height: 32,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.10),
+        color: Colors.white.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withOpacity(0.35), width: 1.2),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1.2),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

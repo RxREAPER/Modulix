@@ -117,7 +117,7 @@ class _ParticlePainter extends CustomPainter {
       final scale = 1.0 - 0.3 * t;
 
       final paint = Paint()
-        ..color = p.color.withOpacity(opacity)
+        ..color = p.color.withValues(alpha: opacity)
         ..style = PaintingStyle.fill;
 
       canvas.save();

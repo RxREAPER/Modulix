@@ -259,12 +259,12 @@ class AutomatedModuleTracker extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 2),
-                        Text(
+                        const Text(
                           'First Study Session Setup',
                           style: TextStyle(
                             fontSize: 11.0,
                             fontWeight: FontWeight.w700,
-                            color: const Color(0xFF4F46E5),
+                            color: Color(0xFF4F46E5),
                             letterSpacing: 0.5,
                           ),
                         ),

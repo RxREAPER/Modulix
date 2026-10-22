@@ -62,7 +62,7 @@ void main() {
     });
 
     // Unconfigured state (new user / no plan)
-    final emptyState = AppState.empty;
+    const emptyState = AppState.empty;
 
     await tester.pumpWidget(
       ProviderScope(

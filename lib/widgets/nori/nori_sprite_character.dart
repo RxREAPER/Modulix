@@ -98,7 +98,7 @@ class _NoriSpriteCharacterState extends State<NoriSpriteCharacter>
                   width: widget.size * 0.95,
                   height: 6,
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),

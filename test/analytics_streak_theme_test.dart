@@ -19,7 +19,7 @@ class _FakeAppStateNotifier extends AppStateNotifier {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  final testState = AppState(
+  const testState = AppState(
     activeEdition: 'marrow_8',
     editions: {
       'marrow_8': EditionState(
@@ -94,15 +94,15 @@ void main() {
       final medalIcon = tester.widget<Icon>(find.byIcon(Icons.military_tech_rounded));
       expect(medalIcon.color, const Color(0xFFEAB308));
 
-      // Verify "View Details" text is present and does not use loud accent color
-      final viewDetailsTexts = find.text('View Details');
-      expect(viewDetailsTexts, findsWidgets);
+      // Verify "Open Page" text is present and does not use loud accent color
+      final openPageTexts = find.text('Open Page');
+      expect(openPageTexts, findsWidgets);
 
-      final firstViewDetails = tester.widget<Text>(viewDetailsTexts.first);
-      expect(firstViewDetails.style?.color, isNot(AccentPigment.teal.color),
-          reason: 'View Details should NOT use accent color');
-      expect(firstViewDetails.style?.color, AppTheme.mutedText,
-          reason: 'View Details in light mode should use muted text');
+      final firstOpenPage = tester.widget<Text>(openPageTexts.first);
+      expect(firstOpenPage.style?.color, isNot(AccentPigment.teal.color),
+          reason: 'Open Page should NOT use accent color');
+      expect(firstOpenPage.style?.color, AppTheme.mutedText,
+          reason: 'Open Page in light mode should use muted text');
 
       // Verify button capsules (e.g. 0m or 0/0) have native ink text color, not accent color
       final badgeCapsules = find.text('0m');
@@ -112,7 +112,7 @@ void main() {
           reason: 'Badge capsule text must use native inkForeground color, not accent');
     });
 
-    testWidgets('Dark mode renders subtle highlight on View Details without accent color',
+    testWidgets('Dark mode renders subtle highlight on Open Page without accent color',
         (WidgetTester tester) async {
       AppTheme.current = FlowMDThemeExtension.from(
         preset: PalettePreset.slate,
@@ -140,13 +140,13 @@ void main() {
       expect(flameIcon.color, const Color(0xFFF97316),
           reason: 'Study streak flame icon must stay flame orange even in obsidian dark mode');
 
-      final viewDetailsTexts = find.text('View Details');
-      expect(viewDetailsTexts, findsWidgets);
-      final firstViewDetails = tester.widget<Text>(viewDetailsTexts.first);
-      expect(firstViewDetails.style?.color, isNot(AccentPigment.cobalt.colorDark),
-          reason: 'View Details should NOT use accent color in dark mode');
-      expect(firstViewDetails.style?.color, Colors.white.withValues(alpha: 0.88),
-          reason: 'View Details in dark mode should use crisp light highlight text');
+      final openPageTexts = find.text('Open Page');
+      expect(openPageTexts, findsWidgets);
+      final firstOpenPage = tester.widget<Text>(openPageTexts.first);
+      expect(firstOpenPage.style?.color, isNot(AccentPigment.cobalt.colorDark),
+          reason: 'Open Page should NOT use accent color in dark mode');
+      expect(firstOpenPage.style?.color, Colors.white.withValues(alpha: 0.88),
+          reason: 'Open Page in dark mode should use crisp light highlight text');
     });
   });
 }

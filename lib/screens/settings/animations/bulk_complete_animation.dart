@@ -101,7 +101,7 @@ class _BulkCompleteAnimationWidgetState
                     decoration: BoxDecoration(
                       color: tapButton
                           ? const Color(0xFF10B981)
-                          : const Color(0xFF10B981).withOpacity(0.12),
+                          : const Color(0xFF10B981).withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: const Color(0xFF10B981),
@@ -142,7 +142,7 @@ class _BulkCompleteAnimationWidgetState
                 child: LinearProgressIndicator(
                   value: percent,
                   minHeight: 3.5,
-                  backgroundColor: AppTheme.primaryBlue.withOpacity(0.15),
+                  backgroundColor: AppTheme.primaryBlue.withValues(alpha: 0.15),
                   valueColor: const AlwaysStoppedAnimation(Color(0xFF10B981)),
                 ),
               ),
@@ -183,8 +183,8 @@ class _BulkCompleteAnimationWidgetState
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.bolt_rounded, size: 13, color: Colors.amber),
-                    SizedBox(width: 4),
+                    const Icon(Icons.bolt_rounded, size: 13, color: Colors.amber),
+                    const SizedBox(width: 4),
                     Text(
                       '1-tap syncs offline lectures to your curriculum progress',
                       style: TextStyle(
@@ -228,8 +228,8 @@ class _BulkCompleteAnimationWidgetState
             height: 28,
             decoration: BoxDecoration(
               color: isCompleted
-                  ? Colors.green.withOpacity(0.15)
-                  : tileColor.withOpacity(0.15),
+                  ? Colors.green.withValues(alpha: 0.15)
+                  : tileColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Center(

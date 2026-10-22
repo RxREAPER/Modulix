@@ -18,7 +18,7 @@ void main() {
 
   group('Cross-Theme Preset Verification', () {
     testWidgets('AppTheme dynamically applies across all 5 unified palette presets without exceptions', (tester) async {
-      final presets = PalettePreset.values;
+      const presets = PalettePreset.values;
 
       for (final preset in presets) {
         AppTheme.current = FlowMDThemeExtension.from(
@@ -167,8 +167,8 @@ void main() {
 
   group('Exhaustive Theme Permutation & Extreme Contrast Switching', () {
     testWidgets('All 5 Palette Presets x 6 Accent Pigments build and switch dynamically without rendering exceptions', (tester) async {
-      final presets = PalettePreset.values;
-      final accents = AccentPigment.values;
+      const presets = PalettePreset.values;
+      const accents = AccentPigment.values;
 
       expect(presets.length, equals(5));
       expect(accents.length, equals(6));

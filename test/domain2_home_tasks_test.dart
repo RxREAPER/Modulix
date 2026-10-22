@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:modulix/models/daily_desk_task.dart';
-import 'package:modulix/providers/daily_tasks_provider.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -52,7 +51,7 @@ void main() {
     });
 
     test('DailyDeskTask toMap and fromMap round-trips with full precision', () {
-      final task = const DailyDeskTask(
+      const task = DailyDeskTask(
         id: 'task_anatomy_review_1',
         title: 'Review Cranial Nerves',
         category: TaskCategory.video,

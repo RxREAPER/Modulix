@@ -197,7 +197,7 @@ class _NoriCharacterState extends State<NoriCharacter>
                     width: widget.size * 0.95,
                     height: 5,
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.06),
+                      color: Colors.black.withValues(alpha: 0.06),
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
@@ -436,7 +436,7 @@ class _NoriMasterPainter extends CustomPainter {
 
     // Whiskers
     final whiskerPaint = Paint()
-      ..color = const Color(0xFF1C1C1C).withOpacity(0.4)
+      ..color = const Color(0xFF1C1C1C).withValues(alpha: 0.4)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2
       ..strokeCap = StrokeCap.round;
@@ -587,7 +587,7 @@ class _NoriMasterPainter extends CustomPainter {
       ..strokeWidth = 1.8;
 
     final lensGleam = Paint()
-      ..color = Colors.white.withOpacity(0.35)
+      ..color = Colors.white.withValues(alpha: 0.35)
       ..style = PaintingStyle.fill;
 
     // Left lens
@@ -628,7 +628,7 @@ class _NoriMasterPainter extends CustomPainter {
 
     // Animated Rising Steam Curves
     final steamPaint = Paint()
-      ..color = Colors.grey.withOpacity(0.5 * (1.0 - (steamVal - 0.5).abs() * 1.5).clamp(0.0, 1.0))
+      ..color = Colors.grey.withValues(alpha: 0.5 * (1.0 - (steamVal - 0.5).abs() * 1.5).clamp(0.0, 1.0))
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.4
       ..strokeCap = StrokeCap.round;

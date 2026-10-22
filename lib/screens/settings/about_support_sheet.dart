@@ -30,7 +30,7 @@ class AboutSupportSheet extends ConsumerWidget {
       ),
       decoration: BoxDecoration(
         color: AppTheme.paperBackground,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         border: Border(
           top: BorderSide(color: AppTheme.sketchBorderColor, width: 2),
           left: BorderSide(color: AppTheme.sketchBorderColor, width: 2),
@@ -73,7 +73,7 @@ class AboutSupportSheet extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'APP INFORMATION',
                         style: TextStyle(
                           fontSize: 10,
@@ -326,7 +326,7 @@ class AboutSupportSheet extends ConsumerWidget {
                     children: [
                       Icon(Icons.offline_pin_outlined,
                           size: 18, color: AppTheme.mutedText),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           'Crafted with medical rigor. No cloud dependencies, no paywalls, entirely local.',

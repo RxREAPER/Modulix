@@ -35,7 +35,7 @@ class PreferencesSheet extends ConsumerWidget {
         height: 300,
         decoration: BoxDecoration(
           color: AppTheme.paperBackground,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: const Center(child: CircularProgressIndicator()),
       );
@@ -49,7 +49,7 @@ class PreferencesSheet extends ConsumerWidget {
       ),
       decoration: BoxDecoration(
         color: AppTheme.paperBackground,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         border: Border(
           top: BorderSide(color: AppTheme.sketchBorderColor, width: 2),
           left: BorderSide(color: AppTheme.sketchBorderColor, width: 2),
@@ -80,7 +80,7 @@ class PreferencesSheet extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryBlue.withOpacity(0.12),
+                    color: AppTheme.primaryBlue.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: AppTheme.primaryBlue, width: 1.5),
                   ),
@@ -186,7 +186,7 @@ class PreferencesSheet extends ConsumerWidget {
                         ],
                       ),
                       Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Divider(height: 1, color: AppTheme.borderLight),
                       ),
                       // Active Edition Row
@@ -390,7 +390,7 @@ class PreferencesSheet extends ConsumerWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.orange.withOpacity(0.12),
+                              color: Colors.orange.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(10),
                               border:
                                   Border.all(color: Colors.orange, width: 1.2),
@@ -413,7 +413,7 @@ class PreferencesSheet extends ConsumerWidget {
                         children: [3, 4, 5, 6, 7].map((hour) {
                           final isSelected = appState.dayStartHour == hour;
                           return ChoiceChip(
-                            label: Text('${hour}:00 AM'),
+                            label: Text('$hour:00 AM'),
                             selected: isSelected,
                             onSelected: (_) => notifier.setDayStartHour(hour),
                             selectedColor: AppTheme.inkForeground,
@@ -541,7 +541,7 @@ class PreferencesSheet extends ConsumerWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 8),
                               decoration: BoxDecoration(
-                                color: Colors.amber.withOpacity(0.12),
+                                color: Colors.amber.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
                                     color: Colors.amber.shade700, width: 1),
@@ -585,7 +585,7 @@ class PreferencesSheet extends ConsumerWidget {
                                     color: AppTheme.inkForeground,
                                   ),
                                 ),
-                                SizedBox(height: 2),
+                                const SizedBox(height: 2),
                                 Text(
                                   'Prompt to start your syllabus goals',
                                   style: TextStyle(
@@ -606,11 +606,11 @@ class PreferencesSheet extends ConsumerWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.primaryBlue.withOpacity(0.1),
+                                  color: AppTheme.primaryBlue.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                       color: AppTheme.primaryBlue
-                                          .withOpacity(0.3)),
+                                          .withValues(alpha: 0.3)),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -633,8 +633,8 @@ class PreferencesSheet extends ConsumerWidget {
                             ),
                           const SizedBox(width: 8),
                           CupertinoSwitch(
-                            activeColor: AppTheme.primaryBlue,
-                            trackColor: AppTheme.borderLight,
+                            activeTrackColor: AppTheme.primaryBlue,
+                            inactiveTrackColor: AppTheme.borderLight,
                             thumbColor: Colors.white,
                             value: appState.dailyReminderEnabled,
                             onChanged: (val) => notifier.setDailyReminder(val),
@@ -659,7 +659,7 @@ class PreferencesSheet extends ConsumerWidget {
                                     color: AppTheme.inkForeground,
                                   ),
                                 ),
-                                SizedBox(height: 2),
+                                const SizedBox(height: 2),
                                 Text(
                                   'Evening alert if no progress made today',
                                   style: TextStyle(
@@ -680,10 +680,10 @@ class PreferencesSheet extends ConsumerWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: Colors.orange.withOpacity(0.1),
+                                  color: Colors.orange.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                      color: Colors.orange.withOpacity(0.3)),
+                                      color: Colors.orange.withValues(alpha: 0.3)),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -706,8 +706,8 @@ class PreferencesSheet extends ConsumerWidget {
                             ),
                           const SizedBox(width: 8),
                           CupertinoSwitch(
-                            activeColor: Colors.orange,
-                            trackColor: AppTheme.borderLight,
+                            activeTrackColor: Colors.orange,
+                            inactiveTrackColor: AppTheme.borderLight,
                             thumbColor: Colors.white,
                             value: appState.streakReminderEnabled,
                             onChanged: (val) => notifier.setStreakReminder(val),
@@ -732,7 +732,7 @@ class PreferencesSheet extends ConsumerWidget {
                                     color: AppTheme.inkForeground,
                                   ),
                                 ),
-                                SizedBox(height: 2),
+                                const SizedBox(height: 2),
                                 Text(
                                   'Morning queue briefing & goal completion',
                                   style: TextStyle(
@@ -753,10 +753,10 @@ class PreferencesSheet extends ConsumerWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: Colors.teal.withOpacity(0.1),
+                                  color: Colors.teal.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                      color: Colors.teal.withOpacity(0.3)),
+                                      color: Colors.teal.withValues(alpha: 0.3)),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -779,8 +779,8 @@ class PreferencesSheet extends ConsumerWidget {
                             ),
                           const SizedBox(width: 8),
                           CupertinoSwitch(
-                            activeColor: Colors.teal,
-                            trackColor: AppTheme.borderLight,
+                            activeTrackColor: Colors.teal,
+                            inactiveTrackColor: AppTheme.borderLight,
                             thumbColor: Colors.white,
                             value: appState.moduleTasksReminderEnabled,
                             onChanged: (val) =>
@@ -806,7 +806,7 @@ class PreferencesSheet extends ConsumerWidget {
                                     color: AppTheme.inkForeground,
                                   ),
                                 ),
-                                SizedBox(height: 2),
+                                const SizedBox(height: 2),
                                 Text(
                                   'Background alerts for session & break finishes',
                                   style: TextStyle(
@@ -816,8 +816,8 @@ class PreferencesSheet extends ConsumerWidget {
                             ),
                           ),
                           CupertinoSwitch(
-                            activeColor: AppTheme.primaryBlue,
-                            trackColor: AppTheme.borderLight,
+                            activeTrackColor: AppTheme.primaryBlue,
+                            inactiveTrackColor: AppTheme.borderLight,
                             thumbColor: Colors.white,
                             value: appState.focusTimerAlertsEnabled,
                             onChanged: (val) =>

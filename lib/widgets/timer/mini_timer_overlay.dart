@@ -121,13 +121,13 @@ class _MiniTimerOverlayState extends ConsumerState<MiniTimerOverlay> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.28),
+                    color: Colors.black.withValues(alpha: 0.28),
                     offset: const Offset(0, 4),
                     blurRadius: 14,
                   ),
                   if (timer.isRunning)
                     BoxShadow(
-                      color: accentColor.withOpacity(0.25),
+                      color: accentColor.withValues(alpha: 0.25),
                       offset: const Offset(0, 2),
                       blurRadius: 10,
                     ),
@@ -162,7 +162,7 @@ class _MiniTimerOverlayState extends ConsumerState<MiniTimerOverlay> {
                   Icon(
                     _dockedAtTop ? Icons.keyboard_arrow_down_rounded : Icons.keyboard_arrow_up_rounded,
                     size: 15,
-                    color: Colors.white.withOpacity(0.4),
+                    color: Colors.white.withValues(alpha: 0.4),
                   ),
                 ],
               ),
@@ -240,12 +240,12 @@ class _CapsulePulsingDotState extends State<_CapsulePulsingDot>
           width: 8,
           height: 8,
           decoration: BoxDecoration(
-            color: widget.color.withOpacity(widget.isPaused ? 0.4 : _glowAnim.value),
+            color: widget.color.withValues(alpha: widget.isPaused ? 0.4 : _glowAnim.value),
             shape: BoxShape.circle,
             boxShadow: [
               if (!widget.isPaused)
                 BoxShadow(
-                  color: widget.color.withOpacity(0.6 * _glowAnim.value),
+                  color: widget.color.withValues(alpha: 0.6 * _glowAnim.value),
                   blurRadius: 6 * _scaleAnim.value,
                   spreadRadius: 1 * _scaleAnim.value,
                 ),

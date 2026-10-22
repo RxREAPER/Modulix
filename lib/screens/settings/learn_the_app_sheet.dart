@@ -33,7 +33,7 @@ class LearnTheAppSheet extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: AppTheme.paperBackground,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         border: Border(
           top: BorderSide(color: AppTheme.sketchBorderColor, width: 2),
           left: BorderSide(color: AppTheme.sketchBorderColor, width: 2),
@@ -64,7 +64,7 @@ class LearnTheAppSheet extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.purple.withOpacity(0.12),
+                    color: Colors.purple.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: Colors.purple, width: 1.5),
                   ),
@@ -76,7 +76,7 @@ class LearnTheAppSheet extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'MODULIX REFERENCE',
                         style: TextStyle(
                           fontSize: 10,
@@ -512,7 +512,7 @@ class _FeatureCard extends StatelessWidget {
           leading: Container(
             padding: const EdgeInsets.all(9),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: color, width: 1.3),
             ),
@@ -569,7 +569,7 @@ class _FeatureCard extends StatelessWidget {
                       width: 20,
                       height: 20,
                       decoration: BoxDecoration(
-                        color: color.withOpacity(0.12),
+                        color: color.withValues(alpha: 0.12),
                         shape: BoxShape.circle,
                       ),
                       child: Center(

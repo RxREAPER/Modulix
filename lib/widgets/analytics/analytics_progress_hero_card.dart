@@ -100,7 +100,7 @@ class AnalyticsProgressHeroCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: effectiveTagColor.withOpacity(0.09),
+                        color: effectiveTagColor.withValues(alpha: 0.09),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(

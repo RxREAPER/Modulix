@@ -129,7 +129,7 @@ class _SoundHumIconState extends State<SoundHumIcon> with SingleTickerProviderSt
               height: widget.size * _pulse.value * 1.8,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: widget.color.withOpacity(0.15 * (1 - (_pulse.value - 0.85) / 0.33)),
+                color: widget.color.withValues(alpha: 0.15 * (1 - (_pulse.value - 0.85) / 0.33)),
               ),
             ),
             Transform.scale(
@@ -234,7 +234,7 @@ class _AmbientSoundSheetState extends State<AmbientSoundSheet> {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: accent.withOpacity(0.10),
+                    color: accent.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Center(
@@ -289,7 +289,7 @@ class _AmbientSoundSheetState extends State<AmbientSoundSheet> {
                     width: 124,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: isSelected ? accent.withOpacity(0.08) : cardBg,
+                      color: isSelected ? accent.withValues(alpha: 0.08) : cardBg,
                       borderRadius: BorderRadius.circular(18),
                       border: Border.all(
                         color: isSelected ? accent : border,
@@ -298,7 +298,7 @@ class _AmbientSoundSheetState extends State<AmbientSoundSheet> {
                       boxShadow: [
                         BoxShadow(
                           color: isSelected
-                              ? accent.withOpacity(0.18)
+                              ? accent.withValues(alpha: 0.18)
                               : const Color(0x080F172A),
                           blurRadius: isSelected ? 12 : 6,
                           offset: const Offset(0, 3),
@@ -317,7 +317,7 @@ class _AmbientSoundSheetState extends State<AmbientSoundSheet> {
                               height: 44,
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? accent.withOpacity(0.15)
+                                    ? accent.withValues(alpha: 0.15)
                                     : AppTheme.parchmentSurface,
                                 shape: BoxShape.circle,
                               ),

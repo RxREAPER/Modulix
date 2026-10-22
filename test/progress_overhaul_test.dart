@@ -129,8 +129,8 @@ void main() {
     ),
   ];
 
-  final testTasksState = DailyTasksState(
-    tasks: const [
+  const testTasksState = DailyTasksState(
+    tasks: [
       DailyDeskTask(
         id: 't_1',
         title: 'Review Upper Limb',
@@ -142,7 +142,7 @@ void main() {
         category: TaskCategory.qbank,
       ),
     ],
-    completedIds: const {'t_1'},
+    completedIds: {'t_1'},
   );
 
   group('Custom Analytics UI Components Tests', () {
@@ -222,7 +222,7 @@ void main() {
         ProviderScope(
           overrides: [
             appStateProvider.overrideWith(() => _MockAppStateNotifier(testAppState)),
-            activeSyllabusProvider.overrideWithValue(AsyncValue.data(testSubjects)),
+            activeSyllabusProvider.overrideWithValue(const AsyncValue.data(testSubjects)),
             timeLogsProvider.overrideWith((ref) => _MockTimeLogsNotifier(testTimeLogs)),
             dailyTasksProvider.overrideWith((ref) => _MockDailyTasksNotifier(testTasksState)),
           ],
@@ -257,7 +257,7 @@ void main() {
         ProviderScope(
           overrides: [
             appStateProvider.overrideWith(() => _MockAppStateNotifier(testAppState)),
-            activeSyllabusProvider.overrideWithValue(AsyncValue.data(testSubjects)),
+            activeSyllabusProvider.overrideWithValue(const AsyncValue.data(testSubjects)),
           ],
           child: const MaterialApp(
             home: StudyPlanAnalyticsPage(),
@@ -331,7 +331,7 @@ void main() {
         ProviderScope(
           overrides: [
             appStateProvider.overrideWith(() => _MockAppStateNotifier(testAppState)),
-            activeSyllabusProvider.overrideWithValue(AsyncValue.data(testSubjects)),
+            activeSyllabusProvider.overrideWithValue(const AsyncValue.data(testSubjects)),
           ],
           child: const MaterialApp(
             home: SubjectMasteryAnalyticsPage(),

@@ -241,7 +241,7 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
       ),
       decoration: BoxDecoration(
         color: AppTheme.paperBackground,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         border: Border(
           top: BorderSide(color: AppTheme.sketchBorderColor, width: 2),
           left: BorderSide(color: AppTheme.sketchBorderColor, width: 2),

@@ -66,9 +66,9 @@ class HeatmapCalendar extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: count == 0
                                 ? (isDark
-                                    ? Colors.white.withOpacity(0.05)
-                                    : Colors.black.withOpacity(0.06))
-                                : accentColor.withOpacity(opacity),
+                                    ? Colors.white.withValues(alpha: 0.05)
+                                    : Colors.black.withValues(alpha: 0.06))
+                                : accentColor.withValues(alpha: opacity),
                             borderRadius: BorderRadius.circular(3),
                             border: isToday
                                 ? Border.all(color: accentColor, width: 1.5)
@@ -92,7 +92,7 @@ class HeatmapCalendar extends StatelessWidget {
                         color: Theme.of(context)
                             .colorScheme
                             .onSurface
-                            .withOpacity(0.4))),
+                            .withValues(alpha: 0.4))),
                 const SizedBox(width: 4),
                 ...List.generate(5, (i) {
                   final opacity = 0.1 + i * 0.2;
@@ -103,9 +103,9 @@ class HeatmapCalendar extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: i == 0
                           ? (isDark
-                              ? Colors.white.withOpacity(0.05)
-                              : Colors.black.withOpacity(0.06))
-                          : accentColor.withOpacity(opacity),
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : Colors.black.withValues(alpha: 0.06))
+                          : accentColor.withValues(alpha: opacity),
                       borderRadius: BorderRadius.circular(3),
                     ),
                   );
@@ -117,7 +117,7 @@ class HeatmapCalendar extends StatelessWidget {
                         color: Theme.of(context)
                             .colorScheme
                             .onSurface
-                            .withOpacity(0.4))),
+                            .withValues(alpha: 0.4))),
               ],
             ),
           ],
@@ -141,7 +141,7 @@ class HeatmapCalendar extends StatelessWidget {
                 color: Theme.of(context)
                     .colorScheme
                     .onSurface
-                    .withOpacity(0.4),
+                    .withValues(alpha: 0.4),
               )),
         ));
         lastMonth = month;

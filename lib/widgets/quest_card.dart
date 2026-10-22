@@ -91,7 +91,7 @@ class _QuestCardState extends State<QuestCard> {
             Container(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
               decoration: BoxDecoration(
-                color: meta.accent.withOpacity(0.08),
+                color: meta.accent.withValues(alpha: 0.08),
                 borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(20)),
               ),
@@ -170,7 +170,7 @@ class _QuestCardState extends State<QuestCard> {
                       color: Theme.of(context)
                           .colorScheme
                           .onSurface
-                          .withOpacity(0.4)),
+                          .withValues(alpha: 0.4)),
                 ),
               ),
           ],
@@ -270,7 +270,7 @@ class _QuestVideoRow extends StatelessWidget {
                 border: Border.all(
                   color: isCompleted
                       ? Colors.green
-                      : cs.outline.withOpacity(0.4),
+                      : cs.outline.withValues(alpha: 0.4),
                   width: 2,
                 ),
               ),
@@ -295,7 +295,7 @@ class _EmptyQuestCard extends StatelessWidget {
         child: Column(
           children: [
             Icon(Icons.track_changes_rounded,
-                size: 40, color: cs.primary.withOpacity(0.4)),
+                size: 40, color: cs.primary.withValues(alpha: 0.4)),
             const SizedBox(height: 12),
             const Text('No plan configured',
                 style:
@@ -304,7 +304,7 @@ class _EmptyQuestCard extends StatelessWidget {
             Text(
               'Go to the Plan tab to set a subject and daily target.',
               style: TextStyle(
-                  color: cs.onSurface.withOpacity(0.5),
+                  color: cs.onSurface.withValues(alpha: 0.5),
                   fontSize: 13),
               textAlign: TextAlign.center,
             ),
@@ -327,7 +327,7 @@ class _AllDoneCard extends StatelessWidget {
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                color: const Color(0xFFEAB308).withOpacity(0.16),
+                color: const Color(0xFFEAB308).withValues(alpha: 0.16),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -347,7 +347,7 @@ class _AllDoneCard extends StatelessWidget {
                   color: Theme.of(context)
                       .colorScheme
                       .onSurface
-                      .withOpacity(0.5),
+                      .withValues(alpha: 0.5),
                   fontSize: 13),
               textAlign: TextAlign.center,
             ),

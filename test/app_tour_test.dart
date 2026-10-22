@@ -141,7 +141,7 @@ void main() {
     }
 
     test('Top target (e.g. Nori Desk Clock at y: 70..230) places card strictly below', () {
-      final target = Rect.fromLTWH(20, 70, 360, 160);
+      const target = Rect.fromLTWH(20, 70, 360, 160);
       const screenSize = Size(400, 850);
 
       final cardTop = TourSpotlightOverlay.calculateCardTop(
@@ -155,7 +155,7 @@ void main() {
     });
 
     test('Mid-screen target (e.g. Today\'s Tasks at y: 380..520) places card strictly at top', () {
-      final target = Rect.fromLTWH(20, 380, 360, 140);
+      const target = Rect.fromLTWH(20, 380, 360, 140);
       const screenSize = Size(400, 850);
 
       final cardTop = TourSpotlightOverlay.calculateCardTop(
@@ -170,7 +170,7 @@ void main() {
     });
 
     test('Module Tasks Screen Header at y: 80..230 places card strictly below', () {
-      final target = Rect.fromLTWH(20, 80, 360, 150);
+      const target = Rect.fromLTWH(20, 80, 360, 150);
       const screenSize = Size(400, 850);
 
       final cardTop = TourSpotlightOverlay.calculateCardTop(
@@ -185,8 +185,8 @@ void main() {
 
     test('Curriculum first two subjects at y: 360..530 places card strictly at top', () {
       final targets = [
-        Rect.fromLTWH(18, 360, 170, 170),
-        Rect.fromLTWH(202, 360, 170, 170),
+        const Rect.fromLTWH(18, 360, 170, 170),
+        const Rect.fromLTWH(202, 360, 170, 170),
       ];
       const screenSize = Size(400, 850);
 
@@ -202,9 +202,9 @@ void main() {
 
     test('Analytics 3 performance hub cards at y: 350..680 places card strictly at top', () {
       final targets = [
-        Rect.fromLTWH(18, 350, 360, 100),
-        Rect.fromLTWH(18, 464, 360, 100),
-        Rect.fromLTWH(18, 578, 360, 100),
+        const Rect.fromLTWH(18, 350, 360, 100),
+        const Rect.fromLTWH(18, 464, 360, 100),
+        const Rect.fromLTWH(18, 578, 360, 100),
       ];
       const screenSize = Size(400, 850);
 
@@ -220,8 +220,8 @@ void main() {
 
     test('Doctor Profile + Theme Section at y: 75..295 places card strictly below', () {
       final targets = [
-        Rect.fromLTWH(18, 75, 360, 80),
-        Rect.fromLTWH(18, 175, 360, 120),
+        const Rect.fromLTWH(18, 75, 360, 80),
+        const Rect.fromLTWH(18, 175, 360, 120),
       ];
       const screenSize = Size(400, 850);
 
@@ -237,8 +237,8 @@ void main() {
 
     test('Focus Timer Display and Action Dock places card strictly at top', () {
       final targets = [
-        Rect.fromLTWH(40, 380, 320, 80),
-        Rect.fromLTWH(24, 720, 350, 50),
+        const Rect.fromLTWH(40, 380, 320, 80),
+        const Rect.fromLTWH(24, 720, 350, 50),
       ];
       const screenSize = Size(400, 850);
 
@@ -261,25 +261,25 @@ void main() {
       ];
 
       final stepTargetGroups = [
-        [Rect.fromLTWH(20, 75, 360, 150)], // Step 1: Nori Mascot
-        [Rect.fromLTWH(16, 360, 360, 140)], // Step 2: Today's Tasks
-        [Rect.fromLTWH(16, 80, 360, 150)], // Step 3: Module Tasks Banner
+        [const Rect.fromLTWH(20, 75, 360, 150)], // Step 1: Nori Mascot
+        [const Rect.fromLTWH(16, 360, 360, 140)], // Step 2: Today's Tasks
+        [const Rect.fromLTWH(16, 80, 360, 150)], // Step 3: Module Tasks Banner
         [
-          Rect.fromLTWH(18, 360, 170, 170),
-          Rect.fromLTWH(202, 360, 170, 170),
+          const Rect.fromLTWH(18, 360, 170, 170),
+          const Rect.fromLTWH(202, 360, 170, 170),
         ], // Step 4: Curriculum first two subjects
         [
-          Rect.fromLTWH(18, 350, 360, 100),
-          Rect.fromLTWH(18, 464, 360, 100),
-          Rect.fromLTWH(18, 578, 360, 100),
+          const Rect.fromLTWH(18, 350, 360, 100),
+          const Rect.fromLTWH(18, 464, 360, 100),
+          const Rect.fromLTWH(18, 578, 360, 100),
         ], // Step 5: Analytics 3 Hub cards
         [
-          Rect.fromLTWH(18, 75, 360, 80),
-          Rect.fromLTWH(18, 175, 360, 120),
+          const Rect.fromLTWH(18, 75, 360, 80),
+          const Rect.fromLTWH(18, 175, 360, 120),
         ], // Step 6: Settings Profile + Themes
         [
-          Rect.fromLTWH(40, 380, 320, 80),
-          Rect.fromLTWH(24, 720, 350, 50),
+          const Rect.fromLTWH(40, 380, 320, 80),
+          const Rect.fromLTWH(24, 720, 350, 50),
         ], // Step 7: Focus Timer Display & Dock
       ];
 

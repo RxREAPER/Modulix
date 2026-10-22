@@ -155,7 +155,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
     // Show session summary dialog
     await showDialog(
       context: ctx,
-      barrierColor: Colors.black.withOpacity(0.35),
+      barrierColor: Colors.black.withValues(alpha: 0.35),
       barrierDismissible: false,
       builder: (dCtx) => _SessionDoneDialog(
         subjectName: timerState.hasTarget ? timerState.subjectName : 'General Focus',
@@ -347,9 +347,9 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withOpacity(0.52),
-                        Colors.black.withOpacity(0.20),
-                        Colors.black.withOpacity(0.68),
+                        Colors.black.withValues(alpha: 0.52),
+                        Colors.black.withValues(alpha: 0.20),
+                        Colors.black.withValues(alpha: 0.68),
                       ],
                       stops: const [0.0, 0.45, 1.0],
                     ),
@@ -406,7 +406,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
-                                color: isLight ? const Color(0xFF64748B) : Colors.white.withOpacity(0.85),
+                                color: isLight ? const Color(0xFF64748B) : Colors.white.withValues(alpha: 0.85),
                               ),
                             ),
                           ),
@@ -451,7 +451,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         fontFamily: 'monospace',
-                        color: isLight ? const Color(0xFF64748B) : Colors.white.withOpacity(0.9),
+                        color: isLight ? const Color(0xFF64748B) : Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -463,7 +463,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         fontFamily: 'monospace',
-                        color: isLight ? const Color(0xFF64748B) : Colors.white.withOpacity(0.9),
+                        color: isLight ? const Color(0xFF64748B) : Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
 
@@ -480,7 +480,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                                     : (timer.isRunning
                                         ? const Color(0xFF10B981)
                                         : theme.accentColor)))
-                            .withOpacity(isLight ? 0.12 : 0.20),
+                            .withValues(alpha: isLight ? 0.12 : 0.20),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -494,7 +494,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.2,
                           color: !timer.hasTarget
-                              ? (isLight ? const Color(0xFF64748B) : Colors.white.withOpacity(0.70))
+                              ? (isLight ? const Color(0xFF64748B) : Colors.white.withValues(alpha: 0.70))
                               : (timer.isBreak
                                   ? (isLight ? const Color(0xFFD97706) : Colors.orange.shade300)
                                   : (timer.isRunning
@@ -534,15 +534,15 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                             decoration: BoxDecoration(
-                              color: isLight ? Colors.white : Colors.black.withOpacity(0.38),
+                              color: isLight ? Colors.white : Colors.black.withValues(alpha: 0.38),
                               borderRadius: BorderRadius.circular(30),
                               border: Border.all(
-                                color: isLight ? const Color(0xFFE2E8F0) : Colors.white.withOpacity(0.35),
+                                color: isLight ? const Color(0xFFE2E8F0) : Colors.white.withValues(alpha: 0.35),
                                 width: 1.3,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: isLight ? const Color(0x14000000) : Colors.black.withOpacity(0.30),
+                                  color: isLight ? const Color(0x14000000) : Colors.black.withValues(alpha: 0.30),
                                   blurRadius: 14,
                                   offset: const Offset(0, 4),
                                 ),
@@ -707,8 +707,8 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                           color: timer.isBreak
                               ? theme.accentColor
                               : (isLight ? const Color(0xFF0F172A) : Colors.white),
-                          bg: isLight ? Colors.white : Colors.white.withOpacity(0.12),
-                          borderColor: isLight ? const Color(0xFFE2E8F0) : Colors.white.withOpacity(0.30),
+                          bg: isLight ? Colors.white : Colors.white.withValues(alpha: 0.12),
+                          borderColor: isLight ? const Color(0xFFE2E8F0) : Colors.white.withValues(alpha: 0.30),
                           onTap: notifier.toggleBreak,
                         ),
                         const SizedBox(width: 12),
@@ -740,7 +740,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                                     color: (timer.isRunning
                                             ? const Color(0xFF0F172A)
                                             : theme.accentColor)
-                                        .withOpacity(0.28),
+                                        .withValues(alpha: 0.28),
                                     blurRadius: 10,
                                     offset: const Offset(0, 3),
                                   ),
@@ -779,9 +779,9 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                           isLight: isLight,
                           color: timer.sessionActive
                               ? theme.accentColor
-                              : (isLight ? const Color(0xFF94A3B8) : Colors.white.withOpacity(0.4)),
-                          bg: isLight ? Colors.white : Colors.white.withOpacity(0.12),
-                          borderColor: isLight ? const Color(0xFFE2E8F0) : Colors.white.withOpacity(0.30),
+                              : (isLight ? const Color(0xFF94A3B8) : Colors.white.withValues(alpha: 0.4)),
+                          bg: isLight ? Colors.white : Colors.white.withValues(alpha: 0.12),
+                          borderColor: isLight ? const Color(0xFFE2E8F0) : Colors.white.withValues(alpha: 0.30),
                           onTap: timer.sessionActive ? () => _handleFinish(context) : null,
                         ),
                       ],
@@ -893,7 +893,7 @@ class _SessionConfigSheet extends ConsumerWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: accent.withOpacity(0.10),
+                  color: accent.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Center(
@@ -1012,7 +1012,7 @@ class _SessionConfigSheet extends ConsumerWidget {
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
-                  color: sel ? accent.withOpacity(0.06) : cardBg,
+                  color: sel ? accent.withValues(alpha: 0.06) : cardBg,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: sel ? accent : border,
@@ -1157,7 +1157,7 @@ class _SessionConfigSheet extends ConsumerWidget {
                     height: 34,
                     decoration: BoxDecoration(
                       color: timer.keepScreenAwake
-                          ? accent.withOpacity(0.12)
+                          ? accent.withValues(alpha: 0.12)
                           : const Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -1195,8 +1195,8 @@ class _SessionConfigSheet extends ConsumerWidget {
                   ),
                   CupertinoSwitch(
                     value: timer.keepScreenAwake,
-                    activeColor: accent,
-                    trackColor: AppTheme.borderLight,
+                    activeTrackColor: accent,
+                    inactiveTrackColor: AppTheme.borderLight,
                     thumbColor: Colors.white,
                     onChanged: (val) {
                       notifier.setKeepScreenAwake(val);
@@ -1326,15 +1326,15 @@ class _GlassBtn extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: isLight ? Colors.white : Colors.white.withOpacity(0.08),
+          color: isLight ? Colors.white : Colors.white.withValues(alpha: 0.08),
           shape: BoxShape.circle,
           border: Border.all(
-            color: isLight ? const Color(0xFFE2E8F0) : Colors.white.withOpacity(0.35),
+            color: isLight ? const Color(0xFFE2E8F0) : Colors.white.withValues(alpha: 0.35),
             width: 1.2,
           ),
           boxShadow: [
             BoxShadow(
-              color: isLight ? const Color(0x0A0F172A) : Colors.black.withOpacity(0.18),
+              color: isLight ? const Color(0x0A0F172A) : Colors.black.withValues(alpha: 0.18),
               blurRadius: 6,
               offset: const Offset(0, 1),
             ),
@@ -1379,7 +1379,7 @@ class _ControlBtn extends StatelessWidget {
         border: Border.all(color: borderColor, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: isLight ? const Color(0x0A0F172A) : Colors.black.withOpacity(0.15),
+            color: isLight ? const Color(0x0A0F172A) : Colors.black.withValues(alpha: 0.15),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1436,8 +1436,8 @@ class _SessionDoneDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = theme.accentColor;
     final textPrimary = isLight ? const Color(0xFF0F172A) : Colors.white;
-    final textSecondary = isLight ? const Color(0xFF64748B) : Colors.white.withOpacity(0.70);
-    final border = isLight ? const Color(0xFFE2E8F0) : Colors.white.withOpacity(0.14);
+    final textSecondary = isLight ? const Color(0xFF64748B) : Colors.white.withValues(alpha: 0.70);
+    final border = isLight ? const Color(0xFFE2E8F0) : Colors.white.withValues(alpha: 0.14);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -1450,16 +1450,16 @@ class _SessionDoneDialog extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               color: isLight
-                  ? Colors.white.withOpacity(0.82)
-                  : const Color(0xFF14141E).withOpacity(0.48),
+                  ? Colors.white.withValues(alpha: 0.82)
+                  : const Color(0xFF14141E).withValues(alpha: 0.48),
               borderRadius: BorderRadius.circular(28),
               border: Border.all(
-                color: isLight ? const Color(0x22000000) : Colors.white.withOpacity(0.18),
+                color: isLight ? const Color(0x22000000) : Colors.white.withValues(alpha: 0.18),
                 width: 1.2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.28),
+                  color: Colors.black.withValues(alpha: 0.28),
                   blurRadius: 30,
                   offset: const Offset(0, 12),
                 ),
@@ -1474,10 +1474,10 @@ class _SessionDoneDialog extends StatelessWidget {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: accent.withOpacity(0.12),
+                    color: accent.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: accent.withOpacity(0.3),
+                      color: accent.withValues(alpha: 0.3),
                       width: 1.5,
                     ),
                   ),
@@ -1502,9 +1502,9 @@ class _SessionDoneDialog extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                   decoration: BoxDecoration(
-                    color: accent.withOpacity(0.12),
+                    color: accent.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: accent.withOpacity(0.22), width: 1.0),
+                    border: Border.all(color: accent.withValues(alpha: 0.22), width: 1.0),
                   ),
                   child: Text(
                     subjectName.isNotEmpty ? subjectName.toUpperCase() : 'FOCUS SESSION',
@@ -1512,7 +1512,7 @@ class _SessionDoneDialog extends StatelessWidget {
                       fontSize: 10,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1.0,
-                      color: isLight ? accent : Colors.white.withOpacity(0.92),
+                      color: isLight ? accent : Colors.white.withValues(alpha: 0.92),
                     ),
                   ),
                 ),
@@ -1537,7 +1537,7 @@ class _SessionDoneDialog extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
-                          color: isLight ? const Color(0xFFF8FAFC) : Colors.white.withOpacity(0.06),
+                          color: isLight ? const Color(0xFFF8FAFC) : Colors.white.withValues(alpha: 0.06),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: border,
@@ -1573,7 +1573,7 @@ class _SessionDoneDialog extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
-                          color: isLight ? const Color(0xFFF8FAFC) : Colors.white.withOpacity(0.06),
+                          color: isLight ? const Color(0xFFF8FAFC) : Colors.white.withValues(alpha: 0.06),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: border,
@@ -1616,13 +1616,13 @@ class _SessionDoneDialog extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: onDone,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isLight ? accent : accent.withOpacity(0.75),
+                      backgroundColor: isLight ? accent : accent.withValues(alpha: 0.75),
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                         side: BorderSide(
-                          color: isLight ? Colors.transparent : Colors.white.withOpacity(0.20),
+                          color: isLight ? Colors.transparent : Colors.white.withValues(alpha: 0.20),
                           width: 1.0,
                         ),
                       ),
@@ -1651,7 +1651,7 @@ class _SessionDoneDialog extends StatelessWidget {
                         onPressed: onViewAnalytics,
                         style: OutlinedButton.styleFrom(
                           foregroundColor: textPrimary,
-                          backgroundColor: isLight ? Colors.white : Colors.white.withOpacity(0.06),
+                          backgroundColor: isLight ? Colors.white : Colors.white.withValues(alpha: 0.06),
                           side: BorderSide(
                             color: border,
                           ),
@@ -1667,7 +1667,7 @@ class _SessionDoneDialog extends StatelessWidget {
                         onPressed: onStartAnother,
                         style: OutlinedButton.styleFrom(
                           foregroundColor: textPrimary,
-                          backgroundColor: isLight ? Colors.white : Colors.white.withOpacity(0.06),
+                          backgroundColor: isLight ? Colors.white : Colors.white.withValues(alpha: 0.06),
                           side: BorderSide(
                             color: border,
                           ),

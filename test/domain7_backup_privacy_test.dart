@@ -8,7 +8,7 @@ import 'package:modulix/services/backup_service.dart';
 void main() {
   group('Domain 7: Backup & Data Sovereignty Tests', () {
     test('Backup JSON payload schema contains required keys and valid types', () {
-      final sampleState = const AppState(
+      const sampleState = AppState(
         doctorName: 'Dr. Modulix',
         onboardingDone: true,
         activeEdition: 'marrow_8',
@@ -23,7 +23,7 @@ void main() {
         timestamp: DateTime(2026, 10, 18, 12, 0),
       );
 
-      final sampleTask = const DailyDeskTask(
+      const sampleTask = DailyDeskTask(
         id: 'task_1',
         title: 'Review Thorax notes',
         category: TaskCategory.notes,

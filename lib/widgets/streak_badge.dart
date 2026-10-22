@@ -47,7 +47,7 @@ class _StreakBadgeState extends State<StreakBadge>
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFF6B35).withOpacity(0.35),
+              color: const Color(0xFFFF6B35).withValues(alpha: 0.35),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

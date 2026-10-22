@@ -103,7 +103,7 @@ class _TimerBackgroundPickerState extends State<TimerBackgroundPicker> {
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: accent.withOpacity(0.10),
+                    color: accent.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
@@ -169,7 +169,7 @@ class _TimerBackgroundPickerState extends State<TimerBackgroundPicker> {
                       boxShadow: [
                         BoxShadow(
                           color: isSelected
-                              ? accent.withOpacity(0.16)
+                              ? accent.withValues(alpha: 0.16)
                               : const Color(0x060F172A),
                           blurRadius: isSelected ? 12 : 6,
                           offset: const Offset(0, 3),
@@ -194,7 +194,7 @@ class _TimerBackgroundPickerState extends State<TimerBackgroundPicker> {
                                   decoration: BoxDecoration(
                                     color: thm.backgroundColor,
                                     border: Border.all(
-                                      color: Colors.black.withOpacity(0.08),
+                                      color: Colors.black.withValues(alpha: 0.08),
                                       width: 1,
                                     ),
                                   ),
@@ -245,7 +245,7 @@ class _TimerBackgroundPickerState extends State<TimerBackgroundPicker> {
                                               vertical: 2,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: accent.withOpacity(0.09),
+                                              color: accent.withValues(alpha: 0.09),
                                               borderRadius: BorderRadius.circular(6),
                                             ),
                                             child: Row(
@@ -326,7 +326,7 @@ class _TimerBackgroundPickerState extends State<TimerBackgroundPicker> {
                             ),
                             border: Border(
                               top: BorderSide(
-                                color: border.withOpacity(0.7),
+                                color: border.withValues(alpha: 0.7),
                                 width: 1,
                               ),
                             ),
@@ -352,12 +352,12 @@ class _TimerBackgroundPickerState extends State<TimerBackgroundPicker> {
                                     color: col,
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: Colors.black.withOpacity(0.12),
+                                      color: Colors.black.withValues(alpha: 0.12),
                                       width: 1,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: col.withOpacity(0.35),
+                                        color: col.withValues(alpha: 0.35),
                                         blurRadius: 4,
                                         offset: const Offset(0, 1),
                                       ),

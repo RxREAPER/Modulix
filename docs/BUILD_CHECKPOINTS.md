@@ -8,6 +8,60 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-029] Full Feature-by-Feature Test Suite Audit, Regression Resolution & Codebase Solidification
+- **Timestamp:** 2026-10-22 19:10 UTC
+- **Category:** Code Quality / Test Suite Hardening / Performance Optimization / Static Analysis
+- **Files Modified:**
+  - `lib/screens/settings/about_support_sheet.dart`
+  - `lib/screens/settings/animations/` (bulk complete, flip clock, pace engine, timer dock, timer modes)
+  - `lib/screens/settings/appearance_theme_sheet.dart`
+  - `lib/screens/settings/learn_the_app_sheet.dart`
+  - `lib/screens/settings/preferences_sheet.dart`
+  - `lib/screens/timer/focus_timer_screen.dart`
+  - `lib/services/crash_reporting_service.dart`
+  - `lib/theme/app_theme.dart`
+  - `lib/widgets/analytics/analytics_progress_hero_card.dart`
+  - `lib/widgets/analytics/study_plan_analytics_sheet.dart`
+  - `lib/widgets/automated_module_tracker.dart`
+  - `lib/widgets/curriculum/configure_plan_sheet.dart`
+  - `lib/widgets/focus_timer_sheet.dart`
+  - `lib/widgets/heatmap_calendar.dart`
+  - `lib/widgets/loading/app_shimmer.dart`
+  - `lib/widgets/nori/` (character, particles, sprite character)
+  - `lib/widgets/profile/profile_customization.dart`
+  - `lib/widgets/progress_ring.dart`
+  - `lib/widgets/quest_card.dart`
+  - `lib/widgets/streak_badge.dart`
+  - `lib/widgets/timer/` (ambient sound, mini timer overlay, task picker, timer background picker)
+  - `test/all_screens_animation_theme_test.dart`
+  - `test/analytics_streak_theme_test.dart`
+  - `test/app_tour_test.dart`
+  - `test/domain2_home_tasks_test.dart`
+  - `test/domain4_pacing_engine_test.dart`
+  - `test/domain7_backup_privacy_test.dart`
+  - `test/plan_screen_test.dart`
+  - `test/progress_overhaul_test.dart`
+  - `test/study_desk_test.dart`
+- **Summary:**
+  - **Feature-by-Feature Test Suite Audit:** Executed all 44 test suites across 7 feature domains:
+    - Feature 1: Core Domains 1-7 (22 tests passed)
+    - Feature 2: Services & Infrastructure (67 tests passed)
+    - Feature 3: Navigation, Tabs, & App Tour (22 tests passed)
+    - Feature 4: Theme, Animations, & UI Components (46 tests passed)
+    - Feature 5: Curriculum, Library, & Tasks (39 tests passed)
+    - Feature 6: Timer, Analytics, & Progress (17 tests passed)
+    - Feature 7: Stress, Regression, Auth, & App Widget (51 tests passed)
+    - **Total: 264 / 264 unit, widget, and integration tests passing (100% pass rate).**
+  - **Regression Resolution:**
+    - Updated `test/analytics_streak_theme_test.dart` to match the newly elevated `'Open Page'` button action on redesigned Performance Hub cards, verifying styling, native ink colors, and dark mode highlight contrasts.
+  - **Codebase Solidification & Optimization:**
+    - Cleaned up 320 mechanical issues via `dart fix` (resolved precision-loss `withOpacity` migrations to `withValues(alpha:)`, eliminated redundant consts/imports, and added const constructors to reduce widget allocations).
+    - Preserved `cacheExtent: 400.0/450.0` for 120Hz smooth scrolling performance on long lists.
+    - Static analysis (`flutter analyze lib/`): **0 errors, 0 warnings**.
+- **Build Status:** Pending APK Build
+
+---
+
 ### [CKPT-028] Progress Page Major Overhaul: Sleek Apple-Minimalist Performance Hubs with Custom Visual Indicators, Dedicated Full-Screen Feature Pages with Interactive UX, and Subpage Bottom Nav Lifecycle Motion
 - **Timestamp:** 2026-10-22 18:15 UTC
 - **Category:** Analytics & Progress / Custom UI Indicators / Full-Page Feature Architecture / Shell Navigation & Droplet Lifecycle
