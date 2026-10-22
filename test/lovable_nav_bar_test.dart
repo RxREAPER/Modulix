@@ -12,12 +12,12 @@ void main() {
     const LovableNavItem(
       icon: Icons.menu_book_outlined,
       activeIcon: Icons.menu_book_rounded,
-      label: 'Curriculum',
+      label: 'Library',
     ),
     const LovableNavItem(
       icon: Icons.bar_chart_outlined,
       activeIcon: Icons.bar_chart_rounded,
-      label: 'Analytics',
+      label: 'Progress',
     ),
     const LovableNavItem(
       icon: Icons.person_outline,
@@ -26,7 +26,7 @@ void main() {
     ),
   ];
 
-  testWidgets('LovableNavBar renders Floating Sketchy Island and handles taps',
+  testWidgets('LovableNavBar renders Modern Floating Dock and handles taps',
       (tester) async {
     int? tappedIndex;
     int? reTappedIndex;
@@ -46,31 +46,30 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
     expect(find.byType(LovableNavBar), findsOneWidget);
+    // Selected tab (Home) displays its text
     expect(find.text('Home'), findsOneWidget);
-    expect(find.text('Curriculum'), findsOneWidget);
-    expect(find.text('Analytics'), findsOneWidget);
-    expect(find.text('Profile'), findsOneWidget);
 
-    // Verify presence of SketchNavIcon vector icons
+    // Verify presence of SketchNavIcon vector icons across all 5 slots
     expect(find.byType(SketchNavIcon), findsAtLeastNWidgets(5));
 
-    // Verify sliding Crayon/Colored-Pencil hatch indicator
+    // Verify sliding indicator
     expect(find.byType(SketchHatchIndicator), findsOneWidget);
 
-    // Tap Tab 1 (Curriculum)
-    await tester.tap(find.text('Curriculum'));
+    // Tap Tab 1 (Library) via key
+    await tester.tap(find.byKey(const Key('nav_tab_1')));
     await tester.pump();
     expect(tappedIndex, equals(1));
 
-    // Tap Center Focus Timer button via key or icon
+    // Tap Center Focus Timer button via key
     await tester.tap(find.byKey(const Key('nav_center_timer_button')));
     await tester.pump();
     expect(timerTapped, isTrue);
 
     // Re-tap current active tab (Tab 0: Home)
-    await tester.tap(find.text('Home'));
+    await tester.tap(find.byKey(const Key('nav_tab_0')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
     expect(reTappedIndex, equals(0));
@@ -92,8 +91,6 @@ void main() {
         ),
       ),
     );
-
-    expect(find.byType(LovableNavBar), findsOneWidget);
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.byType(LovableNavBar), findsOneWidget);
   });
@@ -120,19 +117,20 @@ void main() {
         },
       ),
     );
+    await tester.pumpAndSettle();
 
-    // Tap Tab 3 (Profile - right outermost tab)
-    await tester.tap(find.text('Profile'));
+    // Tap Tab 3 (Profile - right outermost tab) via key
+    await tester.tap(find.byKey(const Key('nav_tab_3')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 70)); // Mid-flight
 
-    // Interrupt mid-flight by tapping Tab 1 (Curriculum)
-    await tester.tap(find.text('Curriculum'));
+    // Interrupt mid-flight by tapping Tab 1 (Library) via key
+    await tester.tap(find.byKey(const Key('nav_tab_1')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 70));
 
-    // Tap Tab 0 (Home - left outermost tab)
-    await tester.tap(find.text('Home'));
+    // Tap Tab 0 (Home - left outermost tab) via key
+    await tester.tap(find.byKey(const Key('nav_tab_0')));
     await tester.pump();
     await tester.pumpAndSettle();
 

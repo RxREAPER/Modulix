@@ -74,7 +74,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
-            MainShell(navigationShell: navigationShell),
+            MainShell(
+              navigationShell: navigationShell,
+              currentPath: state.uri.path,
+            ),
         branches: [
           // Branch 0: Home Desk
           StatefulShellBranch(
@@ -376,8 +379,13 @@ class ModalSheetRecessWrapper extends StatelessWidget {
 
 class MainShell extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
+  final String currentPath;
 
-  const MainShell({super.key, required this.navigationShell});
+  const MainShell({
+    super.key,
+    required this.navigationShell,
+    this.currentPath = '/',
+  });
 
   @override
   ConsumerState<MainShell> createState() => _MainShellState();
@@ -395,15 +403,15 @@ class _MainShellState extends ConsumerState<MainShell> {
     (
       icon: Icons.menu_book_outlined,
       activeIcon: Icons.menu_book_rounded,
-      label: 'Curriculum',
-      sketchType: SketchNavIconType.curriculum,
+      label: 'Library',
+      sketchType: SketchNavIconType.library,
       path: '/curriculum'
     ),
     (
       icon: Icons.bar_chart_outlined,
       activeIcon: Icons.bar_chart_rounded,
-      label: 'Analytics',
-      sketchType: SketchNavIconType.analytics,
+      label: 'Progress',
+      sketchType: SketchNavIconType.progress,
       path: '/analytics'
     ),
     (
@@ -434,6 +442,10 @@ class _MainShellState extends ConsumerState<MainShell> {
     final canBranchPop = currentBranchNavKey?.currentState?.canPop() ?? false;
     final canRootPop = _rootNavigatorKey.currentState?.canPop() ?? false;
 
+    // Determine whether the current view is a root main page or a subpage
+    const mainPaths = {'/', '/curriculum', '/analytics', '/settings'};
+    final isMainPage = mainPaths.contains(widget.currentPath) && !canBranchPop;
+
     return PopScope(
       canPop: currentIndex == 0 && !canRootPop && !canBranchPop,
       onPopInvokedWithResult: (didPop, _) {
@@ -462,6 +474,7 @@ class _MainShellState extends ConsumerState<MainShell> {
               child: LovableNavBar(
                 currentIndex: currentIndex,
                 isSessionActive: isSessionActive,
+                isVisible: isMainPage,
                 onTap: (index) {
                   widget.navigationShell.goBranch(
                     index,

@@ -50,7 +50,7 @@ class CurriculumScreen extends ConsumerWidget {
         title: Row(
           children: [
             Text(
-              'Curriculum',
+              'Library',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
@@ -351,7 +351,6 @@ class CurriculumScreen extends ConsumerWidget {
           return CustomScrollView(
             physics: const BouncingScrollPhysics(
                 parent: AlwaysScrollableScrollPhysics()),
-            cacheExtent: 450.0,
             slivers: slivers,
           );
         },

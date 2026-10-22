@@ -8,6 +8,38 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-026] Modern Sleek Floating Bottom Navigation Dock, Reference-Accurate Vector Icons, Drop & Expand Lifecycle Motion, Subpage Minimize & Page Renamings (Library / Progress / Focus)
+- **Timestamp:** 2026-10-22 16:55 UTC
+- **Category:** Navigation Architecture / UI Redesign / Motion & Lifecycle / A11y & Aesthetics
+- **Files Modified:**
+  - `lib/widgets/nav/sketch_nav_icons.dart`
+  - `lib/widgets/nav/sketch_hatch_indicator.dart`
+  - `lib/widgets/lovable_nav_bar.dart`
+  - `lib/app.dart`
+  - `lib/screens/curriculum/curriculum_screen.dart`
+  - `lib/screens/analytics/analytics_screen.dart`
+  - `test/lovable_nav_bar_test.dart`
+  - `test/tab_persistence_test.dart`
+- **Summary:**
+  - **Sleek Floating Capsule Dock:** Redesigned bottom navigation into a compact 56.0px floating capsule (`BorderRadius.circular(28)`), floating margins (`EdgeInsets.fromLTRB(20, 0, 20, 10)`), with theme-adaptive styling (crisp white in light mode, matte charcoal in dark mode) and soft elevation.
+  - **Reference-Accurate Vector Icons:** Faithfully recreated the 5 icons from the reference image (`/home/safi/Documents/image.png_2K_20261022192927.jpg`) via custom vector painters with crisp single-stroke geometry (Home house with doorway, Library 3-book shelf with tilted book, Focus symmetrical hourglass with sand, Progress trophy cup with star and stepped pedestal, Profile clean circle head and shoulder bust).
+  - **Minimalist Default & Selected State:** Unselected tabs display clean icons only with zero text clutter. The selected tab smoothly reveals its label text directly underneath the icon.
+  - **Professional Fluid Selection Bubble:** Replaced erratic crayon hatching with a smooth, refined sliding pill indicator (`Curves.easeOutCubic`, 240ms duration) with subtle theme-tinted background and crisp border.
+  - **Motion Lifecycle (Drop & Expand Entrance & Subpage Minimize):**
+    - On startup / screen appearance: bottom nav plays an entrance animation rising from below screen (96px down, condensed scale 0.72) and expanding outward into default capsule size with subtle overshoot.
+    - On navigating to subpages (e.g. `/module-tasks`, `/curriculum/:subjectId`, `/curriculum/:subjectId/:chapterIndex`, `/timer`, `/plan`): bottom nav smoothly condenses into a drop and minimizes off the bottom of the screen.
+    - On popping back to main root pages: plays the drop-and-expand opening animation.
+  - **Major Page Renamings:**
+    - `Curriculum` $\rightarrow$ `Library` (tab label and screen header)
+    - `Analytics` $\rightarrow$ `Progress` (tab label and screen header)
+    - `Focus Timer` $\rightarrow$ `Focus` (tab label and center action)
+- **Verification:**
+  - Static analysis (`flutter analyze`) on all modified files passed with **0 errors, 0 warnings, and 0 lints**.
+  - Unit test suites (`lovable_nav_bar_test.dart`, `tab_persistence_test.dart`) passed 100%.
+- **Build Status:** Pending APK Build (Verified via flutter analyze & unit tests)
+
+---
+
 ### [CKPT-025] Hidden Serial Numbers for QBanks & Notes, Adapted Modern Unit View & Module View in Module Tasks Screen
 - **Timestamp:** 2026-10-22 16:35 UTC
 - **Category:** UI Refinement / Curriculum Module Consistency / Tasks & Queue Polish

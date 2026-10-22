@@ -128,7 +128,7 @@ class AnalyticsScreen extends ConsumerWidget {
         elevation: 0,
         centerTitle: false,
         title: Text(
-          'Analytics',
+          'Progress',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w900,

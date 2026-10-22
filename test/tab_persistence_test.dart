@@ -45,23 +45,22 @@ void main() {
 
     // Initially at Home Desk (Tab 0)
     expect(find.text('Home'), findsOneWidget);
-    expect(find.text('Curriculum'), findsOneWidget);
 
-    // Switch to Curriculum (Tab 1)
-    await tester.tap(find.text('Curriculum'));
+    // Switch to Library (Tab 1)
+    await tester.tap(find.byKey(const Key('nav_tab_1')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 350));
 
-    // Verify Curriculum tab is visible
-    expect(find.text('Curriculum'), findsWidgets);
+    // Verify Library tab is visible and selected
+    expect(find.text('Library'), findsWidgets);
 
-    // Switch to Analytics (Tab 2)
-    await tester.tap(find.text('Analytics'));
+    // Switch to Progress (Tab 2)
+    await tester.tap(find.byKey(const Key('nav_tab_2')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 350));
 
     // Switch back to Home (Tab 0) - should be instant with zero flicker
-    await tester.tap(find.text('Home'));
+    await tester.tap(find.byKey(const Key('nav_tab_0')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 350));
 

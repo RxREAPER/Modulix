@@ -24,12 +24,12 @@ class LovableNavItem {
   });
 }
 
-/// Floating Sketchy Island bottom navigation dock lifted above the bottom screen edge.
-/// Features an authentic multi-pass hand-drawn capsule shell with draftsman guide lines,
-/// a fluid sliding crayon / colored-pencil hatch indicator enveloping active icon & label,
-/// hand-drawn line-art vector icons, handwritten sketch typography,
-/// an elevated center Focus Timer button with an ambient breathing halo ring,
-/// and active tab re-tap scroll-to-top support with double-bounce haptic ripple.
+/// Modern floating capsule bottom navigation dock.
+/// Features a streamlined minimalist pill matching the reference design,
+/// bespoke line-art vector icons (House, Books, Hourglass, Trophy, Profile),
+/// theme-adaptive styling, a smooth sliding highlight bubble,
+/// entrance drop-and-expand motion on startup, and automatic drop/minimize
+/// animation when navigating into subpages.
 class LovableNavBar extends StatefulWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -37,6 +37,7 @@ class LovableNavBar extends StatefulWidget {
   final List<LovableNavItem> items;
   final bool isSessionActive;
   final ValueChanged<int>? onReTap;
+  final bool isVisible;
 
   const LovableNavBar({
     super.key,
@@ -46,6 +47,7 @@ class LovableNavBar extends StatefulWidget {
     required this.items,
     this.isSessionActive = false,
     this.onReTap,
+    this.isVisible = true,
   });
 
   @override
@@ -53,17 +55,29 @@ class LovableNavBar extends StatefulWidget {
 }
 
 class _LovableNavBarState extends State<LovableNavBar>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
+  late AnimationController _motionController;
   late AnimationController _haloController;
   Timer? _reTapTimer;
 
   @override
   void initState() {
     super.initState();
+    // Drop & Expand entrance animation
+    _motionController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 460),
+    );
+
+    // Ambient pulse controller for active focus sessions
     _haloController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2200),
+      duration: const Duration(milliseconds: 2000),
     );
+
+    if (widget.isVisible) {
+      _motionController.forward(from: 0.0);
+    }
     if (widget.isSessionActive) {
       _haloController.repeat();
     }
@@ -72,6 +86,17 @@ class _LovableNavBarState extends State<LovableNavBar>
   @override
   void didUpdateWidget(covariant LovableNavBar oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    // Minimize or expand dock on page transitions
+    if (widget.isVisible != oldWidget.isVisible) {
+      if (widget.isVisible) {
+        _motionController.forward();
+      } else {
+        _motionController.reverse();
+      }
+    }
+
+    // Active session ambient glow
     if (widget.isSessionActive != oldWidget.isSessionActive) {
       if (widget.isSessionActive) {
         _haloController.repeat();
@@ -85,13 +110,13 @@ class _LovableNavBarState extends State<LovableNavBar>
   @override
   void dispose() {
     _reTapTimer?.cancel();
+    _motionController.dispose();
     _haloController.dispose();
     super.dispose();
   }
 
   void _handleTabTap(int index) {
     if (index == widget.currentIndex) {
-      // Re-tap on active tab: trigger double-bounce haptic ripple & callback
       HapticFeedback.selectionClick();
       _reTapTimer?.cancel();
       _reTapTimer = Timer(const Duration(milliseconds: 65), () {
@@ -103,6 +128,7 @@ class _LovableNavBarState extends State<LovableNavBar>
         widget.onTap(index);
       }
     } else {
+      HapticFeedback.selectionClick();
       widget.onTap(index);
     }
   }
@@ -111,9 +137,11 @@ class _LovableNavBarState extends State<LovableNavBar>
     if (item.sketchType != null) return item.sketchType!;
     final l = item.label.toLowerCase();
     if (l.contains('home')) return SketchNavIconType.home;
-    if (l.contains('curriculum')) return SketchNavIconType.curriculum;
-    if (l.contains('analytics') || l.contains('chart')) {
-      return SketchNavIconType.analytics;
+    if (l.contains('curriculum') || l.contains('library') || l.contains('book')) {
+      return SketchNavIconType.library;
+    }
+    if (l.contains('analytics') || l.contains('progress') || l.contains('chart') || l.contains('trophy')) {
+      return SketchNavIconType.progress;
     }
     if (l.contains('profile') || l.contains('settings') || l.contains('user')) {
       return SketchNavIconType.profile;
@@ -122,9 +150,9 @@ class _LovableNavBarState extends State<LovableNavBar>
       case 0:
         return SketchNavIconType.home;
       case 1:
-        return SketchNavIconType.curriculum;
+        return SketchNavIconType.library;
       case 2:
-        return SketchNavIconType.analytics;
+        return SketchNavIconType.progress;
       default:
         return SketchNavIconType.profile;
     }
@@ -133,265 +161,394 @@ class _LovableNavBarState extends State<LovableNavBar>
   @override
   Widget build(BuildContext context) {
     final isDark = AppTheme.current.isDark;
-    final isTimerActive = widget.currentIndex == 4;
-    const dockHeight = 70.0;
-    const centerButtonDiameter = 64.0;
-    const totalDockHeight = 84.0;
-    const horizontalInset = 10.0;
-
-    // Adapt accent color dynamically from active theme
+    const dockHeight = 56.0;
+    const horizontalMargin = 20.0;
     final accentColor = AppTheme.accentPrimary;
-    final activeTextColor = accentColor;
+    final inactiveColor = isDark
+        ? const Color(0xFF8E8E93)
+        : const Color(0xFF64748B);
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-        child: SizedBox(
-          height: totalDockHeight,
-          child: Stack(
-            clipBehavior: Clip.none,
+    // Map tab currentIndex (0..3) to 5-slot layout:
+    // Slot 0: Tab 0 (Home)
+    // Slot 1: Tab 1 (Library)
+    // Slot 2: Center Focus (Hourglass)
+    // Slot 3: Tab 2 (Progress)
+    // Slot 4: Tab 3 (Profile)
+    int? activeSlot;
+    if (widget.currentIndex == 0) {
+      activeSlot = 0;
+    } else if (widget.currentIndex == 1) {
+      activeSlot = 1;
+    } else if (widget.currentIndex == 4) {
+      activeSlot = 2; // Focus tab active
+    } else if (widget.currentIndex == 2) {
+      activeSlot = 3;
+    } else if (widget.currentIndex == 3) {
+      activeSlot = 4;
+    }
+
+    return AnimatedBuilder(
+      animation: _motionController,
+      builder: (context, child) {
+        // Drop-and-expand motion physics:
+        // Starts 96px below viewport, scaled down like a droplet, then rises
+        // and expands outward with a refined overshoot.
+        final t = _motionController.value;
+        final curve = _motionController.status == AnimationStatus.reverse
+            ? Curves.easeInOutCubic.transform(t)
+            : const Cubic(0.34, 1.35, 0.64, 1.0).transform(t);
+
+        final yOffset = (1.0 - curve) * 96.0;
+        final scale = 0.72 + (0.28 * curve);
+        final opacity = t.clamp(0.0, 1.0);
+
+        return Transform.translate(
+          offset: Offset(0, yOffset),
+          child: Transform.scale(
+            scale: scale,
             alignment: Alignment.bottomCenter,
-            children: [
-              // 1. Floating Sketchy Capsule Dock (Solid Opaque Paper Background)
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: CustomPaint(
-                  foregroundPainter: _MultiPassSketchPainter(
-                    strokeColor: AppTheme.sketchBorderColor,
-                    borderRadius: 35.0,
-                  ),
-                  child: Container(
-                    height: dockHeight,
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF1E1E22)
-                          : const Color(0xFFFAF7F2), // 100% Solid Opaque Paper Background
-                      borderRadius: BorderRadius.circular(35.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.inkForeground.withValues(
-                            alpha: isDark ? 0.40 : 0.08,
-                          ),
-                          offset: const Offset(0, 4),
-                          blurRadius: 16,
-                          spreadRadius: -2,
-                        ),
-                        BoxShadow(
-                          color: AppTheme.sketchBorderColor
-                              .withValues(alpha: 0.10),
-                          offset: const Offset(1, 1),
-                          blurRadius: 0,
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(35.0),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final totalWidth = constraints.maxWidth;
-                          final usableWidth =
-                              math.max(0.0, totalWidth - (horizontalInset * 2));
-                          final slotWidth = usableWidth / 5.0;
-
-                          // Map tab currentIndex (0..3) to 5-slot layout:
-                          // Slot 0: Tab 0 (Home)
-                          // Slot 1: Tab 1 (Curriculum)
-                          // Slot 2: Center Focus Timer Medallion (Elevated Stopwatch)
-                          // Slot 3: Tab 2 (Analytics)
-                          // Slot 4: Tab 3 (Profile)
-                          int? activeSlot;
-                          if (widget.currentIndex == 0) {
-                            activeSlot = 0;
-                          } else if (widget.currentIndex == 1) {
-                            activeSlot = 1;
-                          } else if (widget.currentIndex == 2) {
-                            activeSlot = 3;
-                          } else if (widget.currentIndex == 3) {
-                            activeSlot = 4;
-                          }
-
-                          Rect? pillRect;
-                          if (activeSlot != null) {
-                            final slotCenter = horizontalInset +
-                                ((activeSlot + 0.5) * slotWidth);
-                            final pillWidth = math.min(slotWidth - 6.0, 64.0);
-                            const pillHeight = 58.0;
-                            final pillLeft = slotCenter - (pillWidth / 2);
-                            const pillTop = (dockHeight - pillHeight) / 2;
-
-                            pillRect = Rect.fromLTWH(
-                              pillLeft,
-                              pillTop,
-                              pillWidth,
-                              pillHeight,
-                            );
-                          }
-
-                          return Stack(
-                            children: [
-                              // 2. Sliding Crayon / Colored-Pencil Hatch Squircle Indicator (Rounded capsule borders matching nav)
-                              if (pillRect != null)
-                                Positioned.fill(
-                                  child: SketchHatchIndicator(
-                                    targetRect: pillRect,
-                                    hatchColor: accentColor,
-                                    borderRadius: 26.0,
-                                  ),
-                                ),
-
-                              // 3. Tab Items Row (5 Equal Slots with comfortable horizontal inset)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: horizontalInset,
-                                ),
-                                child: Row(
-                                  children: [
-                                    // Slot 0: Home
-                                    Expanded(
-                                      child: _BouncyTabItem(
-                                        index: 0,
-                                        item: widget.items[0],
-                                        sketchType: _resolveSketchType(
-                                            widget.items[0], 0),
-                                        isSelected: widget.currentIndex == 0,
-                                        activeColor: activeTextColor,
-                                        onTap: () => _handleTabTap(0),
-                                      ),
-                                    ),
-
-                                    // Slot 1: Curriculum
-                                    Expanded(
-                                      child: _BouncyTabItem(
-                                        index: 1,
-                                        item: widget.items[1],
-                                        sketchType: _resolveSketchType(
-                                            widget.items[1], 1),
-                                        isSelected: widget.currentIndex == 1,
-                                        activeColor: activeTextColor,
-                                        onTap: () => _handleTabTap(1),
-                                      ),
-                                    ),
-
-                                    // Slot 2: Placeholder spacer for Center Focus Timer
-                                    SizedBox(width: slotWidth),
-
-                                    // Slot 3: Analytics
-                                    Expanded(
-                                      child: _BouncyTabItem(
-                                        index: 2,
-                                        item: widget.items[2],
-                                        sketchType: _resolveSketchType(
-                                            widget.items[2], 2),
-                                        isSelected: widget.currentIndex == 2,
-                                        activeColor: activeTextColor,
-                                        onTap: () => _handleTabTap(2),
-                                      ),
-                                    ),
-
-                                    // Slot 4: Profile
-                                    Expanded(
-                                      child: _BouncyTabItem(
-                                        index: 3,
-                                        item: widget.items[3],
-                                        sketchType: _resolveSketchType(
-                                            widget.items[3], 3),
-                                        isSelected: widget.currentIndex == 3,
-                                        activeColor: activeTextColor,
-                                        onTap: () => _handleTabTap(3),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
+            child: Opacity(
+              opacity: opacity,
+              child: child,
+            ),
+          ),
+        );
+      },
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(horizontalMargin, 0, horizontalMargin, 10),
+          child: Container(
+            height: dockHeight,
+            decoration: BoxDecoration(
+              color: isDark
+                  ? const Color(0xFF1E1F24)
+                  : Colors.white,
+              borderRadius: BorderRadius.circular(28.0),
+              border: Border.all(
+                color: isDark
+                    ? const Color(0xFF2E3038)
+                    : AppTheme.sketchBorderColor.withValues(alpha: 0.12),
+                width: 1.0,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.40 : 0.07),
+                  offset: const Offset(0, 4),
+                  blurRadius: 18,
+                  spreadRadius: -2,
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.02),
+                  offset: const Offset(0, 1),
+                  blurRadius: 4,
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28.0),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final totalWidth = constraints.maxWidth;
+                  final slotWidth = totalWidth / 5.0;
 
-              // 4. Center Elevated Focus Timer Button with Breathing Halo & Solid Ink Medallion
-              Positioned(
-                top: 4.0,
-                child: Stack(
-                  alignment: Alignment.center,
-                  clipBehavior: Clip.none,
-                  children: [
-                    // Ambient breathing halo ring when focus timer is active
-                    if (widget.isSessionActive)
-                      AnimatedBuilder(
-                        animation: _haloController,
-                        builder: (context, child) {
-                          final scale = 1.0 + (_haloController.value * 0.35);
-                          final opacity = (1.0 - _haloController.value) * 0.50;
-                          return Transform.scale(
-                            scale: scale,
-                            child: Container(
-                              width: centerButtonDiameter + 6.0,
-                              height: centerButtonDiameter + 6.0,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: accentColor.withValues(alpha: opacity),
-                                  width: 2.2,
-                                ),
-                              ),
+                  Rect? pillRect;
+                  if (activeSlot != null) {
+                    final slotCenter = (activeSlot + 0.5) * slotWidth;
+                    final pillWidth = math.min(slotWidth - 6.0, 54.0);
+                    const pillHeight = 44.0;
+                    final pillLeft = slotCenter - (pillWidth / 2);
+                    const pillTop = (dockHeight - pillHeight) / 2;
+
+                    pillRect = Rect.fromLTWH(
+                      pillLeft,
+                      pillTop,
+                      pillWidth,
+                      pillHeight,
+                    );
+                  }
+
+                  return Stack(
+                    children: [
+                      // Smooth, refined sliding bubble highlight
+                      if (pillRect != null)
+                        Positioned.fill(
+                          child: SketchHatchIndicator(
+                            targetRect: pillRect,
+                            hatchColor: accentColor,
+                            borderRadius: 22.0,
+                          ),
+                        ),
+
+                      // 5 Integrated Slots
+                      Row(
+                        children: [
+                          // Slot 0: Home
+                          Expanded(
+                            child: _ModernTabItem(
+                              key: const Key('nav_tab_0'),
+                              sketchType: widget.items.isNotEmpty
+                                  ? _resolveSketchType(widget.items[0], 0)
+                                  : SketchNavIconType.home,
+                              label: widget.items.isNotEmpty
+                                  ? widget.items[0].label
+                                  : 'Home',
+                              isSelected: activeSlot == 0,
+                              activeColor: accentColor,
+                              inactiveColor: inactiveColor,
+                              onTap: () => _handleTabTap(0),
                             ),
-                          );
-                        },
-                      ),
+                          ),
 
-                    // Center Elevated Button with Solid Charcoal / Ink Medallion
-                    ApplePressable(
-                      pressedScale: 0.90,
-                      pressedOpacity: 0.92,
-                      hapticStyle: HapticStyle.selection,
-                      onTap: widget.onTimerTap,
+                          // Slot 1: Library
+                          Expanded(
+                            child: _ModernTabItem(
+                              key: const Key('nav_tab_1'),
+                              sketchType: widget.items.length > 1
+                                  ? _resolveSketchType(widget.items[1], 1)
+                                  : SketchNavIconType.library,
+                              label: widget.items.length > 1
+                                  ? widget.items[1].label
+                                  : 'Library',
+                              isSelected: activeSlot == 1,
+                              activeColor: accentColor,
+                              inactiveColor: inactiveColor,
+                              onTap: () => _handleTabTap(1),
+                            ),
+                          ),
+
+                          // Slot 2: Focus (Center Hourglass)
+                          Expanded(
+                            child: _ModernFocusItem(
+                              key: const Key('nav_center_timer_button'),
+                              isSelected: activeSlot == 2,
+                              isSessionActive: widget.isSessionActive,
+                              haloAnimation: _haloController,
+                              activeColor: accentColor,
+                              inactiveColor: inactiveColor,
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                widget.onTimerTap();
+                              },
+                            ),
+                          ),
+
+                          // Slot 3: Progress
+                          Expanded(
+                            child: _ModernTabItem(
+                              key: const Key('nav_tab_2'),
+                              sketchType: widget.items.length > 2
+                                  ? _resolveSketchType(widget.items[2], 2)
+                                  : SketchNavIconType.progress,
+                              label: widget.items.length > 2
+                                  ? widget.items[2].label
+                                  : 'Progress',
+                              isSelected: activeSlot == 3,
+                              activeColor: accentColor,
+                              inactiveColor: inactiveColor,
+                              onTap: () => _handleTabTap(2),
+                            ),
+                          ),
+
+                          // Slot 4: Profile
+                          Expanded(
+                            child: _ModernTabItem(
+                              key: const Key('nav_tab_3'),
+                              sketchType: widget.items.length > 3
+                                  ? _resolveSketchType(widget.items[3], 3)
+                                  : SketchNavIconType.profile,
+                              label: widget.items.length > 3
+                                  ? widget.items[3].label
+                                  : 'Profile',
+                              isSelected: activeSlot == 4,
+                              activeColor: accentColor,
+                              inactiveColor: inactiveColor,
+                              onTap: () => _handleTabTap(3),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Sleek modern tab item: Minimalist default (icon only), text visible on select
+class _ModernTabItem extends StatelessWidget {
+  final SketchNavIconType sketchType;
+  final String label;
+  final bool isSelected;
+  final Color activeColor;
+  final Color inactiveColor;
+  final VoidCallback onTap;
+
+  const _ModernTabItem({
+    super.key,
+    required this.sketchType,
+    required this.label,
+    required this.isSelected,
+    required this.activeColor,
+    required this.inactiveColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final iconColor = isSelected ? activeColor : inactiveColor;
+
+    return Semantics(
+      label: label,
+      selected: isSelected,
+      button: true,
+      child: ApplePressable(
+        pressedScale: 0.90,
+        pressedOpacity: 0.85,
+        hapticStyle: HapticStyle.none,
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(22),
+        child: Center(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            transform: Matrix4.translationValues(0, isSelected ? -2 : 0, 0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SketchNavIcon(
+                  type: sketchType,
+                  color: iconColor,
+                  size: isSelected ? 21.0 : 22.0,
+                  isSelected: isSelected,
+                  strokeWidth: isSelected ? 1.9 : 1.7,
+                ),
+                if (isSelected) ...[
+                  const SizedBox(height: 2),
+                  AnimatedOpacity(
+                    opacity: isSelected ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 180),
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 10.0,
+                        fontWeight: FontWeight.w700,
+                        color: activeColor,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Center Focus Item (Hourglass with ambient breathing glow when active session)
+class _ModernFocusItem extends StatelessWidget {
+  final bool isSelected;
+  final bool isSessionActive;
+  final Animation<double> haloAnimation;
+  final Color activeColor;
+  final Color inactiveColor;
+  final VoidCallback onTap;
+
+  const _ModernFocusItem({
+    super.key,
+    required this.isSelected,
+    required this.isSessionActive,
+    required this.haloAnimation,
+    required this.activeColor,
+    required this.inactiveColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final iconColor = (isSelected || isSessionActive) ? activeColor : inactiveColor;
+
+    return Semantics(
+      label: 'Focus',
+      selected: isSelected,
+      button: true,
+      child: ApplePressable(
+        pressedScale: 0.90,
+        pressedOpacity: 0.85,
+        hapticStyle: HapticStyle.none,
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(22),
+        child: Center(
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              if (isSessionActive)
+                AnimatedBuilder(
+                  animation: haloAnimation,
+                  builder: (context, child) {
+                    final scale = 1.0 + (haloAnimation.value * 0.28);
+                    final opacity = (1.0 - haloAnimation.value) * 0.40;
+                    return Transform.scale(
+                      scale: scale,
                       child: Container(
-                        key: const Key('nav_center_timer_button'),
-                        width: centerButtonDiameter,
-                        height: centerButtonDiameter,
+                        width: 32,
+                        height: 32,
                         decoration: BoxDecoration(
-                          color: isTimerActive
-                              ? accentColor
-                              : (isDark
-                                  ? const Color(0xFF141416)
-                                  : const Color(0xFF1E1C1A)),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: isDark
-                                ? const Color(0xFF3A3A40)
-                                : Colors.white,
-                            width: 2.8,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.inkForeground.withValues(
-                                alpha: isDark ? 0.45 : 0.22,
-                              ),
-                              offset: const Offset(0, 3),
-                              blurRadius: 10,
-                            ),
-                          ],
-                        ),
-                        child: CustomPaint(
-                          painter: _SketchTimerMedallionPainter(
-                            strokeColor: Colors.white.withValues(alpha: 0.70),
-                          ),
-                          child: const Center(
-                            child: SketchNavIcon(
-                              type: SketchNavIconType.pomodoro,
-                              color: Colors.white,
-                              size: 42,
-                              isSelected: true,
-                            ),
+                            color: activeColor.withValues(alpha: opacity),
+                            width: 1.8,
                           ),
                         ),
                       ),
+                    );
+                  },
+                ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                transform: Matrix4.translationValues(0, isSelected ? -2 : 0, 0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SketchNavIcon(
+                      type: SketchNavIconType.focus,
+                      color: iconColor,
+                      size: isSelected ? 21.0 : 22.0,
+                      isSelected: isSelected || isSessionActive,
+                      strokeWidth: (isSelected || isSessionActive) ? 1.9 : 1.7,
                     ),
+                    if (isSelected) ...[
+                      const SizedBox(height: 2),
+                      AnimatedOpacity(
+                        opacity: isSelected ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 180),
+                        child: Text(
+                          'Focus',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 10.0,
+                            fontWeight: FontWeight.w700,
+                            color: activeColor,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -400,377 +557,5 @@ class _LovableNavBarState extends State<LovableNavBar>
         ),
       ),
     );
-  }
-}
-
-class _BouncyTabItem extends StatefulWidget {
-  final int index;
-  final LovableNavItem item;
-  final SketchNavIconType sketchType;
-  final bool isSelected;
-  final Color activeColor;
-  final VoidCallback onTap;
-
-  const _BouncyTabItem({
-    required this.index,
-    required this.item,
-    required this.sketchType,
-    required this.isSelected,
-    required this.activeColor,
-    required this.onTap,
-  });
-
-  @override
-  State<_BouncyTabItem> createState() => _BouncyTabItemState();
-}
-
-class _BouncyTabItemState extends State<_BouncyTabItem>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _bounceController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _tiltAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _bounceController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 320),
-    );
-
-    // Micro-bounce: scales 1.0 -> 1.20 -> 1.05 with subtle tilt
-    _scaleAnimation = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.20)
-            .chain(CurveTween(curve: Curves.easeOutQuad)),
-        weight: 45,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 1.20, end: 1.05)
-            .chain(CurveTween(curve: const Cubic(0.175, 0.885, 0.32, 1.275))),
-        weight: 55,
-      ),
-    ]).animate(_bounceController);
-
-    _tiltAnimation = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0.0, end: -0.08)
-            .chain(CurveTween(curve: Curves.easeOutQuad)),
-        weight: 40,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: -0.08, end: 0.0)
-            .chain(CurveTween(curve: Curves.easeInQuad)),
-        weight: 60,
-      ),
-    ]).animate(_bounceController);
-
-    if (widget.isSelected) {
-      _bounceController.value = 1.0;
-    }
-  }
-
-  @override
-  void didUpdateWidget(covariant _BouncyTabItem oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (!oldWidget.isSelected && widget.isSelected) {
-      _bounceController.forward(from: 0.0);
-    } else if (oldWidget.isSelected && !widget.isSelected) {
-      _bounceController.reset();
-    }
-  }
-
-  @override
-  void dispose() {
-    _bounceController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final iconColor =
-        widget.isSelected ? widget.activeColor : AppTheme.mutedText;
-
-    return ApplePressable(
-      pressedScale: 0.88,
-      pressedOpacity: 0.85,
-      hapticStyle: HapticStyle.none,
-      onTap: () {
-        if (widget.isSelected) {
-          // Re-trigger micro-bounce on re-tap
-          _bounceController.forward(from: 0.0);
-        }
-        widget.onTap();
-      },
-      borderRadius: BorderRadius.circular(16),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedBuilder(
-              animation: _bounceController,
-              builder: (context, child) {
-                final scale = widget.isSelected ? _scaleAnimation.value : 1.0;
-                final angle = widget.isSelected ? _tiltAnimation.value : 0.0;
-
-                return Transform.scale(
-                  scale: scale,
-                  child: Transform.rotate(
-                    angle: angle,
-                    child: SketchNavIcon(
-                      type: widget.sketchType,
-                      color: iconColor,
-                      size: 24,
-                      isSelected: widget.isSelected,
-                      strokeWidth: widget.isSelected ? 1.9 : 1.5,
-                    ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 3),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeOutCubic,
-              style: TextStyle(
-                fontSize: 11.5,
-                fontWeight:
-                    widget.isSelected ? FontWeight.w700 : FontWeight.w600,
-                color: iconColor,
-                fontFamily: 'CabinSketch',
-                letterSpacing: 0.35,
-              ),
-              child: Text(
-                widget.item.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Multi-pass hand-drawn sketchy contour painter for the outer dock capsule
-class _MultiPassSketchPainter extends CustomPainter {
-  final Color strokeColor;
-  final double borderRadius;
-
-  const _MultiPassSketchPainter({
-    required this.strokeColor,
-    required this.borderRadius,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (size.isEmpty || size.width <= 0 || size.height <= 0) return;
-
-    final w = size.width;
-    final h = size.height;
-
-    // 1. Primary Hand-Drawn Capsule Contour
-    final primaryPaint = Paint()
-      ..color = strokeColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.7
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final baseRRect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(0, 0, w, h),
-      Radius.circular(borderRadius),
-    );
-    canvas.drawRRect(baseRRect, primaryPaint);
-
-    // 2. Secondary Contour Pass with organic pen jitter & ink density
-    final pass2Paint = Paint()
-      ..color = strokeColor.withValues(alpha: 0.45)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2
-      ..strokeCap = StrokeCap.round;
-
-    final rrectPass2 = RRect.fromRectAndRadius(
-      Rect.fromLTWH(0.8, -0.6, w - 1.2, h + 0.6),
-      Radius.circular(borderRadius + 0.5),
-    );
-    canvas.drawRRect(rrectPass2, pass2Paint);
-
-    // 3. Tertiary Loose Sketch Loop
-    final pass3Paint = Paint()
-      ..color = strokeColor.withValues(alpha: 0.25)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.95
-      ..strokeCap = StrokeCap.round;
-
-    final rrectPass3 = RRect.fromRectAndRadius(
-      Rect.fromLTWH(-0.7, 0.7, w + 1.1, h - 0.4),
-      Radius.circular(borderRadius - 0.4),
-    );
-    canvas.drawRRect(rrectPass3, pass3Paint);
-
-    // 4. Horizontal wavy top and bottom edge lines spanning the capsule (passing behind timer)
-    canvas.drawLine(
-      Offset(borderRadius * 0.4, 0.4),
-      Offset(w - borderRadius * 0.4, -0.3),
-      pass2Paint,
-    );
-    canvas.drawLine(
-      Offset(borderRadius * 0.7, 1.2),
-      Offset(w - borderRadius * 0.6, 0.8),
-      pass3Paint,
-    );
-    canvas.drawLine(
-      Offset(borderRadius * 0.5, h - 0.4),
-      Offset(w - borderRadius * 0.5, h + 0.4),
-      pass2Paint,
-    );
-    canvas.drawLine(
-      Offset(borderRadius * 0.7, h + 1.1),
-      Offset(w - borderRadius * 0.7, h - 0.8),
-      pass3Paint,
-    );
-
-    // 5. Authentic sketchbook pencil loops & scribble tails at the ends (matching ref_dock.png)
-    // Left end overshoot loops
-    canvas.drawLine(
-      Offset(borderRadius * 0.45, -1.0),
-      Offset(-3.2, borderRadius * 0.45),
-      pass2Paint,
-    );
-    canvas.drawLine(
-      Offset(-3.0, h - borderRadius * 0.45),
-      Offset(borderRadius * 0.45, h + 1.8),
-      pass2Paint,
-    );
-    canvas.drawArc(
-      Rect.fromLTWH(-3.5, h * 0.20, borderRadius * 1.3, h * 0.60),
-      math.pi * 0.55,
-      math.pi * 0.90,
-      false,
-      pass3Paint,
-    );
-
-    // Right end overshoot scribble loops
-    canvas.drawLine(
-      Offset(w - borderRadius * 0.45, -1.2),
-      Offset(w + 3.4, borderRadius * 0.40),
-      pass2Paint,
-    );
-    canvas.drawLine(
-      Offset(w - borderRadius * 0.45, h + 1.8),
-      Offset(w + 3.2, h - borderRadius * 0.40),
-      pass2Paint,
-    );
-    canvas.drawArc(
-      Rect.fromLTWH(w - borderRadius * 1.3 + 3.5, h * 0.20, borderRadius * 1.3, h * 0.60),
-      -math.pi * 0.45,
-      math.pi * 0.90,
-      false,
-      pass3Paint,
-    );
-    // Trailing pen flick tails at right end
-    canvas.drawLine(
-      Offset(w + 0.5, 3.5),
-      Offset(w + 5.0, -1.0),
-      pass3Paint,
-    );
-    canvas.drawLine(
-      Offset(w + 0.5, h - 3.5),
-      Offset(w + 4.8, h + 2.5),
-      pass3Paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _MultiPassSketchPainter oldDelegate) {
-    return oldDelegate.strokeColor != strokeColor ||
-        oldDelegate.borderRadius != borderRadius;
-  }
-}
-
-/// Hand-sketched contour ring & felt-marker shading for the center Focus Timer medallion
-class _SketchTimerMedallionPainter extends CustomPainter {
-  final Color strokeColor;
-
-  const _SketchTimerMedallionPainter({required this.strokeColor});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width / 2) - 1.5;
-
-    // 1. Diagonal felt-marker texture lines (///) inside the dark circular medallion
-    canvas.save();
-    canvas.clipPath(
-      Path()..addOval(Rect.fromCircle(center: center, radius: radius)),
-    );
-
-    final markerPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.35)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.4
-      ..strokeCap = StrokeCap.round;
-
-    final markerJitterPaint = Paint()
-      ..color = strokeColor.withValues(alpha: 0.14)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2
-      ..strokeCap = StrokeCap.round;
-
-    const markerSpacing = 4.5;
-    final count = ((size.width + size.height) / markerSpacing).ceil() + 2;
-    for (int i = 0; i < count; i++) {
-      final x = -size.height + (i * markerSpacing);
-      final p1 = Offset(x, size.height + 6);
-      final p2 = Offset(x + size.height + 6, -6);
-      final p = (i % 2 == 0) ? markerPaint : markerJitterPaint;
-      canvas.drawLine(p1, p2, p);
-    }
-    canvas.restore();
-
-    // 2. Outer concentric sketchy rings (gel-pen / white pencil)
-    final p1 = Paint()
-      ..color = strokeColor.withValues(alpha: 0.65)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.3;
-    canvas.drawCircle(center.translate(0.5, -0.5), radius - 1.2, p1);
-
-    final p2 = Paint()
-      ..color = strokeColor.withValues(alpha: 0.32)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.85;
-    canvas.drawCircle(center.translate(-0.5, 0.6), radius - 2.5, p2);
-
-    // 3. Faint outer circular guide line (matching ref_timer.png)
-    final guidePaint1 = Paint()
-      ..color = strokeColor.withValues(alpha: 0.22)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.9;
-    canvas.drawCircle(center.translate(-0.3, 0.4), radius + 3.8, guidePaint1);
-
-    final guidePaint2 = Paint()
-      ..color = strokeColor.withValues(alpha: 0.14)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.7;
-    canvas.drawCircle(center.translate(0.4, -0.3), radius + 4.6, guidePaint2);
-
-    // 5. Dock top guideline passing horizontally behind the medallion
-    final dockLinePaint = Paint()
-      ..color = strokeColor.withValues(alpha: 0.20)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.95;
-    canvas.drawLine(
-      const Offset(-12, 10.0),
-      Offset(size.width + 12, 10.0),
-      dockLinePaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _SketchTimerMedallionPainter oldDelegate) {
-    return oldDelegate.strokeColor != strokeColor;
   }
 }
