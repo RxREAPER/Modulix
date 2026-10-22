@@ -245,8 +245,7 @@ void main() {
     expect(find.text('Unit Progress'), findsOneWidget);
 
     // PART 2: Minimalist curriculum deep link
-    expect(find.textContaining('View all modules'), findsOneWidget);
-    expect(find.text('Open'), findsOneWidget);
+    expect(find.text('All Units'), findsOneWidget);
 
     // PART 3: Today's Modules list with exact immutable serial numbers (41 and 42)
     expect(find.text('41'), findsOneWidget);
@@ -324,7 +323,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     // Verify Title & streak cards with live text and NO unicode emojis
-    expect(find.text('Analytics'), findsOneWidget);
+    expect(find.text('Progress'), findsOneWidget);
     expect(find.text('DAYS ACTIVE'), findsOneWidget);
     expect(find.text('RECORD'), findsOneWidget);
     expect(find.text('days 🔥'), findsNothing);

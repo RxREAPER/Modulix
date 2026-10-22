@@ -300,7 +300,7 @@ class _CloudSyncSection extends ConsumerWidget {
             if (isAuthenticated) {
               SyncService.instance.syncFull(ref);
             } else {
-              context.push('/auth');
+              context.push('/settings/auth');
             }
           },
           child: Container(
@@ -496,7 +496,7 @@ class _ThemeAppearanceSection extends ConsumerWidget {
         ),
         const SizedBox(height: 10),
         ApplePressable(
-          onTap: () => context.push('/theme-studio'),
+          onTap: () => context.push('/settings/theme-studio'),
           pressedScale: 0.98,
           borderRadius: BorderRadius.circular(20),
           child: Container(
@@ -658,7 +658,7 @@ class _SyllabusEditionSection extends ConsumerWidget {
         const SizedBox(height: 10),
         ApplePressable(
           pressedScale: 0.98,
-          onPressed: () => context.push('/syllabus-edition'),
+          onPressed: () => context.push('/settings/syllabus-edition'),
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -784,7 +784,7 @@ class _NotificationsPreferencesSection extends StatelessWidget {
         const SizedBox(height: 10),
         ApplePressable(
           pressedScale: 0.98,
-          onPressed: () => context.push('/notifications-preferences'),
+          onPressed: () => context.push('/settings/notifications-preferences'),
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(

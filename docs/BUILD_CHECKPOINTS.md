@@ -8,6 +8,47 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-028] Progress Page Major Overhaul: Sleek Apple-Minimalist Performance Hubs with Custom Visual Indicators, Dedicated Full-Screen Feature Pages with Interactive UX, and Subpage Bottom Nav Lifecycle Motion
+- **Timestamp:** 2026-10-22 18:15 UTC
+- **Category:** Analytics & Progress / Custom UI Indicators / Full-Page Feature Architecture / Shell Navigation & Droplet Lifecycle
+- **Files Modified:**
+  - `lib/widgets/analytics/progress_radial_gauge.dart` (NEW)
+  - `lib/widgets/analytics/concentric_donut_indicator.dart` (NEW)
+  - `lib/widgets/analytics/segmented_velocity_pill.dart` (NEW)
+  - `lib/widgets/analytics/chronotype_heat_strip.dart` (NEW)
+  - `lib/screens/analytics/study_plan_analytics_page.dart` (NEW)
+  - `lib/screens/analytics/focus_timer_analytics_page.dart` (NEW)
+  - `lib/screens/analytics/daily_tasks_analytics_page.dart` (NEW)
+  - `lib/screens/analytics/subject_mastery_analytics_page.dart` (NEW)
+  - `lib/screens/analytics/analytics_screen.dart`
+  - `lib/screens/settings/settings_screen.dart`
+  - `lib/app.dart`
+  - `test/progress_overhaul_test.dart` (NEW)
+  - `test/study_desk_test.dart`
+- **Summary:**
+  - **Apple-Minimalist Custom Indicator Suite:**
+    - `ProgressRadialGauge`: Sleek circular arc gauge with custom painter, anti-aliased sweep, and monospace percentage display.
+    - `ConcentricDonutIndicator`: 3-ring multi-color concentric progress indicator for simultaneous tracking (e.g. Videos, QBank, Notes).
+    - `SegmentedVelocityPill`: Discrete segment pill tracker with integrated trend velocity indicator (+% vs yesterday).
+    - `ChronotypeHeatStrip`: 24-hour visual intensity heat strip mapping focus density across the full diurnal cycle.
+  - **4 Dedicated Full-Screen Feature Pages with Interactive UX:**
+    - **Study Plan Insights (`/analytics/plan-insights`):** Interactive What-If Velocity Slider dynamically recalculating target completion date and days saved in real-time, unit completion filter chips (All, In Progress, Completed, Pending), and unit checklist matrix.
+    - **Focus & Deep Work (`/analytics/focus-analytics`):** 7-Day / 30-Day / All-Time interactive `fl_chart` bar chart with daily touch tooltips, 3-category concentric donut distribution, 24h chronotype heatmap, and timestamped session audit logs.
+    - **Daily Tasks & Desk Pad (`/analytics/tasks-analytics`):** 14-day activity matrix with daily completion columns, active day streak counter, category progress bars, and itemized today's desk pad checklist.
+    - **19 MBBS Subjects Mastery (`/analytics/subject-mastery`):** Complete 19-subject MBBS curriculum breakdown categorized into Pre-Clinical (3), Para-Clinical (4), and Clinical (12) filter tabs, each featuring a radial gauge and direct jump-to-curriculum link.
+  - **Profile & Progress Shell Subpage Lifecycle Integration:**
+    - Configured all Settings subpages (`/settings/theme-studio`, `/settings/syllabus-edition`, `/settings/notifications-preferences`, `/settings/auth`) and Progress subpages (`/analytics/plan-insights`, `/analytics/focus-analytics`, `/analytics/tasks-analytics`, `/analytics/subject-mastery`) as nested subroutes under their respective shell navigators.
+    - Because routes are now shell subroutes, `canBranchPop` evaluates to `true`, automatically setting `isMainPage = false` and triggering the liquid droplet navigation bar to glide off-screen (0.40 scale, 92px down) and restore upon popping back.
+  - **Interactive Tour Key Continuity:**
+    - Preserved all `TourTargetRegistry` keys (`analyticsModuleHub`, `analyticsFocusHub`, `analyticsTasksHub`) on the redesigned performance hub cards.
+- **Verification:**
+  - Static analysis (`flutter analyze lib/ test/progress_overhaul_test.dart`): **0 errors, 0 warnings**.
+  - Custom UI & Dedicated Page test suite (`test/progress_overhaul_test.dart`): **All 9 tests PASSED 100%**.
+  - Regression test suite (`test/m2_regression_test.dart`, `test/study_desk_test.dart`): **All 14 tests PASSED 100%**.
+- **Build Status:** Pending APK Build
+
+---
+
 ### [CKPT-027] Collection Icons (Home, Library Books, Hourglass, Badge Star, Profile User), Liquid Droplet Morph & Expand Motion, Subpage Navigation Trigger & Professional Jiggle-Free Bubble
 - **Timestamp:** 2026-10-22 17:26 UTC
 - **Category:** Navigation / Icon Assets & Vector Fidelity / Motion Physics / Subpage Lifecycle

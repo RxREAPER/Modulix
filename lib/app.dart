@@ -12,6 +12,10 @@ import 'screens/curriculum/chapter_screen.dart';
 import 'screens/curriculum/module_tasks_screen.dart';
 import 'screens/curriculum/subject_analytics_screen.dart';
 import 'screens/analytics/analytics_screen.dart';
+import 'screens/analytics/study_plan_analytics_page.dart';
+import 'screens/analytics/focus_timer_analytics_page.dart';
+import 'screens/analytics/daily_tasks_analytics_page.dart';
+import 'screens/analytics/subject_mastery_analytics_page.dart';
 import 'screens/plan/plan_screen.dart';
 import 'screens/auth/auth_screen.dart';
 import 'screens/settings/syllabus_edition_screen.dart';
@@ -175,6 +179,36 @@ final routerProvider = Provider<GoRouter>((ref) {
                   state: state,
                   child: const AnalyticsScreen(),
                 ),
+                routes: [
+                  GoRoute(
+                    path: 'plan-insights',
+                    pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+                      state: state,
+                      child: const StudyPlanAnalyticsPage(),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'focus-analytics',
+                    pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+                      state: state,
+                      child: const FocusTimerAnalyticsPage(),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'tasks-analytics',
+                    pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+                      state: state,
+                      child: const DailyTasksAnalyticsPage(),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'subject-mastery',
+                    pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+                      state: state,
+                      child: const SubjectMasteryAnalyticsPage(),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -191,18 +225,44 @@ final routerProvider = Provider<GoRouter>((ref) {
                     from: state.uri.queryParameters['from'],
                   ),
                 ),
+                routes: [
+                  GoRoute(
+                    path: 'theme-studio',
+                    pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+                      state: state,
+                      child: const ThemeStudioScreen(),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'syllabus-edition',
+                    pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+                      state: state,
+                      child: const SyllabusEditionScreen(),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'notifications-preferences',
+                    pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+                      state: state,
+                      child: const NotificationsPreferencesScreen(),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'auth',
+                    pageBuilder: (context, state) => _buildSlideUpTransitionPage(
+                      state: state,
+                      child: const AuthScreen(),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ],
       ),
       GoRoute(
-        parentNavigatorKey: _rootNavigatorKey,
         path: '/theme-studio',
-        pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
-          state: state,
-          child: const ThemeStudioScreen(),
-        ),
+        redirect: (_, __) => '/settings/theme-studio',
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
@@ -224,28 +284,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        parentNavigatorKey: _rootNavigatorKey,
         path: '/auth',
-        pageBuilder: (context, state) => _buildSlideUpTransitionPage(
-          state: state,
-          child: const AuthScreen(),
-        ),
+        redirect: (_, __) => '/settings/auth',
       ),
       GoRoute(
-        parentNavigatorKey: _rootNavigatorKey,
         path: '/syllabus-edition',
-        pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
-          state: state,
-          child: const SyllabusEditionScreen(),
-        ),
+        redirect: (_, __) => '/settings/syllabus-edition',
       ),
       GoRoute(
-        parentNavigatorKey: _rootNavigatorKey,
         path: '/notifications-preferences',
-        pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
-          state: state,
-          child: const NotificationsPreferencesScreen(),
-        ),
+        redirect: (_, __) => '/settings/notifications-preferences',
       ),
     ],
   );
