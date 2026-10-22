@@ -256,15 +256,23 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     } else {
       final newPhase = state.phase == TimerPhase.idle ? TimerPhase.focusing : state.phase;
       final now = DateTime.now();
-      _lastTickWallTime = now;
+      int currentRemaining = state.remainingSeconds;
+      if (state.mode == TimerMode.pomodoro && currentRemaining == 0) {
+        currentRemaining = state.pomodoroPresetMins * 60;
+      }
 
-      if (state.mode != TimerMode.countUp && state.remainingSeconds > 0) {
-        _sessionTargetEndTime = now.add(Duration(seconds: state.remainingSeconds));
+      if (state.mode != TimerMode.countUp && currentRemaining > 0) {
+        _sessionTargetEndTime = now.add(Duration(seconds: currentRemaining));
       } else {
         _sessionTargetEndTime = null;
       }
 
-      state = state.copyWith(isRunning: true, sessionActive: true, phase: newPhase);
+      state = state.copyWith(
+        isRunning: true,
+        sessionActive: true,
+        phase: newPhase,
+        remainingSeconds: currentRemaining,
+      );
       AnalyticsService.instance.logTimerStarted(
         mode: state.mode.name,
         subject: state.subjectName.isNotEmpty ? state.subjectName : 'General Focus',

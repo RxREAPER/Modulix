@@ -8,6 +8,27 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-024] Authentic Minimalist Zen Flip Clock, Tiny Seconds Corner Block, Zero Battery/Date Clutter, Exit Cross & Bottom Pause/Resume
+- **Timestamp:** 2026-10-22 15:55 UTC
+- **Category:** Focus Timer / Fullscreen Zen Clock / UI Refinement / Live Hot Reload
+- **Files Modified:**
+  - `lib/screens/timer/fullscreen_timer_screen.dart`
+  - `lib/widgets/timer/sketch_flip_digit.dart`
+  - `lib/providers/focus_timer_provider.dart`
+- **Summary:**
+  - **Reference Image Aesthetic Fidelity:** Transformed fullscreen flip clock to match physical bedside desk clock photo (`#000000` pure black backdrop, `#222326` matte split-flap cards, 50/50 horizontal crease divider, side hinge notches, zero number duplication).
+  - **Removed Extraneous Details:** Completely removed battery status indicator, battery percentage, date text, and day-of-week strings for pure focus minimalism.
+  - **Tiny Seconds Block:** Replaced full-size seconds flip cards with crisp, compact seconds counter anchored into the bottom-right corner of the minutes card, eliminating layout jitter and seconds-skipping.
+  - **Dedicated Exit & Controls:** Added prominent top-left close ('X') button inside `SafeArea` and dedicated top-right 90° Desk Mode rotation toggle. Added bottom interactive pill button for `START` / `RESUME` / `PAUSE` with haptic feedback.
+  - **Responsive Constraint Math & Zero Overflows:** Solved the 14-pixel `RenderFlex` overflow across portrait Desk Mode, Upright Mode, and Landscape by incorporating `FittedBox(fit: BoxFit.scaleDown)` and adaptive viewport sizing.
+  - **Live Push Without Rebuilding:** Pushed live directly to connected OnePlus 13R physical test session via VM Service Hot Reload without requiring a full APK recompile.
+- **Verification:**
+  - `flutter analyze lib/screens/timer/fullscreen_timer_screen.dart` passed with **0 errors and 0 warnings**.
+  - Verified on live physical device (**OnePlus 13R**, `ba009d81`) across Desk Mode, Upright Mode, live counting seconds, play/pause toggle, and exit button navigation with physical screencap artifacts.
+- **Build Status:** Pending APK Build (Verified via Live Hot Reload on OnePlus 13R ba009d81)
+
+---
+
 ### [CKPT-023] Curriculum Unit Index Navigation, Deep Search Linking, Number Visibility & 3D Split-Flap Clock Precision
 - **Timestamp:** 2026-10-22 13:25 UTC
 - **Category:** Bug Fixes / Search & Deep-Linking / Accessibility / 3D Mechanical Flip Clock
