@@ -8,6 +8,30 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-025] Hidden Serial Numbers for QBanks & Notes, Adapted Modern Unit View & Module View in Module Tasks Screen
+- **Timestamp:** 2026-10-22 16:35 UTC
+- **Category:** UI Refinement / Curriculum Module Consistency / Tasks & Queue Polish
+- **Files Modified:**
+  - `lib/screens/curriculum/chapter_screen.dart`
+  - `lib/widgets/curriculum/curriculum_search_bar.dart`
+  - `lib/widgets/curriculum/module_timeline.dart`
+  - `lib/screens/curriculum/module_tasks_screen.dart`
+- **Summary:**
+  - **Hidden Serial Numbers for QBanks & Notes:**
+    - Replaced serial numbers in `_QBankTopicTile` with `Icon(Icons.quiz_rounded, size: 20)` and in `_NotesItemTile` with `Icon(Icons.menu_book_rounded, size: 20)` in `ChapterScreen`.
+    - Removed arbitrary serial number badge (`#X`) from Q-Bank search result tiles in `CurriculumSearchBar`, replacing it with `Icon(Icons.quiz_rounded, size: 18)`.
+    - Updated `TimelineCheckBubble` in `ModuleTimeline` to display category icons for QBanks and Notes instead of sequential numbers.
+    - Videos retain full global/sequential numbers for lecture order clarity.
+  - **Adapted New Unit View & Module View in `ModuleTasksScreen` (`/module-tasks`):**
+    - **Unit View:** Replaced the legacy plain deep-link text with the new minimalist `UnitCard` component, displaying the active unit / target units with unit pill, title, chevron, and sleek progress bar.
+    - **Module View:** Completely replaced legacy dotted timeline items with modern, rounded module task cards matching `ChapterScreen`. Includes category badges (sequential numbers for videos, quiz icon for QBanks, notes icon for Notes), title with strike-through animation, detail metrics (duration, MCQs, or page notes), dedicated focus timer shortcut trigger, and animated checkmarks.
+    - **Multi-Module Support:** Added interactive filter switcher chips (`All`, `Videos`, `Q-Bank`, `Notes`) so users can switch seamlessly between curriculum resource types for daily tasks.
+- **Verification:**
+  - Static analysis (`flutter analyze`) on all modified files passed with **0 errors and 0 warnings**.
+- **Build Status:** Pending APK Build (Verified via flutter analyze)
+
+---
+
 ### [CKPT-024] Authentic Minimalist Zen Flip Clock, Tiny Seconds Corner Block, Zero Battery/Date Clutter, Exit Cross & Bottom Pause/Resume
 - **Timestamp:** 2026-10-22 15:55 UTC
 - **Category:** Focus Timer / Fullscreen Zen Clock / UI Refinement / Live Hot Reload

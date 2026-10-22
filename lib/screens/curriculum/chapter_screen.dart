@@ -581,6 +581,17 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
               ref.read(appStateProvider.notifier).markVideoComplete(video.id);
             }
           },
+          onStartTimer: () {
+            context.push('/timer', extra: {
+              'subjectId': subject.id,
+              'subjectName': subject.displayName,
+              'topicId': video.id,
+              'topicTitle': video.title,
+              'chapterName': chapter.name,
+              'topicType': 'video',
+              'durationMins': video.durationMins > 0 ? video.durationMins : 30,
+            });
+          },
         );
 
         if (!isTarget) return tile;
@@ -827,13 +838,10 @@ class _QBankTopicTile extends StatelessWidget {
                       : null,
                 ),
                 child: Center(
-                  child: Text(
-                    '$serialNumber',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      color: isCompleted ? Colors.green.shade800 : badgeColor,
-                      fontSize: 15,
-                    ),
+                  child: Icon(
+                    Icons.quiz_rounded,
+                    size: 20,
+                    color: isCompleted ? Colors.green.shade800 : badgeColor,
                   ),
                 ),
               ),
@@ -985,13 +993,10 @@ class _NotesItemTile extends StatelessWidget {
                       : null,
                 ),
                 child: Center(
-                  child: Text(
-                    '$serialNumber',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      color: isCompleted ? Colors.green.shade800 : badgeColor,
-                      fontSize: 15,
-                    ),
+                  child: Icon(
+                    Icons.menu_book_rounded,
+                    size: 20,
+                    color: isCompleted ? Colors.green.shade800 : badgeColor,
                   ),
                 ),
               ),

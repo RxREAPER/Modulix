@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/syllabus.dart';
 import '../data/subjects_metadata.dart';
+import '../theme/app_theme.dart';
 import 'animations/animated_check_stroke.dart';
 import 'animations/animated_strike_text.dart';
 import 'animations/apple_pressable.dart';
@@ -13,6 +14,7 @@ class VideoTile extends StatelessWidget {
   final String? completedAt; // ISO timestamp or null
   final Color accentColor;
   final VoidCallback onToggle;
+  final VoidCallback? onStartTimer;
 
   const VideoTile({
     super.key,
@@ -22,6 +24,7 @@ class VideoTile extends StatelessWidget {
     this.completedAt,
     required this.accentColor,
     required this.onToggle,
+    this.onStartTimer,
   });
 
   @override
@@ -129,6 +132,15 @@ class VideoTile extends StatelessWidget {
                   ],
                 ),
               ),
+              if (onStartTimer != null) ...[
+                IconButton(
+                  icon: const Icon(Icons.timer_outlined, size: 18),
+                  tooltip: 'Focus on this video',
+                  color: AppTheme.inkForeground.withValues(alpha: 0.65),
+                  onPressed: onStartTimer,
+                ),
+                const SizedBox(width: 4),
+              ],
               // Toggle checkbox with check bounce
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),

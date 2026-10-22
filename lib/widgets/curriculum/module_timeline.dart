@@ -470,6 +470,9 @@ class _TimelineChapterSectionState extends State<_TimelineChapterSection> {
                   child: Center(
                     child: TimelineCheckBubble(
                       number: number,
+                      icon: (badgeIcon != Icons.play_arrow_rounded && badgeIcon != Icons.play_circle_outline_rounded)
+                          ? badgeIcon
+                          : null,
                       isDone: isDone,
                       onTap: onToggle,
                     ),
@@ -582,12 +585,14 @@ class DirectionalSlideFade extends StatelessWidget {
 // Lightweight fluid check bubble with self-contained TweenAnimationBuilder
 class TimelineCheckBubble extends StatelessWidget {
   final int number;
+  final IconData? icon;
   final bool isDone;
   final VoidCallback onTap;
 
   const TimelineCheckBubble({
     super.key,
     required this.number,
+    this.icon,
     required this.isDone,
     required this.onTap,
   });
@@ -637,15 +642,21 @@ class TimelineCheckBubble extends StatelessWidget {
                   AnimatedOpacity(
                     opacity: isDone ? 0.0 : 1.0,
                     duration: const Duration(milliseconds: 160),
-                    child: Text(
-                      '$number',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        fontFamily: 'monospace',
-                        color: AppTheme.inkForeground,
-                      ),
-                    ),
+                    child: icon != null
+                        ? Icon(
+                            icon,
+                            size: 13,
+                            color: AppTheme.inkForeground,
+                          )
+                        : Text(
+                            '$number',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              fontFamily: 'monospace',
+                              color: AppTheme.inkForeground,
+                            ),
+                          ),
                   ),
                   AnimatedOpacity(
                     opacity: isDone ? 1.0 : 0.0,

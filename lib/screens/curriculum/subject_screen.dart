@@ -63,8 +63,7 @@ class SubjectScrollHelper {
 
 class _IndexSheetResult {
   final int unitIndex;
-  final String? tab;
-  const _IndexSheetResult(this.unitIndex, [this.tab]);
+  const _IndexSheetResult(this.unitIndex);
 }
 
 class SubjectScreen extends ConsumerStatefulWidget {
@@ -307,14 +306,11 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                       separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF3F4F6)),
                       itemBuilder: (context, idx) {
                         final chapter = displayChapters[idx];
-                        final stat = unitStats[idx];
-                        final totalCount = stat.totalCount;
-                        final doneCount = stat.doneCount;
-                        final isComplete = stat.isComplete;
-                        final percent = stat.percent;
+                        final isComplete = unitStats[idx].isComplete;
 
+                        final unitNumberFormatted = (idx + 1).toString().padLeft(2, '0');
                         return ApplePressable(
-                          pressedScale: 0.97,
+                          pressedScale: 0.98,
                           pressedOpacity: 0.88,
                           hapticStyle: HapticStyle.selection,
                           onTap: () {
@@ -322,31 +318,32 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                           },
                           borderRadius: BorderRadius.circular(12),
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                             child: Row(
                               children: [
                                 // Unit Number Tag
                                 Container(
-                                  width: 34,
-                                  height: 34,
+                                  width: 36,
+                                  height: 36,
                                   decoration: BoxDecoration(
                                     color: isComplete
                                         ? AppTheme.accentSubtle
                                         : AppTheme.parchmentSurface,
-                                    shape: BoxShape.circle,
+                                    borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
                                       color: isComplete
                                           ? AppTheme.accentPrimary
                                           : AppTheme.borderLight,
+                                      width: 1.0,
                                     ),
                                   ),
                                   child: Center(
                                     child: isComplete
-                                        ? Icon(Icons.check, size: 16, color: AppTheme.accentPrimary)
+                                        ? Icon(Icons.check_rounded, size: 18, color: AppTheme.accentPrimary)
                                         : Text(
-                                            '${idx + 1}',
+                                            unitNumberFormatted,
                                             style: TextStyle(
-                                              fontSize: 12,
+                                              fontSize: 12.5,
                                               fontWeight: FontWeight.w800,
                                               fontFamily: 'monospace',
                                               color: Colors.grey.shade700,
@@ -354,108 +351,28 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                                           ),
                                   ),
                                 ),
-                                const SizedBox(width: 12),
-                                // Title, progress bar and module action pills
+                                const SizedBox(width: 14),
+                                // Title strictly for navigation
                                 Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        chapter.name,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w700,
-                                          color: isComplete
-                                              ? Colors.grey.shade600
-                                              : AppTheme.inkForeground,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      Container(
-                                        height: 4,
-                                        width: double.infinity,
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.borderLight,
-                                          borderRadius: BorderRadius.circular(2),
-                                        ),
-                                        child: FractionallySizedBox(
-                                          alignment: Alignment.centerLeft,
-                                          widthFactor: percent.clamp(0.0, 1.0),
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              color: isComplete ? AppTheme.accentPrimary : categoryColor,
-                                              borderRadius: BorderRadius.circular(2),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      // Module chips row for quick jumping (horizontally scrollable to eliminate overflow)
-                                      SingleChildScrollView(
-                                        scrollDirection: Axis.horizontal,
-                                        physics: const BouncingScrollPhysics(),
-                                        child: Row(
-                                          children: [
-                                            if (stat.totalVideos > 0)
-                                              _buildIndexChip(
-                                                label: '${stat.doneVideos}/${stat.totalVideos} Vids',
-                                                icon: Icons.play_circle_outline_rounded,
-                                                color: AppTheme.accentPrimary,
-                                                isComplete: stat.doneVideos == stat.totalVideos,
-                                                onTap: () => Navigator.pop(ctx, _IndexSheetResult(idx, 'videos')),
-                                              ),
-                                            if (stat.totalQBanks > 0) ...[
-                                              const SizedBox(width: 4),
-                                              _buildIndexChip(
-                                                label: '${stat.doneQBanks}/${stat.totalQBanks} QB',
-                                                icon: Icons.quiz_outlined,
-                                                color: const Color(0xFFF97316),
-                                                isComplete: stat.doneQBanks == stat.totalQBanks,
-                                                onTap: () => Navigator.pop(ctx, _IndexSheetResult(idx, 'qbank')),
-                                              ),
-                                            ],
-                                            if (stat.totalNotes > 0) ...[
-                                              const SizedBox(width: 4),
-                                              _buildIndexChip(
-                                                label: '${stat.doneNotes}/${stat.totalNotes} Notes',
-                                                icon: Icons.menu_book_rounded,
-                                                color: const Color(0xFF10B981),
-                                                isComplete: stat.doneNotes == stat.totalNotes,
-                                                onTap: () => Navigator.pop(ctx, _IndexSheetResult(idx, 'notes')),
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                // Unit Count badge
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: isComplete
-                                        ? AppTheme.accentSubtle
-                                        : AppTheme.parchmentSurface,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
                                   child: Text(
-                                    '$doneCount/$totalCount',
+                                    chapter.name,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
-                                      fontFamily: 'monospace',
+                                      fontSize: 14.5,
+                                      fontWeight: FontWeight.w700,
                                       color: isComplete
-                                          ? AppTheme.accentPrimary
-                                          : Colors.grey.shade700,
+                                          ? Colors.grey.shade600
+                                          : AppTheme.inkForeground,
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 4),
-                                const Icon(Icons.chevron_right_rounded, size: 18, color: Colors.grey),
+                                const SizedBox(width: 8),
+                                Icon(
+                                  Icons.chevron_right_rounded,
+                                  size: 20,
+                                  color: Colors.grey.shade400,
+                                ),
                               ],
                             ),
                           ),
@@ -475,56 +392,9 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
     if (selectedUnit != null && mounted) {
       _scrollToUnit(selectedUnit.unitIndex, subject, activeTab);
       try {
-        final query = selectedUnit.tab != null ? '?tab=${selectedUnit.tab}' : '';
-        context.push('/curriculum/${subject.id}/${selectedUnit.unitIndex}$query');
+        context.push('/curriculum/${subject.id}/${selectedUnit.unitIndex}');
       } catch (_) {}
     }
-  }
-
-  Widget _buildIndexChip({
-    required String label,
-    required IconData icon,
-    required Color color,
-    required bool isComplete,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(6),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-          decoration: BoxDecoration(
-            color: isComplete
-                ? color.withValues(alpha: 0.16)
-                : color.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(
-              color: isComplete
-                  ? color.withValues(alpha: 0.5)
-                  : color.withValues(alpha: 0.25),
-              width: 0.8,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 10, color: color),
-              const SizedBox(width: 3),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 9.5,
-                  fontWeight: FontWeight.w700,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   @override

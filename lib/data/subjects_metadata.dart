@@ -239,12 +239,71 @@ List<Subject> loadMarrow8Syllabus() => _buildSubjectsFromRaw(marrow8Raw);
 List<Subject> loadMarrow65Syllabus() => _buildSubjectsFromRaw(marrow65Raw);
 
 String _canonicalChapterKey(String name) {
-  return name
-      .toLowerCase()
+  final clean = name.toLowerCase().replaceAll(RegExp(r'^(the|a|an)\s+'), '').trim();
+  return clean
       .replaceAll(RegExp(r'[^a-z0-9]'), '')
       .replaceAll('and', '')
       .replaceAll('&', '');
 }
+
+const _clinicalSystemSynonyms = <String, List<String>>{
+  'gastroenterology': ['gastrointestinal', 'git', 'digestive', 'uppergi', 'lowergi', 'hepatobiliary', 'liver', 'pancreas', 'stomach', 'general'],
+  'pulmonology': ['respiratory', 'lung', 'lungs', 'chest'],
+  'cardiology': ['cardiovascular', 'cvs', 'heart', 'circulation'],
+  'ecg': ['cardiovascular', 'cvs', 'heart'],
+  'nephrology': ['renal', 'kidney', 'urinary', 'kub'],
+  'acidbaseregulation': ['renal', 'kidney', 'fluids', 'electrolytes', 'acidbase'],
+  'endocrinology': ['endocrine', 'hormones', 'diabetes', 'thyroid'],
+  'neurology': ['nervous', 'cns', 'brain', 'spine', 'neuro'],
+  'hematology': ['blood', 'hematology', 'anemia', 'leukemia', 'lymphoma'],
+  'hepatology': ['gastrointestinal', 'liver', 'hepatobiliary'],
+  'infectiousdiseases': ['infectious', 'infection', 'covid', 'microbiology'],
+  'rheumatologyimmunology': ['rheumatology', 'immunology', 'connectivetissue', 'joints'],
+  'uvea': ['uveal', 'uveitis'],
+  'adnexa': ['lid', 'lacrimal', 'orbit', 'eyelid'],
+  'retina': ['retina', 'vitreous'],
+  'cornea': ['cornea', 'sclera', 'anteriorsegment'],
+  'basicanatomyofeye': ['specificdisordersoftheeye', 'practicalophthalmology'],
+  'optics': ['instruments'],
+  'miscellaneous': ['systemicophthalmology', 'communityophthalmology', 'instruments', 'fluids', 'metabolic', 'musculoskeletal', 'headandneck', 'skin'],
+  'forensictraumatology': ['injuries', 'trauma', 'mechanicalinjuries', 'wounds', 'identification', 'asphyxia'],
+  'forensicpathology': ['death', 'pmchanges', 'autopsy', 'postmortem', 'asphyxia', 'identification'],
+  'sexualjurisprudence': ['sexual', 'abortion', 'infanticide'],
+  'forensicpsychiatrymiscellaneous': ['identification', 'asphyxia', 'psychiatry', 'childhoodviolence'],
+  'gastrointestinalabdominalsurgery': ['uppergi', 'lowergi', 'hepatobiliary', 'spleen', 'pancreatic', 'hernia', 'abdominal'],
+  'specialitysurgery': ['neurosurgery', 'plasticsurgery', 'cardiothoracic', 'vascular'],
+  'faciomaxillarysurgery': ['headandneck', 'face', 'maxilla', 'oral', 'headneck'],
+  'generalsurgery': ['skin', 'general'],
+  'skinmusculoskeletalsystem': ['skin', 'msk', 'musculoskeletal', 'bone', 'joint', 'softtissue'],
+  'nervoussystem': ['cns', 'neurology', 'nervous', 'brain'],
+  'genitourinarysystem': ['genital', 'urinary', 'renal', 'kidney', 'bladder', 'prostate', 'kub'],
+  'genmicrobiogenbacterio': ['general', 'bacteriology'],
+  'organspecificbacterio': ['bacteriology', 'applied'],
+  'protozoology': ['parasitology'],
+  'helminthology': ['parasitology'],
+  'clinicalmicrobiology': ['applied'],
+  'infertilitycontraception': ['infertilitymenopause'],
+  'miscellaneoustopics': ['mentalhealthgenetics', 'healthcareofthecommunity', 'historyofmedicine'],
+  'nationalhealthprogrammes': ['indianhealthprogrammes'],
+  'healthcommunication': ['communicationforhealtheducation'],
+  'healthcareplanninginindia': ['healthcareofthecommunity'],
+  'socialmedicine': ['medicinesocialsciences'],
+  'conceptofhealthdisease': ['conceptsofhealthdisease'],
+  'maternalchildhealth': ['preventiveobstetricspaediatricsgeriatrics'],
+  'systemicradiology': ['diagnosticradiology', 'emergencyinterventionalradiology'],
+  'generalanatomy': ['back'],
+  'neuroanatomy': ['back'],
+  'carbohydratemetabolism': ['carbohydrates'],
+  'lipidmetabolism': ['lipids'],
+  'proteinsaminoacids': ['aminoacidsproteins', 'aminoacids', 'proteins'],
+  'enzymology': ['enzymesporphyrins', 'enzymes'],
+  'vitaminsminerals': ['clinicalbiochemistrynutrition'],
+  'molecularbiology': ['genetics'],
+  'gastrointestinaltract': ['gastrointestinaltract', 'gastrointestinal', 'gastrointestinalsystem'],
+  'gastrointestinalsystem': ['gastrointestinaltract', 'gastrointestinal'],
+  'ear': ['instruments'],
+  'generalgynaecology': ['instruments'],
+};
 
 List<Subject> _buildSubjectsFromRaw(List<Map<String, dynamic>> raw) {
   return raw.map((subjectMap) {
@@ -269,12 +328,31 @@ List<Subject> _buildSubjectsFromRaw(List<Map<String, dynamic>> raw) {
 
       // Find matching Q-Bank topics for this chapter
       final chKey = _canonicalChapterKey(chapterName);
+      final syns = _clinicalSystemSynonyms[chKey] ?? const <String>[];
       final matchedTopics = <QBankTopic>[];
+
       for (final qbCh in qbankChapters) {
         final qbKey = _canonicalChapterKey(qbCh.name);
-        if (qbKey == chKey ||
+        bool isMatch = false;
+
+        // If subject has only 1 video unit (e.g. Anaesthesia, Dermatology, Orthopaedics, Psychiatry),
+        // attach all subject Q-Banks to that single comprehensive unit
+        if (chaptersRaw.length == 1) {
+          isMatch = true;
+        } else if (qbKey == chKey ||
             (qbKey.length > 4 && chKey.contains(qbKey)) ||
             (chKey.length > 4 && qbKey.contains(chKey))) {
+          isMatch = true;
+        } else {
+          for (final syn in syns) {
+            if (syn.contains(qbKey) || qbKey.contains(syn)) {
+              isMatch = true;
+              break;
+            }
+          }
+        }
+
+        if (isMatch) {
           matchedTopics.addAll(qbCh.qbanks);
           matchedQBankNames.add(qbCh.name);
         }

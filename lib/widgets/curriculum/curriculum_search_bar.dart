@@ -496,19 +496,15 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
             query: _query,
             child: ListTile(
               leading: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                width: 34,
+                height: 34,
                 decoration: BoxDecoration(
                   color: const Color(0xFFF97316).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: const Color(0xFFF97316).withValues(alpha: 0.3), width: 1),
                 ),
-                child: Text(
-                  '#${q.assignedNumber ?? q.serialNumber}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 11,
-                    color: Color(0xFFF97316),
-                  ),
+                child: const Center(
+                  child: Icon(Icons.quiz_rounded, size: 18, color: Color(0xFFF97316)),
                 ),
               ),
               title: Row(

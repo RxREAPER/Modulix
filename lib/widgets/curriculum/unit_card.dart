@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/syllabus.dart';
 import '../../theme/app_theme.dart';
 import '../animations/apple_pressable.dart';
 
-/// Minimalist, high-yield Unit Card for clinical curriculum.
+/// Minimalist, sleek Unit Card for clinical curriculum.
 ///
-/// Features:
+/// Features strictly requested:
 /// - Prominent Unit Index & Title
-/// - Direct Unit Focus Timer link
-/// - Content breakdown chips (Videos & duration, Q-Bank topics & MCQs, Notes)
-/// - Visual completion progress bar & badge
+/// - Clean linear progress bar with completion percentage
+/// - Zero tags, zero chips, zero clutter
+/// - No timer button on the card (timer is accessed inside the unit page)
 class UnitCard extends StatelessWidget {
   final Subject subject;
   final Chapter chapter;
@@ -35,10 +34,6 @@ class UnitCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = subject.accent;
-    final totalVideos = chapter.totalVideos;
-    final totalQBanks = chapter.totalQBanks;
-    final totalNotes = chapter.totalNotes;
-    final totalMcqs = chapter.totalMcqs;
 
     final doneVideos = chapter.videos.where((v) => completedVideos.containsKey(v.id)).length;
     final doneQBanks = chapter.qbanks.where((q) => completedQBanks.containsKey(q.id)).length;
@@ -67,7 +62,7 @@ class UnitCard extends StatelessWidget {
             color: isComplete
                 ? AppTheme.accentPrimary.withValues(alpha: 0.35)
                 : AppTheme.borderLight,
-            width: 1.4,
+            width: 1.2,
           ),
           boxShadow: [
             BoxShadow(
@@ -77,25 +72,25 @@ class UnitCard extends StatelessWidget {
             ),
           ],
         ),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ① Top Row: Unit Pill + Quick Timer Link + Chevron
+            // ① Top Row: Unit Pill + Trailing Chevron
             Row(
               children: [
                 // Unit Index Pill
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                   decoration: BoxDecoration(
                     color: isComplete
                         ? AppTheme.accentSubtle
-                        : accent.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
+                        : accent.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(7),
                     border: Border.all(
                       color: isComplete
-                          ? AppTheme.accentPrimary.withValues(alpha: 0.3)
-                          : accent.withValues(alpha: 0.3),
+                          ? AppTheme.accentPrimary.withValues(alpha: 0.28)
+                          : accent.withValues(alpha: 0.25),
                       width: 1.0,
                     ),
                   ),
@@ -103,13 +98,13 @@ class UnitCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (isComplete) ...[
-                        Icon(Icons.check, size: 12, color: AppTheme.accentPrimary),
+                        Icon(Icons.check_rounded, size: 12, color: AppTheme.accentPrimary),
                         const SizedBox(width: 4),
                       ],
                       Text(
                         'UNIT $unitNumberFormatted',
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 10.5,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.6,
                           fontFamily: 'monospace',
@@ -121,60 +116,6 @@ class UnitCard extends StatelessWidget {
                 ),
 
                 const Spacer(),
-
-                // Dedicated Focus Timer Link for this Unit
-                ApplePressable(
-                  pressedScale: 0.92,
-                  hapticStyle: HapticStyle.light,
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    context.push(
-                      '/timer',
-                      extra: {
-                        'subjectId': subject.id,
-                        'subjectName': subject.displayName,
-                        'topicTitle': chapter.name,
-                        'chapterName': chapter.name,
-                        'topicType': 'unit',
-                        'durationMins': chapter.totalMinutes > 0
-                            ? chapter.totalMinutes.round()
-                            : 30,
-                      },
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppTheme.parchmentSurface,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: AppTheme.borderLight,
-                        width: 1.0,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.timer_outlined,
-                          size: 13,
-                          color: AppTheme.inkForeground,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Timer',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.inkForeground,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 6),
 
                 // Trailing Chevron
                 Icon(
@@ -193,71 +134,16 @@ class UnitCard extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 16.5,
+                fontSize: 16,
                 fontWeight: FontWeight.w800,
                 letterSpacing: -0.2,
                 color: isComplete ? Colors.grey.shade700 : AppTheme.inkForeground,
               ),
             ),
 
-            const SizedBox(height: 10),
-
-            // ③ Content Representation Pills (Videos, Q-Bank, Notes)
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                // Videos Pill
-                if (totalVideos > 0)
-                  _ContentPill(
-                    icon: Icons.play_circle_outline_rounded,
-                    label: chapter.durationLabel.isNotEmpty
-                        ? '$totalVideos Videos · ${chapter.durationLabel}'
-                        : '$totalVideos Videos',
-                    doneLabel: doneVideos > 0 ? '$doneVideos/$totalVideos' : null,
-                    color: AppTheme.accentPrimary,
-                    isDone: totalVideos > 0 && doneVideos == totalVideos,
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      context.push('/curriculum/${subject.id}/$unitIndex?tab=videos');
-                    },
-                  ),
-
-                // Q-Bank Pill
-                if (totalQBanks > 0)
-                  _ContentPill(
-                    icon: Icons.quiz_outlined,
-                    label: totalMcqs > 0
-                        ? '$totalQBanks QB · $totalMcqs MCQs'
-                        : '$totalQBanks Q-Bank Modules',
-                    doneLabel: doneQBanks > 0 ? '$doneQBanks/$totalQBanks' : null,
-                    color: const Color(0xFFF97316),
-                    isDone: totalQBanks > 0 && doneQBanks == totalQBanks,
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      context.push('/curriculum/${subject.id}/$unitIndex?tab=qbank');
-                    },
-                  ),
-
-                // Notes Pill
-                if (totalNotes > 0)
-                  _ContentPill(
-                    icon: Icons.menu_book_rounded,
-                    label: totalNotes == 1 ? 'High-Yield Note' : '$totalNotes Notes',
-                    doneLabel: doneNotes > 0 ? '$doneNotes/$totalNotes' : null,
-                    color: const Color(0xFF10B981),
-                    isDone: totalNotes > 0 && doneNotes == totalNotes,
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      context.push('/curriculum/${subject.id}/$unitIndex?tab=notes');
-                    },
-                  ),
-              ],
-            ),
-
             const SizedBox(height: 14),
 
-            // ④ Progress Bar & Completion Indicator
+            // ③ Sleek Progress Bar & Completion Indicator
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -287,8 +173,10 @@ class UnitCard extends StatelessWidget {
                   children: [
                     Text(
                       isComplete
-                          ? 'All modules completed'
-                          : '$completedItems of $totalItems modules completed',
+                          ? 'All completed'
+                          : totalItems > 0
+                              ? '$completedItems of $totalItems completed'
+                              : '0 modules',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -311,84 +199,6 @@ class UnitCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _ContentPill extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String? doneLabel;
-  final Color color;
-  final bool isDone;
-  final VoidCallback? onTap;
-
-  const _ContentPill({
-    required this.icon,
-    required this.label,
-    this.doneLabel,
-    required this.color,
-    this.isDone = false,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final pillWidget = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: isDone
-            ? AppTheme.accentSubtle
-            : AppTheme.parchmentSurface,
-        borderRadius: BorderRadius.circular(7),
-        border: Border.all(
-          color: isDone
-              ? AppTheme.accentPrimary.withValues(alpha: 0.25)
-              : AppTheme.borderLight,
-          width: 0.8,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            isDone ? Icons.check_circle_rounded : icon,
-            size: 12.5,
-            color: isDone ? AppTheme.accentPrimary : color,
-          ),
-          const SizedBox(width: 4.5),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10.5,
-              fontWeight: FontWeight.w700,
-              color: isDone ? Colors.grey.shade700 : AppTheme.inkForeground,
-            ),
-          ),
-          if (doneLabel != null && !isDone) ...[
-            const SizedBox(width: 4),
-            Text(
-              '($doneLabel)',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-                fontFamily: 'monospace',
-                color: color,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-
-    if (onTap == null) return pillWidget;
-
-    return ApplePressable(
-      pressedScale: 0.94,
-      hapticStyle: HapticStyle.selection,
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(7),
-      child: pillWidget,
     );
   }
 }

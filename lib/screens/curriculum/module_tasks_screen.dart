@@ -19,13 +19,21 @@ import '../../widgets/animations/animated_check_stroke.dart';
 import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/errors/app_error_state_view.dart';
 import '../../widgets/loading/app_shimmer.dart';
+import '../../widgets/curriculum/unit_card.dart';
 
-class ModuleTasksScreen extends ConsumerWidget {
-  static String? _lastCheckedKey;
+class ModuleTasksScreen extends ConsumerStatefulWidget {
   const ModuleTasksScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ModuleTasksScreen> createState() => _ModuleTasksScreenState();
+}
+
+class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
+  static String? _lastCheckedKey;
+  String _activeTab = 'all'; // 'all', 'videos', 'qbank', 'notes'
+
+  @override
+  Widget build(BuildContext context) {
     final appStateAsync = ref.watch(appStateProvider);
     final subjectsAsync = ref.watch(activeSyllabusProvider);
 
@@ -146,29 +154,59 @@ class ModuleTasksScreen extends ConsumerWidget {
           final subjectName = targetSubject?.name ??
               (plan.targetSubject.isNotEmpty ? plan.targetSubject.toUpperCase() : 'Curriculum');
 
-          // Collect all videos in plan scope
-          List<Video> planVideos = [];
+          // Scope Chapters Resolution
+          List<Chapter> targetChapters = [];
           if (targetSubject != null) {
             if (plan.targetUnits.isNotEmpty) {
               for (final unitName in plan.targetUnits) {
                 final ch = targetSubject.chapters
-                    .where((c) => c.name == unitName)
+                    .where((c) =>
+                        c.name.toLowerCase().trim() == unitName.toLowerCase().trim() ||
+                        c.name.toLowerCase().contains(unitName.toLowerCase()) ||
+                        unitName.toLowerCase().contains(c.name.toLowerCase()))
                     .firstOrNull;
-                if (ch != null) {
-                  planVideos.addAll(ch.videos);
-                }
+                if (ch != null) targetChapters.add(ch);
               }
             } else {
-              planVideos = targetSubject.allVideos;
+              targetChapters = targetSubject.chapters;
             }
           }
 
-          final totalVideosInScope = planVideos.length;
-          final completedInScope = planVideos
+          // Active Chapter resolution for Unit View
+          Chapter? activeChapter;
+          int activeChapterIndex = 0;
+          if (targetChapters.isNotEmpty) {
+            final uncompletedChapter = targetChapters.where((c) {
+              final doneV = c.videos.where((v) => editionState.completedVideos.containsKey(v.id)).length;
+              final doneQ = c.qbanks.where((q) => editionState.completedQBanks.containsKey(q.id)).length;
+              final doneN = c.notes.where((n) => editionState.completedNotes.containsKey(n.id)).length;
+              return (doneV + doneQ + doneN) < c.totalItems;
+            }).firstOrNull;
+
+            activeChapter = uncompletedChapter ?? targetChapters.first;
+            activeChapterIndex = targetSubject?.chapters.indexOf(activeChapter) ?? 0;
+            if (activeChapterIndex < 0) activeChapterIndex = 0;
+          }
+
+          // In-scope Modules
+          final planVideos = targetChapters.expand((c) => c.videos).toList();
+          final planQBanks = targetChapters.expand((c) => c.qbanks).toList();
+          final planNotes = targetChapters.expand((c) => c.notes).toList();
+
+          final completedVideosCount = planVideos
               .where((v) => editionState.completedVideos.containsKey(v.id))
               .length;
+          final completedQBanksCount = planQBanks
+              .where((q) => editionState.completedQBanks.containsKey(q.id))
+              .length;
+          final completedNotesCount = planNotes
+              .where((n) => editionState.completedNotes.containsKey(n.id))
+              .length;
+
+          final totalItemsInScope = planVideos.length + planQBanks.length + planNotes.length;
+          final completedInScope = completedVideosCount + completedQBanksCount + completedNotesCount;
           final double overallProgress =
-              totalVideosInScope > 0 ? (completedInScope / totalVideosInScope) : 0.0;
+              totalItemsInScope > 0 ? (completedInScope / totalItemsInScope) : 0.0;
           final int progressPercent = (overallProgress * 100).round();
 
           // Day Window Calculation linked to start of the day setting
@@ -222,7 +260,7 @@ class ModuleTasksScreen extends ConsumerWidget {
           final String unitDisplayName =
               isUnitScope ? plan.targetUnits.join(', ') : 'All Units';
           final bool isCurrentScopeFullyCompleted =
-              totalVideosInScope > 0 && completedInScope == totalVideosInScope;
+              totalItemsInScope > 0 && completedInScope == totalItemsInScope;
 
           final uncompletedStaleCount = batchVideos
               .where((v) => staleIds.contains(v.id) && !editionState.completedVideos.containsKey(v.id))
@@ -261,128 +299,74 @@ class ModuleTasksScreen extends ConsumerWidget {
             durationMs: 180,
             slideY: 10.0,
             child: ListView(
-              cacheExtent: 450.0,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               children: [
-              // PART 1: The New Top Banner
-              _buildTopBanner(
-                context: context,
-                subjectName: subjectName,
-                editionName: activeEdition,
-                plan: plan,
-                targetSubject: targetSubject,
-                selectedUnitDisplay: unitDisplayName,
-                unitProgress: overallProgress,
-                unitProgressPercent: progressPercent,
-                completedInScope: completedInScope,
-                totalVideosInScope: totalVideosInScope,
-                completedBatchCount: completedBatchCount,
-                totalBatchCount: batchVideos.length,
-                paceStatusText: paceStatusText,
-                paceStatusColor: paceStatusColor,
-                daysRemaining: daysRemaining,
-                isUnitScope: isUnitScope,
-              ),
-
-              const SizedBox(height: 12),
-
-              // PART 2: Curriculum Deep-Link Text
-              _buildCurriculumDeepLink(
-                context: context,
-                targetSubject: targetSubject,
-                subjectName: subjectName,
-                isUnitScope: isUnitScope,
-                plan: plan,
-                currentUnitName: isUnitScope
-                    ? (plan.targetUnits.isNotEmpty ? plan.targetUnits.first : null)
-                    : batchVideos.firstOrNull?.chapterName,
-              ),
-
-              const SizedBox(height: 16),
-
-              // Completion Notice Card if unit/scope is complete
-              if (isCurrentScopeFullyCompleted) ...[
-                _buildCompletionCard(
+                // PART 1: The Top Banner
+                _buildTopBanner(
                   context: context,
-                  isUnitScope: isUnitScope,
-                  unitName: unitDisplayName,
                   subjectName: subjectName,
+                  editionName: activeEdition,
+                  plan: plan,
+                  targetSubject: targetSubject,
+                  selectedUnitDisplay: unitDisplayName,
+                  unitProgress: overallProgress,
+                  unitProgressPercent: progressPercent,
+                  completedInScope: completedInScope,
+                  totalVideosInScope: totalItemsInScope,
+                  completedBatchCount: completedBatchCount,
+                  totalBatchCount: batchVideos.length,
+                  paceStatusText: paceStatusText,
+                  paceStatusColor: paceStatusColor,
+                  daysRemaining: daysRemaining,
+                  isUnitScope: isUnitScope,
                 ),
+
                 const SizedBox(height: 16),
-              ],
 
-              // PART 3: Today's Modules Section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Today's Modules (${batchVideos.length})",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.inkForeground,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                  Text(
-                    '$completedBatchCount of ${batchVideos.length} completed',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-
-              // Style A: Curriculum Timeline Modules
-              if (batchVideos.isNotEmpty) ...[
-                for (int i = 0; i < batchVideos.length; i++) ...[
-                  if (i == 0 || batchVideos[i].chapterName != batchVideos[i - 1].chapterName)
-                    _buildBlendedUnitHeader(
-                      batchVideos[i].chapterName,
-                      targetSubject != null
-                          ? (targetSubject.chapters
-                                  .indexWhere((c) => c.name == batchVideos[i].chapterName) +
-                              1)
-                          : null,
-                    ),
-                  _buildTimelineItem(
+                // PART 2: The New Unit View
+                if (targetSubject != null && targetChapters.isNotEmpty) ...[
+                  _buildUnitSection(
                     context: context,
-                    ref: ref,
-                    video: batchVideos[i],
-                    isDone: editionState.completedVideos.containsKey(batchVideos[i].id),
-                    isStale: staleIds.contains(batchVideos[i].id),
                     targetSubject: targetSubject,
+                    targetChapters: targetChapters,
+                    activeChapter: activeChapter ?? targetChapters.first,
+                    activeChapterIndex: activeChapterIndex,
+                    isUnitScope: isUnitScope,
+                    editionState: editionState,
+                  ),
+                  const SizedBox(height: 18),
+                ],
+
+                // Completion Notice Card if unit/scope is complete
+                if (isCurrentScopeFullyCompleted) ...[
+                  _buildCompletionCard(
+                    context: context,
+                    isUnitScope: isUnitScope,
+                    unitName: unitDisplayName,
                     subjectName: subjectName,
                   ),
+                  const SizedBox(height: 16),
                 ],
-              ] else if (!isCurrentScopeFullyCompleted) ...[
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: AppTheme.sketchDecoration(
-                    backgroundColor: AppTheme.cardWhite,
-                    borderRadius: 14,
-                    shadowOffset: 2,
-                  ),
-                  child: Center(
-                    child: Text(
-                      'No modules pending for today.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.mutedText,
-                      ),
-                    ),
-                  ),
+
+                // PART 3: The New Module View (Today's Tasks & Module Switcher)
+                _buildModuleSection(
+                  context: context,
+                  ref: ref,
+                  targetSubject: targetSubject,
+                  subjectName: subjectName,
+                  batchVideos: batchVideos,
+                  planQBanks: planQBanks,
+                  planNotes: planNotes,
+                  editionState: editionState,
+                  staleIds: staleIds,
+                  isCurrentScopeFullyCompleted: isCurrentScopeFullyCompleted,
                 ),
+
+                const SizedBox(height: 36),
               ],
-              const SizedBox(height: 32),
-            ],
-          ),
-        );
-      },
+            ),
+          );
+        },
       ),
     ),
   );
@@ -585,119 +569,113 @@ class ModuleTasksScreen extends ConsumerWidget {
     );
   }
 
-  /// PART 2: Minimalist card linked directly to selected unit/subject in Curriculum
-  Widget _buildCurriculumDeepLink({
+  /// PART 2: The New Unit View
+  Widget _buildUnitSection({
     required BuildContext context,
-    required Subject? targetSubject,
-    required String subjectName,
+    required Subject targetSubject,
+    required List<Chapter> targetChapters,
+    required Chapter activeChapter,
+    required int activeChapterIndex,
     required bool isUnitScope,
-    required StudyPlan plan,
-    String? currentUnitName,
+    required EditionState editionState,
   }) {
-    final meta = targetSubject != null ? subjectMeta(targetSubject.id) : null;
+    final meta = subjectMeta(targetSubject.id);
 
-    int? targetUnitIndex;
-    String resolvedUnitName = '';
-
-    if (targetSubject != null && targetSubject.chapters.isNotEmpty) {
-      final unitToFind = currentUnitName ??
-          (plan.targetUnits.isNotEmpty ? plan.targetUnits.first : null);
-      if (unitToFind != null && unitToFind.isNotEmpty) {
-        final idx = targetSubject.chapters.indexWhere(
-          (c) =>
-              c.name.toLowerCase().trim() == unitToFind.toLowerCase().trim() ||
-              c.name.toLowerCase().contains(unitToFind.toLowerCase()) ||
-              unitToFind.toLowerCase().contains(c.name.toLowerCase()),
-        );
-        if (idx != -1) {
-          targetUnitIndex = idx;
-          resolvedUnitName = targetSubject.chapters[idx].name;
-        }
-      }
-      if (targetUnitIndex == null && targetSubject.chapters.isNotEmpty) {
-        targetUnitIndex = 0;
-        resolvedUnitName = targetSubject.chapters[0].name;
-      }
-    }
-
-    final String labelText = resolvedUnitName.isNotEmpty
-        ? 'View all modules in $resolvedUnitName'
-        : (isUnitScope && plan.targetUnits.isNotEmpty
-            ? 'View all modules in ${plan.targetUnits.first}'
-            : 'View all modules in $subjectName');
-
-    return ApplePressable(
-      onTap: () {
-        if (targetSubject != null && targetUnitIndex != null) {
-          context.go('/curriculum/${targetSubject.id}/$targetUnitIndex');
-        } else if (targetSubject != null) {
-          context.go('/curriculum/${targetSubject.id}');
-        } else {
-          context.go('/curriculum');
-        }
-      },
-      pressedScale: 0.98,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        width: double.infinity,
-        decoration: AppTheme.sketchDecoration(
-          backgroundColor: AppTheme.cardWhite,
-          borderRadius: 14,
-          borderWidth: 1.2,
-          shadowOffset: 2.0,
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section Header Row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: (meta?.accent ?? AppTheme.primaryBlue).withValues(alpha: 0.12),
-                shape: BoxShape.circle,
-              ),
-              child: SubjectSketchIcon(
-                subjectId: targetSubject?.id ?? '',
-                size: 20,
-                color: meta?.accent ?? AppTheme.primaryBlue,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                labelText,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.inkForeground,
-                  letterSpacing: -0.2,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
             Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Open',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: meta?.accent ?? AppTheme.primaryBlue,
+                Container(
+                  width: 3.5,
+                  height: 13,
+                  decoration: BoxDecoration(
+                    color: meta.accent,
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                const SizedBox(width: 4),
-                Icon(
-                  Icons.arrow_forward_rounded,
-                  size: 14,
-                  color: meta?.accent ?? AppTheme.primaryBlue,
+                const SizedBox(width: 7),
+                Text(
+                  isUnitScope
+                      ? (targetChapters.length > 1
+                          ? 'TARGET UNITS (${targetChapters.length})'
+                          : 'TARGET UNIT')
+                      : 'ACTIVE UNIT',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.8,
+                    color: AppTheme.inkForeground.withValues(alpha: 0.75),
+                  ),
                 ),
               ],
             ),
+            ApplePressable(
+              pressedScale: 0.94,
+              onTap: () {
+                HapticFeedback.selectionClick();
+                context.push('/curriculum/${targetSubject.id}');
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'All Units',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: meta.accent,
+                      ),
+                    ),
+                    const SizedBox(width: 2),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: 16,
+                      color: meta.accent,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
-      ),
+        const SizedBox(height: 10),
+
+        // Display UnitCard(s)
+        if (isUnitScope) ...[
+          for (int i = 0; i < targetChapters.length; i++) ...[
+            if (i > 0) const SizedBox(height: 10),
+            Builder(
+              builder: (context) {
+                final chIdx = targetSubject.chapters.indexOf(targetChapters[i]);
+                return UnitCard(
+                  subject: targetSubject,
+                  chapter: targetChapters[i],
+                  unitIndex: chIdx >= 0 ? chIdx : i,
+                  completedVideos: editionState.completedVideos,
+                  completedQBanks: editionState.completedQBanks,
+                  completedNotes: editionState.completedNotes,
+                );
+              },
+            ),
+          ],
+        ] else ...[
+          UnitCard(
+            subject: targetSubject,
+            chapter: activeChapter,
+            unitIndex: activeChapterIndex,
+            completedVideos: editionState.completedVideos,
+            completedQBanks: editionState.completedQBanks,
+            completedNotes: editionState.completedNotes,
+          ),
+        ],
+      ],
     );
   }
 
@@ -749,313 +727,785 @@ class ModuleTasksScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildBlendedUnitHeader(String unitName, int? unitNumber) {
+  /// PART 3: The New Module View
+  Widget _buildModuleSection({
+    required BuildContext context,
+    required WidgetRef ref,
+    required Subject? targetSubject,
+    required String subjectName,
+    required List<Video> batchVideos,
+    required List<QBankTopic> planQBanks,
+    required List<NotesItem> planNotes,
+    required EditionState editionState,
+    required List<String> staleIds,
+    required bool isCurrentScopeFullyCompleted,
+  }) {
+    final meta = targetSubject != null ? subjectMeta(targetSubject.id) : null;
+    final accentColor = meta?.accent ?? AppTheme.primaryBlue;
+
+    // Filter items based on _activeTab
+    final bool showVideos = _activeTab == 'all' || _activeTab == 'videos';
+    final bool showQBank = _activeTab == 'all' || _activeTab == 'qbank';
+    final bool showNotes = _activeTab == 'all' || _activeTab == 'notes';
+
+    final completedVideosCount =
+        batchVideos.where((v) => editionState.completedVideos.containsKey(v.id)).length;
+    final completedQBanksCount =
+        planQBanks.where((q) => editionState.completedQBanks.containsKey(q.id)).length;
+    final completedNotesCount =
+        planNotes.where((n) => editionState.completedNotes.containsKey(n.id)).length;
+
+    int totalVisible = 0;
+    int completedVisible = 0;
+    if (_activeTab == 'videos') {
+      totalVisible = batchVideos.length;
+      completedVisible = completedVideosCount;
+    } else if (_activeTab == 'qbank') {
+      totalVisible = planQBanks.length;
+      completedVisible = completedQBanksCount;
+    } else if (_activeTab == 'notes') {
+      totalVisible = planNotes.length;
+      completedVisible = completedNotesCount;
+    } else {
+      totalVisible = batchVideos.length + planQBanks.length + planNotes.length;
+      completedVisible = completedVideosCount + completedQBanksCount + completedNotesCount;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Title & Counters
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "Today's Modules",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.inkForeground,
+                letterSpacing: -0.2,
+              ),
+            ),
+            Text(
+              '$completedVisible of $totalVisible completed',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // Filter Switcher Chips: All, Videos, Q-Bank, Notes
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: [
+              _buildFilterChip(
+                label: 'All',
+                count: batchVideos.length + planQBanks.length + planNotes.length,
+                isSelected: _activeTab == 'all',
+                color: accentColor,
+                onTap: () => setState(() => _activeTab = 'all'),
+              ),
+              const SizedBox(width: 8),
+              _buildFilterChip(
+                label: 'Videos',
+                count: batchVideos.length,
+                icon: Icons.play_circle_outline_rounded,
+                isSelected: _activeTab == 'videos',
+                color: AppTheme.accentPrimary,
+                onTap: () => setState(() => _activeTab = 'videos'),
+              ),
+              if (planQBanks.isNotEmpty) ...[
+                const SizedBox(width: 8),
+                _buildFilterChip(
+                  label: 'Q-Bank',
+                  count: planQBanks.length,
+                  icon: Icons.quiz_outlined,
+                  isSelected: _activeTab == 'qbank',
+                  color: const Color(0xFFF97316),
+                  onTap: () => setState(() => _activeTab = 'qbank'),
+                ),
+              ],
+              if (planNotes.isNotEmpty) ...[
+                const SizedBox(width: 8),
+                _buildFilterChip(
+                  label: 'Notes',
+                  count: planNotes.length,
+                  icon: Icons.menu_book_rounded,
+                  isSelected: _activeTab == 'notes',
+                  color: const Color(0xFF10B981),
+                  onTap: () => setState(() => _activeTab = 'notes'),
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // Module Cards
+        if (showVideos && batchVideos.isNotEmpty) ...[
+          if (_activeTab == 'all' && (planQBanks.isNotEmpty || planNotes.isNotEmpty))
+            _buildSectionSubHeader('VIDEOS (${batchVideos.length})', AppTheme.accentPrimary),
+          for (int i = 0; i < batchVideos.length; i++)
+            _buildVideoTaskTile(
+              context: context,
+              ref: ref,
+              video: batchVideos[i],
+              index: i,
+              isDone: editionState.completedVideos.containsKey(batchVideos[i].id),
+              isStale: staleIds.contains(batchVideos[i].id),
+              targetSubject: targetSubject,
+              subjectName: subjectName,
+            ),
+        ],
+
+        if (showQBank && planQBanks.isNotEmpty) ...[
+          if (_activeTab == 'all')
+            _buildSectionSubHeader('Q-BANK (${planQBanks.length})', const Color(0xFFF97316)),
+          for (final qbank in planQBanks)
+            _buildQBankTaskTile(
+              context: context,
+              ref: ref,
+              qbank: qbank,
+              isDone: editionState.completedQBanks.containsKey(qbank.id),
+              targetSubject: targetSubject,
+              subjectName: subjectName,
+            ),
+        ],
+
+        if (showNotes && planNotes.isNotEmpty) ...[
+          if (_activeTab == 'all')
+            _buildSectionSubHeader('NOTES (${planNotes.length})', const Color(0xFF10B981)),
+          for (final note in planNotes)
+            _buildNotesTaskTile(
+              context: context,
+              ref: ref,
+              note: note,
+              isDone: editionState.completedNotes.containsKey(note.id),
+              targetSubject: targetSubject,
+              subjectName: subjectName,
+            ),
+        ],
+
+        if (totalVisible == 0 && !isCurrentScopeFullyCompleted)
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: AppTheme.sketchDecoration(
+              backgroundColor: AppTheme.cardWhite,
+              borderRadius: 14,
+              shadowOffset: 2,
+            ),
+            child: Center(
+              child: Text(
+                'No modules pending in this filter.',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.mutedText,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required int count,
+    IconData? icon,
+    required bool isSelected,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return ApplePressable(
+      pressedScale: 0.94,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      borderRadius: BorderRadius.circular(10),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? color.withValues(alpha: 0.14)
+              : AppTheme.cardWhite,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? color : AppTheme.borderLight,
+            width: isSelected ? 1.4 : 1.0,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                size: 14,
+                color: isSelected ? color : AppTheme.inkForeground.withValues(alpha: 0.7),
+              ),
+              const SizedBox(width: 5),
+            ],
+            Text(
+              '$label ($count)',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                color: isSelected ? color : AppTheme.inkForeground,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionSubHeader(String title, Color color) {
     return Padding(
-      padding: const EdgeInsets.only(top: 12, bottom: 8),
+      padding: const EdgeInsets.only(top: 10, bottom: 8),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: AppTheme.parchmentSurface,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: AppTheme.borderLight, width: 1),
-            ),
-            child: Text(
-              unitNumber != null ? 'UNIT $unitNumber' : 'UNIT',
-              style: TextStyle(
-                fontSize: 9.5,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.5,
-                color: AppTheme.inkForeground,
-              ),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.5,
+              color: color,
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              unitName,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: Colors.grey.shade700,
-              ),
+            child: Container(
+              height: 0.8,
+              color: AppTheme.parchmentBorder.withValues(alpha: 0.6),
             ),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            width: 32,
-            height: 1,
-            color: AppTheme.parchmentBorder.withValues(alpha: 0.8),
           ),
         ],
       ),
     );
   }
 
-  /// PART 3: Minimalist Timeline Module Item with whole-syllabus numbering
-  Widget _buildTimelineItem({
+  Widget _buildVideoTaskTile({
     required BuildContext context,
     required WidgetRef ref,
     required Video video,
+    required int index,
     required bool isDone,
     required bool isStale,
     required Subject? targetSubject,
     required String subjectName,
   }) {
     final detail = video.durationLabel.isNotEmpty ? video.durationLabel : '${video.durationMins}m';
-
-    // Global numbering assigned from the whole syllabus/subject
     final globalIndex = video.serialNumber > 0
         ? video.serialNumber
         : ((targetSubject?.allVideos.indexWhere((v) => v.id == video.id) ?? -1) + 1);
-    final displayNum = globalIndex > 0 ? '$globalIndex' : '${video.serialNumber}';
+    final displayNum = globalIndex > 0 ? '$globalIndex' : '${index + 1}';
 
-    return CustomPaint(
-      painter: _DottedLinePainter(
-        color: AppTheme.sketchBorderColor.withValues(alpha: 0.35),
-        centerX: 19.0,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Left Circular Number Bubble
-          SizedBox(
-            width: 38,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Center(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    if (isDone) {
-                      ref.read(appStateProvider.notifier).markVideoIncomplete(video.id);
-                    } else {
-                      ref.read(appStateProvider.notifier).markVideoComplete(video.id);
-                    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: ApplePressable(
+        pressedScale: 0.98,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          if (isDone) {
+            ref.read(appStateProvider.notifier).markVideoIncomplete(video.id);
+          } else {
+            ref.read(appStateProvider.notifier).markVideoComplete(video.id);
+          }
 
-                    final deskTasks = ref.read(dailyTasksProvider).tasks;
-                    final matching = deskTasks.where((t) => t.id == 'vid_${video.id}').toList();
-                    if (matching.isNotEmpty) {
-                      final deskCompleted = ref.read(dailyTasksProvider).completedIds;
-                      final isDeskDone = deskCompleted.contains('vid_${video.id}');
-                      if (isDone && isDeskDone) {
-                        ref.read(dailyTasksProvider.notifier).toggleTask('vid_${video.id}');
-                      } else if (!isDone && !isDeskDone) {
-                        ref.read(dailyTasksProvider.notifier).toggleTask('vid_${video.id}');
-                      }
-                    }
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
-                    color: Colors.transparent,
-                    child: Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: isDone ? AppTheme.accentPrimary : AppTheme.cardWhite,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isDone ? AppTheme.accentPrimary : AppTheme.sketchBorderColor,
-                          width: 1.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: isDone
-                                ? AppTheme.accentPrimary.withValues(alpha: 0.35)
-                                : const Color(0x101C1C1C),
-                            offset: const Offset(1, 1.5),
-                            blurRadius: isDone ? 3 : 0,
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: isDone
-                            ? AnimatedCheckStroke(
-                                checked: true,
-                                size: 14,
-                                color: AppTheme.onAccent,
-                              )
-                            : Text(
-                                displayNum,
-                                style: TextStyle(
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w800,
-                                  fontFamily: 'monospace',
-                                  color: AppTheme.inkForeground,
-                                ),
-                              ),
-                      ),
+          final deskTasks = ref.read(dailyTasksProvider).tasks;
+          final matching = deskTasks.where((t) => t.id == 'vid_${video.id}').toList();
+          if (matching.isNotEmpty) {
+            final deskCompleted = ref.read(dailyTasksProvider).completedIds;
+            final isDeskDone = deskCompleted.contains('vid_${video.id}');
+            if (isDone && isDeskDone) {
+              ref.read(dailyTasksProvider.notifier).toggleTask('vid_${video.id}');
+            } else if (!isDone && !isDeskDone) {
+              ref.read(dailyTasksProvider.notifier).toggleTask('vid_${video.id}');
+            }
+          }
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          decoration: AppTheme.sketchDecoration(
+            backgroundColor: isDone ? AppTheme.parchmentSurface : AppTheme.cardWhite,
+            borderRadius: 16,
+            borderWidth: 1.2,
+            shadowOffset: 2.0,
+          ),
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              // Sequential number badge
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: isDone
+                      ? Colors.green.withValues(alpha: 0.16)
+                      : AppTheme.accentPrimary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border: isDone
+                      ? Border.all(color: Colors.green.withValues(alpha: 0.5), width: 1.5)
+                      : null,
+                ),
+                child: Center(
+                  child: Text(
+                    displayNum,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      color: isDone ? Colors.green.shade800 : AppTheme.accentPrimary,
+                      fontSize: 15,
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-          const SizedBox(width: 8),
+              const SizedBox(width: 12),
 
-          // Minimalist Task Card
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: ApplePressable(
-                pressedScale: 0.98,
-                onPressed: () {
-                  HapticFeedback.selectionClick();
-                  if (isDone) {
-                    ref.read(appStateProvider.notifier).markVideoIncomplete(video.id);
-                  } else {
-                    ref.read(appStateProvider.notifier).markVideoComplete(video.id);
-                  }
-
-                  final deskTasks = ref.read(dailyTasksProvider).tasks;
-                  final matching = deskTasks.where((t) => t.id == 'vid_${video.id}').toList();
-                  if (matching.isNotEmpty) {
-                    final deskCompleted = ref.read(dailyTasksProvider).completedIds;
-                    final isDeskDone = deskCompleted.contains('vid_${video.id}');
-                    if (isDone && isDeskDone) {
-                      ref.read(dailyTasksProvider.notifier).toggleTask('vid_${video.id}');
-                    } else if (!isDone && !isDeskDone) {
-                      ref.read(dailyTasksProvider.notifier).toggleTask('vid_${video.id}');
-                    }
-                  }
-                },
-                child: Container(
-                  decoration: AppTheme.sketchDecoration(
-                    backgroundColor: isDone ? AppTheme.parchmentSurface : AppTheme.cardWhite,
-                    borderRadius: 14,
-                    borderWidth: 1.2,
-                    shadowOffset: 2.0,
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-                  child: Row(
-                    children: [
-                      // Custom Animated Checkbox
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        width: 22,
-                        height: 22,
-                        decoration: BoxDecoration(
-                          color: isDone ? AppTheme.accentPrimary : AppTheme.cardWhite,
-                          borderRadius: BorderRadius.circular(6.5),
-                          border: Border.all(
-                            color: isDone ? AppTheme.accentPrimary : AppTheme.sketchBorderColor,
-                            width: 1.5,
-                          ),
-                        ),
-                        child: Center(
-                          child: AnimatedCheckStroke(
-                            checked: isDone,
-                            size: 15,
-                            color: AppTheme.onAccent,
-                          ),
-                        ),
+              // Title and Meta
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AnimatedStrikeText(
+                      text: video.title,
+                      isStruck: isDone,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: isDone ? AppTheme.mutedText : AppTheme.inkForeground,
                       ),
-                      const SizedBox(width: 10),
-
-                      // Topic Title & Meta Info
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AnimatedStrikeText(
-                              text: video.title,
-                              isStruck: isDone,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                      strikeColor: AppTheme.mutedText,
+                      strikeThickness: 1.8,
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        Text(
+                          detail,
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'monospace',
+                            color: AppTheme.mutedText,
+                          ),
+                        ),
+                        if (isStale && !isDone) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEF3C7),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(color: const Color(0xFFD97706), width: 0.9),
+                            ),
+                            child: const Text(
+                              'Stale',
                               style: TextStyle(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w700,
-                                color: isDone ? AppTheme.mutedText : AppTheme.inkForeground,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFFB45309),
                               ),
-                              strikeColor: AppTheme.mutedText,
-                              strikeThickness: 1.8,
                             ),
-                            const SizedBox(height: 3),
-                            Row(
-                              children: [
-                                Text(
-                                  detail,
-                                  style: TextStyle(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w600,
-                                    fontFamily: 'monospace',
-                                    color: AppTheme.mutedText,
-                                  ),
-                                ),
-                                if (isStale && !isDone) ...[
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFFEF3C7),
-                                      borderRadius: BorderRadius.circular(4),
-                                      border: Border.all(color: const Color(0xFFD97706), width: 0.9),
-                                    ),
-                                    child: const Text(
-                                      'Stale',
-                                      style: TextStyle(
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.w800,
-                                        color: Color(0xFFB45309),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                                if (isDone) ...[
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    '• Completed',
-                                    style: TextStyle(
-                                      fontSize: 10.5,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppTheme.accentPrimary,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Module-Mode Focus Timer Shortcut Icon
-                      ApplePressable(
-                        pressedScale: 0.90,
-                        onPressed: () {
-                          HapticFeedback.lightImpact();
-                          context.push(
-                            '/timer',
-                            extra: {
-                              'subjectId': targetSubject?.id ?? video.subjectId,
-                              'subjectName': targetSubject?.displayName ?? subjectName,
-                              'topicId': video.id,
-                              'topicTitle': video.title,
-                              'chapterName': video.chapterName,
-                              'topicType': 'video',
-                              'durationMins': video.durationMins > 0 ? video.durationMins : 15,
-                            },
-                          );
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(6),
-                          child: Icon(
-                            Icons.timer_outlined,
-                            size: 19,
-                            color: isDone ? AppTheme.mutedText : AppTheme.inkForeground,
                           ),
-                        ),
-                      ),
-                    ],
+                        ],
+                        if (isDone) ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            '• Completed',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.accentPrimary,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Focus Timer Shortcut
+              ApplePressable(
+                pressedScale: 0.90,
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  context.push(
+                    '/timer',
+                    extra: {
+                      'subjectId': targetSubject?.id ?? video.subjectId,
+                      'subjectName': targetSubject?.displayName ?? subjectName,
+                      'topicId': video.id,
+                      'topicTitle': video.title,
+                      'chapterName': video.chapterName,
+                      'topicType': 'video',
+                      'durationMins': video.durationMins > 0 ? video.durationMins : 15,
+                    },
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(
+                    Icons.timer_outlined,
+                    size: 19,
+                    color: isDone ? AppTheme.mutedText : AppTheme.inkForeground,
                   ),
                 ),
               ),
-            ),
+              const SizedBox(width: 4),
+
+              // Animated Checkbox
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: isDone ? AppTheme.accentPrimary : AppTheme.cardWhite,
+                  borderRadius: BorderRadius.circular(6.5),
+                  border: Border.all(
+                    color: isDone ? AppTheme.accentPrimary : AppTheme.sketchBorderColor,
+                    width: 1.5,
+                  ),
+                ),
+                child: Center(
+                  child: AnimatedCheckStroke(
+                    checked: isDone,
+                    size: 15,
+                    color: AppTheme.onAccent,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQBankTaskTile({
+    required BuildContext context,
+    required WidgetRef ref,
+    required QBankTopic qbank,
+    required bool isDone,
+    required Subject? targetSubject,
+    required String subjectName,
+  }) {
+    const badgeColor = Color(0xFFF97316);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: ApplePressable(
+        pressedScale: 0.98,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          ref.read(appStateProvider.notifier).toggleQBankComplete(qbank.id);
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          decoration: AppTheme.sketchDecoration(
+            backgroundColor: isDone ? AppTheme.parchmentSurface : AppTheme.cardWhite,
+            borderRadius: 16,
+            borderWidth: 1.2,
+            shadowOffset: 2.0,
+          ),
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              // Q-Bank Icon Badge (NO SERIAL NUMBER!)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: isDone
+                      ? Colors.green.withValues(alpha: 0.16)
+                      : badgeColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border: isDone
+                      ? Border.all(color: Colors.green.withValues(alpha: 0.5), width: 1.5)
+                      : null,
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.quiz_rounded,
+                    size: 20,
+                    color: isDone ? Colors.green.shade800 : badgeColor,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // Title and Meta
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AnimatedStrikeText(
+                      text: qbank.title,
+                      isStruck: isDone,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: isDone ? AppTheme.mutedText : AppTheme.inkForeground,
+                      ),
+                      strikeColor: AppTheme.mutedText,
+                      strikeThickness: 1.8,
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        Text(
+                          '${qbank.totalMcqs} MCQs',
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'monospace',
+                            color: AppTheme.mutedText,
+                          ),
+                        ),
+                        if (isDone) ...[
+                          const SizedBox(width: 8),
+                          const Text(
+                            '• Completed',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF059669),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Focus Timer Shortcut
+              ApplePressable(
+                pressedScale: 0.90,
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  context.push(
+                    '/timer',
+                    extra: {
+                      'subjectId': targetSubject?.id ?? qbank.subjectId,
+                      'subjectName': targetSubject?.displayName ?? subjectName,
+                      'topicId': qbank.id,
+                      'topicTitle': qbank.title,
+                      'chapterName': qbank.chapterName,
+                      'topicType': 'qbank',
+                      'durationMins': (qbank.totalMcqs * 1.5).round().clamp(10, 60),
+                    },
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(
+                    Icons.timer_outlined,
+                    size: 19,
+                    color: isDone ? AppTheme.mutedText : AppTheme.inkForeground,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+
+              // Animated Checkbox
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: isDone ? AppTheme.accentPrimary : AppTheme.cardWhite,
+                  borderRadius: BorderRadius.circular(6.5),
+                  border: Border.all(
+                    color: isDone ? AppTheme.accentPrimary : AppTheme.sketchBorderColor,
+                    width: 1.5,
+                  ),
+                ),
+                child: Center(
+                  child: AnimatedCheckStroke(
+                    checked: isDone,
+                    size: 15,
+                    color: AppTheme.onAccent,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotesTaskTile({
+    required BuildContext context,
+    required WidgetRef ref,
+    required NotesItem note,
+    required bool isDone,
+    required Subject? targetSubject,
+    required String subjectName,
+  }) {
+    const badgeColor = Color(0xFF10B981);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: ApplePressable(
+        pressedScale: 0.98,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          ref.read(appStateProvider.notifier).toggleNotesComplete(note.id);
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          decoration: AppTheme.sketchDecoration(
+            backgroundColor: isDone ? AppTheme.parchmentSurface : AppTheme.cardWhite,
+            borderRadius: 16,
+            borderWidth: 1.2,
+            shadowOffset: 2.0,
+          ),
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              // Notes Icon Badge (NO SERIAL NUMBER!)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: isDone
+                      ? Colors.green.withValues(alpha: 0.16)
+                      : badgeColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border: isDone
+                      ? Border.all(color: Colors.green.withValues(alpha: 0.5), width: 1.5)
+                      : null,
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.menu_book_rounded,
+                    size: 20,
+                    color: isDone ? Colors.green.shade800 : badgeColor,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // Title and Meta
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AnimatedStrikeText(
+                      text: note.title,
+                      isStruck: isDone,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: isDone ? AppTheme.mutedText : AppTheme.inkForeground,
+                      ),
+                      strikeColor: AppTheme.mutedText,
+                      strikeThickness: 1.8,
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        Text(
+                          'High-Yield Notes',
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'monospace',
+                            color: AppTheme.mutedText,
+                          ),
+                        ),
+                        if (isDone) ...[
+                          const SizedBox(width: 8),
+                          const Text(
+                            '• Completed',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF059669),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Focus Timer Shortcut
+              ApplePressable(
+                pressedScale: 0.90,
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  context.push(
+                    '/timer',
+                    extra: {
+                      'subjectId': targetSubject?.id ?? note.subjectId,
+                      'subjectName': targetSubject?.displayName ?? subjectName,
+                      'topicId': note.id,
+                      'topicTitle': note.title,
+                      'chapterName': note.chapterName,
+                      'topicType': 'notes',
+                      'durationMins': 20,
+                    },
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(
+                    Icons.timer_outlined,
+                    size: 19,
+                    color: isDone ? AppTheme.mutedText : AppTheme.inkForeground,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+
+              // Animated Checkbox
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: isDone ? AppTheme.accentPrimary : AppTheme.cardWhite,
+                  borderRadius: BorderRadius.circular(6.5),
+                  border: Border.all(
+                    color: isDone ? AppTheme.accentPrimary : AppTheme.sketchBorderColor,
+                    width: 1.5,
+                  ),
+                ),
+                child: Center(
+                  child: AnimatedCheckStroke(
+                    checked: isDone,
+                    size: 15,
+                    color: AppTheme.onAccent,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1248,39 +1698,4 @@ class ModuleTasksScreen extends ConsumerWidget {
       }
     } catch (_) {}
   }
-}
-
-class _DottedLinePainter extends CustomPainter {
-  final Color color;
-  final double centerX;
-
-  _DottedLinePainter({
-    required this.color,
-    this.centerX = 19.0,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1.5
-      ..strokeCap = StrokeCap.round;
-
-    double startY = 0;
-    const dashLength = 4.0;
-    const dashGap = 4.0;
-
-    while (startY < size.height) {
-      canvas.drawLine(
-        Offset(centerX, startY),
-        Offset(centerX, startY + dashLength),
-        paint,
-      );
-      startY += dashLength + dashGap;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DottedLinePainter oldDelegate) =>
-      oldDelegate.color != color || oldDelegate.centerX != centerX;
 }
