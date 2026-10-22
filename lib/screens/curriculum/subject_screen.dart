@@ -61,6 +61,12 @@ class SubjectScrollHelper {
   }
 }
 
+class _IndexSheetResult {
+  final int unitIndex;
+  final String? tab;
+  const _IndexSheetResult(this.unitIndex, [this.tab]);
+}
+
 class SubjectScreen extends ConsumerStatefulWidget {
   final String subjectId;
   const SubjectScreen({super.key, required this.subjectId});
@@ -207,7 +213,7 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
       );
     });
 
-    final selectedUnit = await showModalBottomSheet<int>(
+    final selectedUnit = await showModalBottomSheet<_IndexSheetResult>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -312,7 +318,7 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                           pressedOpacity: 0.88,
                           hapticStyle: HapticStyle.selection,
                           onTap: () {
-                            Navigator.pop(ctx, idx);
+                            Navigator.pop(ctx, _IndexSheetResult(idx));
                           },
                           borderRadius: BorderRadius.circular(12),
                           child: Padding(
@@ -386,56 +392,42 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                                         ),
                                       ),
                                       const SizedBox(height: 6),
-                                      // Module chips row for quick jumping
-                                      Row(
-                                        children: [
-                                          if (stat.totalVideos > 0)
-                                            _buildIndexChip(
-                                              label: '${stat.doneVideos}/${stat.totalVideos} Videos',
-                                              icon: Icons.play_circle_outline_rounded,
-                                              color: AppTheme.accentPrimary,
-                                              isComplete: stat.doneVideos == stat.totalVideos,
-                                              onTap: () {
-                                                Navigator.pop(ctx);
-                                                _scrollToUnit(idx, subject);
-                                                try {
-                                                  context.push('/curriculum/${subject.id}/$idx?tab=videos');
-                                                } catch (_) {}
-                                              },
-                                            ),
-                                          if (stat.totalQBanks > 0) ...[
-                                            const SizedBox(width: 4),
-                                            _buildIndexChip(
-                                              label: '${stat.doneQBanks}/${stat.totalQBanks} Q-Bank',
-                                              icon: Icons.quiz_outlined,
-                                              color: const Color(0xFFF97316),
-                                              isComplete: stat.doneQBanks == stat.totalQBanks,
-                                              onTap: () {
-                                                Navigator.pop(ctx);
-                                                _scrollToUnit(idx, subject);
-                                                try {
-                                                  context.push('/curriculum/${subject.id}/$idx?tab=qbank');
-                                                } catch (_) {}
-                                              },
-                                            ),
+                                      // Module chips row for quick jumping (horizontally scrollable to eliminate overflow)
+                                      SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        physics: const BouncingScrollPhysics(),
+                                        child: Row(
+                                          children: [
+                                            if (stat.totalVideos > 0)
+                                              _buildIndexChip(
+                                                label: '${stat.doneVideos}/${stat.totalVideos} Vids',
+                                                icon: Icons.play_circle_outline_rounded,
+                                                color: AppTheme.accentPrimary,
+                                                isComplete: stat.doneVideos == stat.totalVideos,
+                                                onTap: () => Navigator.pop(ctx, _IndexSheetResult(idx, 'videos')),
+                                              ),
+                                            if (stat.totalQBanks > 0) ...[
+                                              const SizedBox(width: 4),
+                                              _buildIndexChip(
+                                                label: '${stat.doneQBanks}/${stat.totalQBanks} QB',
+                                                icon: Icons.quiz_outlined,
+                                                color: const Color(0xFFF97316),
+                                                isComplete: stat.doneQBanks == stat.totalQBanks,
+                                                onTap: () => Navigator.pop(ctx, _IndexSheetResult(idx, 'qbank')),
+                                              ),
+                                            ],
+                                            if (stat.totalNotes > 0) ...[
+                                              const SizedBox(width: 4),
+                                              _buildIndexChip(
+                                                label: '${stat.doneNotes}/${stat.totalNotes} Notes',
+                                                icon: Icons.menu_book_rounded,
+                                                color: const Color(0xFF10B981),
+                                                isComplete: stat.doneNotes == stat.totalNotes,
+                                                onTap: () => Navigator.pop(ctx, _IndexSheetResult(idx, 'notes')),
+                                              ),
+                                            ],
                                           ],
-                                          if (stat.totalNotes > 0) ...[
-                                            const SizedBox(width: 4),
-                                            _buildIndexChip(
-                                              label: '${stat.doneNotes}/${stat.totalNotes} Notes',
-                                              icon: Icons.menu_book_rounded,
-                                              color: const Color(0xFF10B981),
-                                              isComplete: stat.doneNotes == stat.totalNotes,
-                                              onTap: () {
-                                                Navigator.pop(ctx);
-                                                _scrollToUnit(idx, subject);
-                                                try {
-                                                  context.push('/curriculum/${subject.id}/$idx?tab=notes');
-                                                } catch (_) {}
-                                              },
-                                            ),
-                                          ],
-                                        ],
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -481,9 +473,10 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
   );
 
     if (selectedUnit != null && mounted) {
-      _scrollToUnit(selectedUnit, subject, activeTab);
+      _scrollToUnit(selectedUnit.unitIndex, subject, activeTab);
       try {
-        context.push('/curriculum/${subject.id}/$selectedUnit');
+        final query = selectedUnit.tab != null ? '?tab=${selectedUnit.tab}' : '';
+        context.push('/curriculum/${subject.id}/${selectedUnit.unitIndex}$query');
       } catch (_) {}
     }
   }

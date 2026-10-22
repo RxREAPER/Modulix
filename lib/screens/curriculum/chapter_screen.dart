@@ -56,6 +56,21 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
   }
 
   @override
+  void didUpdateWidget(ChapterScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialTab != null && widget.initialTab != oldWidget.initialTab) {
+      final tab = widget.initialTab!.toLowerCase();
+      if (tab == 'qbank' || tab == 'qbanks') {
+        _activeTab = 'qbank';
+      } else if (tab == 'notes' || tab == 'note') {
+        _activeTab = 'notes';
+      } else if (tab == 'videos' || tab == 'video') {
+        _activeTab = 'videos';
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();

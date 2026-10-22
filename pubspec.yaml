@@ -94,6 +94,7 @@ flutter:
     - assets/sprites/nori/studying/
     - assets/sprites/nori/tired/
     - assets/sprites/nori/walking/
+    - assets/sprites/nori/waving/
     - assets/sprites/nori/welcoming/
     - assets/sprites/nori/yawning_loaf/
     - assets/sprites/nori/transitions/bored_to_study/
