@@ -78,6 +78,11 @@ void main() {
       await expectLater(authService.signOut(), completes);
     });
 
+    test('purgeRemoteDataAndAccount returns false when unauthenticated', () async {
+      final result = await authService.purgeRemoteDataAndAccount();
+      expect(result, isFalse);
+    });
+
     test('authStateChanges emits empty stream when unconfigured', () async {
       final events = await authService.authStateChanges.toList();
       expect(events, isEmpty);

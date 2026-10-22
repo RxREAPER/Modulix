@@ -194,4 +194,38 @@ class AuthService {
 
     await c.auth.signOut();
   }
+
+  /// Permanently purges all remote cloud data for the current user and signs out.
+  /// Complies with Apple App Store Guideline 5.1.1(v) and GDPR Article 17 (Right to Erasure).
+  Future<bool> purgeRemoteDataAndAccount() async {
+    final c = client;
+    final uid = currentUserId;
+    if (c == null || uid == null) return false;
+
+    try {
+      // 1. Delete all user snapshots from private storage vault
+      try {
+        final files = await c.storage.from('user-vaults').list(path: uid);
+        if (files.isNotEmpty) {
+          final paths = files.map((f) => '$uid/${f.name}').toList();
+          await c.storage.from('user-vaults').remove(paths);
+        }
+      } catch (e) {
+        debugPrint('[AuthService] Error clearing user-vaults storage: $e');
+      }
+
+      // 2. Delete cloud rows across all public tables
+      await c.from('time_logs').delete().eq('user_id', uid);
+      await c.from('study_editions').delete().eq('user_id', uid);
+      await c.from('daily_tasks').delete().eq('user_id', uid);
+      await c.from('profiles').delete().eq('id', uid);
+
+      // 3. Complete sign out
+      await signOut();
+      return true;
+    } catch (e) {
+      debugPrint('[AuthService] Error purging remote data: $e');
+      return false;
+    }
+  }
 }

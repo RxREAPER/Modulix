@@ -23,6 +23,8 @@ import 'screens/settings/notifications_preferences_screen.dart';
 import 'screens/settings/settings_screen.dart';
 import 'screens/settings/theme_studio_screen.dart';
 import 'screens/timer/focus_timer_screen.dart';
+import 'services/auth_service.dart';
+import 'services/sync_service.dart';
 import 'theme/app_theme.dart';
 import 'widgets/lovable_nav_bar.dart';
 import 'widgets/timer/mini_timer_overlay.dart';
@@ -439,7 +441,36 @@ class MainShell extends ConsumerStatefulWidget {
   ConsumerState<MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends ConsumerState<MainShell> {
+class _MainShellState extends ConsumerState<MainShell>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Initial silent sync check on app mount when user is authenticated
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (AuthService.instance.isAuthenticated) {
+        SyncService.instance.syncFull(ref);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Trigger silent background sync when resuming to foreground
+      if (AuthService.instance.isAuthenticated) {
+        SyncService.instance.syncFull(ref);
+      }
+    }
+  }
+
   static const _tabs = [
     (
       icon: Icons.home_outlined,

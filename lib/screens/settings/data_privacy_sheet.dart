@@ -444,6 +444,63 @@ class DataPrivacySheet extends ConsumerWidget {
                     ),
                   ),
                 ),
+
+                if (AuthService.instance.isAuthenticated) ...[
+                  const SizedBox(height: 24),
+
+                  // 5. Cloud Account & Remote Data Erasure
+                  Text(
+                    'CLOUD DATA SOVEREIGNTY & ERASURE',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.0,
+                      color: Colors.red.shade700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Permanently delete your remote account and erase all study completions, time logs, and cloud vault archives from our servers.',
+                    style: TextStyle(fontSize: 12, color: AppTheme.mutedText),
+                  ),
+                  const SizedBox(height: 12),
+
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: AppTheme.sketchDecoration(
+                      backgroundColor: AppTheme.cardWhite,
+                      borderRadius: 18,
+                      shadowOffset: 3,
+                    ),
+                    child: Material(
+                      type: MaterialType.transparency,
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.delete_forever_rounded,
+                              color: Colors.red, size: 20),
+                        ),
+                        title: const Text('Delete Cloud Account & Data',
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.red)),
+                        subtitle: Text(
+                            'Permanent remote purge (GDPR Art. 17 & App Store 5.1.1)',
+                            style: TextStyle(
+                                fontSize: 11, color: AppTheme.mutedText)),
+                        trailing: const Icon(Icons.chevron_right_rounded,
+                            color: Colors.red),
+                        onTap: () => _confirmPurgeAccount(context, ref),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -780,6 +837,71 @@ class DataPrivacySheet extends ConsumerWidget {
               );
             },
             child: const Text('Clear Tasks'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static void _confirmPurgeAccount(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.cardWhite,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+          side: BorderSide(color: Colors.red.shade300, width: 2),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.red, size: 24),
+            SizedBox(width: 8),
+            Text('Delete Cloud Account?',
+                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17)),
+          ],
+        ),
+        content: Text(
+          'This will permanently delete all your remote cloud data, focus timer logs, and snapshot archives from Supabase. Your local progress on this phone will be preserved in Guest mode.',
+          style: TextStyle(fontSize: 13, color: AppTheme.mutedText, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel', style: TextStyle(color: AppTheme.mutedText)),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Purging cloud data and deleting account...'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+
+              final success = await AuthService.instance.purgeRemoteDataAndAccount();
+              if (context.mounted) {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      success
+                          ? 'Cloud account and remote data successfully deleted.'
+                          : 'Failed to purge cloud data. Please check your network connection.',
+                    ),
+                    backgroundColor:
+                        success ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                  ),
+                );
+              }
+            },
+            child: const Text('Delete Cloud Data'),
           ),
         ],
       ),

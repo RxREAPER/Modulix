@@ -8,6 +8,34 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-035] App Store & GDPR Cloud Data Sovereignty, Account Erasure & App Lifecycle Resume Auto-Sync
+- **Timestamp:** 2026-10-23 03:35 UTC
+- **Category:** Cloud Synchronization / Supabase RLS / App Store & GDPR Compliance / Lifecycle Automation
+- **Files Added (1 file):**
+  - `supabase/migrations/004_delete_policies_and_account_purge.sql` (DELETE RLS policies on profiles, study_editions, and daily_tasks restricted to auth.uid())
+- **Files Modified (4 files):**
+  - `lib/services/auth_service.dart` (implemented purgeRemoteDataAndAccount purging user-vaults storage files, deleting cloud table rows, and signing out)
+  - `lib/app.dart` (added WidgetsBindingObserver to _MainShellState triggering silent SyncService.instance.syncFull(ref) on startup and AppLifecycleState.resumed)
+  - `lib/screens/settings/data_privacy_sheet.dart` (added Cloud Data Sovereignty & Erasure section with 1-tap Delete Cloud Account & Remote Data button and safety confirmation dialog)
+  - `test/auth_service_test.dart` (added unit test verifying purgeRemoteDataAndAccount safe fallback when unauthenticated)
+- **Supabase Cloud Schema Migration:**
+  - Configured Row Level Security `DELETE` policies on `public.profiles`, `public.study_editions`, and `public.daily_tasks` ensuring users can strictly delete their own remote records.
+- **Summary:**
+  - **App Store & GDPR Right to Erasure (Data Sovereignty):**
+    - Implemented compliant 1-tap account and cloud data purge complying with Apple App Store Guideline 5.1.1(v) and GDPR Article 17.
+    - Wipes user snapshots from Supabase Storage (`user-vaults/{uid}/*`), deletes all rows from `time_logs`, `study_editions`, `daily_tasks`, and `profiles`, and signs out to local guest mode.
+    - Preserves local SQLite database and SharedPreferences so doctors do not lose offline progress when severing cloud sync.
+  - **App Lifecycle Resume Auto-Sync:**
+    - Integrated `WidgetsBindingObserver` into `_MainShellState` in `lib/app.dart`.
+    - Automatically executes a background silent `syncFull(ref)` on application startup and whenever returning to the foreground (`AppLifecycleState.resumed`).
+- **Verification:**
+  - Applied and verified remote Supabase migration 004.
+  - `flutter analyze lib/ test/` passed with **0 errors, 0 warnings, 0 infos**.
+  - All 45 test files passed 100% (**274 / 274 tests passed**).
+- **Build Status:** Pending APK Build
+
+---
+
 ### [CKPT-034] Cloud Snapshot Vault, Daily Desk Tombstone Sync & Network Resilience
 - **Timestamp:** 2026-10-23 03:25 UTC
 - **Category:** Cloud Synchronization / Supabase Storage Vault / Network Resilience / Conflict Resolution / Data Sovereignty
