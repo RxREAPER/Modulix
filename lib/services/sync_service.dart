@@ -11,6 +11,7 @@ import '../providers/daily_tasks_provider.dart';
 import '../providers/time_log_provider.dart';
 import 'auth_service.dart';
 import 'database_service.dart';
+import 'network_resilience_service.dart';
 import 'storage_service.dart';
 
 enum SyncStatus {
@@ -53,6 +54,15 @@ class SyncService {
     }
 
     if (_isSyncing) return false;
+
+    // Hospital-Grade Resilience Check: Active TCP/DNS socket probe
+    final isOnline = await NetworkResilienceService.instance.checkConnectivity();
+    if (!isOnline) {
+      debugPrint('[SyncService] Host probe unreachable (hospital Wi-Fi/offline). Transitioning to offline mode.');
+      statusNotifier.value = SyncStatus.offline;
+      return false;
+    }
+
     _isSyncing = true;
     statusNotifier.value = SyncStatus.syncing;
 
@@ -289,6 +299,10 @@ class SyncService {
             (remoteDailyRes['completed_ids'] as List<dynamic>? ?? [])
                 .map((e) => e as String)
                 .toSet();
+        final remoteDeletedIds =
+            (remoteDailyRes['deleted_ids'] as List<dynamic>? ?? [])
+                .map((e) => e as String)
+                .toSet();
         final remoteHist =
             (remoteDailyRes['date_history'] as Map<String, dynamic>?)?.map(
                   (k, v) => MapEntry(k, v as int),
@@ -299,7 +313,10 @@ class SyncService {
         final localTasks = dailyState.tasks;
         final localCompleted = dailyState.completedIds;
 
-        // Merge task lists by ID
+        // Union of deleted tombstones to permanently prevent zombie task resurrection
+        final mergedDeleted = Set<String>.from(dailyState.deletedIds)..addAll(remoteDeletedIds);
+
+        // Merge task lists by ID, pruning any tasks that have tombstones
         final taskMap = {for (final t in localTasks) t.id: t};
         for (final raw in remoteTasksRaw) {
           if (raw is Map<String, dynamic>) {
@@ -307,9 +324,11 @@ class SyncService {
             taskMap.putIfAbsent(t.id, () => t);
           }
         }
+        taskMap.removeWhere((id, _) => mergedDeleted.contains(id));
 
-        // Union of completed task IDs
-        final mergedCompleted = Set<String>.from(localCompleted)..addAll(remoteCompletedIds);
+        // Union of completed task IDs, pruning tombstones
+        final mergedCompleted = (Set<String>.from(localCompleted)..addAll(remoteCompletedIds))
+          ..removeWhere((id) => mergedDeleted.contains(id));
 
         // Merge history by max count
         final mergedDailyHist = Map<String, int>.from(dailyState.dateHistory);
@@ -320,6 +339,7 @@ class SyncService {
 
         final tasksJson = jsonEncode(taskMap.values.map((t) => t.toMap()).toList());
         final completedJson = jsonEncode(mergedCompleted.toList());
+        final deletedJson = jsonEncode(mergedDeleted.toList());
         final histJson = jsonEncode(mergedDailyHist);
 
         await prefs.setString('modulix_daily_tasks_v1', tasksJson);
@@ -327,6 +347,9 @@ class SyncService {
 
         await prefs.setString('modulix_completed_tasks_v1', completedJson);
         await prefs.setString('flowmd_completed_tasks_v1', completedJson);
+
+        await prefs.setString('modulix_deleted_tasks_v1', deletedJson);
+        await prefs.setString('flowmd_deleted_tasks_v1', deletedJson);
 
         await prefs.setString('modulix_tasks_history_v1', histJson);
         await prefs.setString('flowmd_tasks_history_v1', histJson);
@@ -348,6 +371,7 @@ class SyncService {
         'user_id': userId,
         'tasks_json': finalDaily.tasks.map((t) => t.toMap()).toList(),
         'completed_ids': finalDaily.completedIds.toList(),
+        'deleted_ids': finalDaily.deletedIds.toList(),
         'date_history': finalDaily.dateHistory,
         'last_active_date': finalLastDate,
         'updated_at': DateTime.now().toUtc().toIso8601String(),

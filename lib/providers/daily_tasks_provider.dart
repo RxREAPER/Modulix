@@ -16,27 +16,33 @@ const _kTasksHistoryKey = 'modulix_tasks_history_v1';
 const _kLegacyTasksHistoryKey = 'flowmd_tasks_history_v1';
 const _kLastActiveDateKey = 'modulix_tasks_last_date_v1';
 const _kLegacyLastActiveDateKey = 'flowmd_tasks_last_date_v1';
+const _kDeletedTasksKey = 'modulix_deleted_tasks_v1';
+const _kLegacyDeletedTasksKey = 'flowmd_deleted_tasks_v1';
 
 class DailyTasksState {
   final List<DailyDeskTask> tasks;
   final Set<String> completedIds;
   final Map<String, int> dateHistory; // 'YYYY-MM-DD' -> count of completed tasks
+  final Set<String> deletedIds;
 
   const DailyTasksState({
     this.tasks = const [],
     this.completedIds = const {},
     this.dateHistory = const {},
+    this.deletedIds = const {},
   });
 
   DailyTasksState copyWith({
     List<DailyDeskTask>? tasks,
     Set<String>? completedIds,
     Map<String, int>? dateHistory,
+    Set<String>? deletedIds,
   }) {
     return DailyTasksState(
       tasks: tasks ?? this.tasks,
       completedIds: completedIds ?? this.completedIds,
       dateHistory: dateHistory ?? this.dateHistory,
+      deletedIds: deletedIds ?? this.deletedIds,
     );
   }
 }
@@ -90,6 +96,23 @@ class DailyTasksNotifier extends StateNotifier<DailyTasksState> {
       }
       final historyJson = prefs.getString(_kTasksHistoryKey) ?? prefs.getString(_kLegacyTasksHistoryKey);
       final lastDate = prefs.getString(_kLastActiveDateKey) ?? prefs.getString(_kLegacyLastActiveDateKey);
+      String? deletedJson;
+      try {
+        deletedJson = prefs.getString(_kDeletedTasksKey) ?? prefs.getString(_kLegacyDeletedTasksKey);
+      } catch (_) {
+        final list = prefs.getStringList(_kDeletedTasksKey) ?? prefs.getStringList(_kLegacyDeletedTasksKey);
+        if (list != null) deletedJson = jsonEncode(list);
+      }
+      Set<String> deleted = <String>{};
+      if (deletedJson != null) {
+        try {
+          deleted = (jsonDecode(deletedJson) as List)
+              .map((e) => e.toString())
+              .toSet();
+        } catch (_) {
+          deleted = <String>{};
+        }
+      }
       final today = _todayKey();
 
       List<DailyDeskTask> loadedTasks = [];
@@ -115,13 +138,18 @@ class DailyTasksNotifier extends StateNotifier<DailyTasksState> {
         }
       }
 
+      // Eliminate any tasks that have tombstones
+      if (deleted.isNotEmpty) {
+        loadedTasks = loadedTasks.where((t) => !deleted.contains(t.id)).toList();
+      }
+
       final validTaskIds = loadedTasks.map((t) => t.id).toSet();
       Set<String> completed = <String>{};
       if (completedJson != null) {
         try {
           completed = (jsonDecode(completedJson) as List)
               .map((e) => e.toString())
-              .where((id) => validTaskIds.contains(id))
+              .where((id) => validTaskIds.contains(id) && !deleted.contains(id))
               .toSet();
         } catch (_) {
           completed = <String>{};
@@ -159,13 +187,20 @@ class DailyTasksNotifier extends StateNotifier<DailyTasksState> {
         await prefs.setString(_kLastActiveDateKey, today);
       }
 
-      state = DailyTasksState(tasks: loadedTasks, completedIds: completed, dateHistory: history);
+      state = DailyTasksState(
+        tasks: loadedTasks,
+        completedIds: completed,
+        dateHistory: history,
+        deletedIds: deleted,
+      );
     } catch (_) {}
   }
 
   Future<void> setTasks(List<DailyDeskTask> newTasks) async {
     await _loadFuture;
-    state = state.copyWith(tasks: newTasks);
+    final newTaskIds = newTasks.map((t) => t.id).toSet();
+    final updatedDeleted = Set<String>.from(state.deletedIds)..removeAll(newTaskIds);
+    state = state.copyWith(tasks: newTasks, deletedIds: updatedDeleted);
     await _persist();
   }
 
@@ -176,7 +211,9 @@ class DailyTasksNotifier extends StateNotifier<DailyTasksState> {
         .entries
         .map((entry) => DailyDeskTask.fromString(entry.value, entry.key))
         .toList();
-    state = state.copyWith(tasks: newTasks);
+    final newTaskIds = newTasks.map((t) => t.id).toSet();
+    final updatedDeleted = Set<String>.from(state.deletedIds)..removeAll(newTaskIds);
+    state = state.copyWith(tasks: newTasks, deletedIds: updatedDeleted);
     await _persist();
   }
 
@@ -223,9 +260,15 @@ class DailyTasksNotifier extends StateNotifier<DailyTasksState> {
     if (index >= 0 && index < updatedTasks.length) {
       final removed = updatedTasks.removeAt(index);
       final updatedCompleted = Set<String>.from(state.completedIds)..remove(removed.id);
+      final updatedDeleted = Set<String>.from(state.deletedIds)..add(removed.id);
       final history = Map<String, int>.from(state.dateHistory);
       history[_todayKey()] = updatedCompleted.length;
-      state = state.copyWith(tasks: updatedTasks, completedIds: updatedCompleted, dateHistory: history);
+      state = state.copyWith(
+        tasks: updatedTasks,
+        completedIds: updatedCompleted,
+        deletedIds: updatedDeleted,
+        dateHistory: history,
+      );
       await _persist();
     }
   }
@@ -240,11 +283,17 @@ class DailyTasksNotifier extends StateNotifier<DailyTasksState> {
     if (wasCompleted) {
       updatedCompleted.add(task.id);
     }
+    final updatedDeleted = Set<String>.from(state.deletedIds)..remove(task.id);
 
     final history = Map<String, int>.from(state.dateHistory);
     history[_todayKey()] = updatedCompleted.length;
 
-    state = state.copyWith(tasks: updatedTasks, completedIds: updatedCompleted, dateHistory: history);
+    state = state.copyWith(
+      tasks: updatedTasks,
+      completedIds: updatedCompleted,
+      deletedIds: updatedDeleted,
+      dateHistory: history,
+    );
     await _persist();
   }
 
@@ -263,11 +312,49 @@ class DailyTasksNotifier extends StateNotifier<DailyTasksState> {
 
   Future<void> clearCompleted() async {
     await _loadFuture;
+    final clearedIds = state.tasks
+        .where((t) => state.completedIds.contains(t.id))
+        .map((t) => t.id)
+        .toSet();
     final updatedTasks = state.tasks.where((t) => !state.completedIds.contains(t.id)).toList();
     final updatedCompleted = <String>{};
+    final updatedDeleted = Set<String>.from(state.deletedIds)..addAll(clearedIds);
     final history = Map<String, int>.from(state.dateHistory);
     history[_todayKey()] = 0;
-    state = state.copyWith(tasks: updatedTasks, completedIds: updatedCompleted, dateHistory: history);
+    state = state.copyWith(
+      tasks: updatedTasks,
+      completedIds: updatedCompleted,
+      deletedIds: updatedDeleted,
+      dateHistory: history,
+    );
+    await _persist();
+  }
+
+  /// Wipes all desk tasks and marks their IDs as deleted to prevent cloud resurrection
+  Future<void> clearTasks() async {
+    await _loadFuture;
+    final allIds = state.tasks.map((t) => t.id).toSet();
+    final updatedDeleted = Set<String>.from(state.deletedIds)..addAll(allIds);
+    state = state.copyWith(
+      tasks: [],
+      completedIds: <String>{},
+      deletedIds: updatedDeleted,
+    );
+    await _persist();
+  }
+
+  /// Merges remote tombstone IDs into local state, pruning tasks that were deleted remotely
+  Future<void> mergeTombstones(Set<String> incomingDeletedIds) async {
+    await _loadFuture;
+    if (incomingDeletedIds.isEmpty) return;
+    final updatedDeleted = Set<String>.from(state.deletedIds)..addAll(incomingDeletedIds);
+    final updatedTasks = state.tasks.where((t) => !incomingDeletedIds.contains(t.id)).toList();
+    final updatedCompleted = state.completedIds.where((id) => !incomingDeletedIds.contains(id)).toSet();
+    state = state.copyWith(
+      tasks: updatedTasks,
+      completedIds: updatedCompleted,
+      deletedIds: updatedDeleted,
+    );
     await _persist();
   }
 
@@ -312,6 +399,8 @@ class DailyTasksNotifier extends StateNotifier<DailyTasksState> {
       await prefs.setString(_kDailyTasksKey, jsonEncode(state.tasks.map((t) => t.toMap()).toList()));
       await prefs.setString(_kCompletedTasksKey, jsonEncode(state.completedIds.toList()));
       await prefs.setString(_kTasksHistoryKey, jsonEncode(state.dateHistory));
+      await prefs.setString(_kDeletedTasksKey, jsonEncode(state.deletedIds.toList()));
+      await prefs.setString(_kLegacyDeletedTasksKey, jsonEncode(state.deletedIds.toList()));
       if (_ref != null) {
         SyncService.instance.schedulePush(_ref);
       }

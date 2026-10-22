@@ -8,6 +8,40 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-034] Cloud Snapshot Vault, Daily Desk Tombstone Sync & Network Resilience
+- **Timestamp:** 2026-10-23 03:25 UTC
+- **Category:** Cloud Synchronization / Supabase Storage Vault / Network Resilience / Conflict Resolution / Data Sovereignty
+- **Files Added (3 files):**
+  - `lib/services/network_resilience_service.dart` (active TCP/DNS socket probing for captive portals and flaky hospital Wi-Fi; exponential jitter backoff)
+  - `supabase/migrations/003_storage_vault_and_task_tombstones.sql` (deleted_ids column on daily_tasks, private user-vaults storage bucket with 50MB limit, RLS policies for storage.objects)
+  - `test/cloud_sync_resilience_test.dart` (8 comprehensive unit tests for socket probing, backoff formula, GZip compression/decompression, and tombstone tracking)
+- **Files Modified (4 files):**
+  - `lib/providers/daily_tasks_provider.dart` (tombstone deletedIds set in DailyTasksState, persistence across modulix_deleted_tasks_v1 and legacy keys, tombstone filtering on reload, clearTasks, and mergeTombstones)
+  - `lib/services/sync_service.dart` (pre-flight TCP probe setting SyncStatus.offline during captive portal/offline states; daily tasks tombstone merging and purging)
+  - `lib/services/backup_service.dart` (GZip compressed backup bytes, uploadSnapshotToCloud, listCloudSnapshots, restoreCloudSnapshot, deleteCloudSnapshot, and CloudSnapshot model)
+  - `lib/screens/settings/data_privacy_sheet.dart` (added Cloud Snapshot Vault UI card with Backup to Cloud Vault action and interactive Cloud Vault Snapshots restore/delete modal dialog)
+- **Supabase Cloud Schema Migration:**
+  - Added `deleted_ids jsonb not null default '[]'::jsonb` to `public.daily_tasks`.
+  - Created `user-vaults` private bucket in `storage.buckets`.
+  - Configured 4 RLS policies on `storage.objects` (INSERT, SELECT, UPDATE, DELETE) enforcing user folder segregation (`user-vaults/{auth.uid()}/*`).
+- **Summary:**
+  - **Tombstone Sync (Zombie Task Elimination):**
+    - Implemented deletion tracking (`deletedIds`) across `DailyTasksProvider` and Supabase `daily_tasks`.
+    - Merges remote and local tombstones during sync, preventing deleted tasks from resurfacing across devices.
+  - **Automated Cloud Snapshot Vault (Supabase Storage):**
+    - Implemented 1-tap compressed `.json.gz` snapshot archiving directly to private Supabase Storage buckets (~75% network & storage reduction).
+    - Added interactive snapshot manager modal in Settings Data & Privacy sheet with point-in-time restore and archive deletion.
+  - **Hospital-Grade Network Resilience & Circuit Breaker:**
+    - Active TCP/DNS probing to cloud endpoints via `NetworkResilienceService`, distinguishing true connectivity from dead-zone Wi-Fi or captive portals and preventing false sync error banners.
+    - Integrated exponential backoff with randomized jitter.
+- **Verification:**
+  - Remote Supabase migration 003 applied and verified (bucket + 4 RLS policies + column created).
+  - `flutter analyze lib/ test/` passed with **0 errors, 0 warnings, 0 infos** (No issues found).
+  - Full test suite passed across all 45 test files (**273 / 273 tests passed**).
+- **Build Status:** Pending APK Build
+
+---
+
 ### [CKPT-033] Dead Code Pruning, Flutter 3.41+ Modernization, Guide Hub Integration & Model Hardening
 - **Timestamp:** 2026-10-22 20:30 UTC
 - **Category:** Code Quality / Dead Code Elimination / Deprecation Resolution / Settings Integration / Model Hardening

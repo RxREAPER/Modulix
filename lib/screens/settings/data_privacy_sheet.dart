@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../providers/daily_tasks_provider.dart';
 import '../../providers/time_log_provider.dart';
+import '../../services/auth_service.dart';
 import '../../services/backup_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -281,7 +283,91 @@ class DataPrivacySheet extends ConsumerWidget {
 
                 const SizedBox(height: 24),
 
-                // 3. Granular Cleaning
+                // 3. Cloud Snapshot Vault
+                Text(
+                  'CLOUD SNAPSHOT VAULT',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.0,
+                    color: AppTheme.inkForeground,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'GZip-compressed snapshot archives stored securely in your private cloud vault.',
+                  style: TextStyle(fontSize: 12, color: AppTheme.mutedText),
+                ),
+                const SizedBox(height: 12),
+
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: AppTheme.sketchDecoration(
+                    backgroundColor: AppTheme.cardWhite,
+                    borderRadius: 18,
+                    shadowOffset: 3,
+                  ),
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: Column(
+                      children: [
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.indigo.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.cloud_upload_rounded,
+                                color: Colors.indigo, size: 20),
+                          ),
+                          title: Text('Backup to Cloud Vault',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.inkForeground)),
+                          subtitle: Text(
+                              'Compresses and uploads snapshot to private storage',
+                              style: TextStyle(
+                                  fontSize: 11, color: AppTheme.mutedText)),
+                          trailing: Icon(Icons.chevron_right_rounded,
+                              color: AppTheme.mutedText),
+                          onTap: () => _backupToCloud(context, ref),
+                        ),
+                        Divider(height: 1, color: AppTheme.borderLight),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.deepPurple.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.cloud_download_rounded,
+                                color: Colors.deepPurple, size: 20),
+                          ),
+                          title: Text('Restore from Cloud Vault',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.inkForeground)),
+                          subtitle: Text(
+                              'View and restore from previous cloud snapshots',
+                              style: TextStyle(
+                                  fontSize: 11, color: AppTheme.mutedText)),
+                          trailing: Icon(Icons.chevron_right_rounded,
+                              color: AppTheme.mutedText),
+                          onTap: () => _showCloudSnapshotsDialog(context, ref),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // 4. Granular Cleaning
                 Text(
                   'PARTIAL DATA MANAGEMENT',
                   style: TextStyle(
@@ -372,6 +458,250 @@ class DataPrivacySheet extends ConsumerWidget {
 
   static Future<void> _importBackup(BuildContext context, WidgetRef ref) async {
     await BackupService.pickAndRestore(context, ref);
+  }
+
+  static Future<void> _backupToCloud(BuildContext context, WidgetRef ref) async {
+    if (!AuthService.instance.isAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sign in with a Cloud Account to backup to Cloud Vault.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Compressing and uploading snapshot to Cloud Vault...'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+
+    final success = await BackupService.uploadSnapshotToCloud(ref);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? 'Compressed snapshot saved to Cloud Vault!'
+                : 'Failed to upload snapshot. Check internet connection.',
+          ),
+          backgroundColor:
+              success ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+        ),
+      );
+    }
+  }
+
+  static void _showCloudSnapshotsDialog(BuildContext context, WidgetRef ref) {
+    if (!AuthService.instance.isAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sign in with a Cloud Account to view and restore cloud snapshots.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            backgroundColor: AppTheme.cardWhite,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(22),
+              side: BorderSide(color: AppTheme.sketchBorderColor, width: 2),
+            ),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.indigo.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.cloud_done_rounded,
+                      color: Colors.indigo, size: 20),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Cloud Vault Snapshots',
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
+                ),
+              ],
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              height: 320,
+              child: FutureBuilder<List<CloudSnapshot>>(
+                future: BackupService.listCloudSnapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final items = snapshot.data ?? [];
+                  if (items.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.cloud_off_rounded,
+                              size: 40, color: AppTheme.mutedText),
+                          const SizedBox(height: 12),
+                          Text(
+                            'No cloud snapshots found',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.inkForeground,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Create a snapshot using "Backup to Cloud Vault"',
+                            style: TextStyle(fontSize: 11, color: AppTheme.mutedText),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return ListView.separated(
+                    itemCount: items.length,
+                    separatorBuilder: (_, __) =>
+                        Divider(height: 1, color: AppTheme.borderLight),
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      final dateStr = item.createdAt != null
+                          ? DateFormat('yyyy-MM-dd HH:mm').format(item.createdAt!.toLocal())
+                          : item.name;
+
+                      return ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.archive_outlined,
+                            color: Colors.indigo, size: 22),
+                        title: Text(
+                          dateStr,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.inkForeground,
+                          ),
+                        ),
+                        subtitle: Text(
+                          item.formattedSize,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppTheme.mutedText,
+                          ),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.download_rounded,
+                                  color: Colors.teal, size: 20),
+                              tooltip: 'Restore this snapshot',
+                              onPressed: () async {
+                                Navigator.pop(ctx);
+                                final confirm = await showDialog<bool>(
+                                  context: context,
+                                  builder: (c) => AlertDialog(
+                                    title: const Text('Restore Cloud Snapshot?'),
+                                    content: Text(
+                                      'Restore snapshot from $dateStr (${item.formattedSize})? This will merge study progress and update logs.',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(c, false),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      FilledButton(
+                                        style: FilledButton.styleFrom(
+                                          backgroundColor: Colors.indigo,
+                                        ),
+                                        onPressed: () => Navigator.pop(c, true),
+                                        child: const Text('Restore'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (confirm == true) {
+                                  final ok = await BackupService.restoreCloudSnapshot(
+                                      item.path, ref);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          ok
+                                              ? 'Cloud snapshot successfully restored!'
+                                              : 'Failed to restore cloud snapshot.',
+                                        ),
+                                        backgroundColor: ok
+                                            ? const Color(0xFF10B981)
+                                            : const Color(0xFFEF4444),
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.delete_outline_rounded,
+                                  color: Colors.red.shade300, size: 20),
+                              tooltip: 'Delete snapshot',
+                              onPressed: () async {
+                                final confirmDel = await showDialog<bool>(
+                                  context: context,
+                                  builder: (c) => AlertDialog(
+                                    title: const Text('Delete Snapshot?'),
+                                    content: const Text(
+                                      'Permanently remove this backup archive from your cloud vault?',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(c, false),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      FilledButton(
+                                        style: FilledButton.styleFrom(
+                                          backgroundColor: Colors.red,
+                                        ),
+                                        onPressed: () => Navigator.pop(c, true),
+                                        child: const Text('Delete'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (confirmDel == true) {
+                                  await BackupService.deleteCloudSnapshot(item.path);
+                                  setDialogState(() {});
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Close'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   static void _confirmClearLogs(BuildContext context, WidgetRef ref) {

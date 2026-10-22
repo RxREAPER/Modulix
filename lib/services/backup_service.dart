@@ -1,16 +1,19 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/app_state.dart';
 import '../models/time_log.dart';
 import '../providers/app_state_provider.dart';
 import '../providers/daily_tasks_provider.dart';
 import '../providers/time_log_provider.dart';
+import 'auth_service.dart';
 import 'database_service.dart';
 import 'storage_service.dart';
 import 'analytics_service.dart';
@@ -216,4 +219,152 @@ class BackupService {
       return false;
     }
   }
+
+  // ── CLOUD SNAPSHOT VAULT (SUPABASE STORAGE) ───────────────────────────────
+
+  /// Creates a compressed (.json.gz) backup payload byte array
+  static Future<Uint8List> createCompressedBackupBytes(WidgetRef ref) async {
+    final jsonStr = await createBackupPayload(ref);
+    final utf8Bytes = utf8.encode(jsonStr);
+    final compressed = gzip.encode(utf8Bytes);
+    return Uint8List.fromList(compressed);
+  }
+
+  /// Decompresses a .json.gz byte payload into a JSON string
+  static String decompressBackupBytes(List<int> compressedBytes) {
+    final decompressed = gzip.decode(compressedBytes);
+    return utf8.decode(decompressed);
+  }
+
+  /// Uploads a compressed snapshot archive to the user's private Supabase Storage vault
+  static Future<bool> uploadSnapshotToCloud(WidgetRef ref) async {
+    try {
+      final auth = AuthService.instance;
+      if (!auth.isAuthenticated || auth.client == null || auth.currentUserId == null) {
+        throw Exception('User must be signed in to upload cloud snapshots.');
+      }
+
+      final client = auth.client!;
+      final userId = auth.currentUserId!;
+      final compressedBytes = await createCompressedBackupBytes(ref);
+
+      final now = DateTime.now().toUtc();
+      final dateSlug =
+          '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}';
+      final fileName = 'modulix_vault_$dateSlug.json.gz';
+      final storagePath = '$userId/$fileName';
+
+      await client.storage.from('user-vaults').uploadBinary(
+        storagePath,
+        compressedBytes,
+        fileOptions: const FileOptions(
+          contentType: 'application/gzip',
+          upsert: true,
+        ),
+      );
+
+      AnalyticsService.instance.logBackupExported();
+      return true;
+    } catch (e) {
+      debugPrint('[BackupService] Cloud snapshot upload error: $e');
+      return false;
+    }
+  }
+
+  /// Lists all cloud snapshot archives available in the user's private vault
+  static Future<List<CloudSnapshot>> listCloudSnapshots() async {
+    try {
+      final auth = AuthService.instance;
+      if (!auth.isAuthenticated || auth.client == null || auth.currentUserId == null) {
+        return [];
+      }
+
+      final client = auth.client!;
+      final userId = auth.currentUserId!;
+
+      final files = await client.storage.from('user-vaults').list(
+        path: userId,
+        searchOptions: const SearchOptions(
+          sortBy: SortBy(column: 'created_at', order: 'desc'),
+        ),
+      );
+
+      return files.map((f) {
+        final rawSize = f.metadata?['size'];
+        final size = (rawSize is num) ? rawSize.toInt() : 0;
+        final created = DateTime.tryParse(f.createdAt ?? '');
+        return CloudSnapshot(
+          name: f.name,
+          path: '$userId/${f.name}',
+          sizeBytes: size,
+          createdAt: created,
+        );
+      }).toList();
+    } catch (e) {
+      debugPrint('[BackupService] List cloud snapshots error: $e');
+      return [];
+    }
+  }
+
+  /// Downloads and restores a cloud snapshot archive from Supabase Storage
+  static Future<bool> restoreCloudSnapshot(String storagePath, WidgetRef ref) async {
+    try {
+      final auth = AuthService.instance;
+      if (!auth.isAuthenticated || auth.client == null) {
+        throw Exception('User must be signed in to restore cloud snapshots.');
+      }
+
+      final client = auth.client!;
+      final Uint8List fileBytes =
+          await client.storage.from('user-vaults').download(storagePath);
+
+      String jsonString;
+      if (storagePath.endsWith('.gz')) {
+        jsonString = decompressBackupBytes(fileBytes);
+      } else {
+        jsonString = utf8.decode(fileBytes);
+      }
+
+      return await restoreFromPayload(ref, jsonString);
+    } catch (e) {
+      debugPrint('[BackupService] Restore cloud snapshot error: $e');
+      return false;
+    }
+  }
+
+  /// Deletes a cloud snapshot archive from Supabase Storage
+  static Future<bool> deleteCloudSnapshot(String storagePath) async {
+    try {
+      final auth = AuthService.instance;
+      if (!auth.isAuthenticated || auth.client == null) return false;
+      final client = auth.client!;
+      await client.storage.from('user-vaults').remove([storagePath]);
+      return true;
+    } catch (e) {
+      debugPrint('[BackupService] Delete cloud snapshot error: $e');
+      return false;
+    }
+  }
 }
+
+/// Model representing a cloud snapshot stored in Supabase Storage user-vaults
+class CloudSnapshot {
+  final String name;
+  final String path;
+  final int sizeBytes;
+  final DateTime? createdAt;
+
+  const CloudSnapshot({
+    required this.name,
+    required this.path,
+    required this.sizeBytes,
+    this.createdAt,
+  });
+
+  String get formattedSize {
+    if (sizeBytes < 1024) return '$sizeBytes B';
+    if (sizeBytes < 1024 * 1024) return '${(sizeBytes / 1024).toStringAsFixed(1)} KB';
+    return '${(sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
+}
+
