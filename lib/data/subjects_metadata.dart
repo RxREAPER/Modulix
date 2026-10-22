@@ -238,6 +238,14 @@ final Map<String, List<Chapter>> _qbankChaptersMap = () {
 List<Subject> loadMarrow8Syllabus() => _buildSubjectsFromRaw(marrow8Raw);
 List<Subject> loadMarrow65Syllabus() => _buildSubjectsFromRaw(marrow65Raw);
 
+String _canonicalChapterKey(String name) {
+  return name
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9]'), '')
+      .replaceAll('and', '')
+      .replaceAll('&', '');
+}
+
 List<Subject> _buildSubjectsFromRaw(List<Map<String, dynamic>> raw) {
   return raw.map((subjectMap) {
     final id = subjectMap['id'] as String;
@@ -247,8 +255,9 @@ List<Subject> _buildSubjectsFromRaw(List<Map<String, dynamic>> raw) {
         (subjectMap['chapters'] as List<dynamic>?) ?? [];
 
     final qbankChapters = _qbankChaptersMap[id] ?? const <Chapter>[];
+    final matchedQBankNames = <String>{};
 
-    final chapters = chaptersRaw.asMap().entries.map((chEntry) {
+    final videoChapters = chaptersRaw.asMap().entries.map((chEntry) {
       final chIndex = chEntry.key;
       final chapterMap = chEntry.value as Map<String, dynamic>;
       final chapterName = chapterMap['name'] as String? ?? '';
@@ -257,6 +266,19 @@ List<Subject> _buildSubjectsFromRaw(List<Map<String, dynamic>> raw) {
       final videos = videosRaw
           .map((vMap) => Video.fromMap(vMap as Map<String, dynamic>, id, chapterName))
           .toList();
+
+      // Find matching Q-Bank topics for this chapter
+      final chKey = _canonicalChapterKey(chapterName);
+      final matchedTopics = <QBankTopic>[];
+      for (final qbCh in qbankChapters) {
+        final qbKey = _canonicalChapterKey(qbCh.name);
+        if (qbKey == chKey ||
+            (qbKey.length > 4 && chKey.contains(qbKey)) ||
+            (chKey.length > 4 && qbKey.contains(chKey))) {
+          matchedTopics.addAll(qbCh.qbanks);
+          matchedQBankNames.add(qbCh.name);
+        }
+      }
 
       // Exactly one Notes topic per unit, named after the unit
       final notes = <NotesItem>[
@@ -273,16 +295,43 @@ List<Subject> _buildSubjectsFromRaw(List<Map<String, dynamic>> raw) {
       return Chapter(
         name: chapterName,
         videos: videos,
-        qbanks: const [],
+        qbanks: matchedTopics,
         notes: notes,
       );
     }).toList();
+
+    // Any remaining Q-Bank chapters that did not match video chapters are added as dedicated units
+    final unMatchedUnits = <Chapter>[];
+    for (int qbIdx = 0; qbIdx < qbankChapters.length; qbIdx++) {
+      final qbCh = qbankChapters[qbIdx];
+      if (!matchedQBankNames.contains(qbCh.name)) {
+        unMatchedUnits.add(
+          Chapter(
+            name: qbCh.name,
+            videos: const [],
+            qbanks: qbCh.qbanks,
+            notes: [
+              NotesItem(
+                id: 'note_${id}_qb_$qbIdx',
+                title: _formatUnitNotesTitle(qbCh.name),
+                subjectId: id,
+                chapterName: qbCh.name,
+                pages: 10,
+                isCustom: false,
+              ),
+            ],
+          ),
+        );
+      }
+    }
+
+    final allChapters = [...videoChapters, ...unMatchedUnits];
 
     return Subject(
       id: id,
       name: name,
       displayName: meta.displayName,
-      chapters: chapters,
+      chapters: allChapters,
       qbankChapters: qbankChapters,
       accent: meta.accent,
     );

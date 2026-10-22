@@ -8,6 +8,29 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-022] Unified Individual Unit Cards with Embedded Video, Q-Bank & Notes Modules and Focus Timer Shortcut
+- **Timestamp:** 2026-10-22 11:00 UTC
+- **Category:** Curriculum Architecture / UI Overhaul / Focus Timer Integration
+- **Files Modified:**
+  - `lib/models/syllabus.dart`
+  - `lib/data/subjects_metadata.dart`
+  - `lib/widgets/curriculum/unit_card.dart` (NEW)
+  - `lib/screens/curriculum/subject_screen.dart`
+  - `lib/screens/curriculum/chapter_screen.dart`
+  - `test/subject_unit_index_test.dart`
+- **Summary:**
+  - **Unified Unit Architecture:** Replaced disjoint 3-category tab switching (`Videos` | `Q-Bank` | `Notes`) and endless flattened item rows on `SubjectScreen` with elegant, virtualized individual `UnitCard`s.
+  - **Unit Representation & Content Breakdown:** Each `UnitCard` presents unit title, unit badge, content breakdown chips (Videos with duration, Q-Bank with MCQ count, Notes with page count), overall completion progress bar, chevron indicator, and an isolated **Focus Timer shortcut button** pre-targeted to that unit's metadata.
+  - **Data Unification:** Canonicalized and attached Q-Bank topics directly into corresponding video chapters (`Chapter.qbanks`). Appended remaining standalone Q-Bank chapters as dedicated units so no topics are omitted across all 20 subjects.
+  - **Multi-Module Unit Detail Screen:** Upgraded `ChapterScreen` into the unified unit viewer. Includes segmented module switcher for units containing multiple resource types (`Videos`, `Q-Bank`, `Notes`), tactical Q-Bank and Notes item tiles with bouncy animated checkmarks, individual module timer triggers, bulk complete confirmation dialogs, and top AppBar focus timer action.
+  - **Safety & Bounds Integrity:** Preserved all 14 boundary, negative index, and route parsing safety checks in `ChapterScreen`. Updated `test/subject_unit_index_test.dart` to verify unit cards and index sheet navigation.
+- **Verification:**
+  - Static analysis (`flutter analyze lib/models/syllabus.dart lib/data/subjects_metadata.dart lib/widgets/curriculum/unit_card.dart lib/screens/curriculum/subject_screen.dart lib/screens/curriculum/chapter_screen.dart`) passed with **0 errors and 0 warnings**.
+  - Unit and widget test suite (`test/chapter_screen_test.dart`, `test/subject_unit_index_test.dart`) passed 100% (**23/23 tests passed**).
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### [CKPT-021] Uniform Card Layouts, Trailing Chevrons & Ellipsis Elimination
 - **Timestamp:** 2026-10-18 05:40 UTC
 - **Category:** UI Polish / Settings UX / Mobile Verification

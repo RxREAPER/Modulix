@@ -252,7 +252,10 @@ void main() {
 
       // Verify screen rendered
       expect(find.text('General Medicine'), findsWidgets);
-      expect(find.text('MODULES & TOPICS'), findsOneWidget);
+      expect(find.text('CLINICAL UNITS (3)'), findsOneWidget);
+      expect(find.text('Cardiology'), findsWidgets);
+      expect(find.text('Pulmonology'), findsWidgets);
+      expect(find.text('Nephrology'), findsWidgets);
 
       // Open Unit Index sheet from "Jump to Unit (Index) ▾"
       final jumpToUnitBtn = find.text('Jump to Unit (Index) ▾');
@@ -273,47 +276,20 @@ void main() {
       // Verify modal is closed
       expect(find.text('Unit Index (3 Units)'), findsNothing);
 
-      // Switch to Q-Bank Tab
-      final qbankTab = find.text('Q-Bank');
-      expect(qbankTab, findsOneWidget);
-      await tester.tap(qbankTab);
-      await tester.pumpAndSettle();
-
-      // Open Unit Index sheet for Q-Bank
+      // Open Unit Index sheet from AppBar button
       final unitIndexAppBarBtn = find.byTooltip('Unit Index');
       expect(unitIndexAppBarBtn, findsOneWidget);
       await tester.tap(unitIndexAppBarBtn);
       await tester.pumpAndSettle();
 
-      // Verify Q-Bank Units
-      expect(find.text('Q-BANK TOPICS'), findsWidgets);
-      expect(find.text('Cardiology QBank'), findsWidgets);
-      expect(find.text('Nephrology QBank'), findsWidgets);
+      // Verify sheet is open again
+      expect(find.text('Unit Index (3 Units)'), findsOneWidget);
 
-      // Tap Nephrology QBank
-      await tester.tap(find.text('Nephrology QBank').last);
+      // Tap Nephrology
+      await tester.tap(find.text('Nephrology').last);
       await tester.pumpAndSettle();
 
       // Verify modal closed and screen stable
-      expect(find.text('Unit Index (3 Units)'), findsNothing);
-
-      // Switch to Notes Tab
-      final notesTab = find.text('Notes');
-      expect(notesTab, findsOneWidget);
-      await tester.tap(notesTab);
-      await tester.pumpAndSettle();
-
-      // Open Unit Index sheet for Notes
-      await tester.tap(unitIndexAppBarBtn);
-      await tester.pumpAndSettle();
-
-      expect(find.text('NOTES'), findsWidgets);
-      expect(find.text('Cardiology'), findsWidgets);
-
-      // Tap Cardiology
-      await tester.tap(find.text('Cardiology').last);
-      await tester.pumpAndSettle();
-
       expect(find.text('Unit Index (3 Units)'), findsNothing);
     });
   });

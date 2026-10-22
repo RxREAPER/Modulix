@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,10 +7,9 @@ import '../../providers/app_state_provider.dart';
 import '../../providers/syllabus_provider.dart';
 import '../../providers/curriculum_sort_provider.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/animations/elastic_ink_pill.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/curriculum/subject_header_card.dart';
-import '../../widgets/curriculum/module_timeline.dart';
+import '../../widgets/curriculum/unit_card.dart';
 import '../../widgets/in_situ_hint_pill.dart';
 import '../../widgets/errors/app_error_state_view.dart';
 import '../../widgets/loading/app_shimmer.dart';
@@ -65,33 +63,14 @@ class SubjectScreen extends ConsumerStatefulWidget {
   ConsumerState<SubjectScreen> createState() => _SubjectScreenState();
 }
 
-class _SubjectScreenState extends ConsumerState<SubjectScreen>
-    with SingleTickerProviderStateMixin {
-  String _activeTab = 'videos'; // 'videos' | 'qbank' | 'notes'
-  int _slideDirection = 1;
+class _SubjectScreenState extends ConsumerState<SubjectScreen> {
   final Map<int, GlobalKey> _unitKeys = {};
   late final ScrollController _scrollController;
-  late final AnimationController _tabContentController;
-  late final Animation<double> _tabFadeAnimation;
-  late final Animation<double> _tabSlideAnimation;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _tabContentController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 220),
-      value: 1.0,
-    );
-    _tabFadeAnimation = CurvedAnimation(
-      parent: _tabContentController,
-      curve: Curves.easeOutCubic,
-    );
-    _tabSlideAnimation = CurvedAnimation(
-      parent: _tabContentController,
-      curve: Curves.easeOutCubic,
-    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 350), () {
         if (mounted) {
@@ -103,12 +82,11 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
 
   @override
   void dispose() {
-    _tabContentController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
-  void _scrollToUnit(int chapterIndex, Subject subject, String activeTab) {
+  void _scrollToUnit(int chapterIndex, Subject subject, [String activeTab = 'videos']) {
     if (!_scrollController.hasClients) return;
 
     // 1. Determine target offset
@@ -191,7 +169,7 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
   Future<void> _openIndexSheet({
     required BuildContext context,
     required Subject subject,
-    required String activeTab,
+    String activeTab = 'videos',
     required Map<String, dynamic> completedVideos,
     required Map<String, dynamic> completedQBanks,
     required Map<String, dynamic> completedNotes,
@@ -316,7 +294,6 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
                   Expanded(
                     child: ListView.separated(
                       controller: scrollController,
-                      cacheExtent: 350.0,
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       itemCount: displayChapters.length,
                       separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF3F4F6)),
@@ -527,10 +504,8 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
             .where((n) => completedNotes.containsKey(n.id))
             .length;
 
-        // Populate unit keys for active tab chapters
-        final displayChapters = (_activeTab == 'qbank' && subject.qbankChapters.isNotEmpty)
-            ? subject.qbankChapters
-            : subject.chapters;
+        // Populate unit keys for chapters
+        final displayChapters = subject.chapters;
         if (_unitKeys.length > displayChapters.length) {
           _unitKeys.removeWhere((k, _) => k >= displayChapters.length);
         }
@@ -578,7 +553,6 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
                   onPressed: () => _openIndexSheet(
                     context: context,
                     subject: subject,
-                    activeTab: _activeTab,
                     completedVideos: completedVideos,
                     completedQBanks: completedQBanks,
                     completedNotes: completedNotes,
@@ -600,7 +574,6 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
             ),
             body: CustomScrollView(
               controller: _scrollController,
-              cacheExtent: 450.0,
               physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
               slivers: [
                 SliverPadding(
@@ -620,102 +593,14 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
 
                         const SizedBox(height: 18),
 
-                        // 2. 3 Categories Navigation Tab Bar (Videos | Q-Bank | Notes)
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            const double spacing = 8.0;
-                            const double tabHeight = 44.0;
-                            final double tabWidth = (constraints.maxWidth - (spacing * 2)) / 3;
-                            final int activeIndex = switch (_activeTab) {
-                              'qbank' => 1,
-                              'notes' => 2,
-                              _ => 0,
-                            };
-                            final Rect pillRect = Rect.fromLTWH(
-                              activeIndex * (tabWidth + spacing),
-                              0,
-                              tabWidth,
-                              tabHeight,
-                            );
-
-                            return SizedBox(
-                              height: tabHeight,
-                              child: Stack(
-                                children: [
-                                  // Background slots
-                                  Row(
-                                    children: [
-                                      for (int i = 0; i < 3; i++) ...[
-                                        if (i > 0) const SizedBox(width: spacing),
-                                        Expanded(
-                                          child: Container(
-                                            height: tabHeight,
-                                            decoration: BoxDecoration(
-                                              color: AppTheme.cardWhite,
-                                              borderRadius: BorderRadius.circular(14),
-                                              border: Border.all(
-                                                color: AppTheme.borderLight,
-                                                width: 1.6,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                  // Fluid Elastic Ink Pill indicator
-                                  ElasticInkPill(
-                                    targetRect: pillRect,
-                                    fillColor: AppTheme.accentPrimary,
-                                    strokeColor: AppTheme.sketchBorderColor,
-                                    strokeWidth: 1.6,
-                                    borderRadius: 14.0,
-                                    isSketchy: true,
-                                  ),
-                                  // Interactive category tabs
-                                  Row(
-                                    children: [
-                                      _categoryTab(
-                                        id: 'videos',
-                                        index: 0,
-                                        label: 'Videos',
-                                        count: subject.totalVideos,
-                                        icon: Icons.play_arrow_rounded,
-                                      ),
-                                      const SizedBox(width: spacing),
-                                      _categoryTab(
-                                        id: 'qbank',
-                                        index: 1,
-                                        label: 'Q-Bank',
-                                        count: subject.totalQBanks,
-                                        icon: Icons.quiz_rounded,
-                                      ),
-                                      const SizedBox(width: spacing),
-                                      _categoryTab(
-                                        id: 'notes',
-                                        index: 2,
-                                        label: 'Notes',
-                                        count: subject.totalNotes,
-                                        icon: Icons.menu_book_rounded,
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-
-                        const SizedBox(height: 14),
-
-                        // Quick Jump to Unit (Index) Bar
+                        // 2. Units Section Header with Quick Jump
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'MODULES & TOPICS',
+                              'CLINICAL UNITS (${subject.chapters.length})',
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 0.8,
                                 color: Colors.grey.shade600,
@@ -727,7 +612,6 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
                                 onTap: () => _openIndexSheet(
                                   context: context,
                                   subject: subject,
-                                  activeTab: _activeTab,
                                   completedVideos: completedVideos,
                                   completedQBanks: completedQBanks,
                                   completedNotes: completedNotes,
@@ -755,74 +639,42 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
                             ),
                           ],
                         ),
-                        if (_activeTab == 'videos') ...[
-                          const SizedBox(height: 6),
-                          const InSituHintPill(
-                            prefKey: 'hint_swipe_video_seen',
-                            message: 'Swipe any video to mark complete, or switch to Q-Bank for recall',
-                            icon: Icons.swipe_left_alt_rounded,
-                          ),
-                        ],
-                        const SizedBox(height: 8),
+
+                        const SizedBox(height: 6),
+                        const InSituHintPill(
+                          prefKey: 'hint_unit_cards_seen',
+                          message: 'Tap any unit to explore Videos, Q-Bank, and Notes • Tap Timer for quick focus',
+                          icon: Icons.layers_outlined,
+                        ),
+                        const SizedBox(height: 12),
                       ],
                     ),
                   ),
                 ),
 
-                // 3. Fully Virtualized Slivers for Timeline Items
+                // 3. Virtualized List of Minimalist Unit Cards
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 240),
-                  sliver: SliverFadeTransition(
-                    opacity: _tabFadeAnimation,
-                    sliver: ModuleTimeline(
-                      key: ValueKey('${subject.id}_$_activeTab'),
-                      subject: subject,
-                      activeTab: _activeTab,
-                      unitKeys: _unitKeys,
-                      slideDirection: _slideDirection,
-                      contentAnimation: _tabSlideAnimation,
-                      completedVideos: completedVideos,
-                      completedQBanks: completedQBanks,
-                      completedNotes: completedNotes,
-                      onToggleVideo: (vid) {
-                        final notifier = ref.read(appStateProvider.notifier);
-                        if (completedVideos.containsKey(vid)) {
-                          notifier.markVideoIncomplete(vid);
-                        } else {
-                          notifier.markVideoComplete(vid);
-                        }
-                      },
-                      onToggleQBank: (qid) {
-                        ref.read(appStateProvider.notifier).toggleQBankComplete(qid);
-                      },
-                      onToggleNotes: (nid) {
-                        ref.read(appStateProvider.notifier).toggleNotesComplete(nid);
-                      },
-                      onBulkToggleVideos: (videoIds, chapterName, markDone) {
-                        final notifier = ref.read(appStateProvider.notifier);
-                        if (markDone) {
-                          notifier.markVideosBulk(videoIds, chapterName);
-                        } else {
-                          notifier.unmarkVideosBulk(videoIds, chapterName);
-                        }
-                      },
-                      onBulkToggleQBanks: (qbankIds, markDone) {
-                        final notifier = ref.read(appStateProvider.notifier);
-                        if (markDone) {
-                          notifier.markQBanksBulk(qbankIds);
-                        } else {
-                          notifier.unmarkQBanksBulk(qbankIds);
-                        }
-                      },
-                      onBulkToggleNotes: (noteIds, markDone) {
-                        final notifier = ref.read(appStateProvider.notifier);
-                        if (markDone) {
-                          notifier.markNotesBulk(noteIds);
-                        } else {
-                          notifier.unmarkNotesBulk(noteIds);
-                        }
-                      },
-                    ).buildSliver(context),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
+                  sliver: SliverList.separated(
+                    itemCount: subject.chapters.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final chapter = subject.chapters[index];
+                      return KeyedSubtree(
+                        key: _unitKeys[index],
+                        child: UnitCard(
+                          subject: subject,
+                          chapter: chapter,
+                          unitIndex: index,
+                          completedVideos: completedVideos,
+                          completedQBanks: completedQBanks,
+                          completedNotes: completedNotes,
+                          onTap: () {
+                            context.push('/curriculum/${subject.id}/$index');
+                          },
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -830,100 +682,6 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen>
           ),
         );
       },
-    );
-  }
-
-  Widget _categoryTab({
-    required String id,
-    required int index,
-    required String label,
-    required int count,
-    required IconData icon,
-  }) {
-    final isSelected = _activeTab == id;
-
-    return Expanded(
-      child: ApplePressable(
-        pressedScale: 0.94,
-        onTap: () {
-          HapticFeedback.selectionClick();
-          if (_activeTab != id) {
-            final oldIndex = switch (_activeTab) {
-              'qbank' => 1,
-              'notes' => 2,
-              _ => 0,
-            };
-            setState(() {
-              _slideDirection = index > oldIndex ? 1 : -1;
-              _activeTab = id;
-              _unitKeys.clear();
-            });
-            _tabContentController.forward(from: 0.0);
-
-            if (_scrollController.hasClients &&
-                _scrollController.offset > SubjectScrollHelper.headerBaseOffset) {
-              _scrollController.animateTo(
-                SubjectScrollHelper.headerBaseOffset,
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeOutCubic,
-              );
-            }
-          }
-        },
-        child: Container(
-          height: 44.0,
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          alignment: Alignment.center,
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 180),
-                  child: Icon(
-                    icon,
-                    key: ValueKey('$id-$isSelected'),
-                    size: 15,
-                    color: isSelected ? AppTheme.onAccent : AppTheme.inkForeground,
-                  ),
-                ),
-                const SizedBox(width: 5),
-                AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 180),
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
-                    color: isSelected ? AppTheme.onAccent : AppTheme.inkForeground,
-                  ),
-                  child: Text(label),
-                ),
-                const SizedBox(width: 4),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppTheme.onAccent.withValues(alpha: 0.25)
-                        : AppTheme.parchmentSurface,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    '$count',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      fontFamily: 'monospace',
-                      color: isSelected ? AppTheme.onAccent : AppTheme.mutedText,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

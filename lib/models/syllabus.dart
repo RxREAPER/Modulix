@@ -151,6 +151,41 @@ class Chapter {
     if (m == 0) return '${h}h';
     return '${h}h ${m}m';
   }
+
+  int get totalMcqs => qbanks.fold<int>(0, (acc, q) => acc + q.totalMcqs);
+  int get totalItems => totalVideos + totalQBanks + totalNotes;
+
+  int completedCount({
+    required Map<String, dynamic> completedVideos,
+    required Map<String, dynamic> completedQBanks,
+    required Map<String, dynamic> completedNotes,
+  }) {
+    int count = 0;
+    for (final v in videos) {
+      if (completedVideos.containsKey(v.id)) count++;
+    }
+    for (final q in qbanks) {
+      if (completedQBanks.containsKey(q.id)) count++;
+    }
+    for (final n in notes) {
+      if (completedNotes.containsKey(n.id)) count++;
+    }
+    return count;
+  }
+
+  double completionRatio({
+    required Map<String, dynamic> completedVideos,
+    required Map<String, dynamic> completedQBanks,
+    required Map<String, dynamic> completedNotes,
+  }) {
+    if (totalItems == 0) return 0.0;
+    final done = completedCount(
+      completedVideos: completedVideos,
+      completedQBanks: completedQBanks,
+      completedNotes: completedNotes,
+    );
+    return (done / totalItems).clamp(0.0, 1.0);
+  }
 }
 
 /// A subject in the syllabus
