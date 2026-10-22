@@ -305,7 +305,7 @@ CustomTransitionPage<void> _buildFadeTransitionPage({
 }) {
   return CustomTransitionPage<void>(
     key: state.pageKey,
-    child: child,
+    child: RepaintBoundary(child: child),
     transitionDuration: const Duration(milliseconds: 180),
     reverseTransitionDuration: const Duration(milliseconds: 140),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -331,7 +331,7 @@ CustomTransitionPage<void> _buildSlideUpTransitionPage({
 }) {
   return CustomTransitionPage<void>(
     key: state.pageKey,
-    child: child,
+    child: RepaintBoundary(child: child),
     transitionDuration: const Duration(milliseconds: 200),
     reverseTransitionDuration: const Duration(milliseconds: 160),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -365,7 +365,7 @@ CustomTransitionPage<void> _buildSlideHorizontalTransitionPage({
 }) {
   return CustomTransitionPage<void>(
     key: state.pageKey,
-    child: child,
+    child: RepaintBoundary(child: child),
     transitionDuration: const Duration(milliseconds: 190),
     reverseTransitionDuration: const Duration(milliseconds: 150),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {

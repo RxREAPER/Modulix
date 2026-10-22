@@ -183,10 +183,11 @@ class _NoriCharacterState extends State<NoriCharacter>
           _walkCtrl,
         ]),
         builder: (context, _) {
-          return SizedBox(
-            width: widget.size * 1.35,
-            height: widget.size,
-            child: Stack(
+          return RepaintBoundary(
+            child: SizedBox(
+              width: widget.size * 1.35,
+              height: widget.size,
+              child: Stack(
               alignment: Alignment.bottomCenter,
               clipBehavior: Clip.none,
               children: [
@@ -224,8 +225,9 @@ class _NoriCharacterState extends State<NoriCharacter>
                 ),
               ],
             ),
-          );
-        },
+          ),
+        );
+      },
       ),
     );
   }

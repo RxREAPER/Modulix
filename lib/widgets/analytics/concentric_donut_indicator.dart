@@ -80,48 +80,50 @@ class _ConcentricDonutIndicatorState extends State<ConcentricDonutIndicator>
     return SizedBox(
       width: widget.size,
       height: widget.size,
-      child: AnimatedBuilder(
-        animation: _animation,
-        builder: (context, _) {
-          final t = _animation.value;
-          return Stack(
-            alignment: Alignment.center,
-            children: [
-              CustomPaint(
-                size: Size(widget.size, widget.size),
-                painter: _ConcentricRingsPainter(
-                  p1: (widget.progress1.clamp(0.0, 1.0)) * t,
-                  p2: (widget.progress2.clamp(0.0, 1.0)) * t,
-                  p3: (widget.progress3.clamp(0.0, 1.0)) * t,
-                  ringWidth: widget.ringWidth,
-                  ringSpacing: widget.ringSpacing,
-                  color1: c1,
-                  color2: c2,
-                  color3: c3,
-                  trackColor: trackBase,
-                ),
-              ),
-              if (widget.centerChild != null)
-                widget.centerChild!
-              else
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: c1,
-                    boxShadow: [
-                      BoxShadow(
-                        color: c1.withValues(alpha: 0.4),
-                        blurRadius: 4,
-                        spreadRadius: 1,
-                      ),
-                    ],
+      child: RepaintBoundary(
+        child: AnimatedBuilder(
+          animation: _animation,
+          builder: (context, _) {
+            final t = _animation.value;
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                CustomPaint(
+                  size: Size(widget.size, widget.size),
+                  painter: _ConcentricRingsPainter(
+                    p1: (widget.progress1.clamp(0.0, 1.0)) * t,
+                    p2: (widget.progress2.clamp(0.0, 1.0)) * t,
+                    p3: (widget.progress3.clamp(0.0, 1.0)) * t,
+                    ringWidth: widget.ringWidth,
+                    ringSpacing: widget.ringSpacing,
+                    color1: c1,
+                    color2: c2,
+                    color3: c3,
+                    trackColor: trackBase,
                   ),
                 ),
-            ],
-          );
-        },
+                if (widget.centerChild != null)
+                  widget.centerChild!
+                else
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: c1,
+                      boxShadow: [
+                        BoxShadow(
+                          color: c1.withValues(alpha: 0.4),
+                          blurRadius: 4,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

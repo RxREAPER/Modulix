@@ -86,41 +86,43 @@ class _ProgressRadialGaugeState extends State<ProgressRadialGauge>
     return SizedBox(
       width: widget.size,
       height: widget.size,
-      child: AnimatedBuilder(
-        animation: _animation,
-        builder: (context, child) {
-          final currentVal = _animation.value;
-          final pct = (currentVal * 100).round();
+      child: RepaintBoundary(
+        child: AnimatedBuilder(
+          animation: _animation,
+          builder: (context, child) {
+            final currentVal = _animation.value;
+            final pct = (currentVal * 100).round();
 
-          return Stack(
-            alignment: Alignment.center,
-            children: [
-              CustomPaint(
-                size: Size(widget.size, widget.size),
-                painter: _RadialArcPainter(
-                  progress: currentVal,
-                  strokeWidth: widget.strokeWidth,
-                  progressColor: activeColor,
-                  trackColor: track,
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                CustomPaint(
+                  size: Size(widget.size, widget.size),
+                  painter: _RadialArcPainter(
+                    progress: currentVal,
+                    strokeWidth: widget.strokeWidth,
+                    progressColor: activeColor,
+                    trackColor: track,
+                  ),
                 ),
-              ),
-              if (widget.centerChild != null)
-                widget.centerChild!
-              else if (widget.showPercentageText)
-                Text(
-                  '$pct%',
-                  style: widget.percentageStyle ??
-                      TextStyle(
-                        fontSize: widget.size * 0.24,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
-                        fontFamily: 'monospace',
-                        color: AppTheme.inkForeground,
-                      ),
-                ),
-            ],
-          );
-        },
+                if (widget.centerChild != null)
+                  widget.centerChild!
+                else if (widget.showPercentageText)
+                  Text(
+                    '$pct%',
+                    style: widget.percentageStyle ??
+                        TextStyle(
+                          fontSize: widget.size * 0.24,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.5,
+                          fontFamily: 'monospace',
+                          color: AppTheme.inkForeground,
+                        ),
+                  ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

@@ -131,16 +131,18 @@ class _NoriMochiCharacterState extends State<NoriMochiCharacter>
           return SizedBox(
             width: widget.size * 1.25,
             height: widget.size,
-            child: CustomPaint(
-              size: Size(widget.size * 1.25, widget.size),
-              painter: _NoriMochiPainter(
-                breathe: _breatheCtrl.value,
-                tail: _tailCtrl.value,
-                squash: _squashCtrl.value,
-                blink: _blinkCtrl.value,
-                propId: widget.propId,
-                mood: widget.mood,
-                isPetting: _isPetting,
+            child: RepaintBoundary(
+              child: CustomPaint(
+                size: Size(widget.size * 1.25, widget.size),
+                painter: _NoriMochiPainter(
+                  breathe: _breatheCtrl.value,
+                  tail: _tailCtrl.value,
+                  squash: _squashCtrl.value,
+                  blink: _blinkCtrl.value,
+                  propId: widget.propId,
+                  mood: widget.mood,
+                  isPetting: _isPetting,
+                ),
               ),
             ),
           );

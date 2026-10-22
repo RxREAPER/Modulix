@@ -37,8 +37,8 @@ class _FocusTimerAnalyticsPageState
   @override
   Widget build(BuildContext context) {
     final timeLogs = ref.watch(timeLogsProvider);
-    final appState = ref.watch(appStateProvider).valueOrNull;
-    final dayStartHour = appState?.dayStartHour ?? 5;
+    final dayStartHour =
+        ref.watch(appStateProvider.select((s) => s.valueOrNull?.dayStartHour ?? 5));
 
     final effectiveTodayStart = MetricsService.studyDayStart(dayStartHour);
 
@@ -301,8 +301,9 @@ class _FocusTimerAnalyticsPageState
                   const SizedBox(height: 20),
                   SizedBox(
                     height: 170,
-                    child: BarChart(
-                      BarChartData(
+                    child: RepaintBoundary(
+                      child: BarChart(
+                        BarChartData(
                         maxY: (maxHours * 1.15).ceilToDouble(),
                         barTouchData: BarTouchData(
                           touchTooltipData: BarTouchTooltipData(
@@ -413,7 +414,8 @@ class _FocusTimerAnalyticsPageState
                       ),
                     ),
                   ),
-                ],
+                ),
+              ],
               ),
             ),
 

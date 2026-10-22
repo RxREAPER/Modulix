@@ -8,6 +8,43 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-030] High-Refresh 120Hz Animation, Layer Compositing & Render Tree Optimizations
+- **Timestamp:** 2026-10-22 19:30 UTC
+- **Category:** Performance Optimization / 120Hz Rendering / Layer Compositing / Architecture Polish
+- **Files Modified:**
+  - `lib/app.dart`
+  - `lib/screens/analytics/focus_timer_analytics_page.dart`
+  - `lib/screens/curriculum/subject_screen.dart`
+  - `lib/widgets/analytics/concentric_donut_indicator.dart`
+  - `lib/widgets/analytics/progress_radial_gauge.dart`
+  - `lib/widgets/animations/apple_pressable.dart`
+  - `lib/widgets/lovable_nav_bar.dart`
+  - `lib/widgets/nav/sketch_hatch_indicator.dart`
+  - `lib/widgets/nori/nori_blob_character.dart`
+  - `lib/widgets/nori/nori_character.dart`
+  - `lib/widgets/nori/nori_mochi_character.dart`
+- **Summary:**
+  - **RepaintBoundary Layer Isolation for 120Hz Displays:**
+    - Isolated the floating capsule bottom navigation dock in `LovableNavBar` with a `RepaintBoundary`, allowing droplet entrance transitions, scale morphing, and vertical glide translations to composite on dedicated GPU layers without invalidating ancestor layouts.
+    - Wrapped the active session breathing halo animation in `_ModernFocusItem` within `RepaintBoundary` to prevent 2000ms recurring halo pulses from invalidating adjacent navigation tabs.
+    - Wrapped `SketchHatchIndicator` custom painter in `RepaintBoundary` so fluid slot glide transitions (200ms) only repaint the indicator pill layer.
+    - Isolated all 3 primary page route transitions in `app.dart` (`_buildFadeTransitionPage`, `_buildSlideUpTransitionPage`, `_buildSlideHorizontalTransitionPage`) with `RepaintBoundary(child: child)`, ensuring sliding and fading screens are rasterized as single composited textures during route navigation.
+    - Wrapped custom painters in `ProgressRadialGauge` (600ms sweep) and `ConcentricDonutIndicator` (700ms 3-ring sweep) in `RepaintBoundary` to keep circular arc progress repaints strictly local.
+    - Wrapped `BarChart` in `FocusTimerAnalyticsPage` with `RepaintBoundary` to isolate fl_chart raster updates from surrounding analytics cards.
+    - Wrapped `UnitCard` items in `SubjectScreen` `SliverList.separated` inside `RepaintBoundary` and configured `cacheExtent: 450.0` on `CustomScrollView`, eliminating frame drops when scrolling through hundreds of clinical units.
+  - **Riverpod State Subscription Granularity:**
+    - Refined Riverpod selector in `FocusTimerAnalyticsPage` from watching entire `appStateProvider` to `appStateProvider.select((s) => s.valueOrNull?.dayStartHour ?? 5)`, preventing unnecessary whole-screen rebuilds on unrelated app state mutations.
+  - **ApplePressable Render Object Optimization:**
+    - Bypassed `AnimatedOpacity` in `ApplePressable` whenever `pressedOpacity == 1.0` (default throughout the app), eliminating an unneeded `RenderAnimatedOpacity` render object and compositing layer from buttons and cards across the entire application.
+  - **Nori Mascot Animation Compositing:**
+    - Wrapped `NoriCharacter`, `NoriBlobCharacter`, and `NoriMochiCharacter` continuous breathing loops, tail swishes, and facial blinks in dedicated `RepaintBoundary` wrappers, isolating 60-120 FPS mascot animations from parent home/plan card trees.
+- **Verification:**
+  - Static analysis (`flutter analyze --no-fatal-infos lib/`) passed with **0 errors and 0 warnings**.
+  - All 44 test suites passed 100% (**264/264 tests passed**).
+- **Build Status:** Pending APK Build
+
+---
+
 ### [CKPT-029] Full Feature-by-Feature Test Suite Audit, Regression Resolution & Codebase Solidification
 - **Timestamp:** 2026-10-22 19:10 UTC
 - **Category:** Code Quality / Test Suite Hardening / Performance Optimization / Static Analysis

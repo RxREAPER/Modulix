@@ -101,14 +101,16 @@ class _SketchHatchIndicatorState extends State<SketchHatchIndicator>
         final paintWidth = math.max(0.0, currentRect.right + 20);
         final paintHeight = math.max(0.0, currentRect.bottom + 20);
 
-        return CustomPaint(
-          size: Size(paintWidth, paintHeight),
-          painter: _ModernPillIndicatorPainter(
-            rect: currentRect,
-            color: effectiveColor,
-            borderRadius: widget.borderRadius,
+        return RepaintBoundary(
+          child: CustomPaint(
+            size: Size(paintWidth, paintHeight),
+            painter: _ModernPillIndicatorPainter(
+              rect: currentRect,
+              color: effectiveColor,
+              borderRadius: widget.borderRadius,
+            ),
+            child: child,
           ),
-          child: child,
         );
       },
       child: widget.child,

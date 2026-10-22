@@ -971,13 +971,15 @@ class NoriBlobCharacterState extends State<NoriBlobCharacter>
                 behavior: HitTestBehavior.opaque,
                 child: AnimatedBuilder(
                   animation: Listenable.merge([_breatheController]),
-                  builder: (_, __) => CustomPaint(
-                    size: Size(_size, _size),
-                    painter: NoriBlobPainter(
-                      config: _currentConfig,
-                      breatheT: breatheT,
-                      darkModeOutline: isDark,
-                      shakeDx: shakeDx,
+                  builder: (_, __) => RepaintBoundary(
+                    child: CustomPaint(
+                      size: Size(_size, _size),
+                      painter: NoriBlobPainter(
+                        config: _currentConfig,
+                        breatheT: breatheT,
+                        darkModeOutline: isDark,
+                        shakeDx: shakeDx,
+                      ),
                     ),
                   ),
                 ),

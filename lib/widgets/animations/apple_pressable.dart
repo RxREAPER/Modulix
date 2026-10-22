@@ -99,11 +99,13 @@ class _ApplePressableState extends State<ApplePressable> {
         scale: _isPressed ? widget.pressedScale : 1.0,
         duration: Duration(milliseconds: _isPressed ? 70 : 180),
         curve: _isPressed ? Curves.easeOutCubic : Sprung.underDamped,
-        child: AnimatedOpacity(
-          opacity: _isPressed ? widget.pressedOpacity : 1.0,
-          duration: Duration(milliseconds: _isPressed ? 70 : 180),
-          child: widget.child,
-        ),
+        child: widget.pressedOpacity < 1.0
+            ? AnimatedOpacity(
+                opacity: _isPressed ? widget.pressedOpacity : 1.0,
+                duration: Duration(milliseconds: _isPressed ? 70 : 180),
+                child: widget.child,
+              )
+            : widget.child,
       ),
     );
   }

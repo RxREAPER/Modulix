@@ -223,12 +223,13 @@ class _LovableNavBarState extends State<LovableNavBar>
           ),
         );
       },
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(horizontalMargin, 0, horizontalMargin, 10),
-          child: Container(
-            height: dockHeight,
+      child: RepaintBoundary(
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(horizontalMargin, 0, horizontalMargin, 10),
+            child: Container(
+              height: dockHeight,
             decoration: BoxDecoration(
               color: isDark
                   ? const Color(0xFF1E1F24)
@@ -386,8 +387,9 @@ class _LovableNavBarState extends State<LovableNavBar>
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 /// Sleek modern tab item: Minimalist default (icon only), text visible on select
@@ -499,26 +501,28 @@ class _ModernFocusItem extends StatelessWidget {
             alignment: Alignment.center,
             children: [
               if (isSessionActive)
-                AnimatedBuilder(
-                  animation: haloAnimation,
-                  builder: (context, child) {
-                    final scale = 1.0 + (haloAnimation.value * 0.28);
-                    final opacity = (1.0 - haloAnimation.value) * 0.40;
-                    return Transform.scale(
-                      scale: scale,
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: activeColor.withValues(alpha: opacity),
-                            width: 1.8,
+                RepaintBoundary(
+                  child: AnimatedBuilder(
+                    animation: haloAnimation,
+                    builder: (context, child) {
+                      final scale = 1.0 + (haloAnimation.value * 0.28);
+                      final opacity = (1.0 - haloAnimation.value) * 0.40;
+                      return Transform.scale(
+                        scale: scale,
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: activeColor.withValues(alpha: opacity),
+                              width: 1.8,
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               Column(
                 mainAxisSize: MainAxisSize.min,

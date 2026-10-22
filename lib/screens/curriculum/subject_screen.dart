@@ -520,6 +520,7 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
             ),
             body: CustomScrollView(
               controller: _scrollController,
+              cacheExtent: 450.0,
               physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
               slivers: [
                 SliverPadding(
@@ -607,16 +608,18 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                       final chapter = subject.chapters[index];
                       return KeyedSubtree(
                         key: _unitKeys[index],
-                        child: UnitCard(
-                          subject: subject,
-                          chapter: chapter,
-                          unitIndex: index,
-                          completedVideos: completedVideos,
-                          completedQBanks: completedQBanks,
-                          completedNotes: completedNotes,
-                          onTap: () {
-                            context.push('/curriculum/${subject.id}/$index');
-                          },
+                        child: RepaintBoundary(
+                          child: UnitCard(
+                            subject: subject,
+                            chapter: chapter,
+                            unitIndex: index,
+                            completedVideos: completedVideos,
+                            completedQBanks: completedQBanks,
+                            completedNotes: completedNotes,
+                            onTap: () {
+                              context.push('/curriculum/${subject.id}/$index');
+                            },
+                          ),
                         ),
                       );
                     },
