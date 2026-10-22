@@ -57,7 +57,7 @@ void main() {
 
     test('Target configurations match user specifications (single & multi-targets without nested parent-child overlap)', () {
       // Step 1: Desk Clock
-      expect(kTourSteps[0].targetIds, [TourTargetId.noriHeroCard]);
+      expect(kTourSteps[0].targetIds, [TourTargetId.studyDeskClockTarget]);
 
       // Step 2: Today's Tasks
       expect(kTourSteps[1].targetIds, [TourTargetId.todaysTasksTarget]);
@@ -140,7 +140,7 @@ void main() {
       }
     }
 
-    test('Top target (e.g. Nori Desk Clock at y: 70..230) places card strictly below', () {
+    test('Top target (e.g. Study Desk Clock at y: 70..230) places card strictly below', () {
       const target = Rect.fromLTWH(20, 70, 360, 160);
       const screenSize = Size(400, 850);
 
@@ -261,7 +261,7 @@ void main() {
       ];
 
       final stepTargetGroups = [
-        [const Rect.fromLTWH(20, 75, 360, 150)], // Step 1: Nori Mascot
+        [const Rect.fromLTWH(20, 75, 360, 150)], // Step 1: Study Desk Clock
         [const Rect.fromLTWH(16, 360, 360, 140)], // Step 2: Today's Tasks
         [const Rect.fromLTWH(16, 80, 360, 150)], // Step 3: Module Tasks Banner
         [

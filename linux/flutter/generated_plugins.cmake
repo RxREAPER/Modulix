@@ -6,7 +6,6 @@ list(APPEND FLUTTER_PLUGIN_LIST
   app_links_linux
   audioplayers_linux
   flutter_timezone
-  rive_native
   url_launcher_linux
 )
 

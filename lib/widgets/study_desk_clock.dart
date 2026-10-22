@@ -22,7 +22,7 @@ class StudyDeskClock extends StatelessWidget {
         : 'assets/illustrations/ornate_sketch_frame_light.png';
 
     return SizedBox(
-      key: TourTargetRegistry.keyFor(TourTargetId.noriHeroCard),
+      key: TourTargetRegistry.keyFor(TourTargetId.studyDeskClockTarget),
       width: double.infinity,
       child: AspectRatio(
         aspectRatio: 2617 / 1486, // Proportional to hand-drawn ornate frame (~1.76:1)

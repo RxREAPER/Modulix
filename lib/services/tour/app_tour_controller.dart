@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 /// Target identifiers for spotlight cutouts across the app
 enum TourTargetId {
   // Step 1: Hero clock desk
-  noriHeroCard,
+  studyDeskClockTarget,
 
   // Step 2: Today's tasks (primary card or setup button)
   todaysTasksTarget,
@@ -78,7 +78,7 @@ const List<TourStepData> kTourSteps = [
         'Minimalist digital desk clock keeping you grounded in real-time study hours with zero distractions.',
     bulletPoints: [],
     route: '/',
-    targetIds: [TourTargetId.noriHeroCard],
+    targetIds: [TourTargetId.studyDeskClockTarget],
     preferTopCard: false,
   ),
 
@@ -245,9 +245,6 @@ class TourTargetRegistry {
 /// Riverpod State Notifier for App Tour
 class AppTourNotifier extends StateNotifier<TourState> {
   AppTourNotifier() : super(const TourState());
-
-  /// Compatibility stub
-  static VoidCallback? onPlayNoriAnimation;
 
   void startTour(BuildContext context) {
     state = const TourState(isActive: true, currentStepIndex: 0);

@@ -85,8 +85,6 @@ class SyncService {
         final themeStr = profileRes['theme_pref'] as String? ?? 'system';
         final activeEd = profileRes['active_edition'] as String? ?? 'marrow_8';
         final startHour = profileRes['day_start_hour'] as int? ?? 5;
-        final noriProp = profileRes['nori_prop_id'] as String? ?? 'stethoscope';
-        final noriCount = profileRes['nori_interactions'] as int? ?? 0;
 
         ThemePref pref = ThemePref.system;
         if (themeStr == 'light') pref = ThemePref.light;
@@ -101,10 +99,6 @@ class SyncService {
           themePref: pref,
           activeEdition: activeEd,
           dayStartHour: startHour,
-          noriPropId: noriProp,
-          noriInteractions: noriCount > localAppState.noriInteractions
-              ? noriCount
-              : localAppState.noriInteractions,
         );
 
         await StorageService.instance.save(mergedAppState);
@@ -120,8 +114,6 @@ class SyncService {
           'theme_pref': localAppState.themePref.name,
           'active_edition': localAppState.activeEdition,
           'day_start_hour': localAppState.dayStartHour,
-          'nori_prop_id': localAppState.noriPropId,
-          'nori_interactions': localAppState.noriInteractions,
           'updated_at': DateTime.now().toUtc().toIso8601String(),
         });
       }

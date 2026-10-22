@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rive/rive.dart' as rive;
 import 'services/storage_service.dart';
 import 'services/notification_service.dart';
 import 'services/database_service.dart';
@@ -31,9 +30,8 @@ void main() async {
     return true; // handled
   };
 
-  // Initialize critical local storage & native renderers in parallel
+  // Initialize critical local storage & database in parallel
   await Future.wait([
-    rive.RiveNative.init(),
     StorageService.init(),
     DatabaseService.instance.database,
   ]);

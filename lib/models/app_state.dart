@@ -179,8 +179,6 @@ class AppState {
   final bool moduleTasksReminderEnabled;
   final String moduleTasksReminderTime; // e.g. '08:00'
   final bool focusTimerAlertsEnabled;
-  final String noriPropId; // 'none' | 'stethoscope' | 'glasses' | 'coffee' | 'headphones' | 'nightcap' | 'crown'
-  final int noriInteractions; // total times petted/tapped
   final Map<String, EditionState> editions; // keyed by edition id
 
   const AppState({
@@ -200,8 +198,6 @@ class AppState {
     this.moduleTasksReminderEnabled = true,
     this.moduleTasksReminderTime = '08:00',
     this.focusTimerAlertsEnabled = true,
-    this.noriPropId = 'stethoscope',
-    this.noriInteractions = 0,
     this.editions = const {},
   });
 
@@ -225,8 +221,6 @@ class AppState {
     bool? moduleTasksReminderEnabled,
     String? moduleTasksReminderTime,
     bool? focusTimerAlertsEnabled,
-    String? noriPropId,
-    int? noriInteractions,
     Map<String, EditionState>? editions,
   }) {
     return AppState(
@@ -249,8 +243,6 @@ class AppState {
           moduleTasksReminderTime ?? this.moduleTasksReminderTime,
       focusTimerAlertsEnabled:
           focusTimerAlertsEnabled ?? this.focusTimerAlertsEnabled,
-      noriPropId: noriPropId ?? this.noriPropId,
-      noriInteractions: noriInteractions ?? this.noriInteractions,
       editions: editions ?? this.editions,
     );
   }
@@ -281,8 +273,6 @@ class AppState {
         'moduleTasksReminderEnabled': moduleTasksReminderEnabled,
         'moduleTasksReminderTime': moduleTasksReminderTime,
         'focusTimerAlertsEnabled': focusTimerAlertsEnabled,
-        'noriPropId': noriPropId,
-        'noriInteractions': noriInteractions,
         'editions': editions.map((k, v) => MapEntry(k, v.toJson())),
       };
 
@@ -309,8 +299,6 @@ class AppState {
             json['moduleTasksReminderTime'] as String? ?? '08:00',
         focusTimerAlertsEnabled:
             json['focusTimerAlertsEnabled'] as bool? ?? true,
-        noriPropId: json['noriPropId'] as String? ?? 'stethoscope',
-        noriInteractions: json['noriInteractions'] as int? ?? 0,
         editions: (json['editions'] as Map?)?.map(
               (k, v) => MapEntry(
                   k as String,

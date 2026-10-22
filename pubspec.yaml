@@ -35,16 +35,12 @@ dependencies:
   # SVG
   flutter_svg: ^2.0.10+1
 
-  # Animations
-  lottie: ^3.1.2
-
   # Utilities
   intl: ^0.19.0
   collection: ^1.18.0
   # UI Component Catalog (Storybook)
   widgetbook: ^3.8.0
   audioplayers: ^6.8.1
-  rive: ^0.14.11
   # Notifications
   flutter_local_notifications: ^17.2.2
   timezone: ^0.9.4
@@ -78,56 +74,6 @@ flutter:
     - assets/audio/
     - assets/images/
     - assets/avatars/
-    - assets/rive/
-    - assets/sprites/73wgl0lx/sprites/
-    - assets/sprites/nori/bored/
-    - assets/sprites/nori/celebrating/
-    - assets/sprites/nori/celebrating_alt/
-    - assets/sprites/nori/eating/
-    - assets/sprites/nori/excited/
-    - assets/sprites/nori/love/
-    - assets/sprites/nori/playful/
-    - assets/sprites/nori/rolling_sleep/
-    - assets/sprites/nori/running/
-    - assets/sprites/nori/sad/
-    - assets/sprites/nori/sleepy/
-    - assets/sprites/nori/studying/
-    - assets/sprites/nori/tired/
-    - assets/sprites/nori/walking/
-    - assets/sprites/nori/waving/
-    - assets/sprites/nori/welcoming/
-    - assets/sprites/nori/yawning_loaf/
-    - assets/sprites/nori/transitions/bored_to_study/
-    - assets/sprites/nori/transitions/bored_to_welcome/
-    - assets/sprites/nori/transitions/celebrate_to_run/
-    - assets/sprites/nori/transitions/celebrate_to_walk/
-    - assets/sprites/nori/transitions/eat_to_play/
-    - assets/sprites/nori/transitions/eat_to_sleep/
-    - assets/sprites/nori/transitions/excited_to_love/
-    - assets/sprites/nori/transitions/excited_to_play/
-    - assets/sprites/nori/transitions/love_to_excited/
-    - assets/sprites/nori/transitions/love_to_play/
-    - assets/sprites/nori/transitions/play_to_eat/
-    - assets/sprites/nori/transitions/play_to_excited/
-    - assets/sprites/nori/transitions/play_to_love/
-    - assets/sprites/nori/transitions/play_to_sleep/
-    - assets/sprites/nori/transitions/run_to_celebrate/
-    - assets/sprites/nori/transitions/run_to_walk/
-    - assets/sprites/nori/transitions/sleep_to_eat/
-    - assets/sprites/nori/transitions/sleep_to_play/
-    - assets/sprites/nori/transitions/study_to_bored/
-    - assets/sprites/nori/transitions/study_to_welcome/
-    - assets/sprites/nori/transitions/walk_to_celebrate/
-    - assets/sprites/nori/transitions/walk_to_run/
-    - assets/sprites/nori/transitions/welcome_to_bored/
-    - assets/sprites/nori/transitions/welcome_to_study/
-    - assets/sprites/nori_v2/
-    - assets/sprites/nori_v2/study/
-    - assets/sprites/nori_v2/sleep/
-    - assets/sprites/nori_v2/walk/
-    - assets/sprites/nori_v2/love/
-    - assets/sprites/nori_v2/idle/
-    - assets/lottie/
     - assets/gifs/
     - assets/images/background_thumbs/
     - assets/fonts/

@@ -126,13 +126,6 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
   Future<void> setFocusTimerAlerts(bool enabled) =>
       _update((s) => s.copyWith(focusTimerAlertsEnabled: enabled));
 
-  // Nori Props & Interactions
-  Future<void> setNoriProp(String propId) =>
-      _update((s) => s.copyWith(noriPropId: propId));
-
-  Future<void> incrementNoriInteractions() =>
-      _update((s) => s.copyWith(noriInteractions: s.noriInteractions + 1));
-
   // Reset all progress
   Future<void> resetAllProgress() async {
     final current = state.value ?? AppState.empty;

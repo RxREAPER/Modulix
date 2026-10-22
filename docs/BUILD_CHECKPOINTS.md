@@ -8,6 +8,39 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-031] Complete Purge of Nori Mascot Subsystem, Unused Dependencies, Assets & Engine Cleanup
+- **Timestamp:** 2026-10-22 19:46 UTC
+- **Category:** Codebase Cleanup / Dependency Pruning / Performance & Binary Size Optimization
+- **Files Modified / Deleted:**
+  - `lib/models/app_state.dart` (removed noriPropId and noriInteractions)
+  - `lib/providers/app_state_provider.dart` (removed setNoriProp and incrementNoriInteractions)
+  - `lib/services/sync_service.dart` (removed Supabase profile nori sync mappings)
+  - `lib/services/tour/app_tour_controller.dart` (migrated tour stop 1 to studyDeskClockTarget, removed legacy onPlayNoriAnimation)
+  - `lib/widgets/study_desk_clock.dart` (updated TourTargetRegistry key to studyDeskClockTarget)
+  - `lib/main.dart` (removed rive import and native initialization)
+  - `pubspec.yaml` (pruned rive and lottie dependencies and all nori sprite/rive asset paths)
+  - `test/app_tour_test.dart` (updated tour step 1 assertions to studyDeskClockTarget)
+  - `lib/widgets/nori/*` (15 files deleted)
+  - `lib/widgets/nori_companion.dart` (deleted)
+  - `scripts/extract_nori_sprites.py` (deleted)
+  - `assets/sprites/` (deleted)
+  - `assets/rive/` (deleted)
+  - `assets/animations/` (deleted)
+  - `assets/frames/` (deleted)
+  - `assets/images/nori_desk_bg.jpg` (deleted)
+- **Summary:**
+  - **Complete Feature Purge:** Permanently removed the legacy Nori mascot from the codebase per user instruction.
+  - **Zero Remaining References:** Audited all Dart source and test files to guarantee 0 references to nori remain across `lib/` and `test/`.
+  - **Unused Dependency Removal:** Uninstalled unused dependencies `rive`, `rive_native`, and `lottie` from `pubspec.yaml`, lightening startup initialization by eliminating `rive.RiveNative.init()`.
+  - **Asset & Binary Footprint Reduction:** Deleted multiple megabytes of unused sprite sheets, Rive state machines, and frame animations from disk and `pubspec.yaml`.
+  - **Tour Harmonization:** Seamlessly updated the interactive feature tour step 1 to target `TourTargetId.studyDeskClockTarget` (`StudyDeskClock`) with complete non-overlapping coordinate verification.
+- **Verification:**
+  - `flutter analyze --no-fatal-infos lib/` passed with **0 errors and 0 warnings**.
+  - All 44 test suites passed with 100% pass rate (**264/264 tests passed**).
+- **Build Status:** Pending APK Build
+
+---
+
 ### [CKPT-030] High-Refresh 120Hz Animation, Layer Compositing & Render Tree Optimizations
 - **Timestamp:** 2026-10-22 19:30 UTC
 - **Category:** Performance Optimization / 120Hz Rendering / Layer Compositing / Architecture Polish
