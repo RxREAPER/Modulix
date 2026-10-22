@@ -9,7 +9,7 @@ import '../models/time_log.dart';
 
 const String _kDbName = 'modulix.db';
 const String _kLegacyDbName = 'flowmd.db';
-const int _kDbVersion = 1;
+const int _kDbVersion = 2;
 const String _kLegacyTimeLogsKey = 'flowmd_time_logs_v1';
 const String _kMetaLegacyMigrated = 'migrated_legacy_time_logs';
 
@@ -62,6 +62,15 @@ class DatabaseService {
     final db = await openDatabase(
       dbPath,
       version: _kDbVersion,
+      onConfigure: (db) async {
+        try {
+          await db.execute('PRAGMA foreign_keys = ON;');
+          await db.execute('PRAGMA journal_mode = WAL;');
+          await db.execute('PRAGMA synchronous = NORMAL;');
+          await db.execute('PRAGMA temp_store = MEMORY;');
+          await db.execute('PRAGMA cache_size = -64000;');
+        } catch (_) {}
+      },
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE time_logs (
@@ -77,9 +86,11 @@ class DatabaseService {
         ''');
 
         await db.execute(
-            'CREATE INDEX idx_time_logs_subject ON time_logs(subject_id)');
+            'CREATE INDEX IF NOT EXISTS idx_time_logs_subject ON time_logs(subject_id)');
         await db.execute(
-            'CREATE INDEX idx_time_logs_timestamp ON time_logs(timestamp)');
+            'CREATE INDEX IF NOT EXISTS idx_time_logs_timestamp ON time_logs(timestamp)');
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_time_logs_subject_timestamp ON time_logs(subject_id, timestamp ASC)');
 
         await db.execute('''
           CREATE TABLE metadata (
@@ -87,6 +98,12 @@ class DatabaseService {
             value TEXT NOT NULL
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute(
+              'CREATE INDEX IF NOT EXISTS idx_time_logs_subject_timestamp ON time_logs(subject_id, timestamp ASC)');
+        }
       },
     );
 
@@ -175,6 +192,21 @@ class DatabaseService {
     );
   }
 
+  /// High-performance bulk insert using a single SQLite batch transaction
+  Future<void> insertTimeLogsBatch(List<TimeLog> logs) async {
+    if (logs.isEmpty) return;
+    final db = await database;
+    final batch = db.batch();
+    for (final log in logs) {
+      batch.insert(
+        'time_logs',
+        _logToMap(log),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
   Future<List<TimeLog>> getAllTimeLogs() async {
     final db = await database;
     final results = await db.query(
@@ -229,5 +261,13 @@ class DatabaseService {
       }
     } catch (_) {}
     return 0;
+  }
+
+  /// Closes database connection cleanly (useful for tests and teardown)
+  Future<void> close() async {
+    if (_db != null && _db!.isOpen) {
+      await _db!.close();
+      _db = null;
+    }
   }
 }

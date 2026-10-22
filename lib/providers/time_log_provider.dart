@@ -1,14 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/time_log.dart';
 import '../services/database_service.dart';
+import '../services/sync_service.dart';
 
 final timeLogsProvider =
     StateNotifierProvider<TimeLogsNotifier, List<TimeLog>>((ref) {
-  return TimeLogsNotifier();
+  return TimeLogsNotifier(ref);
 });
 
 class TimeLogsNotifier extends StateNotifier<List<TimeLog>> {
-  TimeLogsNotifier() : super([]) {
+  final Ref? _ref;
+
+  TimeLogsNotifier([this._ref]) : super([]) {
     _load();
   }
 
@@ -24,6 +27,9 @@ class TimeLogsNotifier extends StateNotifier<List<TimeLog>> {
     state = updated;
     try {
       await DatabaseService.instance.insertTimeLog(entry);
+      if (_ref != null) {
+        SyncService.instance.schedulePush(_ref);
+      }
     } catch (_) {}
   }
 
@@ -34,6 +40,9 @@ class TimeLogsNotifier extends StateNotifier<List<TimeLog>> {
   Future<void> clearAll() async {
     state = [];
     await DatabaseService.instance.clearAllTimeLogs();
+    if (_ref != null) {
+      SyncService.instance.schedulePush(_ref);
+    }
   }
 
   List<TimeLog> forSubject(String subjectId) {

@@ -224,11 +224,12 @@ class SyncService {
           .select()
           .eq('user_id', userId);
 
+      final List<TimeLog> downloadedLogs = [];
       for (final row in (remoteLogsRes as List)) {
         final id = row['id'] as String;
         if (!localLogMap.containsKey(id)) {
           // Download remote session that occurred on another device
-          final log = TimeLog(
+          downloadedLogs.add(TimeLog(
             id: id,
             subjectId: row['subject_id'] as String,
             topicId: row['topic_id'] as String?,
@@ -237,9 +238,11 @@ class SyncService {
             chapterName: row['chapter_name'] as String,
             durationSecs: row['duration_secs'] as int,
             timestamp: DateTime.fromMillisecondsSinceEpoch(row['timestamp'] as int),
-          );
-          await DatabaseService.instance.insertTimeLog(log);
+          ));
         }
+      }
+      if (downloadedLogs.isNotEmpty) {
+        await DatabaseService.instance.insertTimeLogsBatch(downloadedLogs);
       }
 
       // Upload any local sessions not yet in the cloud
@@ -260,7 +263,13 @@ class SyncService {
           'created_at': l.timestamp.toUtc().toIso8601String(),
         }).toList();
 
-        await client.from('time_logs').upsert(payload);
+        // Chunk upserts in batches of 100 to avoid payload size and connection limits
+        const chunkSize = 100;
+        for (var i = 0; i < payload.length; i += chunkSize) {
+          final end = (i + chunkSize < payload.length) ? i + chunkSize : payload.length;
+          final chunk = payload.sublist(i, end);
+          await client.from('time_logs').upsert(chunk);
+        }
       }
       await ref.read(timeLogsProvider.notifier).reloadFromDatabase();
 

@@ -14,8 +14,6 @@ create table if not exists public.profiles (
   theme_pref text not null default 'system',
   active_edition text not null default 'marrow_8',
   day_start_hour integer not null default 5,
-  nori_prop_id text not null default 'stethoscope',
-  nori_interactions integer not null default 0,
   onboarding_done boolean not null default false,
   created_at timestamptz not null default timezone('utc'::text, now()),
   updated_at timestamptz not null default timezone('utc'::text, now())
@@ -52,6 +50,7 @@ create table if not exists public.time_logs (
 
 -- Index for querying user time logs ordered by timestamp
 create index if not exists idx_time_logs_user_timestamp on public.time_logs (user_id, timestamp desc);
+create index if not exists idx_time_logs_user_subject_time on public.time_logs (user_id, subject_id, timestamp desc);
 
 -- 4. DAILY TASKS TABLE (Stores desk tasks, completed status, and history)
 create table if not exists public.daily_tasks (
@@ -74,46 +73,76 @@ alter table public.daily_tasks enable row level security;
 
 -- Profiles: Users can only read and write their own profile
 create policy "Users can view own profile" on public.profiles
-  for select using ((select auth.uid()) = id);
+  for select
+  to authenticated
+  using ((select auth.uid()) = id);
 
 create policy "Users can insert own profile" on public.profiles
-  for insert with check ((select auth.uid()) = id);
+  for insert
+  to authenticated
+  with check ((select auth.uid()) = id);
 
 create policy "Users can update own profile" on public.profiles
-  for update using ((select auth.uid()) = id);
+  for update
+  to authenticated
+  using ((select auth.uid()) = id)
+  with check ((select auth.uid()) = id);
 
 -- Study Editions: Users can only read and write their own editions
 create policy "Users can view own study editions" on public.study_editions
-  for select using ((select auth.uid()) = user_id);
+  for select
+  to authenticated
+  using ((select auth.uid()) = user_id);
 
 create policy "Users can insert own study editions" on public.study_editions
-  for insert with check ((select auth.uid()) = user_id);
+  for insert
+  to authenticated
+  with check ((select auth.uid()) = user_id);
 
 create policy "Users can update own study editions" on public.study_editions
-  for update using ((select auth.uid()) = user_id);
+  for update
+  to authenticated
+  using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
 
 -- Time Logs: Users can only view, insert, and delete their own logs
 create policy "Users can view own time logs" on public.time_logs
-  for select using ((select auth.uid()) = user_id);
+  for select
+  to authenticated
+  using ((select auth.uid()) = user_id);
 
 create policy "Users can insert own time logs" on public.time_logs
-  for insert with check ((select auth.uid()) = user_id);
+  for insert
+  to authenticated
+  with check ((select auth.uid()) = user_id);
 
 create policy "Users can update own time logs" on public.time_logs
-  for update using ((select auth.uid()) = user_id);
+  for update
+  to authenticated
+  using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
 
 create policy "Users can delete own time logs" on public.time_logs
-  for delete using ((select auth.uid()) = user_id);
+  for delete
+  to authenticated
+  using ((select auth.uid()) = user_id);
 
 -- Daily Tasks: Users can only view, insert, and update their own daily tasks
 create policy "Users can view own daily tasks" on public.daily_tasks
-  for select using ((select auth.uid()) = user_id);
+  for select
+  to authenticated
+  using ((select auth.uid()) = user_id);
 
 create policy "Users can insert own daily tasks" on public.daily_tasks
-  for insert with check ((select auth.uid()) = user_id);
+  for insert
+  to authenticated
+  with check ((select auth.uid()) = user_id);
 
 create policy "Users can update own daily tasks" on public.daily_tasks
-  for update using ((select auth.uid()) = user_id);
+  for update
+  to authenticated
+  using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- AUTO-CREATE PROFILE TRIGGER

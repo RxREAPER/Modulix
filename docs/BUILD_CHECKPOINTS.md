@@ -8,6 +8,39 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-032] Backend Optimization & Cleanup: Cloud RLS Hardening, SQLite WAL Mode, Batch Transactions & Key Synchronization
+- **Timestamp:** 2026-10-22 20:05 UTC
+- **Category:** Backend Architecture / Security Hardening / Database Performance / Cloud Sync
+- **Files Modified / Added:**
+  - `lib/services/database_service.dart` (SQLite engine PRAGMAs: WAL mode, synchronous=NORMAL, 64MB cache; composite index on subject_id+timestamp; schema v2 onUpgrade; insertTimeLogsBatch; close)
+  - `lib/services/sync_service.dart` (batch insert for remote time log downloads; 100-chunked upsert for cloud uploads)
+  - `lib/services/backup_service.dart` (batch insert on restore; synchronized primary modulix_* and legacy fallback daily tasks keys)
+  - `lib/providers/time_log_provider.dart` (injected Ref and scheduled cloud push on logTime and clearAll)
+  - `supabase/migrations/001_initial_schema.sql` (hardened RLS policies with TO authenticated and WITH CHECK; added composite index; removed legacy nori columns)
+  - `supabase/migrations/002_cleanup_nori_and_optimize_rls.sql` (applied to remote Supabase database: nori columns nullified/unconstrained, all 13 RLS policies hardened with TO authenticated and WITH CHECK, idx_time_logs_user_subject_time index created)
+  - `test/database_service_test.dart` (added unit test for batch insertion and composite index retrieval)
+- **Summary:**
+  - **Cloud RLS & Schema Hardening:**
+    - Upgraded all 13 Supabase Row Level Security policies across `profiles`, `study_editions`, `time_logs`, and `daily_tasks` from generic `{public}` roles to `TO authenticated`.
+    - Added strict `WITH CHECK` clauses on all `UPDATE` policies matching `USING ((select auth.uid()) = id / user_id)` to eliminate IDOR and row-reassignment vulnerabilities.
+    - Dropped constraints and nullified legacy Nori mascot columns on remote Supabase `profiles` table.
+    - Created `idx_time_logs_user_subject_time` composite index on Supabase for fast multi-device subject analytics.
+  - **Local SQLite Engine Performance:**
+    - Configured high-performance engine PRAGMAs in `DatabaseService`: `PRAGMA journal_mode = WAL` (enables concurrent reads while writing), `PRAGMA synchronous = NORMAL`, `PRAGMA temp_store = MEMORY`, `PRAGMA cache_size = -64000` (64MB RAM page cache).
+    - Bumped schema version to 2 with smooth `onUpgrade` migration adding composite index `idx_time_logs_subject_timestamp`.
+    - Added `insertTimeLogsBatch(List<TimeLog> logs)` using SQLite `db.batch()`, replacing O(N) sequential single-row disk transactions with a single O(1) atomic commit.
+  - **Cloud Sync & Backup Pipeline:**
+    - Upgraded `SyncService` to download remote focus sessions via `insertTimeLogsBatch` and upload local sessions in chunks of 100.
+    - Fixed `BackupService` daily task key synchronization so restored tasks populate into both `modulix_*` primary keys and legacy keys.
+    - Connected `TimeLogsNotifier` with `SyncService.instance.schedulePush(ref)` for immediate cross-device sync on timer completion.
+- **Verification:**
+  - `flutter analyze --no-fatal-infos lib/` passed with **0 errors and 0 warnings**.
+  - All 44 test suites passed with 100% pass rate (**265 / 265 tests passed**).
+  - Supabase database advisors verified: **0 security lints, 0 performance lints**.
+- **Build Status:** Pending APK Build
+
+---
+
 ### [CKPT-031] Complete Purge of Nori Mascot Subsystem, Unused Dependencies, Assets & Engine Cleanup
 - **Timestamp:** 2026-10-22 19:46 UTC
 - **Category:** Codebase Cleanup / Dependency Pruning / Performance & Binary Size Optimization

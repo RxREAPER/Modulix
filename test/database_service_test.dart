@@ -62,5 +62,34 @@ void main() {
       final emptyList = await dbService.getAllTimeLogs();
       expect(emptyList.isEmpty, true);
     });
+
+    test('Can batch insert multiple TimeLogs efficiently', () async {
+      final dbService = DatabaseService.instance;
+      await dbService.clearAllTimeLogs();
+
+      final batchLogs = List.generate(
+        25,
+        (i) => TimeLog(
+          id: 'batch_log_$i',
+          subjectId: i.isEven ? 'pathology' : 'pharmacology',
+          topicType: 'qbank',
+          topicTitle: 'Question Set #$i',
+          durationSecs: 600 + i * 10,
+          timestamp: DateTime(2026, 10, 15, 8, i),
+        ),
+      );
+
+      await dbService.insertTimeLogsBatch(batchLogs);
+
+      final retrieved = await dbService.getAllTimeLogs();
+      expect(retrieved.length, 25);
+
+      final pathologyLogs = await dbService.getTimeLogsForSubject('pathology');
+      expect(pathologyLogs.length, 13);
+      expect(pathologyLogs.first.subjectId, 'pathology');
+
+      final pharmaLogs = await dbService.getTimeLogsForSubject('pharmacology');
+      expect(pharmaLogs.length, 12);
+    });
   });
 }

@@ -25,7 +25,8 @@ class BackupService {
     final timeLogs = await DatabaseService.instance.getAllTimeLogs();
     final dailyState = ref.read(dailyTasksProvider);
     final prefs = await SharedPreferences.getInstance();
-    final lastActiveDate = prefs.getString('flowmd_tasks_last_date_v1');
+    final lastActiveDate = prefs.getString('modulix_tasks_last_date_v1') ??
+        prefs.getString('flowmd_tasks_last_date_v1');
 
     final payload = {
       'schema_version': currentSchemaVersion,
@@ -98,10 +99,14 @@ class BackupService {
       final timeLogsRaw = decoded['time_logs'] as List<dynamic>?;
       if (timeLogsRaw != null) {
         await DatabaseService.instance.clearAllTimeLogs();
+        final List<TimeLog> restoredLogs = [];
         for (final item in timeLogsRaw) {
           if (item is Map<String, dynamic>) {
-            await DatabaseService.instance.insertTimeLog(TimeLog.fromJson(item));
+            restoredLogs.add(TimeLog.fromJson(item));
           }
+        }
+        if (restoredLogs.isNotEmpty) {
+          await DatabaseService.instance.insertTimeLogsBatch(restoredLogs);
         }
       }
 
@@ -118,9 +123,21 @@ class BackupService {
             dailyTasksMap['last_date'] as String? ??
             MetricsService.todayKey(restoredAppState.dayStartHour);
 
-        await prefs.setString('flowmd_daily_tasks_v2', jsonEncode(tasksList));
-        await prefs.setString('flowmd_completed_tasks_v1', jsonEncode(completedIds));
-        await prefs.setString('flowmd_tasks_history_v1', jsonEncode(dateHist));
+        final tasksJson = jsonEncode(tasksList);
+        final completedJson = jsonEncode(completedIds);
+        final dateHistJson = jsonEncode(dateHist);
+
+        // Synchronize both Modulix primary keys and legacy fallback keys
+        await prefs.setString('modulix_daily_tasks_v1', tasksJson);
+        await prefs.setString('flowmd_daily_tasks_v2', tasksJson);
+
+        await prefs.setString('modulix_completed_tasks_v1', completedJson);
+        await prefs.setString('flowmd_completed_tasks_v1', completedJson);
+
+        await prefs.setString('modulix_tasks_history_v1', dateHistJson);
+        await prefs.setString('flowmd_tasks_history_v1', dateHistJson);
+
+        await prefs.setString('modulix_tasks_last_date_v1', lastActiveDate);
         await prefs.setString('flowmd_tasks_last_date_v1', lastActiveDate);
       }
 
