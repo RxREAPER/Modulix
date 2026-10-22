@@ -37,7 +37,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Verification:**
   - `flutter analyze` on modified files: **No issues found!** (0 errors, 0 warnings, 0 lints).
   - Automated unit tests (`lovable_nav_bar_test.dart`, `tab_persistence_test.dart`): **All 5 tests passed 100%!**
-- **Build Status:** Pending APK Build (Verified via flutter analyze & unit tests)
+- **Build Status:** ✅ Included in Build v1.5.0 (Installed & Verified on OnePlus 13R ba009d81)
 
 ---
 
