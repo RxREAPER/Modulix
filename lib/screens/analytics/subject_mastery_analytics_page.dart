@@ -151,10 +151,9 @@ class _SubjectMasteryAnalyticsPageState
                     size: 88,
                     strokeWidth: 8,
                     progressColor: const Color(0xFF6366F1),
-                    percentageStyle: TextStyle(
+                    percentageStyle: AppTypography.metricValue(
                       fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      fontFamily: 'monospace',
+                      fontWeight: FontWeight.w700,
                       color: AppTheme.inkForeground,
                     ),
                   ),
@@ -165,9 +164,8 @@ class _SubjectMasteryAnalyticsPageState
                       children: [
                         Text(
                           'TOTAL CURRICULUM COVERAGE',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
+                          style: AppTypography.sectionMicroHeader(
+                            fontSize: 10.0,
                             letterSpacing: 1.0,
                             color: AppTheme.mutedText,
                           ),
@@ -175,9 +173,9 @@ class _SubjectMasteryAnalyticsPageState
                         const SizedBox(height: 4),
                         Text(
                           '$grandDone of $grandTotal Items Mastered',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w900,
+                          style: AppTypography.cardTitle(
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.w700,
                             color: AppTheme.inkForeground,
                           ),
                         ),
@@ -267,10 +265,9 @@ class _SubjectMasteryAnalyticsPageState
                               size: 44,
                               strokeWidth: 4.5,
                               progressColor: meta.accent,
-                              percentageStyle: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w900,
-                                fontFamily: 'monospace',
+                              percentageStyle: AppTypography.metricValue(
+                                fontSize: 11.0,
+                                fontWeight: FontWeight.w700,
                                 color: AppTheme.inkForeground,
                               ),
                             ),
@@ -297,9 +294,9 @@ class _SubjectMasteryAnalyticsPageState
                               children: [
                                 Text(
                                   'Curriculum',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w800,
+                                  style: AppTypography.compactAction(
+                                    fontSize: 11.0,
+                                    fontWeight: FontWeight.w600,
                                     color: meta.accent,
                                   ),
                                 ),
@@ -334,11 +331,11 @@ class _SubjectMasteryAnalyticsPageState
           children: [
             Container(width: 6, height: 6, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
             const SizedBox(width: 4),
-            Text(label, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppTheme.mutedText)),
+            Text(label, style: AppTypography.metricLabel(fontSize: 9.5, color: AppTheme.mutedText)),
           ],
         ),
         const SizedBox(height: 2),
-        Text(value, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, fontFamily: 'monospace', color: AppTheme.inkForeground)),
+        Text(value, style: AppTypography.metricValue(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppTheme.inkForeground)),
       ],
     );
   }
@@ -352,9 +349,9 @@ class _SubjectMasteryAnalyticsPageState
       ),
       child: Text(
         '$label: $value',
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w800,
+        style: AppTypography.microBadge(
+          fontSize: 9.5,
+          fontWeight: FontWeight.w700,
           color: color,
         ),
       ),

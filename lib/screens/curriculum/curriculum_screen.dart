@@ -340,7 +340,7 @@ class _CurriculumSortFilterChip extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6.5),
         decoration: isSelected
             ? BoxDecoration(
                 color: AppTheme.accentPrimary,
@@ -374,9 +374,9 @@ class _CurriculumSortFilterChip extends StatelessWidget {
               ),
         child: Text(
           label,
-          style: TextStyle(
-            fontSize: 12.5,
-            fontWeight: FontWeight.w700,
+          style: AppTypography.compactAction(
+            fontSize: 12.0,
+            fontWeight: FontWeight.w600,
             color: isSelected ? AppTheme.onAccent : AppTheme.inkForeground,
             letterSpacing: 0.1,
           ),

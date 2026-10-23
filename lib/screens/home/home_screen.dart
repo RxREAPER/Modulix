@@ -593,17 +593,17 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
                 children: [
                   Icon(
                     Icons.playlist_add_check_rounded,
-                    size: 18,
+                    size: 17,
                     color: AppTheme.paperBackground,
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 7),
                   Text(
                     "Set up today's tasks",
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
+                    style: AppTypography.buttonLabel(
+                      fontSize: 13.0,
+                      fontWeight: FontWeight.w600,
                       color: AppTheme.paperBackground,
-                      letterSpacing: 0.1,
+                      letterSpacing: 0.15,
                     ),
                   ),
                 ],

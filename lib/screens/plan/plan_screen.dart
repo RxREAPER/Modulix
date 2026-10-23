@@ -129,13 +129,16 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
               }
             },
           ),
-          title: Text(
-            'Module-Based Study Plan',
-            style: TextStyle(
-              color: AppTheme.inkForeground,
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.3,
+          title: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Module-Based Study Plan',
+              style: AppTheme.headingStyle(
+                color: AppTheme.inkForeground,
+                fontSize: 18.5,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           actions: [
@@ -161,8 +164,8 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                       ),
                 label: Text(
                   _saving ? 'Saving...' : 'Save',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
+                  style: AppTypography.compactAction(
+                    fontWeight: FontWeight.w600,
                     color: canSave
                         ? AppTheme.primaryBlue
                         : Colors.grey.shade400,
@@ -298,11 +301,11 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 11,
+                              style: AppTypography.cardTitle(
+                                fontSize: 11.0,
                                 fontWeight: isSelected
-                                    ? FontWeight.w800
-                                    : FontWeight.w600,
+                                    ? FontWeight.w600
+                                    : FontWeight.w500,
                                 color: isSelected
                                     ? AppTheme.inkForeground
                                     : Colors.grey.shade700,
@@ -310,9 +313,9 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                             ),
                             Text(
                               '${sub.totalVideos} vids',
-                              style: TextStyle(
+                              style: AppTypography.cardMeta(
                                 fontSize: 9.5,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w500,
                                 color: Colors.grey.shade500,
                               ),
                             ),
@@ -355,9 +358,9 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                             children: [
                               Text(
                                 'DEADLINE DATE',
-                                style: TextStyle(
+                                style: AppTypography.sectionMicroHeader(
                                   fontSize: 10,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w700,
                                   letterSpacing: 0.8,
                                   color: Colors.grey.shade500,
                                 ),
@@ -368,9 +371,9 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                                     ? DateFormat('EEE, d MMM yyyy')
                                         .format(_targetDate!)
                                     : 'Awaiting Date',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w900,
+                                style: AppTypography.metricValue(
+                                  fontSize: 15.5,
+                                  fontWeight: FontWeight.w700,
                                   color: _targetDate != null
                                       ? AppTheme.inkForeground
                                       : Colors.grey.shade400,
@@ -389,19 +392,19 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                                   ),
                                   child: Text(
                                     '$daysRemaining days remaining',
-                                    style: TextStyle(
-                                      fontSize: 11,
+                                    style: AppTypography.microBadge(
+                                      fontSize: 10.5,
                                       color: AppTheme.primaryBlue,
-                                      fontWeight: FontWeight.w700,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 )
                               else
                                 Text(
                                   'Select deadline to calculate pace',
-                                  style: TextStyle(
+                                  style: AppTypography.cardSubtitle(
                                     fontSize: 11,
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.w500,
                                     color: Colors.grey.shade500,
                                   ),
                                 ),
@@ -440,9 +443,9 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                                 borderRadius: BorderRadius.circular(10)),
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 9),
-                            textStyle: const TextStyle(
+                            textStyle: AppTypography.compactAction(
                               fontSize: 12,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -459,9 +462,9 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                         Center(
                           child: Text(
                             'Daily Module Target',
-                            style: TextStyle(
+                            style: AppTypography.cardTitle(
                               fontSize: 13.5,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w600,
                               color: AppTheme.inkForeground,
                             ),
                           ),
@@ -470,7 +473,7 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                         Center(
                           child: Text(
                             'Video lectures to complete per day',
-                            style: TextStyle(
+                            style: AppTypography.cardSubtitle(
                               fontSize: 11,
                               color: AppTheme.mutedText,
                             ),
@@ -506,17 +509,17 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                                   child: _videosPerDay != null
                                       ? RollingDigitText.count(
                                           count: _videosPerDay!,
-                                          style: TextStyle(
+                                          style: AppTypography.metricValue(
                                             fontSize: 20,
-                                            fontWeight: FontWeight.w900,
+                                            fontWeight: FontWeight.w700,
                                             color: AppTheme.inkForeground,
                                           ),
                                         )
                                       : Text(
                                           '--',
-                                          style: TextStyle(
+                                          style: AppTypography.metricValue(
                                             fontSize: 20,
-                                            fontWeight: FontWeight.w900,
+                                            fontWeight: FontWeight.w700,
                                             color: AppTheme.inkForeground,
                                           ),
                                         ),
@@ -558,15 +561,24 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
-                      decoration: AppTheme.sketchDecoration(
-                        backgroundColor: _videosPerDay != null && _videosPerDay! >= neededPerDay
+                      decoration: BoxDecoration(
+                        color: _videosPerDay != null && _videosPerDay! >= neededPerDay
                             ? const Color(0xFFF0FDF4)
                             : const Color(0xFFFFFBEB),
-                        borderRadius: 16,
-                        borderColor: _videosPerDay != null && _videosPerDay! >= neededPerDay
-                            ? const Color(0xFF86EFAC)
-                            : const Color(0xFFFCD34D),
-                        shadowOffset: 2.5,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: _videosPerDay != null && _videosPerDay! >= neededPerDay
+                              ? const Color(0xFF86EFAC).withValues(alpha: 0.8)
+                              : const Color(0xFFFCD34D).withValues(alpha: 0.8),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.02),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -585,7 +597,7 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                                   (_videosPerDay ?? 0) >= neededPerDay
                                       ? Icons.check_circle_rounded
                                       : Icons.speed_rounded,
-                                  size: 18,
+                                  size: 17,
                                   color: (_videosPerDay ?? 0) >= neededPerDay
                                       ? AppTheme.accentPrimary
                                       : const Color(0xFFD97706),
@@ -600,21 +612,21 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                                       (_videosPerDay ?? 0) >= neededPerDay
                                           ? 'PACING: ON TRACK'
                                           : 'PACING: ADJUSTMENT NEEDED',
-                                      style: TextStyle(
-                                        fontSize: 10.5,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: 0.8,
+                                      style: AppTypography.microBadge(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.6,
                                         color: (_videosPerDay ?? 0) >= neededPerDay
                                             ? const Color(0xFF15803D)
                                             : const Color(0xFFB45309),
                                       ),
                                     ),
-                                    const SizedBox(height: 1),
+                                    const SizedBox(height: 2),
                                     Text(
                                       'Target: $_videosPerDay/day  •  Required: ~$neededPerDay/day',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
+                                      style: AppTypography.cardTitle(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w600,
                                         color: AppTheme.inkForeground,
                                       ),
                                     ),
@@ -623,14 +635,13 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 8),
                           Text(
                             (_videosPerDay ?? 0) >= neededPerDay
                                 ? '$daysRemaining days remaining • Projected to finish on time'
                                 : '$daysRemaining days remaining • Dial up daily target to meet deadline',
-                            style: TextStyle(
+                            style: AppTypography.cardSubtitle(
                               fontSize: 11.5,
-                              fontWeight: FontWeight.w600,
                               color: (_videosPerDay ?? 0) >= neededPerDay
                                   ? const Color(0xFF166534)
                                   : const Color(0xFF78350F),
@@ -708,9 +719,9 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                                         alignment: Alignment.center,
                                         child: AnimatedDefaultTextStyle(
                                           duration: const Duration(milliseconds: 150),
-                                          style: TextStyle(
+                                          style: AppTypography.compactAction(
                                             fontSize: 11.5,
-                                            fontWeight: FontWeight.w800,
+                                            fontWeight: FontWeight.w600,
                                             color: !_isMultipleMode
                                                 ? Colors.white
                                                 : AppTheme.inkForeground,
@@ -735,9 +746,9 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                                         alignment: Alignment.center,
                                         child: AnimatedDefaultTextStyle(
                                           duration: const Duration(milliseconds: 150),
-                                          style: TextStyle(
+                                          style: AppTypography.compactAction(
                                             fontSize: 11.5,
-                                            fontWeight: FontWeight.w800,
+                                            fontWeight: FontWeight.w600,
                                             color: _isMultipleMode
                                                 ? Colors.white
                                                 : AppTheme.inkForeground,
@@ -763,10 +774,10 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Text(
                       'Tap units below to set their sequence (1, 2, 3...)',
-                      style: TextStyle(
+                      style: AppTypography.cardSubtitle(
                         fontSize: 11,
                         fontStyle: FontStyle.italic,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                         color: Colors.grey.shade600,
                       ),
                     ),
@@ -855,9 +866,9 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                                 ),
                                 child: Text(
                                   badgeText,
-                                  style: TextStyle(
+                                  style: AppTypography.metricValue(
                                     fontSize: 9.5,
-                                    fontWeight: FontWeight.w900,
+                                    fontWeight: FontWeight.w700,
                                     color: isSelected
                                         ? AppTheme.inkForeground
                                         : AppTheme.mutedText,
@@ -870,11 +881,11 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                               child: Text(
                                 ch.name,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 11,
+                                style: AppTypography.cardTitle(
+                                  fontSize: 11.0,
                                   fontWeight: isSelected
-                                      ? FontWeight.w800
-                                      : FontWeight.w600,
+                                      ? FontWeight.w600
+                                      : FontWeight.w500,
                                   color: isSelected
                                       ? AppTheme.inkForeground
                                       : Colors.grey.shade800,
@@ -884,9 +895,9 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                             const SizedBox(width: 4),
                             Text(
                               '(${ch.videos.length})',
-                              style: TextStyle(
+                              style: AppTypography.cardMeta(
                                 fontSize: 9.5,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w500,
                                 color: isSelected
                                     ? AppTheme.inkForeground
                                         .withValues(alpha: 0.7)
@@ -917,9 +928,9 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                       Expanded(
                         child: Text(
                           'Select a subject above to configure unit scope and start your study plan.',
-                          style: TextStyle(
+                          style: AppTypography.cardSubtitle(
                             fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                             color: AppTheme.mutedText,
                           ),
                         ),
@@ -950,8 +961,10 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                       : (canSave
                           ? 'Lock In Study Plan'
                           : 'Configure All Parameters Above'),
-                  style: const TextStyle(
-                      fontSize: 15.5, fontWeight: FontWeight.w800),
+                  style: AppTypography.buttonLabel(
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: canSave
@@ -974,11 +987,11 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                 onPressed: () => context.push('/module-tasks'),
                 icon: const Icon(Icons.view_timeline_rounded,
                     size: 20, color: Colors.white),
-                label: const Text(
+                label: Text(
                   'Open Module Tasks Queue',
-                  style: TextStyle(
-                    fontSize: 15.5,
-                    fontWeight: FontWeight.w800,
+                  style: AppTypography.buttonLabel(
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -1007,11 +1020,11 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
             const SizedBox(width: 8),
             Text(
               title,
-              style: TextStyle(
+              style: AppTypography.cardTitle(
                 fontSize: 14.5,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 color: AppTheme.inkForeground,
-                letterSpacing: -0.3,
+                letterSpacing: -0.2,
               ),
             ),
           ],
@@ -1020,7 +1033,7 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
           const SizedBox(height: 2),
           Text(
             subtitle,
-            style: TextStyle(
+            style: AppTypography.cardSubtitle(
               fontSize: 11,
               color: AppTheme.mutedText,
             ),

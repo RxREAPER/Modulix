@@ -31,6 +31,37 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-044] Button, Progress Sub-Pages, Settings Resource Hubs, Plan Setup & Pacing On Track Typography Overhaul
+- **Timestamp:** 2026-10-24 02:15 UTC
+- **Category:** Design System / Typography Engine / UI Polish / Mobile Ergonomics
+- **Files Modified (11 files):**
+  - `lib/theme/app_typography.dart` (Enhanced token methods with optional `fontWeight`, `fontStyle`, `letterSpacing`, and `height` parameters for high callsite flexibility)
+  - `lib/screens/home/home_screen.dart` (Modernized "Set up today's tasks" button to `buttonLabel(13.0, w600)`)
+  - `lib/screens/curriculum/curriculum_screen.dart` (Modernized Library filter chips `Default`, `Most Recent`, `Year Wise` to `compactAction(12.0, w600)`)
+  - `lib/screens/analytics/study_plan_analytics_page.dart` (Modernized Study Plan Insights: screen title to `headingStyle`, percentage to tabular `metricValue`, section micro-headers, card titles/subtitles, simulator typography, and unit breakdown tiles)
+  - `lib/screens/analytics/focus_timer_analytics_page.dart` (Modernized Focus & Deep Work: volume metric to `metricValue(22.0, w700)`, section micro-headers, `_modeIndicator` to `cardMeta`, and `_timeframePill` to `compactAction`)
+  - `lib/screens/analytics/daily_tasks_analytics_page.dart` (Modernized Daily Tasks: title to `headingStyle`, Hero percentage to `metricValue`, section micro-headers, and card subtitles)
+  - `lib/screens/analytics/subject_mastery_analytics_page.dart` (Modernized Subject Mastery: overall percentage to `metricValue`, section micro-headers, card titles, `_miniMetric` and `_resourceTag` to `AppTypography` tokens)
+  - `lib/screens/settings/settings_screen.dart` (Modernized Cloud Sync card, Theme & Appearance, Syllabus Edition card, Notifications & Preferences card, and Resource Hubs cards `_SleekHubCard`: Welcome Tour, App Guide, Data & Privacy, About & Support)
+  - `lib/screens/settings/notifications_preferences_screen.dart` (Modernized Notifications Preferences AppBar title to `headingStyle` and section headers to `sectionMicroHeader`)
+  - `lib/screens/settings/syllabus_edition_screen.dart` (Modernized Syllabus Edition AppBar title to `headingStyle`, section header to `sectionMicroHeader`, card title and badges)
+  - `lib/screens/plan/plan_screen.dart` (Full overhaul: AppBar title wrapped in `FittedBox` to prevent truncation, completely redesigned "Pacing: On Track" card with soft clinical styling, modernized Steps 1, 2, 3 typography, stepper digits with tabular rolling text, All/Multiple toggle, unit chips, and action buttons "Lock In Study Plan" & "Open Module Tasks Queue")
+- **Summary:**
+  - Standardized all button labels and chip actions across the application using `AppTypography.buttonLabel` and `AppTypography.compactAction` with balanced font weights (`w600` instead of bloated `w800/w900`).
+  - Overhauled typography across all four sub-pages of the Progress / Analytics screen (Study Plan Insights, Focus & Deep Work, Daily Tasks, Subject Mastery) using tabular metric figures, crisp section micro-headers, and clear card hierarchies.
+  - Refined Profile & Settings screen cards, resource hubs (Welcome Tour, App Guide, Data & Privacy, About & Support), Syllabus Edition, and Notification Preferences with clean clinical badge tags and subtitles.
+  - Resolved AppBar title truncation on the Module Plan Setup screen (`plan_screen.dart`) via `FittedBox(fit: BoxFit.scaleDown)`.
+  - Completely redesigned the "Pacing: On Track" box into a sleek, calm clinical card with soft green borders, micro-badge status, and clear pace metrics, eliminating harsh sketched borders.
+  - Modernized Steps 1, 2, and 3 inside `plan_screen.dart` with calibrated subject card text, deadline date headers, tabular stepper figures, sequence badges, and prominent action buttons.
+- **Verification:**
+  - `flutter analyze lib/screens/ lib/widgets/ lib/theme/`: **0 errors, 0 warnings (100% clean)**
+  - `flutter test test/clinical_analytics_widgets_test.dart test/progress_overhaul_test.dart`: **All 15 tests passed (100%)**
+  - `flutter build apk --debug`: **Build succeeded (`build/app/outputs/flutter-apk/app-debug.apk`)**
+  - Installed and verified on physical OnePlus 13R (`ba009d81`, Android 16 / API 36) with screenshot validation across Home desk button, Library filter chips, Progress main hubs, Study Plan Insights, Focus & Deep Work, Settings resource hubs, and Plan Setup screen.
+- **Build Status:** ✅ Included in Build (Installed & Verified on OnePlus 13R ba009d81)
+
+---
+
 ### [CKPT-043] Global Typography Modernization Across Cards, Buttons, Dialogs, Bottom Sheets & Video Tiles
 - **Timestamp:** 2026-10-24 01:30 UTC
 - **Category:** Design System / Typography Refactoring / UI Polish / Mobile Ergonomics

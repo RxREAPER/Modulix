@@ -191,9 +191,8 @@ class _FocusTimerAnalyticsPageState
                       children: [
                         Text(
                           'DEEP WORK VOLUME',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
+                          style: AppTypography.sectionMicroHeader(
+                            fontSize: 10.0,
                             letterSpacing: 1.0,
                             color: AppTheme.mutedText,
                           ),
@@ -201,19 +200,17 @@ class _FocusTimerAnalyticsPageState
                         const SizedBox(height: 4),
                         Text(
                           _formatDuration(totalSecs),
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            fontFamily: 'monospace',
+                          style: AppTypography.metricValue(
+                            fontSize: 22.0,
+                            fontWeight: FontWeight.w700,
                             color: AppTheme.inkForeground,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           '${timeLogs.length} logged sessions across all subjects',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                          style: AppTypography.cardSubtitle(
+                            fontSize: 12.0,
                             color: AppTheme.mutedText,
                           ),
                         ),
@@ -242,9 +239,8 @@ class _FocusTimerAnalyticsPageState
               children: [
                 Text(
                   'STUDY DURATION',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
+                  style: AppTypography.sectionMicroHeader(
+                    fontSize: 10.5,
                     letterSpacing: 1.1,
                     color: AppTheme.mutedText,
                   ),
@@ -691,9 +687,8 @@ class _FocusTimerAnalyticsPageState
         const SizedBox(width: 4),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
+          style: AppTypography.cardMeta(
+            fontSize: 10.5,
             color: AppTheme.mutedText,
           ),
         ),
@@ -722,9 +717,9 @@ class _FocusTimerAnalyticsPageState
         ),
         child: Text(
           label,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w800,
+          style: AppTypography.compactAction(
+            fontSize: 10.5,
+            fontWeight: FontWeight.w600,
             color: isSelected ? AppTheme.paperBackground : AppTheme.inkForeground,
           ),
         ),

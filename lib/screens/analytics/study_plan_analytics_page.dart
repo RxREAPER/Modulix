@@ -148,9 +148,9 @@ class _StudyPlanAnalyticsPageState
         ),
         title: Text(
           'Study Plan Insights',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w900,
+          style: AppTheme.headingStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
             color: AppTheme.inkForeground,
           ),
         ),
@@ -167,9 +167,9 @@ class _StudyPlanAnalyticsPageState
                 ),
                 child: Text(
                   targetSub?.name ?? 'Plan',
-                  style: TextStyle(
+                  style: AppTypography.compactAction(
                     fontSize: 11,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     color: AppTheme.accentPrimary,
                   ),
                 ),
@@ -200,10 +200,9 @@ class _StudyPlanAnalyticsPageState
                     size: 88,
                     strokeWidth: 8,
                     progressColor: AppTheme.accentPrimary,
-                    percentageStyle: TextStyle(
+                    percentageStyle: AppTypography.metricValue(
                       fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      fontFamily: 'monospace',
+                      fontWeight: FontWeight.w700,
                       color: AppTheme.inkForeground,
                     ),
                   ),
@@ -214,9 +213,8 @@ class _StudyPlanAnalyticsPageState
                       children: [
                         Text(
                           plan.isConfigured ? 'SYLLABUS PROGRESS' : 'PLAN INACTIVE',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
+                          style: AppTypography.sectionMicroHeader(
+                            fontSize: 10.0,
                             letterSpacing: 1.0,
                             color: AppTheme.mutedText,
                           ),
@@ -224,25 +222,24 @@ class _StudyPlanAnalyticsPageState
                         const SizedBox(height: 4),
                         Text(
                           '$completedVideos of $totalVideos Videos Done',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w900,
+                          style: AppTypography.cardTitle(
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.w700,
                             color: AppTheme.inkForeground,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           '${remainingHours.toStringAsFixed(1)} hours ($remainingVideos vids) remaining',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                          style: AppTypography.cardSubtitle(
+                            fontSize: 12.0,
                             color: AppTheme.mutedText,
                           ),
                         ),
                         const SizedBox(height: 8),
                         if (eta != null)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                             decoration: BoxDecoration(
                               color: eta.isOnTrack
                                   ? const Color(0xFF10B981).withValues(alpha: 0.12)
@@ -251,9 +248,9 @@ class _StudyPlanAnalyticsPageState
                             ),
                             child: Text(
                               eta.isOnTrack ? 'On Track for Deadline' : 'Behind Scheduled Pace',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
+                              style: AppTypography.microBadge(
+                                fontSize: 10.0,
+                                fontWeight: FontWeight.w700,
                                 color: eta.isOnTrack
                                     ? const Color(0xFF10B981)
                                     : const Color(0xFFEF4444),
@@ -283,9 +280,8 @@ class _StudyPlanAnalyticsPageState
             // ── 3. Interactive What-If Velocity Simulator ──────────────────
             Text(
               'WHAT-IF VELOCITY SIMULATOR',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
+              style: AppTypography.sectionMicroHeader(
+                fontSize: 10.5,
                 letterSpacing: 1.1,
                 color: AppTheme.mutedText,
               ),
@@ -307,25 +303,24 @@ class _StudyPlanAnalyticsPageState
                     children: [
                       Text(
                         'Pace Slider',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
+                        style: AppTypography.cardTitle(
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.w600,
                           color: AppTheme.inkForeground,
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
                         decoration: BoxDecoration(
                           color: AppTheme.parchmentSurface,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(9),
                           border: Border.all(color: AppTheme.borderLight, width: 1),
                         ),
                         child: Text(
                           '${_simulatorPace.round()} vids/day',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w900,
-                            fontFamily: 'monospace',
+                          style: AppTypography.metricValue(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
                             color: AppTheme.inkForeground,
                           ),
                         ),
@@ -369,9 +364,8 @@ class _StudyPlanAnalyticsPageState
                         Expanded(
                           child: Text(
                             'At ${_simulatorPace.round()} vids/day: Finish in $simulatedDaysRemaining days (${DateFormat('d MMM yyyy').format(simulatedProjectedDate)})',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
+                            style: AppTypography.cardSubtitle(
+                              fontSize: 12.0,
                               color: AppTheme.inkForeground,
                             ),
                           ),
@@ -387,9 +381,9 @@ class _StudyPlanAnalyticsPageState
                         onTap: () {
                           ref.read(appStateProvider.notifier).updatePlan(
                                 plan.copyWith(
-                                  videosPerDay: _simulatorPace.round(),
-                                ),
-                              );
+                                   videosPerDay: _simulatorPace.round(),
+                                 ),
+                               );
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text('Target pace set to ${_simulatorPace.round()} vids/day'),
@@ -406,9 +400,9 @@ class _StudyPlanAnalyticsPageState
                           alignment: Alignment.center,
                           child: Text(
                             'Update Active Plan Pace to ${_simulatorPace.round()} vids/day',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
+                            style: AppTypography.buttonLabel(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
                               color: AppTheme.paperBackground,
                             ),
                           ),
@@ -428,18 +422,16 @@ class _StudyPlanAnalyticsPageState
               children: [
                 Text(
                   'UNIT BREAKDOWN (${filteredChapters.length})',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
+                  style: AppTypography.sectionMicroHeader(
+                    fontSize: 10.5,
                     letterSpacing: 1.1,
                     color: AppTheme.mutedText,
                   ),
                 ),
                 Text(
                   targetSub != null ? '${targetSub.chapters.length} units total' : '',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
+                  style: AppTypography.cardMeta(
+                    fontSize: 10.5,
                     color: AppTheme.mutedText,
                   ),
                 ),
@@ -473,9 +465,8 @@ class _StudyPlanAnalyticsPageState
                 alignment: Alignment.center,
                 child: Text(
                   'No units matching selected filter',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                  style: AppTypography.cardSubtitle(
+                    fontSize: 12.0,
                     color: AppTheme.mutedText,
                   ),
                 ),
@@ -504,19 +495,18 @@ class _StudyPlanAnalyticsPageState
                           Expanded(
                             child: Text(
                               name,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
+                              style: AppTypography.cardTitle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w600,
                                 color: AppTheme.inkForeground,
                               ),
                             ),
                           ),
                           Text(
                             '$done/$total vids (${(chPct * 100).round()}%)',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              fontFamily: 'monospace',
+                            style: AppTypography.metricValue(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
                               color: chPct >= 1.0
                                   ? const Color(0xFF10B981)
                                   : AppTheme.inkForeground,
@@ -560,7 +550,7 @@ class _StudyPlanAnalyticsPageState
       },
       child: Container(
         margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6.5),
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.inkForeground : AppTheme.cardWhite,
           borderRadius: BorderRadius.circular(12),
@@ -571,9 +561,9 @@ class _StudyPlanAnalyticsPageState
         ),
         child: Text(
           label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
+          style: AppTypography.compactAction(
+            fontSize: 11.5,
+            fontWeight: FontWeight.w600,
             color: isSelected ? AppTheme.paperBackground : AppTheme.inkForeground,
           ),
         ),

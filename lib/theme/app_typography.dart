@@ -36,34 +36,49 @@ class AppTypography {
     Color? color,
     double fontSize = 16.0,
     FontWeight fontWeight = FontWeight.w600,
+    double? letterSpacing,
+    double? height,
   }) {
     return TextStyle(
       fontSize: fontSize,
       fontWeight: fontWeight,
       color: color ?? AppTheme.inkForeground,
-      letterSpacing: -0.3,
-      height: 1.25,
+      letterSpacing: letterSpacing ?? -0.3,
+      height: height ?? 1.25,
     );
   }
 
   /// Secondary subtitle or context line inside cards
-  static TextStyle cardSubtitle({Color? color, double fontSize = 12.0}) {
+  static TextStyle cardSubtitle({
+    Color? color,
+    double fontSize = 12.0,
+    FontWeight fontWeight = FontWeight.w500,
+    FontStyle? fontStyle,
+    double letterSpacing = 0.0,
+    double? height,
+  }) {
     return TextStyle(
       fontSize: fontSize,
-      fontWeight: FontWeight.w500,
+      fontWeight: fontWeight,
+      fontStyle: fontStyle,
       color: color ?? AppTheme.mutedText,
-      letterSpacing: 0.0,
-      height: 1.35,
+      letterSpacing: letterSpacing,
+      height: height ?? 1.35,
     );
   }
 
   /// Tertiary small metadata or counts (e.g., "84 vids · 47.7 hrs")
-  static TextStyle cardMeta({Color? color, double fontSize = 11.0}) {
+  static TextStyle cardMeta({
+    Color? color,
+    double fontSize = 11.0,
+    FontWeight fontWeight = FontWeight.w500,
+    double letterSpacing = 0.1,
+  }) {
     return TextStyle(
       fontSize: fontSize,
-      fontWeight: FontWeight.w500,
+      fontWeight: fontWeight,
       color: color ?? AppTheme.mutedText,
-      letterSpacing: 0.1,
+      letterSpacing: letterSpacing,
     );
   }
 
@@ -74,12 +89,13 @@ class AppTypography {
     Color? color,
     double fontSize = 20.0,
     FontWeight fontWeight = FontWeight.w600,
+    double letterSpacing = -0.4,
   }) {
     return TextStyle(
       fontSize: fontSize,
       fontWeight: fontWeight,
       color: color ?? AppTheme.inkForeground,
-      letterSpacing: -0.4,
+      letterSpacing: letterSpacing,
       fontFeatures: const [FontFeature.tabularFigures()],
     );
   }
@@ -196,11 +212,12 @@ class AppTypography {
   static TextStyle sectionMicroHeader({
     Color? color,
     double fontSize = 10.5,
+    FontWeight fontWeight = FontWeight.w700,
     double letterSpacing = 0.8,
   }) {
     return TextStyle(
       fontSize: fontSize,
-      fontWeight: FontWeight.w700,
+      fontWeight: fontWeight,
       color: color ?? AppTheme.mutedText,
       letterSpacing: letterSpacing,
     );

@@ -70,11 +70,10 @@ class NotificationsPreferencesScreen extends ConsumerWidget {
         ),
         title: Text(
           'Notifications & Preferences',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w900,
+          style: AppTheme.headingStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
             color: AppTheme.inkForeground,
-            letterSpacing: -0.3,
           ),
         ),
       ),
@@ -85,9 +84,8 @@ class NotificationsPreferencesScreen extends ConsumerWidget {
           // Section 1: Day Start & Rollover Boundary
           Text(
             'DUTY ROLLOVER BOUNDARY',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
+            style: AppTypography.sectionMicroHeader(
+              fontSize: 10.5,
               letterSpacing: 1.1,
               color: AppTheme.mutedText,
             ),

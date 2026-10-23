@@ -27,11 +27,10 @@ class SyllabusEditionScreen extends ConsumerWidget {
         ),
         title: Text(
           'Syllabus Edition',
-          style: TextStyle(
+          style: AppTheme.headingStyle(
             fontSize: 22,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: AppTheme.inkForeground,
-            letterSpacing: -0.3,
           ),
         ),
       ),
@@ -42,9 +41,8 @@ class SyllabusEditionScreen extends ConsumerWidget {
         children: [
           Text(
             'AVAILABLE EDITIONS',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
+            style: AppTypography.sectionMicroHeader(
+              fontSize: 10.5,
               letterSpacing: 1.1,
               color: AppTheme.mutedText,
             ),
@@ -180,16 +178,16 @@ class _EditionCard extends StatelessWidget {
                       color: badgeColor,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.check_rounded, color: Colors.white, size: 14),
-                        SizedBox(width: 4),
+                        const Icon(Icons.check_rounded, color: Colors.white, size: 14),
+                        const SizedBox(width: 4),
                         Text(
                           'ACTIVE',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
+                          style: AppTypography.microBadge(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w700,
                             color: Colors.white,
                             letterSpacing: 0.5,
                           ),
@@ -200,9 +198,9 @@ class _EditionCard extends StatelessWidget {
                 else
                   Text(
                     'Tap to activate',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                    style: AppTypography.compactAction(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
                       color: AppTheme.mutedText,
                     ),
                   ),
@@ -211,11 +209,10 @@ class _EditionCard extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               title,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
+              style: AppTypography.cardTitle(
+                fontSize: 17.5,
+                fontWeight: FontWeight.w700,
                 color: AppTheme.inkForeground,
-                letterSpacing: -0.2,
               ),
             ),
             const SizedBox(height: 14),

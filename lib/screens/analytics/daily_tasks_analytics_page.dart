@@ -97,9 +97,9 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
         ),
         title: Text(
           'Daily Tasks & Desk Pad',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w900,
+          style: AppTheme.headingStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
             color: AppTheme.inkForeground,
           ),
         ),
@@ -116,9 +116,9 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                 ),
                 child: Text(
                   '$completedCount/$totalTasks Tasks',
-                  style: TextStyle(
+                  style: AppTypography.compactAction(
                     fontSize: 11,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                     color: AppTheme.accentPrimary,
                   ),
                 ),
@@ -149,10 +149,9 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                     size: 88,
                     strokeWidth: 8,
                     progressColor: const Color(0xFF10B981),
-                    percentageStyle: TextStyle(
+                    percentageStyle: AppTypography.metricValue(
                       fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      fontFamily: 'monospace',
+                      fontWeight: FontWeight.w700,
                       color: AppTheme.inkForeground,
                     ),
                   ),
@@ -163,9 +162,8 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                       children: [
                         Text(
                           'DESK PAD COMPLETION',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
+                          style: AppTypography.sectionMicroHeader(
+                            fontSize: 10.0,
                             letterSpacing: 1.0,
                             color: AppTheme.mutedText,
                           ),
@@ -173,9 +171,9 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                         const SizedBox(height: 4),
                         Text(
                           '$completedCount of $totalTasks Done Today',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w900,
+                          style: AppTypography.cardTitle(
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.w700,
                             color: AppTheme.inkForeground,
                           ),
                         ),
@@ -184,9 +182,8 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                           streak > 0
                               ? '$streak consecutive days active on desk'
                               : 'Complete a task today to begin your streak',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                          style: AppTypography.cardSubtitle(
+                            fontSize: 12.0,
                             color: AppTheme.mutedText,
                           ),
                         ),

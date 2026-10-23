@@ -298,9 +298,8 @@ class _CloudSyncSection extends ConsumerWidget {
       children: [
         Text(
           'CLOUD & SYNC',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
+          style: AppTypography.sectionMicroHeader(
+            fontSize: 10.5,
             letterSpacing: 1.1,
             color: AppTheme.mutedText,
           ),
@@ -355,11 +354,10 @@ class _CloudSyncSection extends ConsumerWidget {
                     children: [
                       Text(
                         'Cloud Sync',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
+                        style: AppTypography.cardTitle(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w600,
                           color: AppTheme.inkForeground,
-                          letterSpacing: -0.2,
                         ),
                       ),
                       const SizedBox(height: 3),
@@ -369,9 +367,8 @@ class _CloudSyncSection extends ConsumerWidget {
                             : 'Guest Mode • Local only',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                        style: AppTypography.cardSubtitle(
+                          fontSize: 12.0,
                           color: isAuthenticated
                               ? Colors.green.shade700
                               : AppTheme.mutedText,
@@ -395,16 +392,18 @@ class _CloudSyncSection extends ConsumerWidget {
                           context: context,
                           builder: (ctx) => AlertDialog(
                             backgroundColor: AppTheme.cardWhite,
-                            title: const Text('Sign Out',
-                                style: TextStyle(fontWeight: FontWeight.w800)),
-                            content: const Text(
+                            title: Text('Sign Out',
+                                style: AppTypography.dialogTitle(fontSize: 18.0)),
+                            content: Text(
                               'Your study progress will remain safely on this device and in the cloud.',
+                              style: AppTypography.dialogBody(fontSize: 13.5),
                             ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx, false),
                                 child: Text('Cancel',
-                                    style: TextStyle(color: AppTheme.mutedText)),
+                                    style: AppTypography.buttonLabel(
+                                        fontSize: 13.0, color: AppTheme.mutedText)),
                               ),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
@@ -412,7 +411,9 @@ class _CloudSyncSection extends ConsumerWidget {
                                   foregroundColor: Colors.white,
                                 ),
                                 onPressed: () => Navigator.pop(ctx, true),
-                                child: const Text('Sign Out'),
+                                child: Text('Sign Out',
+                                    style: AppTypography.buttonLabel(
+                                        fontSize: 13.0, color: Colors.white)),
                               ),
                             ],
                           ),
@@ -432,11 +433,11 @@ class _CloudSyncSection extends ConsumerWidget {
                             width: 1.2,
                           ),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Sign Out',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w800,
+                          style: AppTypography.compactAction(
+                            fontSize: 11.0,
+                            fontWeight: FontWeight.w600,
                             color: Colors.redAccent,
                           ),
                         ),
@@ -455,9 +456,9 @@ class _CloudSyncSection extends ConsumerWidget {
                       children: [
                         Text(
                           'Sign In',
-                          style: TextStyle(
+                          style: AppTypography.buttonLabel(
                             fontSize: 11.5,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w600,
                             color: AppTheme.paperBackground,
                           ),
                         ),
@@ -499,9 +500,8 @@ class _ThemeAppearanceSection extends ConsumerWidget {
       children: [
         Text(
           'APPEARANCE & THEME',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
+          style: AppTypography.sectionMicroHeader(
+            fontSize: 10.5,
             letterSpacing: 1.1,
             color: activeTheme.mutedText,
           ),
@@ -606,11 +606,10 @@ class _ThemeAppearanceSection extends ConsumerWidget {
                     children: [
                       Text(
                         preset.label,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
+                        style: AppTypography.cardTitle(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w600,
                           color: activeTheme.inkForeground,
-                          letterSpacing: -0.2,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -620,9 +619,8 @@ class _ThemeAppearanceSection extends ConsumerWidget {
                         'Active Atmosphere',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                        style: AppTypography.cardSubtitle(
+                          fontSize: 12.0,
                           color: activeTheme.mutedText,
                         ),
                       ),
@@ -660,9 +658,8 @@ class _SyllabusEditionSection extends ConsumerWidget {
       children: [
         Text(
           'SYLLABUS & CURRICULUM',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
+          style: AppTypography.sectionMicroHeader(
+            fontSize: 10.5,
             letterSpacing: 1.1,
             color: AppTheme.mutedText,
           ),
@@ -719,11 +716,10 @@ class _SyllabusEditionSection extends ConsumerWidget {
                                   ? 'Marrow Edition 8'
                                   : 'Marrow Edition 6.5',
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w900,
+                              style: AppTypography.cardTitle(
+                                fontSize: 15.5,
+                                fontWeight: FontWeight.w600,
                                 color: AppTheme.inkForeground,
-                                letterSpacing: -0.2,
                               ),
                             ),
                           ),
@@ -735,11 +731,11 @@ class _SyllabusEditionSection extends ConsumerWidget {
                               color: Colors.green.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: const Text(
+                            child: Text(
                               'ACTIVE',
-                              style: TextStyle(
+                              style: AppTypography.microBadge(
                                 fontSize: 8.5,
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.w700,
                                 color: Colors.green,
                                 letterSpacing: 0.5,
                               ),
@@ -752,8 +748,8 @@ class _SyllabusEditionSection extends ConsumerWidget {
                         isEdition8
                             ? '19 Subjects • 848 Lectures'
                             : '19 Subjects • 792 Lectures',
-                        style: TextStyle(
-                          fontSize: 12,
+                        style: AppTypography.cardSubtitle(
+                          fontSize: 12.0,
                           color: AppTheme.mutedText,
                         ),
                       ),
@@ -786,9 +782,8 @@ class _NotificationsPreferencesSection extends StatelessWidget {
       children: [
         Text(
           'NOTIFICATIONS & PREFERENCES',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
+          style: AppTypography.sectionMicroHeader(
+            fontSize: 10.5,
             letterSpacing: 1.1,
             color: AppTheme.mutedText,
           ),
@@ -837,11 +832,10 @@ class _NotificationsPreferencesSection extends StatelessWidget {
                     children: [
                       Text(
                         'Notifications & Preferences',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
+                        style: AppTypography.cardTitle(
+                          fontSize: 15.0,
+                          fontWeight: FontWeight.w600,
                           color: AppTheme.inkForeground,
-                          letterSpacing: -0.3,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -849,8 +843,8 @@ class _NotificationsPreferencesSection extends StatelessWidget {
                       const SizedBox(height: 3),
                       Text(
                         'Study reminders, streak & routine alerts',
-                        style: TextStyle(
-                          fontSize: 12,
+                        style: AppTypography.cardSubtitle(
+                          fontSize: 12.0,
                           color: AppTheme.mutedText,
                         ),
                         maxLines: 1,
@@ -885,9 +879,8 @@ class _ResourceHubsSection extends ConsumerWidget {
       children: [
         Text(
           'RESOURCES & LEGAL',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
+          style: AppTypography.sectionMicroHeader(
+            fontSize: 10.5,
             letterSpacing: 1.1,
             color: AppTheme.mutedText,
           ),
@@ -1008,9 +1001,9 @@ class _SleekHubCard extends StatelessWidget {
                         child: Text(
                           title,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w900,
+                          style: AppTypography.cardTitle(
+                            fontSize: 15.0,
+                            fontWeight: FontWeight.w600,
                             color: AppTheme.inkForeground,
                           ),
                         ),
@@ -1025,9 +1018,9 @@ class _SleekHubCard extends StatelessWidget {
                         ),
                         child: Text(
                           tag,
-                          style: TextStyle(
+                          style: AppTypography.microBadge(
                             fontSize: 8.5,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             letterSpacing: 0.6,
                             color: iconColor,
                           ),
@@ -1040,9 +1033,8 @@ class _SleekHubCard extends StatelessWidget {
                     subtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
+                    style: AppTypography.cardSubtitle(
                       fontSize: 11.5,
-                      fontWeight: FontWeight.w500,
                       color: AppTheme.mutedText,
                     ),
                   ),
