@@ -629,6 +629,7 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
       if (m == currentMonth) {
         weekSpanCount++;
       } else {
+        final shouldShow = labels.isEmpty ? weekSpanCount >= 3 : weekSpanCount >= 2;
         labels.add(
           SizedBox(
             width: weekSpanCount * columnWidth,
@@ -636,7 +637,7 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                weekSpanCount >= 2 ? currentMonth : '',
+                shouldShow ? currentMonth : '',
                 maxLines: 1,
                 softWrap: false,
                 overflow: TextOverflow.clip,
