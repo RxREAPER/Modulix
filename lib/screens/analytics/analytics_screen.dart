@@ -314,10 +314,10 @@ class AnalyticsScreen extends ConsumerWidget {
                   : 'No sessions logged today · Start timer',
               badge:
                   todayFocusSecs > 0 ? _formatDuration(todayFocusSecs) : '0m',
-              badgeColor: const Color(0xFF6366F1),
+              badgeColor: AppTheme.accentSecondary,
               icon: Icons.timer_outlined,
-              iconColor: const Color(0xFF6366F1),
-              iconBg: const Color(0xFF6366F1).withValues(alpha: 0.10),
+              iconColor: AppTheme.accentSecondary,
+              iconBg: AppTheme.accentSecondary.withValues(alpha: 0.12),
               progress: todayFocusSecs > 0
                   ? (todayFocusSecs / (4 * 3600)).clamp(0.0, 1.0)
                   : 0.0,
@@ -335,8 +335,8 @@ class AnalyticsScreen extends ConsumerWidget {
                 ringWidth: 3.5,
                 ringSpacing: 2.0,
                 color1: AppTheme.accentPrimary,
-                color2: const Color(0xFF3B82F6),
-                color3: const Color(0xFF10B981),
+                color2: AppTheme.accentSecondary,
+                color3: AppTheme.accentTertiary,
               ),
               stat1Label: 'Today\'s Flow',
               stat1Value: _formatDuration(todayFocusSecs),
@@ -355,16 +355,16 @@ class AnalyticsScreen extends ConsumerWidget {
                   ? '$doneTasks of $totalTasks tasks checked off today'
                   : 'No tasks scheduled on desk pad',
               badge: totalTasks > 0 ? '$doneTasks/$totalTasks' : '0/0',
-              badgeColor: const Color(0xFF10B981),
+              badgeColor: AppTheme.accentEmerald,
               icon: Icons.check_circle_outline_rounded,
-              iconColor: const Color(0xFF10B981),
-              iconBg: const Color(0xFF10B981).withValues(alpha: 0.10),
+              iconColor: AppTheme.accentEmerald,
+              iconBg: AppTheme.accentEmerald.withValues(alpha: 0.12),
               progress: tasksProgress,
               indicatorWidget: ProgressRadialGauge(
                 progress: tasksProgress,
                 size: 46,
                 strokeWidth: 4.8,
-                progressColor: const Color(0xFF10B981),
+                progressColor: AppTheme.accentEmerald,
                 percentageStyle: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w900,
@@ -376,7 +376,7 @@ class AnalyticsScreen extends ConsumerWidget {
                   ? SegmentedVelocityPill(
                       totalSegments: totalTasks,
                       completedSegments: doneTasks,
-                      activeColor: const Color(0xFF10B981),
+                      activeColor: AppTheme.accentEmerald,
                       velocityLabel: tasksProgress >= 1.0
                           ? '100% Target Met'
                           : '${totalTasks - doneTasks} tasks pending',
@@ -398,16 +398,16 @@ class AnalyticsScreen extends ConsumerWidget {
               subtitle:
                   'Complete curriculum tracking across all 19 subjects',
               badge: '${(mbbsProgress * 100).round()}% MBBS',
-              badgeColor: const Color(0xFF8B5CF6),
+              badgeColor: AppTheme.accentTertiary,
               icon: Icons.layers_outlined,
-              iconColor: const Color(0xFF8B5CF6),
-              iconBg: const Color(0xFF8B5CF6).withValues(alpha: 0.10),
+              iconColor: AppTheme.accentTertiary,
+              iconBg: AppTheme.accentTertiary.withValues(alpha: 0.12),
               progress: mbbsProgress,
               indicatorWidget: ProgressRadialGauge(
                 progress: mbbsProgress,
                 size: 46,
                 strokeWidth: 4.8,
-                progressColor: const Color(0xFF8B5CF6),
+                progressColor: AppTheme.accentTertiary,
                 percentageStyle: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w900,

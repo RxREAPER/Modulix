@@ -139,16 +139,16 @@ class _FocusTimerAnalyticsPageState
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6366F1).withValues(alpha: 0.12),
+                  color: AppTheme.accentSubtle,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF6366F1), width: 1.2),
+                  border: Border.all(color: AppTheme.accentPrimary, width: 1.2),
                 ),
                 child: Text(
                   _formatDuration(todaySecs),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF6366F1),
+                    color: AppTheme.accentPrimary,
                   ),
                 ),
               ),
@@ -181,8 +181,8 @@ class _FocusTimerAnalyticsPageState
                     ringWidth: 6.0,
                     ringSpacing: 3.0,
                     color1: AppTheme.accentPrimary,
-                    color2: const Color(0xFF3B82F6),
-                    color3: const Color(0xFF10B981),
+                    color2: AppTheme.accentSecondary,
+                    color3: AppTheme.accentTertiary,
                   ),
                   const SizedBox(width: 20),
                   Expanded(
@@ -219,9 +219,9 @@ class _FocusTimerAnalyticsPageState
                           children: [
                             _modeIndicator('Videos', AppTheme.accentPrimary),
                             const SizedBox(width: 8),
-                            _modeIndicator('QBank', const Color(0xFF3B82F6)),
+                            _modeIndicator('QBank', AppTheme.accentSecondary),
                             const SizedBox(width: 8),
-                            _modeIndicator('Notes', const Color(0xFF10B981)),
+                            _modeIndicator('Notes', AppTheme.accentTertiary),
                           ],
                         ),
                       ],

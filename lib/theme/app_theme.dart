@@ -11,6 +11,9 @@ class AppTheme {
   static Color get paperBackground => current.scaffoldBackground;
   static Color get inkForeground => current.inkForeground;
   static Color get accentPrimary => current.accent;
+  static Color get accentSecondary => current.secondaryAccent;
+  static Color get accentTertiary => current.tertiaryAccent;
+  static Color get accentQuaternary => current.quaternaryAccent;
   static Color get accentSubtle => current.accentSubtle;
   static Color get onAccent =>
       current.accent.computeLuminance() > 0.45 ? const Color(0xFF1E1610) : Colors.white;

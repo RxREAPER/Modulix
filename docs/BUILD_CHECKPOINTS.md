@@ -31,6 +31,29 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-045] Dynamic Theme Consistency for Progress Gauges, Tags, Hubs, and Top Sync Badge
+- **Timestamp:** 2026-10-24 02:40 UTC
+- **Category:** Theme Engine / Design Tokens / Analytics / Visual Consistency
+- **Files Modified (9 files):**
+  - `lib/theme/modulix_theme.dart` (Added `tertiaryAccent` and `quaternaryAccent` tokens to `PalettePreset` for all 5 themes, and to `ModulixThemeExtension`)
+  - `lib/theme/app_theme.dart` (Exposed `accentSecondary`, `accentTertiary`, `accentQuaternary` getters)
+  - `lib/widgets/sync_status_badge.dart` (Bound unauthenticated and authenticated sync badges to dynamic theme tokens)
+  - `lib/screens/analytics/subject_mastery_analytics_page.dart` (Replaced hardcoded `0xFF6366F1`, `0xFF3B82F6`, `0xFF10B981` in radial gauge, mini metrics, and tags with dynamic theme tokens)
+  - `lib/screens/analytics/focus_timer_analytics_page.dart` (Replaced hardcoded `0xFF6366F1` and donut ring colors with theme tokens)
+  - `lib/screens/analytics/daily_tasks_analytics_page.dart` (Replaced hardcoded colors in gauge, streak, activity bars, and category switcher with theme tokens)
+  - `lib/screens/analytics/analytics_screen.dart` (Bound Hub cards and concentric donut rings dynamically to active theme palette)
+  - `lib/widgets/analytics/concentric_donut_indicator.dart` (Defaulted donut colors to dynamic theme tokens)
+  - `lib/widgets/automated_module_tracker.dart` (Replaced hardcoded indigo with theme tokens)
+- **Summary:**
+  - Eliminated hardcoded colors across all Progress and Analytics screens, sub-pages, radial gauges, and concentric donut indicators.
+  - Added harmonic secondary, tertiary, and quaternary accents across all five theme presets (Paper & Ink, Midnight Slate, Atomic Orange + Ice Cream Blue, Forest Code + Mint Fog, Cosmic Latte + Mocha Cream).
+  - Modernized the top navigation Sync badge to dynamically harmonize with the user's active theme.
+- **Verification:**
+  - `flutter analyze`: **0 errors, 0 warnings (100% clean)**
+  - `flutter test`: **15/15 passed**
+  - `flutter build apk --debug`: **Build succeeded (`build/app/outputs/flutter-apk/app-debug.apk`)**
+  - Verified on physical OnePlus 13R (`ba009d81`, Android 16 / API 36) with screenshot validation.
+
 ### [CKPT-044] Button, Progress Sub-Pages, Settings Resource Hubs, Plan Setup & Pacing On Track Typography Overhaul
 - **Timestamp:** 2026-10-24 02:15 UTC
 - **Category:** Design System / Typography Engine / UI Polish / Mobile Ergonomics

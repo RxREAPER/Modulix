@@ -148,7 +148,7 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                     progress: completionPct,
                     size: 88,
                     strokeWidth: 8,
-                    progressColor: const Color(0xFF10B981),
+                    progressColor: AppTheme.accentPrimary,
                     percentageStyle: AppTypography.metricValue(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
@@ -191,7 +191,7 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                         SegmentedVelocityPill(
                           totalSegments: totalTasks,
                           completedSegments: completedCount,
-                          activeColor: const Color(0xFF10B981),
+                          activeColor: AppTheme.accentEmerald,
                           velocityLabel: completionPct >= 1.0
                               ? '100% Target Reached!'
                               : (totalTasks - completedCount > 0
@@ -243,10 +243,10 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                       ),
                       Text(
                         '$streak-day streak',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFFF97316),
+                          color: AppTheme.accentAmber,
                         ),
                       ),
                     ],
@@ -281,7 +281,7 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                                 color: count > 0
                                     ? (isToday
                                         ? AppTheme.accentPrimary
-                                        : const Color(0xFF10B981))
+                                        : AppTheme.accentEmerald)
                                     : (AppTheme.current.isDark
                                         ? Colors.white.withValues(alpha: 0.06)
                                         : AppTheme.borderLight),
@@ -352,22 +352,22 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                     ),
                   TaskCategory.qbank => (
                       'QBank MCQs',
-                      const Color(0xFF3B82F6),
+                      AppTheme.accentSecondary,
                       Icons.quiz_outlined
                     ),
                   TaskCategory.revision => (
                       'Revision & Flashcards',
-                      const Color(0xFFF97316),
+                      AppTheme.accentTertiary,
                       Icons.refresh_rounded
                     ),
                   TaskCategory.notes => (
                       'Notes & Reading',
-                      const Color(0xFF10B981),
+                      AppTheme.accentQuaternary,
                       Icons.menu_book_rounded
                     ),
                   TaskCategory.general => (
                       'General Tasks',
-                      const Color(0xFF8B5CF6),
+                      AppTheme.accentEmerald,
                       Icons.check_circle_outline_rounded
                     ),
                 };
@@ -403,7 +403,7 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                               fontSize: 11,
                               fontWeight: FontWeight.w800,
                               fontFamily: 'monospace',
-                              color: catPct >= 1.0 ? const Color(0xFF10B981) : AppTheme.inkForeground,
+                              color: catPct >= 1.0 ? AppTheme.accentEmerald : AppTheme.inkForeground,
                             ),
                           ),
                         ],
@@ -457,7 +457,7 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                             : Icons.radio_button_unchecked_rounded,
                         size: 18,
                         color: isDone
-                            ? const Color(0xFF10B981)
+                            ? AppTheme.accentEmerald
                             : AppTheme.mutedText,
                       ),
                       const SizedBox(width: 10),

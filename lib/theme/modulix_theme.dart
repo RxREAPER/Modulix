@@ -16,6 +16,8 @@ enum PalettePreset {
     mutedText: Color(0xFF6B6860),
     accent: Color(0xFF384F66),
     secondaryAccent: Color(0xFF556F8A),
+    tertiaryAccent: Color(0xFF788D7A),
+    quaternaryAccent: Color(0xFF9E8E78),
     accentDark: Color(0xFF5B7A98),
     accentSubtle: Color(0xFFEBF1F6),
   ),
@@ -32,6 +34,8 @@ enum PalettePreset {
     mutedText: Color(0xFF94A3B8),
     accent: Color(0xFF5E81A2),
     secondaryAccent: Color(0xFF3B5773),
+    tertiaryAccent: Color(0xFF4E9F9F),
+    quaternaryAccent: Color(0xFF7E72B5),
     accentDark: Color(0xFF5E81A2),
     accentSubtle: Color(0xFF162536),
   ),
@@ -48,6 +52,8 @@ enum PalettePreset {
     mutedText: Color(0xFF346074),
     accent: Color(0xFFFF5C23),
     secondaryAccent: Color(0xFF0288A6),
+    tertiaryAccent: Color(0xFF1E8A5A),
+    quaternaryAccent: Color(0xFF7A4EB2),
     accentDark: Color(0xFFFF5C23),
     accentSubtle: Color(0xFFFFE8DF),
   ),
@@ -64,6 +70,8 @@ enum PalettePreset {
     mutedText: Color(0xFF275F46),
     accent: Color(0xFF075E46),
     secondaryAccent: Color(0xFF108161),
+    tertiaryAccent: Color(0xFF2E6B8E),
+    quaternaryAccent: Color(0xFF8B6432),
     accentDark: Color(0xFF075E46),
     accentSubtle: Color(0xFFD6F5E5),
   ),
@@ -80,6 +88,8 @@ enum PalettePreset {
     mutedText: Color(0xFF65513F),
     accent: Color(0xFFB7A99A),
     secondaryAccent: Color(0xFF634633),
+    tertiaryAccent: Color(0xFF7B523A),
+    quaternaryAccent: Color(0xFF4A6B5C),
     accentDark: Color(0xFFB7A99A),
     accentSubtle: Color(0xFFF3ECE4),
   );
@@ -96,6 +106,8 @@ enum PalettePreset {
   final Color mutedText;
   final Color accent;
   final Color secondaryAccent;
+  final Color tertiaryAccent;
+  final Color quaternaryAccent;
   final Color accentDark;
   final Color accentSubtle;
 
@@ -112,6 +124,8 @@ enum PalettePreset {
     required this.mutedText,
     required this.accent,
     required this.secondaryAccent,
+    required this.tertiaryAccent,
+    required this.quaternaryAccent,
     required this.accentDark,
     required this.accentSubtle,
   });
@@ -253,6 +267,8 @@ class ModulixThemeExtension extends ThemeExtension<ModulixThemeExtension> {
   final Color mutedText;
   final Color accent;
   final Color secondaryAccent;
+  final Color tertiaryAccent;
+  final Color quaternaryAccent;
   final Color accentSubtle;
   final bool isDark;
 
@@ -267,6 +283,8 @@ class ModulixThemeExtension extends ThemeExtension<ModulixThemeExtension> {
     required this.mutedText,
     required this.accent,
     required this.secondaryAccent,
+    required this.tertiaryAccent,
+    required this.quaternaryAccent,
     required this.accentSubtle,
     required this.isDark,
   });
@@ -295,6 +313,8 @@ class ModulixThemeExtension extends ThemeExtension<ModulixThemeExtension> {
       mutedText: preset.mutedText,
       accent: activeAccent,
       secondaryAccent: preset.secondaryAccent,
+      tertiaryAccent: preset.tertiaryAccent,
+      quaternaryAccent: preset.quaternaryAccent,
       accentSubtle: activeAccentSubtle,
       isDark: preset.isDark,
     );
@@ -311,6 +331,8 @@ class ModulixThemeExtension extends ThemeExtension<ModulixThemeExtension> {
     mutedText: Color(0xFF6B6860),
     accent: Color(0xFF384F66),
     secondaryAccent: Color(0xFF556F8A),
+    tertiaryAccent: Color(0xFF788D7A),
+    quaternaryAccent: Color(0xFF9E8E78),
     accentSubtle: Color(0xFFEBF1F6),
     isDark: false,
   );
@@ -327,6 +349,8 @@ class ModulixThemeExtension extends ThemeExtension<ModulixThemeExtension> {
     Color? mutedText,
     Color? accent,
     Color? secondaryAccent,
+    Color? tertiaryAccent,
+    Color? quaternaryAccent,
     Color? accentSubtle,
     bool? isDark,
   }) {
@@ -341,6 +365,8 @@ class ModulixThemeExtension extends ThemeExtension<ModulixThemeExtension> {
       mutedText: mutedText ?? this.mutedText,
       accent: accent ?? this.accent,
       secondaryAccent: secondaryAccent ?? this.secondaryAccent,
+      tertiaryAccent: tertiaryAccent ?? this.tertiaryAccent,
+      quaternaryAccent: quaternaryAccent ?? this.quaternaryAccent,
       accentSubtle: accentSubtle ?? this.accentSubtle,
       isDark: isDark ?? this.isDark,
     );
@@ -363,6 +389,10 @@ class ModulixThemeExtension extends ThemeExtension<ModulixThemeExtension> {
       accent: Color.lerp(accent, other.accent, t)!,
       secondaryAccent:
           Color.lerp(secondaryAccent, other.secondaryAccent, t)!,
+      tertiaryAccent:
+          Color.lerp(tertiaryAccent, other.tertiaryAccent, t)!,
+      quaternaryAccent:
+          Color.lerp(quaternaryAccent, other.quaternaryAccent, t)!,
       accentSubtle: Color.lerp(accentSubtle, other.accentSubtle, t)!,
       isDark: t < 0.5 ? isDark : other.isDark,
     );

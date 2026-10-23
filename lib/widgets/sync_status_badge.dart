@@ -25,13 +25,16 @@ class SyncStatusBadge extends ConsumerWidget {
         },
         child: Container(
           padding: EdgeInsets.symmetric(
-            horizontal: compact ? 8 : 10,
-            vertical: compact ? 4 : 5,
+            horizontal: compact ? 9 : 11,
+            vertical: compact ? 4.5 : 5.5,
           ),
           decoration: BoxDecoration(
-            color: AppTheme.scaffoldBg,
+            color: AppTheme.accentSubtle,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppTheme.cardBorder),
+            border: Border.all(
+              color: AppTheme.accentPrimary.withValues(alpha: 0.35),
+              width: 1.1,
+            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -39,15 +42,15 @@ class SyncStatusBadge extends ConsumerWidget {
               Icon(
                 Icons.cloud_outlined,
                 size: compact ? 12 : 14,
-                color: AppTheme.mutedText,
+                color: AppTheme.accentPrimary,
               ),
               const SizedBox(width: 5),
               Text(
                 compact ? 'Sync' : 'Sign in to Sync',
                 style: TextStyle(
-                  fontSize: compact ? 10 : 11,
+                  fontSize: compact ? 10.5 : 11.5,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.mutedText,
+                  color: AppTheme.accentPrimary,
                 ),
               ),
             ],
@@ -67,7 +70,7 @@ class SyncStatusBadge extends ConsumerWidget {
         badgeLabel = 'Syncing';
         break;
       case SyncStatus.synced:
-        badgeColor = const Color(0xFF2E7D32); // Deep emerald
+        badgeColor = AppTheme.accentEmerald;
         badgeIcon = Icons.cloud_done_rounded;
         badgeLabel = 'Synced';
         break;
@@ -78,7 +81,7 @@ class SyncStatusBadge extends ConsumerWidget {
         badgeLabel = 'Offline';
         break;
       case SyncStatus.idle:
-        badgeColor = AppTheme.mutedText;
+        badgeColor = AppTheme.accentPrimary;
         badgeIcon = Icons.cloud_outlined;
         badgeLabel = 'Cloud';
         break;

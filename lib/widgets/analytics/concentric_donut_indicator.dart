@@ -72,8 +72,8 @@ class _ConcentricDonutIndicatorState extends State<ConcentricDonutIndicator>
   @override
   Widget build(BuildContext context) {
     final c1 = widget.color1 ?? AppTheme.accentPrimary;
-    final c2 = widget.color2 ?? const Color(0xFF3B82F6);
-    final c3 = widget.color3 ?? const Color(0xFF10B981);
+    final c2 = widget.color2 ?? AppTheme.accentSecondary;
+    final c3 = widget.color3 ?? AppTheme.accentTertiary;
     final isDark = AppTheme.current.isDark;
     final trackBase = isDark ? Colors.white.withValues(alpha: 0.06) : AppTheme.borderLight;
 

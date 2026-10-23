@@ -236,14 +236,14 @@ class AutomatedModuleTracker extends ConsumerWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4F46E5).withValues(alpha: 0.12),
+                        color: AppTheme.accentSubtle,
                         shape: BoxShape.circle,
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           Icons.auto_graph_rounded,
                           size: 19,
-                          color: Color(0xFF4F46E5),
+                          color: AppTheme.accentPrimary,
                         ),
                       ),
                     ),
@@ -260,12 +260,12 @@ class AutomatedModuleTracker extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 2),
-                        const Text(
+                        Text(
                           'First Study Session Setup',
                           style: TextStyle(
                             fontSize: 11.0,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF4F46E5),
+                            color: AppTheme.accentPrimary,
                             letterSpacing: 0.5,
                           ),
                         ),

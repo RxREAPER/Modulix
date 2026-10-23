@@ -150,7 +150,7 @@ class _SubjectMasteryAnalyticsPageState
                     progress: overallProgress,
                     size: 88,
                     strokeWidth: 8,
-                    progressColor: const Color(0xFF6366F1),
+                    progressColor: AppTheme.accentPrimary,
                     percentageStyle: AppTypography.metricValue(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
@@ -185,8 +185,8 @@ class _SubjectMasteryAnalyticsPageState
                           runSpacing: 6,
                           children: [
                             _miniMetric('Videos', '$completedAllVideos/$totalAllVideos', AppTheme.accentPrimary),
-                            _miniMetric('QBank', '$completedAllQBanks/$totalAllQBanks', const Color(0xFF3B82F6)),
-                            _miniMetric('Notes', '$completedAllNotes/$totalAllNotes', const Color(0xFF10B981)),
+                            _miniMetric('QBank', '$completedAllQBanks/$totalAllQBanks', AppTheme.accentSecondary),
+                            _miniMetric('Notes', '$completedAllNotes/$totalAllNotes', AppTheme.accentTertiary),
                           ],
                         ),
                       ],
@@ -283,8 +283,8 @@ class _SubjectMasteryAnalyticsPageState
                                 runSpacing: 6,
                                 children: [
                                   _resourceTag('Videos', '$vDone/$vTot', AppTheme.accentPrimary),
-                                  _resourceTag('QBank', '$qDone/$qTot', const Color(0xFF3B82F6)),
-                                  _resourceTag('Notes', '$nDone/$nTot', const Color(0xFF10B981)),
+                                  _resourceTag('QBank', '$qDone/$qTot', AppTheme.accentSecondary),
+                                  _resourceTag('Notes', '$nDone/$nTot', AppTheme.accentTertiary),
                                 ],
                               ),
                             ),
