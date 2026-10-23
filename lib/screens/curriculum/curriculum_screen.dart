@@ -124,76 +124,42 @@ class CurriculumScreen extends ConsumerWidget {
 
                     const SizedBox(height: 20),
 
-                    // 3. Section Title & Filter Chips
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                sortMode == CurriculumSortMode.yearWise
-                                    ? 'Curriculum by Year'
-                                    : (sortMode == CurriculumSortMode.mostRecent
-                                        ? 'Recent Subjects'
-                                        : 'All ${subjects.length} Subjects'),
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppTheme.inkForeground,
-                                ),
-                              ),
-                              Text(
-                                'NEET-PG Syllabus',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey.shade500,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          RepaintBoundary(
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: [
-                                  _CurriculumSortFilterChip(
-                                    label: 'Default',
-                                    icon: Icons.grid_view_rounded,
-                                    isSelected:
-                                        sortMode == CurriculumSortMode.defaultOrder,
-                                    onTap: () => ref
-                                        .read(curriculumSortProvider.notifier)
-                                        .setMode(CurriculumSortMode.defaultOrder),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  _CurriculumSortFilterChip(
-                                    label: 'Most Recent',
-                                    icon: Icons.history_rounded,
-                                    isSelected:
-                                        sortMode == CurriculumSortMode.mostRecent,
-                                    onTap: () => ref
-                                        .read(curriculumSortProvider.notifier)
-                                        .setMode(CurriculumSortMode.mostRecent),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  _CurriculumSortFilterChip(
-                                    label: 'Year Wise',
-                                    icon: Icons.school_rounded,
-                                    isSelected:
-                                        sortMode == CurriculumSortMode.yearWise,
-                                    onTap: () => ref
-                                        .read(curriculumSortProvider.notifier)
-                                        .setMode(CurriculumSortMode.yearWise),
-                                  ),
-                                ],
-                              ),
+                    // 3. Filter Chips
+                    RepaintBoundary(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _CurriculumSortFilterChip(
+                              label: 'Default',
+                              isSelected:
+                                  sortMode == CurriculumSortMode.defaultOrder,
+                              onTap: () => ref
+                                  .read(curriculumSortProvider.notifier)
+                                  .setMode(CurriculumSortMode.defaultOrder),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            _CurriculumSortFilterChip(
+                              label: 'Most Recent',
+                              isSelected:
+                                  sortMode == CurriculumSortMode.mostRecent,
+                              onTap: () => ref
+                                  .read(curriculumSortProvider.notifier)
+                                  .setMode(CurriculumSortMode.mostRecent),
+                            ),
+                            const SizedBox(width: 8),
+                            _CurriculumSortFilterChip(
+                              label: 'Year Wise',
+                              isSelected:
+                                  sortMode == CurriculumSortMode.yearWise,
+                              onTap: () => ref
+                                  .read(curriculumSortProvider.notifier)
+                                  .setMode(CurriculumSortMode.yearWise),
+                            ),
+                          ],
+                        ),
                       ),
+                    ),
                     ],
                   ),
                 ),
@@ -209,37 +175,34 @@ class CurriculumScreen extends ConsumerWidget {
               slivers.add(
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(18, 16, 18, 10),
+                    padding: const EdgeInsets.fromLTRB(18, 20, 18, 10),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
+                          width: 4.0,
+                          height: 18.0,
                           decoration: BoxDecoration(
-                            color: _yearBadgeColor(year).withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: _yearBadgeColor(year),
-                              width: 1.2,
-                            ),
-                          ),
-                          child: Text(
-                            year.toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.6,
-                              color: _yearBadgeColor(year),
-                            ),
+                            color: _yearBadgeColor(year),
+                            borderRadius: BorderRadius.circular(2),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 10),
+                        Text(
+                          year,
+                          style: AppTheme.headingStyle(
+                            fontSize: 21,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.inkForeground,
+                          ),
+                        ),
+                        const Spacer(),
                         Text(
                           '${groupSubjects.length} ${groupSubjects.length == 1 ? "Subject" : "Subjects"}',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade600,
+                            color: AppTheme.mutedText,
                           ),
                         ),
                       ],
@@ -360,13 +323,11 @@ class CurriculumScreen extends ConsumerWidget {
 
 class _CurriculumSortFilterChip extends StatelessWidget {
   final String label;
-  final IconData icon;
   final bool isSelected;
   final VoidCallback onTap;
 
   const _CurriculumSortFilterChip({
     required this.label,
-    required this.icon,
     required this.isSelected,
     required this.onTap,
   });
@@ -379,7 +340,7 @@ class _CurriculumSortFilterChip extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: isSelected
             ? BoxDecoration(
                 color: AppTheme.accentPrimary,
@@ -411,24 +372,14 @@ class _CurriculumSortFilterChip extends StatelessWidget {
                   ),
                 ],
               ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 14,
-              color: isSelected ? AppTheme.onAccent : AppTheme.inkForeground,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: isSelected ? AppTheme.onAccent : AppTheme.inkForeground,
-              ),
-            ),
-          ],
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w700,
+            color: isSelected ? AppTheme.onAccent : AppTheme.inkForeground,
+            letterSpacing: 0.1,
+          ),
         ),
       ),
     );

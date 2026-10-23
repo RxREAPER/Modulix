@@ -159,11 +159,10 @@ class AutomatedModuleTracker extends ConsumerWidget {
           children: [
             Text(
               'Module Based Tasks',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
+              style: AppTheme.headingStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
                 color: AppTheme.inkForeground,
-                letterSpacing: -0.3,
               ),
             ),
             const SizedBox(height: 2),

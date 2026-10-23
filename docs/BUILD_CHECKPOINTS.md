@@ -31,6 +31,29 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-041] Study Matrix Overhaul, 7-Day Weekday Indicators, Thursday ISO-8601 Month Mapping, 3M/6M/1Y Range Selector, Library Clean Sub-Header & Year-Wise Heading Elevation, and Module Tasks Heading Adaptation
+- **Timestamp:** 2026-10-23 22:15 UTC
+- **Category:** UI Polish / Typography & Design System / Study Matrix Overhaul / Curriculum Elevation
+- **Files Modified (5 files):**
+  - `lib/widgets/automated_module_tracker.dart` (Elevated "Module Based Tasks" card heading to `AppTheme.headingStyle(fontSize: 22, fontWeight: FontWeight.w700)`)
+  - `lib/screens/curriculum/curriculum_screen.dart` (Removed "All 20 Subjects / Recent" and "NEET-PG Syllabus" sub-header line; converted filter chips to static professional pills strictly without icons; redesigned Year-Wise headers with accent vertical bar, `AppTheme.headingStyle(fontSize: 21)`, and clean right-aligned subject counts)
+  - `lib/screens/analytics/analytics_screen.dart` (Fine-tuned `_HeroStreakCard` horizontal padding to 14, label font size to 10.5 with letter spacing 0.1, badge icon size to 17, completely resolving partial visibility/ellipsis on "STUDY STREAK" and "BEST STREAK")
+  - `lib/widgets/analytics/neet_consistency_matrix.dart` (Renamed to "Study Matrix"; rendered all 7 days `Mon` through `Sun` at 19.0px row pitch matching cells; anchored month label attribution to ISO-8601 Thursday `week[3]` eliminating delayed/truncated month columns; added responsive duration range toggle `3M` [14W, fits viewport without scrolling], `6M` [26W], `1Y` [52W])
+  - `test/clinical_analytics_widgets_test.dart` (Updated test assertions to "Study Matrix", verified 3M/6M/1Y duration chips and 7-day weekday indicators)
+- **Summary:**
+  - **1. Module Based Tasks Heading:** Adapted dashboard desk pad card heading to EB Garamond Italic (`AppTheme.headingStyle()`), unifying typography with the rest of Modulix cards.
+  - **2. Library Sub-Header Removal & Filter Chips Clean-Up:** Completely eliminated the cluttered sub-header row beneath the search bar. Converted Sort & Filter chips (`Default`, `Most Recent`, `Year Wise`) to sleek, static text pills with zero icons.
+  - **3. Year-Wise Section Header Elevation:** Replaced button-like badge tags (`1ST YEAR`, `2ND YEAR`, etc.) with cool editorial typography: vertical color accent bar + EB Garamond Italic year title + right-aligned subject counter.
+  - **4. Hero Streak Cards Proportions:** Resolved truncation on `"STUDY STREAK"` and `"BEST STREAK"` by reducing font scale to 10.5, adjusting padding, and wrapping in defensive auto-fitting containers.
+  - **5. Study Matrix Overhaul:** Renamed from "NEET-PG Consistency Matrix" to "Study Matrix". Expanded weekday guide from 3 rows to all 7 rows (`Mon`, `Tue`, `Wed`, `Thu`, `Fri`, `Sat`, `Sun`) matching 19.0px row pitch. Fixed month label inaccuracy by basing week attribution on ISO-8601 Thursday (`week[3]`). Added `3M`, `6M`, and `1Y` duration range selector defaulting to 14 weeks so the matrix fits modern phone screens without forced scrolling.
+- **Verification:**
+  - `flutter analyze lib/ test/`: **No issues found! (0 errors, 0 warnings)**
+  - `flutter test test/clinical_analytics_widgets_test.dart test/progress_overhaul_test.dart`: **15/15 tests passed! (100%)**
+  - `flutter build apk --debug`: **Build succeeded (`build/app/outputs/flutter-apk/app-debug.apk`, 247.7MB)**
+- **Build Status:** ✅ Verified & Compiled in Debug APK
+
+---
+
 ### [CKPT-040] Analytics Hero Streak Card Text Overflow Defense & Responsive Font Scaling
 - **Timestamp:** 2026-10-23 15:55 UTC
 - **Category:** UI Polish / Responsive Layout / Defensive Overflow Protection

@@ -424,13 +424,13 @@ class AnalyticsScreen extends ConsumerWidget {
 
             const SizedBox(height: 28),
 
-            // ── NEET-PG Consistency Matrix Section ───────────────────────────
+            // ── Study Matrix Section ───────────────────────────
             NeetConsistencyMatrix(
               dailyVideos: edition.dailyHistory,
               dailyQBanks: _aggregateDailyCompleted(edition.completedQBanks),
               dailyNotes: _aggregateDailyCompleted(edition.completedNotes),
               accentColor: AppTheme.accentPrimary,
-              weeksCount: 52,
+              weeksCount: 14,
             ),
           ],
         ),
@@ -462,7 +462,7 @@ class _HeroStreakCard extends StatelessWidget {
       pressedScale: 0.97,
       borderRadius: BorderRadius.circular(18),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
         decoration: AppTheme.sketchDecoration(
           backgroundColor: AppTheme.cardWhite,
           borderRadius: 18,
@@ -480,9 +480,10 @@ class _HeroStreakCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTheme.headingStyle(
-                      fontSize: 11.5,
+                      fontSize: 10.5,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.inkForeground,
+                      letterSpacing: 0.1,
                     ),
                   ),
                 ),
@@ -490,7 +491,7 @@ class _HeroStreakCard extends StatelessWidget {
                 trailingWidget,
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Row(
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
@@ -499,7 +500,7 @@ class _HeroStreakCard extends StatelessWidget {
                   RollingDigitText.count(
                     count: int.parse(value),
                     style: TextStyle(
-                      fontSize: 26,
+                      fontSize: 24,
                       fontWeight: FontWeight.w900,
                       fontFamily: 'monospace',
                       color: AppTheme.inkForeground,
@@ -509,7 +510,7 @@ class _HeroStreakCard extends StatelessWidget {
                   Text(
                     value,
                     style: TextStyle(
-                      fontSize: 26,
+                      fontSize: 24,
                       fontWeight: FontWeight.w900,
                       fontFamily: 'monospace',
                       color: AppTheme.inkForeground,
@@ -522,7 +523,7 @@ class _HeroStreakCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: 9.5,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.mutedText,
                     ),
@@ -530,13 +531,13 @@ class _HeroStreakCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Text(
               sub,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 9.5,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.mutedText,
               ),
@@ -554,21 +555,21 @@ class _LiveFlameBadge extends StatelessWidget {
 
   const _LiveFlameBadge({
     required this.color,
-    this.size = 20,
+    this.size = 17,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
             color: color.withValues(alpha: 0.3),
-            blurRadius: 6,
-            spreadRadius: 1,
+            blurRadius: 5,
+            spreadRadius: 0.8,
           ),
         ],
       ),
@@ -587,24 +588,24 @@ class _ShiningMedalBadge extends StatelessWidget {
 
   const _ShiningMedalBadge({
     required this.color,
-    this.size = 20,
+    this.size = 17,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         shape: BoxShape.circle,
         border: Border.all(
           color: color.withValues(alpha: 0.35),
-          width: 1.2,
+          width: 1.0,
         ),
         boxShadow: [
           BoxShadow(
             color: color.withValues(alpha: 0.15),
-            blurRadius: 6,
+            blurRadius: 5,
             spreadRadius: 0.5,
           ),
         ],

@@ -40,7 +40,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('NEET-PG Consistency Matrix'), findsOneWidget);
+      expect(find.text('Study Matrix'), findsOneWidget);
+      expect(find.text('3M'), findsOneWidget);
+      expect(find.text('6M'), findsOneWidget);
+      expect(find.text('1Y'), findsOneWidget);
+      expect(find.text('Mon'), findsOneWidget);
+      expect(find.text('Sun'), findsOneWidget);
       expect(find.text('Videos'), findsOneWidget);
       expect(find.text('Time'), findsOneWidget);
       expect(find.text('Tasks'), findsOneWidget);
@@ -119,7 +124,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('NEET-PG Consistency Matrix'), findsOneWidget);
+      expect(find.text('Study Matrix'), findsOneWidget);
       expect(find.byType(NeetConsistencyMatrix), findsOneWidget);
     });
   });

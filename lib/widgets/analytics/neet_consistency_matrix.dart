@@ -32,7 +32,7 @@ class NeetConsistencyMatrix extends StatefulWidget {
     this.dailyFocusSecs,
     this.dailyTasks,
     this.accentColor,
-    this.weeksCount = 52,
+    this.weeksCount = 14,
     this.initialMetric = ConsistencyMetric.videos,
   });
 
@@ -42,14 +42,20 @@ class NeetConsistencyMatrix extends StatefulWidget {
 
 class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
   late ConsistencyMetric _currentMetric;
+  late int _selectedWeeksCount;
   late final ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
     _currentMetric = widget.initialMetric;
+    _selectedWeeksCount = widget.weeksCount;
     _scrollController = ScrollController();
     // Automatically scroll to the most recent week on the right
+    _scrollToEnd();
+  }
+
+  void _scrollToEnd() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted &&
           _scrollController.hasClients &&
@@ -57,6 +63,17 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
       }
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant NeetConsistencyMatrix oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.weeksCount != oldWidget.weeksCount) {
+      setState(() {
+        _selectedWeeksCount = widget.weeksCount;
+      });
+      _scrollToEnd();
+    }
   }
 
   @override
@@ -282,9 +299,9 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
     final today = DateTime(now.year, now.month, now.day);
     // Align current week start to Monday (weekday 1=Monday ... 7=Sunday)
     final thisMonday = today.subtract(Duration(days: today.weekday - 1));
-    final startMonday = thisMonday.subtract(Duration(days: (widget.weeksCount - 1) * 7));
+    final startMonday = thisMonday.subtract(Duration(days: (_selectedWeeksCount - 1) * 7));
 
-    final weeks = List.generate(widget.weeksCount, (w) {
+    final weeks = List.generate(_selectedWeeksCount, (w) {
       final weekStart = startMonday.add(Duration(days: w * 7));
       return List.generate(7, (d) => weekStart.add(Duration(days: d)));
     });
@@ -304,55 +321,66 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with Title and Multi-Metric Switcher
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          // Header with Title and Duration Range Selector
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'NEET-PG Consistency Matrix',
+                'Study Matrix',
                 style: AppTheme.headingStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: ink,
                 ),
               ),
-              const SizedBox(height: 2),
-              Text(
-                '${widget.weeksCount}-week cycle · Total: ${_formatMetricValue(totalValue)}',
-                style: TextStyle(fontSize: 11, color: secondary),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _durationChip(14, '3M'),
+                  const SizedBox(width: 4),
+                  _durationChip(26, '6M'),
+                  const SizedBox(width: 4),
+                  _durationChip(52, '1Y'),
+                ],
               ),
-              if (hasMultipleMetrics) ...[
-                const SizedBox(height: 10),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  child: Row(
-                    children: [
-                      _metricChip(ConsistencyMetric.videos, 'Videos', Icons.play_lesson_rounded),
-                      const SizedBox(width: 6),
-                      if (widget.dailyQBanks != null) ...[
-                        _metricChip(ConsistencyMetric.qbanks, 'Q-Banks', Icons.quiz_rounded),
-                        const SizedBox(width: 6),
-                      ],
-                      if (widget.dailyNotes != null) ...[
-                        _metricChip(ConsistencyMetric.notes, 'Notes', Icons.description_rounded),
-                        const SizedBox(width: 6),
-                      ],
-                      if (widget.dailyFocusSecs != null) ...[
-                        _metricChip(ConsistencyMetric.focusTime, 'Time', Icons.timer_rounded),
-                        const SizedBox(width: 6),
-                      ],
-                      if (widget.dailyTasks != null) ...[
-                        _metricChip(ConsistencyMetric.tasks, 'Tasks', Icons.checklist_rounded),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
             ],
           ),
+          const SizedBox(height: 2),
+          Text(
+            '$_selectedWeeksCount-week cycle · Total: ${_formatMetricValue(totalValue)}',
+            style: TextStyle(fontSize: 11, color: secondary),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          if (hasMultipleMetrics) ...[
+            const SizedBox(height: 10),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  _metricChip(ConsistencyMetric.videos, 'Videos', Icons.play_lesson_rounded),
+                  const SizedBox(width: 6),
+                  if (widget.dailyQBanks != null) ...[
+                    _metricChip(ConsistencyMetric.qbanks, 'Q-Banks', Icons.quiz_rounded),
+                    const SizedBox(width: 6),
+                  ],
+                  if (widget.dailyNotes != null) ...[
+                    _metricChip(ConsistencyMetric.notes, 'Notes', Icons.description_rounded),
+                    const SizedBox(width: 6),
+                  ],
+                  if (widget.dailyFocusSecs != null) ...[
+                    _metricChip(ConsistencyMetric.focusTime, 'Time', Icons.timer_rounded),
+                    const SizedBox(width: 6),
+                  ],
+                  if (widget.dailyTasks != null) ...[
+                    _metricChip(ConsistencyMetric.tasks, 'Tasks', Icons.checklist_rounded),
+                  ],
+                ],
+              ),
+            ),
+          ],
 
           const SizedBox(height: 14),
 
@@ -360,16 +388,18 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Weekday indicators column (M, W, F) strictly matching cell rows 0, 2, 4
+              // Weekday indicators column strictly matching cell rows 0 to 6
               Padding(
-                padding: const EdgeInsets.only(top: 24.0, right: 8.0),
+                padding: const EdgeInsets.only(top: 24.0, right: 6.0),
                 child: Column(
                   children: [
-                    _weekdayLabel('M', 19.0),
-                    const SizedBox(height: 19.0),
-                    _weekdayLabel('W', 19.0),
-                    const SizedBox(height: 19.0),
-                    _weekdayLabel('F', 19.0),
+                    _weekdayLabel('Mon', 19.0),
+                    _weekdayLabel('Tue', 19.0),
+                    _weekdayLabel('Wed', 19.0),
+                    _weekdayLabel('Thu', 19.0),
+                    _weekdayLabel('Fri', 19.0),
+                    _weekdayLabel('Sat', 19.0),
+                    _weekdayLabel('Sun', 19.0),
                   ],
                 ),
               ),
@@ -493,13 +523,53 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
   Widget _weekdayLabel(String label, double height) {
     return SizedBox(
       height: height,
-      child: Center(
+      width: 25.0,
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 9.0,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.inkForeground.withValues(alpha: 0.65),
+            letterSpacing: -0.2,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _durationChip(int weeks, String label) {
+    final isSelected = _selectedWeeksCount == weeks;
+    final accent = widget.accentColor ?? AppTheme.accentPrimary;
+
+    return ApplePressable(
+      pressedScale: 0.94,
+      onTap: () {
+        if (_selectedWeeksCount != weeks) {
+          setState(() {
+            _selectedWeeksCount = weeks;
+          });
+          _scrollToEnd();
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+        decoration: BoxDecoration(
+          color: isSelected ? accent.withValues(alpha: 0.14) : AppTheme.parchmentSurface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? accent : AppTheme.borderLight,
+            width: isSelected ? 1.4 : 1.0,
+          ),
+        ),
         child: Text(
           label,
           style: TextStyle(
             fontSize: 10.5,
-            fontWeight: FontWeight.w800,
-            color: AppTheme.inkForeground.withValues(alpha: 0.65),
+            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+            color: isSelected ? accent : AppTheme.inkForeground,
           ),
         ),
       ),
@@ -550,11 +620,12 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
     if (weeks.isEmpty) return labels;
 
     const columnWidth = 19.0;
-    String currentMonth = DateFormat('MMM').format(weeks.first.first);
+    // Anchor week month attribution to Thursday (index 3) per ISO-8601 majority rule
+    String currentMonth = DateFormat('MMM').format(weeks.first[3]);
     int weekSpanCount = 0;
 
     for (int i = 0; i < weeks.length; i++) {
-      final m = DateFormat('MMM').format(weeks[i].first);
+      final m = DateFormat('MMM').format(weeks[i][3]);
       if (m == currentMonth) {
         weekSpanCount++;
       } else {
@@ -565,12 +636,12 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                currentMonth,
+                weekSpanCount >= 2 ? currentMonth : '',
                 maxLines: 1,
                 softWrap: false,
-                overflow: TextOverflow.visible,
+                overflow: TextOverflow.clip,
                 style: TextStyle(
-                  fontSize: 10.5,
+                  fontSize: 10.0,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.inkForeground.withValues(alpha: 0.70),
                 ),
@@ -593,9 +664,9 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
               currentMonth,
               maxLines: 1,
               softWrap: false,
-              overflow: TextOverflow.visible,
+              overflow: TextOverflow.clip,
               style: TextStyle(
-                fontSize: 10.5,
+                fontSize: 10.0,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.inkForeground.withValues(alpha: 0.70),
               ),
