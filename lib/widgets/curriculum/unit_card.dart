@@ -97,10 +97,9 @@ class UnitCard extends StatelessWidget {
                     ? Icon(Icons.check_rounded, size: 17, color: AppTheme.accentPrimary)
                     : Text(
                         unitNumberFormatted,
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w900,
-                          fontFamily: 'monospace',
+                        style: AppTypography.metricValue(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
                           color: accent,
                         ),
                       ),
@@ -109,7 +108,7 @@ class UnitCard extends StatelessWidget {
 
             const SizedBox(width: 12),
 
-            // Middle: Title in EB Garamond italic + Sleek Micro-progress & details
+            // Middle: Title in Interface Sans + Sleek Micro-progress & details
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,10 +118,10 @@ class UnitCard extends StatelessWidget {
                     chapter.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTheme.headingStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: isComplete ? Colors.grey.shade700 : AppTheme.inkForeground,
+                    style: AppTypography.cardTitle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w600,
+                      color: isComplete ? AppTheme.mutedText : AppTheme.inkForeground,
                     ),
                   ),
                   const SizedBox(height: 5),
@@ -154,11 +153,9 @@ class UnitCard extends StatelessWidget {
                         isComplete
                             ? 'All done'
                             : '$completedItems/$totalItems',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          fontFamily: 'monospace',
-                          color: Colors.grey.shade600,
+                        style: AppTypography.cardMeta(
+                          fontSize: 10.5,
+                          color: AppTheme.mutedText,
                         ),
                       ),
                     ],
@@ -175,10 +172,9 @@ class UnitCard extends StatelessWidget {
               children: [
                 Text(
                   '$percent%',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    fontFamily: 'monospace',
+                  style: AppTypography.microBadge(
+                    fontSize: 11.0,
+                    fontWeight: FontWeight.w700,
                     color: isComplete ? AppTheme.accentPrimary : AppTheme.inkForeground,
                   ),
                 ),

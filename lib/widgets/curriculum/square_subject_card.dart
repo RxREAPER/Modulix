@@ -78,13 +78,12 @@ class SquareSubjectCard extends StatelessWidget {
                   ),
                   child: Text(
                     '$percent%',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      fontFamily: 'monospace',
+                    style: AppTypography.microBadge(
                       color: percent == 100
                           ? AppTheme.accentPrimary
                           : AppTheme.inkForeground,
+                      fontSize: 10,
+                      letterSpacing: 0.3,
                     ),
                   ),
                 ),
@@ -98,11 +97,9 @@ class SquareSubjectCard extends StatelessWidget {
               subject.displayName,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
-                color: AppTheme.inkForeground,
-                letterSpacing: -0.2,
+              style: AppTypography.cardTitle(
+                fontSize: 14.5,
+                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 3),
@@ -110,11 +107,7 @@ class SquareSubjectCard extends StatelessWidget {
             // Total videos & Total hours
             Text(
               '${subject.totalVideos} vids · ${totalHours.toStringAsFixed(1)} hrs',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.mutedText,
-              ),
+              style: AppTypography.cardMeta(fontSize: 11.0),
             ),
 
             const SizedBox(height: 8),

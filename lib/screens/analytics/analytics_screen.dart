@@ -499,20 +499,18 @@ class _HeroStreakCard extends StatelessWidget {
                 if (int.tryParse(value) != null)
                   RollingDigitText.count(
                     count: int.parse(value),
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      fontFamily: 'monospace',
+                    style: AppTypography.metricValue(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
                       color: AppTheme.inkForeground,
                     ),
                   )
                 else
                   Text(
                     value,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      fontFamily: 'monospace',
+                    style: AppTypography.metricValue(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
                       color: AppTheme.inkForeground,
                     ),
                   ),
@@ -522,9 +520,8 @@ class _HeroStreakCard extends StatelessWidget {
                     unit,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w700,
+                    style: AppTypography.metricLabel(
+                      fontSize: 10.0,
                       color: AppTheme.mutedText,
                     ),
                   ),
@@ -536,9 +533,8 @@ class _HeroStreakCard extends StatelessWidget {
               sub,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 9.5,
-                fontWeight: FontWeight.w600,
+              style: AppTypography.cardSubtitle(
+                fontSize: 10.0,
                 color: AppTheme.mutedText,
               ),
             ),
@@ -690,9 +686,9 @@ class _HubCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: AppTheme.headingStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
+                        style: AppTypography.cardTitle(
+                          fontSize: 16.5,
+                          fontWeight: FontWeight.w600,
                           color: AppTheme.inkForeground,
                         ),
                       ),
@@ -701,9 +697,8 @@ class _HubCard extends StatelessWidget {
                         subtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
+                        style: AppTypography.cardSubtitle(
+                          fontSize: 11.5,
                           color: AppTheme.mutedText,
                         ),
                       ),
@@ -731,9 +726,10 @@ class _HubCard extends StatelessWidget {
                     ),
                     child: Text(
                       badge,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
+                      style: AppTypography.microBadge(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.4,
                         color: AppTheme.inkForeground,
                       ),
                     ),
@@ -764,32 +760,46 @@ class _HubCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(stat1Label,
-                        style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.mutedText)),
-                    Text(stat1Value,
-                        style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w900,
-                            color: AppTheme.inkForeground)),
+                    Text(
+                      stat1Label,
+                      style: AppTypography.metricLabel(
+                        fontSize: 9.5,
+                        letterSpacing: 0.5,
+                        color: AppTheme.mutedText,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      stat1Value,
+                      style: AppTypography.metricValue(
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.inkForeground,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(width: 24),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(stat2Label,
-                        style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.mutedText)),
-                    Text(stat2Value,
-                        style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w900,
-                            color: AppTheme.inkForeground)),
+                    Text(
+                      stat2Label,
+                      style: AppTypography.metricLabel(
+                        fontSize: 9.5,
+                        letterSpacing: 0.5,
+                        color: AppTheme.mutedText,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      stat2Value,
+                      style: AppTypography.metricValue(
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.inkForeground,
+                      ),
+                    ),
                   ],
                 ),
                 const Spacer(),
@@ -812,9 +822,8 @@ class _HubCard extends StatelessWidget {
                     children: [
                       Text(
                         'Open Page',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                        style: AppTypography.cardAction(
+                          fontSize: 11.5,
                           color: AppTheme.current.isDark
                               ? Colors.white.withValues(alpha: 0.88)
                               : AppTheme.mutedText,

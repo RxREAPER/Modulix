@@ -73,30 +73,29 @@ class StudyPlanBanner extends StatelessWidget {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text(
+                          Text(
                             'Module-Based Plan',
-                            style: TextStyle(
+                            style: AppTypography.cardTitle(
                               color: Colors.white,
-                              fontSize: 14.5,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.2,
+                              fontSize: 15.0,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.25),
-                              borderRadius: BorderRadius.circular(5),
+                              borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
                               isConfigured ? 'ACTIVE' : 'SETUP',
-                              style: const TextStyle(
+                              style: AppTypography.microBadge(
                                 color: Colors.white,
-                                fontSize: 8.0,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.5,
+                                fontSize: 8.5,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.6,
                               ),
                             ),
                           ),
@@ -107,10 +106,9 @@ class StudyPlanBanner extends StatelessWidget {
                         isConfigured
                             ? 'Target pace & automated daily modules'
                             : 'Set exam deadline & daily module targets',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.92),
+                        style: AppTypography.cardSubtitle(
+                          color: Colors.white.withValues(alpha: 0.90),
                           fontSize: 11.5,
-                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],

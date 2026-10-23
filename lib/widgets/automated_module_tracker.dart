@@ -453,23 +453,14 @@ class AutomatedModuleTracker extends ConsumerWidget {
                             children: [
                               Text(
                                 subjectName,
-                                style: TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w900,
-                                  color: AppTheme.inkForeground,
-                                  letterSpacing: -0.3,
-                                ),
+                                style: AppTypography.cardTitle(fontSize: 16.5),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 selectedUnitDisplay,
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey.shade600,
-                                ),
+                                style: AppTypography.cardSubtitle(fontSize: 11.5),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -482,19 +473,18 @@ class AutomatedModuleTracker extends ConsumerWidget {
                   const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                        horizontal: 8, vertical: 3.5),
                     decoration: BoxDecoration(
                       color: paceStatusColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: paceStatusColor, width: 1.2),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: paceStatusColor, width: 1.1),
                     ),
                     child: Text(
                       paceStatusText.toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.5,
+                      style: AppTypography.microBadge(
                         color: paceStatusColor,
+                        fontSize: 10,
+                        letterSpacing: 0.7,
                       ),
                     ),
                   ),
@@ -520,17 +510,18 @@ class AutomatedModuleTracker extends ConsumerWidget {
                   Text(
                     '$completedBatchCount of ${batchVideos.length} done today',
                     style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w800,
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w600,
                       color: AppTheme.inkForeground,
+                      letterSpacing: -0.1,
                     ),
                   ),
                   Text(
                     '$progressPercent% scope completed',
                     style: TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade600,
+                      fontSize: 11.0,
+                      fontWeight: FontWeight.w500,
+                      color: AppTheme.mutedText,
                     ),
                   ),
                 ],
@@ -566,12 +557,12 @@ class AutomatedModuleTracker extends ConsumerWidget {
 
               // Integrated Inner Queue Navigation Bar (The inner part of the card)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: isAllDone
                       ? AppTheme.accentSubtle
                       : AppTheme.parchmentSurface,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     color: isAllDone
                         ? AppTheme.accentPrimary.withValues(alpha: 0.4)
@@ -585,7 +576,7 @@ class AutomatedModuleTracker extends ConsumerWidget {
                       isAllDone
                           ? Icons.check_circle_rounded
                           : Icons.play_circle_outline_rounded,
-                      size: 16,
+                      size: 15,
                       color: isAllDone
                           ? AppTheme.accentPrimary
                           : AppTheme.accentPrimary,
@@ -601,8 +592,8 @@ class AutomatedModuleTracker extends ConsumerWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
                           color: isAllDone
                               ? AppTheme.accentPrimary
                               : AppTheme.inkForeground,
@@ -616,17 +607,18 @@ class AutomatedModuleTracker extends ConsumerWidget {
                         Text(
                           'Open Queue',
                           style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w800,
+                            fontSize: 11.0,
+                            fontWeight: FontWeight.w600,
                             color: isAllDone
                                 ? const Color(0xFF059669)
                                 : AppTheme.primaryBlue,
+                            letterSpacing: 0.1,
                           ),
                         ),
                         const SizedBox(width: 3),
                         Icon(
                           Icons.arrow_forward_rounded,
-                          size: 13,
+                          size: 12,
                           color: isAllDone
                               ? const Color(0xFF059669)
                               : AppTheme.primaryBlue,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'modulix_theme.dart';
 
+export 'app_typography.dart';
+
 class AppTheme {
   /// Live theme extension representing the active theme and palette
   static ModulixThemeExtension current = ModulixThemeExtension.defaultPaper;

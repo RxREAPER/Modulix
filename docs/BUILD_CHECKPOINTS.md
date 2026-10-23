@@ -31,6 +31,29 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-042] Professional UI Typography Engine & Card Design System Overhaul
+- **Timestamp:** 2026-10-23 23:45 UTC
+- **Category:** Design System / Typography Hierarchy / UI Polish
+- **Files Modified (7 files):**
+  - `lib/theme/app_typography.dart` (New: Centralized typography token engine following Apple HIG and Linear/Things 3 design principles: dual-layer editorial Garamond italic vs modern interface sans, tabular figures, and micro-caps tracking)
+  - `lib/theme/app_theme.dart` (Exported `app_typography.dart` globally for immediate cross-module access)
+  - `lib/widgets/automated_module_tracker.dart` (Home Desk Pad tracker: migrated title to `AppTypography.cardTitle(16.5, w600)`, subtitle to `AppTypography.cardSubtitle(11.5, w500)`, pace status to `AppTypography.microBadge(10.0, w700)`, module metrics to tabular figures, and action to `AppTypography.cardAction(11.0, w600)`)
+  - `lib/widgets/curriculum/square_subject_card.dart` (Library subject cards: replaced discordant monospace on percent badges with `AppTypography.microBadge`, title to `AppTypography.cardTitle(14.5, w600)`, and metadata to `AppTypography.cardMeta(11.0, w500)`)
+  - `lib/widgets/curriculum/study_plan_banner.dart` (Curriculum active plan banner: refined banner title to `AppTypography.cardTitle(15.0, w600)`, badge to `AppTypography.microBadge(8.5, w700)`, and subtitle to `AppTypography.cardSubtitle(11.5)`)
+  - `lib/screens/analytics/analytics_screen.dart` (Streaks & Hubs: replaced chunky `w900` + monospace digits with `AppTypography.metricValue(22, w600)` with tabular figures, metric labels to `AppTypography.metricLabel(10.0)`, hub card titles to `AppTypography.cardTitle(16.5, w600)`, hub stats to `AppTypography.metricLabel` + `AppTypography.metricValue(14.0, w600)`, and actions to `AppTypography.cardAction(11.5, w600)`)
+  - `lib/widgets/curriculum/unit_card.dart` (Unit items: modernized unit number badge from monospace w900 to `AppTypography.metricValue(11.5, w700)`, unit title to `AppTypography.cardTitle(14.5, w600)`, progress counts to `AppTypography.cardMeta(10.5)`, and percent to `AppTypography.microBadge(11.0, w700)`)
+- **Summary:**
+  - Standardized all card typography across the app to resolve "font-weight inflation" and visual clutter.
+  - Eliminated arbitrary `w800`/`w900` weights, random font sizes (`14.5`, `15.5`, `17`, `9`, `9.5`), and discordant `monospace` badges.
+  - Established a strict dual-layer hierarchy: Editorial EB Garamond Italic reserved exclusively for top screen titles and section marquee headers, paired with a crisp, calibrated Modern Interface Sans for cards, metrics, and micro-copy.
+- **Verification:**
+  - `flutter analyze lib/theme/ lib/widgets/ lib/screens/`: **No issues found! (0 errors, 0 warnings)**
+  - `flutter test`: **All 288/288 tests passed! (100%)**
+  - `flutter build apk --debug`: **Build succeeded (`build/app/outputs/flutter-apk/app-debug.apk`, 247.7MB)**
+- **Build Status:** ✅ Verified & Compiled in Debug APK
+
+---
+
 ### [CKPT-041] Study Matrix Overhaul, 7-Day Weekday Indicators, Thursday ISO-8601 Month Mapping, 3M/6M/1Y Range Selector, Library Clean Sub-Header & Year-Wise Heading Elevation, and Module Tasks Heading Adaptation
 - **Timestamp:** 2026-10-23 22:15 UTC
 - **Category:** UI Polish / Typography & Design System / Study Matrix Overhaul / Curriculum Elevation
