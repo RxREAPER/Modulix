@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../models/app_state.dart';
 import '../../providers/app_state_provider.dart';
 import '../../theme/modulix_theme.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
 
 /// Full-page Theme Studio featuring minimalist, visual-first theme showcase cards.
@@ -47,10 +48,9 @@ class ThemeStudioScreen extends ConsumerWidget {
           ),
         title: Text(
           'Theme Studio',
-          style: TextStyle(
+          style: AppTheme.headingStyle(
             fontSize: 22,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -0.3,
+            fontWeight: FontWeight.w700,
             color: activeTheme.inkForeground,
           ),
         ),
@@ -150,10 +150,9 @@ class _VisualThemeCard extends StatelessWidget {
                     children: [
                       Text(
                         preset.label,
-                        style: TextStyle(
-                          fontSize: 16.5,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.3,
+                        style: AppTheme.headingStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
                           color: preset.inkForeground,
                         ),
                       ),

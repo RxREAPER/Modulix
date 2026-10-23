@@ -436,11 +436,10 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
                         children: [
                           Text(
                             subjectName,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
+                            style: AppTheme.headingStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
                               color: AppTheme.inkForeground,
-                              letterSpacing: -0.4,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -602,14 +601,13 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
                 Text(
                   isUnitScope
                       ? (targetChapters.length > 1
-                          ? 'TARGET UNITS (${targetChapters.length})'
-                          : 'TARGET UNIT')
-                      : 'ACTIVE UNIT',
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.8,
-                    color: AppTheme.inkForeground.withValues(alpha: 0.75),
+                          ? 'Target Units (${targetChapters.length})'
+                          : 'Target Unit')
+                      : 'Active Unit',
+                  style: AppTheme.headingStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.inkForeground,
                   ),
                 ),
               ],

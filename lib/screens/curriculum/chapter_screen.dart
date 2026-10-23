@@ -204,33 +204,15 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
                   }
                 },
               ),
-              title: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    subject.displayName.toUpperCase(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.8,
-                      color: meta.accent,
-                    ),
-                  ),
-                  const SizedBox(height: 1),
-                  Text(
-                    chapter.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTheme.headingStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.inkForeground,
-                    ),
-                  ),
-                ],
+              title: Text(
+                subject.displayName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTheme.headingStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.inkForeground,
+                ),
               ),
               actions: [
                 IconButton(
@@ -313,7 +295,19 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
               durationMs: 180,
               slideY: 10.0,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(18, 12, 18, 6),
+                    child: Text(
+                      chapter.name,
+                      style: AppTheme.headingStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.inkForeground,
+                      ),
+                    ),
+                  ),
                   if (categoryCount > 1)
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),

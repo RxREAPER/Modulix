@@ -476,11 +476,10 @@ class _HeroStreakCard extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.0,
-                    color: AppTheme.mutedText,
+                  style: AppTheme.headingStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.inkForeground,
                   ),
                 ),
                 trailingWidget,
@@ -679,9 +678,9 @@ class _HubCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
+                        style: AppTheme.headingStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
                           color: AppTheme.inkForeground,
                         ),
                       ),

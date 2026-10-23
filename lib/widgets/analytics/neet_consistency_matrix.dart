@@ -360,17 +360,16 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Weekday indicators column (M, W, F) strictly matching rows 0, 2, 4
+              // Weekday indicators column (M, W, F) strictly matching cell rows 0, 2, 4
               Padding(
-                padding: const EdgeInsets.only(top: 20, right: 6),
+                padding: const EdgeInsets.only(top: 24.0, right: 8.0),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _weekdayLabel('M'),
-                    const SizedBox(height: 18.5),
-                    _weekdayLabel('W'),
-                    const SizedBox(height: 18.5),
-                    _weekdayLabel('F'),
+                    _weekdayLabel('M', 19.0),
+                    const SizedBox(height: 19.0),
+                    _weekdayLabel('W', 19.0),
+                    const SizedBox(height: 19.0),
+                    _weekdayLabel('F', 19.0),
                   ],
                 ),
               ),
@@ -395,7 +394,7 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: weeks.map((week) {
                           return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 1.5),
+                            padding: const EdgeInsets.symmetric(horizontal: 2.0),
                             child: Column(
                               children: week.map((day) {
                                 final isFuture = day.isAfter(today);
@@ -417,12 +416,12 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
                                         ? null
                                         : () => _showDayDetails(context, day, count),
                                     child: Container(
-                                      margin: const EdgeInsets.symmetric(vertical: 1.5),
-                                      width: 12.5,
-                                      height: 12.5,
+                                      margin: const EdgeInsets.symmetric(vertical: 2.0),
+                                      width: 15.0,
+                                      height: 15.0,
                                       decoration: BoxDecoration(
                                         color: cellColor,
-                                        borderRadius: BorderRadius.circular(3),
+                                        borderRadius: BorderRadius.circular(3.5),
                                         border: isToday
                                             ? Border.all(color: ink, width: 1.5)
                                             : (isFuture
@@ -491,16 +490,16 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
     );
   }
 
-  Widget _weekdayLabel(String label) {
+  Widget _weekdayLabel(String label, double height) {
     return SizedBox(
-      height: 12.5,
+      height: height,
       child: Center(
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 9.5,
-            fontWeight: FontWeight.w700,
-            color: AppTheme.mutedText,
+            fontSize: 10.5,
+            fontWeight: FontWeight.w800,
+            color: AppTheme.inkForeground.withValues(alpha: 0.65),
           ),
         ),
       ),
@@ -548,31 +547,62 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
 
   List<Widget> _buildMonthLabels(List<List<DateTime>> weeks) {
     final labels = <Widget>[];
-    String? lastMonth;
+    if (weeks.isEmpty) return labels;
 
-    for (final week in weeks) {
-      final month = DateFormat('MMM').format(week.first);
-      if (month != lastMonth) {
+    const columnWidth = 19.0;
+    String currentMonth = DateFormat('MMM').format(weeks.first.first);
+    int weekSpanCount = 0;
+
+    for (int i = 0; i < weeks.length; i++) {
+      final m = DateFormat('MMM').format(weeks[i].first);
+      if (m == currentMonth) {
+        weekSpanCount++;
+      } else {
         labels.add(
           SizedBox(
-            width: 15.5,
-            child: Text(
-              month,
-              maxLines: 1,
-              softWrap: false,
-              overflow: TextOverflow.visible,
-              style: TextStyle(
-                fontSize: 9.5,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.mutedText,
+            width: weekSpanCount * columnWidth,
+            height: 18,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                currentMonth,
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.visible,
+                style: TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.inkForeground.withValues(alpha: 0.70),
+                ),
               ),
             ),
           ),
         );
-        lastMonth = month;
-      } else {
-        labels.add(const SizedBox(width: 15.5));
+        currentMonth = m;
+        weekSpanCount = 1;
       }
+    }
+    if (weekSpanCount > 0) {
+      labels.add(
+        SizedBox(
+          width: weekSpanCount * columnWidth,
+          height: 18,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              currentMonth,
+              maxLines: 1,
+              softWrap: false,
+              overflow: TextOverflow.visible,
+              style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.inkForeground.withValues(alpha: 0.70),
+              ),
+            ),
+          ),
+        ),
+      );
     }
     return labels;
   }

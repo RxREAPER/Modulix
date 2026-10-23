@@ -380,13 +380,13 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                             padding: const EdgeInsets.symmetric(horizontal: 24),
                             child: Text(
                               timer.hasTarget
-                                  ? timer.subjectName.toUpperCase().replaceAll(' ', '.')
+                                  ? timer.subjectName
                                   : 'NO TARGET SELECTED',
                               textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 2.0,
+                              style: AppTheme.headingStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8,
                                 color: isLight ? theme.accentColor : Colors.white,
                               ),
                             ),

@@ -10,6 +10,7 @@ import '../../theme/app_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/analytics/progress_radial_gauge.dart';
+import '../../widgets/curriculum/subject_sketch_icon.dart';
 
 class SubjectMasteryAnalyticsPage extends ConsumerStatefulWidget {
   const SubjectMasteryAnalyticsPage({super.key});
@@ -21,16 +22,6 @@ class SubjectMasteryAnalyticsPage extends ConsumerStatefulWidget {
 
 class _SubjectMasteryAnalyticsPageState
     extends ConsumerState<SubjectMasteryAnalyticsPage> {
-  static const _preClinicalIds = {'anatomy', 'anat', 'physiology', 'physio', 'biochemistry', 'biochem'};
-  static const _paraClinicalIds = {'pathology', 'path', 'pharmacology', 'pharm', 'microbiology', 'micro', 'forensic_medicine', 'fmt', 'forensic'};
-
-  String _getPhaseLabel(String subjectId) {
-    final lower = subjectId.toLowerCase();
-    if (_preClinicalIds.contains(lower)) return '1st Prof · Pre-Clinical';
-    if (_paraClinicalIds.contains(lower)) return '2nd Prof · Para-Clinical';
-    return '3rd Prof · Clinical';
-  }
-
   @override
   Widget build(BuildContext context) {
     final appState = ref.watch(appStateProvider).valueOrNull;
@@ -137,30 +128,6 @@ class _SubjectMasteryAnalyticsPageState
             color: AppTheme.inkForeground,
           ),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppTheme.parchmentSurface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.borderLight, width: 1.2),
-                ),
-                child: Text(
-                  '${(overallProgress * 100).round()}% MBBS Done',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w900,
-                    fontFamily: 'monospace',
-                    color: AppTheme.inkForeground,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
       body: FadeSlideEntrance(
         durationMs: 180,
@@ -244,7 +211,6 @@ class _SubjectMasteryAnalyticsPageState
               final int qTot = item['qbanks'] as int;
               final int nDone = item['notesDone'] as int;
               final int nTot = item['notes'] as int;
-              final phaseLabel = _getPhaseLabel(s.id);
 
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
@@ -267,37 +233,33 @@ class _SubjectMasteryAnalyticsPageState
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(10),
+                              width: 44,
+                              height: 44,
                               decoration: BoxDecoration(
-                                color: meta.bgLight,
+                                color: meta.accent.withValues(alpha: 0.14),
                                 borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: meta.accent, width: 1.2),
+                                border: Border.all(
+                                  color: meta.accent.withValues(alpha: 0.40),
+                                  width: 1.4,
+                                ),
                               ),
-                              child: Icon(meta.icon, color: meta.accent, size: 22),
+                              child: Center(
+                                child: SubjectSketchIcon(
+                                  subjectId: s.id,
+                                  color: meta.accent,
+                                  size: 26,
+                                ),
+                              ),
                             ),
                             const SizedBox(width: 14),
                             Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    s.name,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w900,
-                                      color: AppTheme.inkForeground,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    phaseLabel,
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppTheme.mutedText,
-                                    ),
-                                  ),
-                                ],
+                              child: Text(
+                                s.name,
+                                style: AppTheme.headingStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.inkForeground,
+                                ),
                               ),
                             ),
                             ProgressRadialGauge(

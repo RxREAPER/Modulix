@@ -31,6 +31,29 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-039] Unit Detail Top Bar Simplification, Enlarged NEET-PG Consistency Matrix, Subject Mastery Library Icons, and Expanded EB Garamond Italic Typography
+- **Timestamp:** 2026-10-23 06:55 UTC
+- **Category:** UI Polish / Typography & Design System / Consistency Matrix Scaling / Subject Mastery Visual Parity
+- **Files Modified (7 files):**
+  - `lib/screens/curriculum/chapter_screen.dart` (Top bar displays subject name only; unit title relocated to body as prominent heading below the bar)
+  - `lib/widgets/analytics/neet_consistency_matrix.dart` (Enlarged cell size to 15.0px with 2.0px margin, perfectly synchronized M/W/F weekday labels at 19.0px pitch, and grouped month headers into dynamic week span widths to eliminate clipping)
+  - `lib/screens/analytics/subject_mastery_analytics_page.dart` (Integrated `SubjectSketchIcon` in 44x44 themed sketch container matching Library page, pruned pre-clinical and para-clinical phase tags, removed "% MBBS done" tag from AppBar)
+  - `lib/screens/curriculum/module_tasks_screen.dart` (Applied `AppTheme.headingStyle()` to subject name in top banner and Target Units header)
+  - `lib/screens/timer/focus_timer_screen.dart` (Applied `AppTheme.headingStyle()` to "NO TARGET SELECTED" / active target label)
+  - `lib/screens/analytics/analytics_screen.dart` (Applied `AppTheme.headingStyle()` to Performance Hub card titles and Study/Best Streak cards)
+  - `lib/screens/settings/theme_studio_screen.dart` (Applied `AppTheme.headingStyle()` to Theme Studio AppBar title and theme preset cards)
+- **Summary:**
+  - **1. ChapterScreen Top Bar Hierarchy:** Stripped unit title from top bar so only Subject name is featured in `AppTheme.headingStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.inkForeground)`. Positioned Unit Name as a primary heading (`fontSize: 22`) in the page body below the top progress bar.
+  - **2. NEET-PG Consistency Matrix Sizing & Typography:** Enlarged matrix cells to 15.0px with 2.0px margin (19.0px row/column pitch). Grouped month labels by week spans (`weekSpanCount * 19.0`) providing 57px-95px width to prevent label clipping and collision, with contrast boosted to 0.70. Synchronized M/W/F indicators to exact 19.0px row pitches with 0.65 opacity bold typography.
+  - **3. Subject Mastery Visual Parity & Cleanup:** Upgraded each subject card to feature authentic `SubjectSketchIcon(subjectId: s.id, color: meta.accent, size: 26)` within a 44x44 themed rounded sketch box, matching the Library `SquareSubjectCard`. Pruned `% MBBS done` badge from AppBar and removed pre-clinical/para-clinical phase tags.
+  - **4. Expanded EB Garamond Italic Headings:** Applied `AppTheme.headingStyle()` across Module-Based Tasks, Focus Timer target selection, Performance Hub cards, Streak cards, and Theme Studio cards.
+- **Verification:**
+  - `flutter analyze lib/ test/`: **No issues found!** (0 errors, 0 warnings).
+  - `flutter test`: **100% of all 288 tests passed!**
+- **Build Status:** Pending APK Build / Hot Reload Ready
+
+---
+
 ### [CKPT-038] EB Garamond Italic Headings, Bottom Nav Dock Persistence Fix, Remodeled High-Density Unit Cards, Module Tasks Hierarchy & Videos Only, Focus & Deep Work Pacing Line Chart & Dual-Encoded Chronotype, Subject Mastery Syllabus Ordering & Overflow Fix, Monday-Aligned NEET-PG Consistency Matrix with Videos/Q-Banks/Notes Metrics & Root Sheet
 - **Timestamp:** 2026-10-23 06:45 UTC
 - **Category:** Typography & Branding / Navigation Polish / Curriculum Layout Redesign / Analytics Data Visualizations / NEET-PG Heatmap Matrix
