@@ -160,10 +160,15 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     required String topicType,
     int? durationMins,
   }) {
-    final bool isModule = durationMins != null && durationMins > 0;
-    final newMode = isModule ? TimerMode.moduleLinked : state.mode;
+    final bool isCountUpType = topicType.toLowerCase() == 'qbank' || topicType.toLowerCase() == 'notes';
+    final bool isModule = !isCountUpType && durationMins != null && durationMins > 0;
+    final newMode = isCountUpType
+        ? TimerMode.countUp
+        : (isModule ? TimerMode.moduleLinked : state.mode);
     final int nextSeconds;
-    if (isModule) {
+    if (newMode == TimerMode.countUp) {
+      nextSeconds = 0;
+    } else if (isModule) {
       nextSeconds = durationMins * 60;
     } else if (newMode == TimerMode.pomodoro) {
       nextSeconds = state.pomodoroPresetMins * 60;

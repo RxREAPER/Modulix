@@ -43,24 +43,10 @@ class SquareSubjectCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: meta.accent.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: meta.accent.withValues(alpha: 0.4),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Center(
-                    child: SubjectSketchIcon(
-                      subjectId: subject.id,
-                      color: meta.accent,
-                      size: 26,
-                    ),
-                  ),
+                SubjectSketchIcon(
+                  subjectId: subject.id,
+                  color: meta.accent,
+                  size: 30,
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),

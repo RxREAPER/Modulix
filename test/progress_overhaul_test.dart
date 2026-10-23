@@ -231,7 +231,8 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.text('Progress'), findsOneWidget);
       expect(find.text('PERFORMANCE HUBS'), findsOneWidget);
@@ -303,7 +304,6 @@ void main() {
       expect(find.text('Focus & Deep Work'), findsOneWidget);
       expect(find.text('7D'), findsOneWidget);
       expect(find.text('30D'), findsOneWidget);
-      expect(find.text('All'), findsOneWidget);
       expect(find.text('Brachial Plexus'), findsOneWidget);
     });
 

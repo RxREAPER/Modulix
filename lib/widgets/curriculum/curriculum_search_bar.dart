@@ -20,6 +20,8 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
   String _query = '';
   bool _isSearching = false;
 
+  Animation<double>? _secondaryAnimation;
+
   @override
   void initState() {
     super.initState();
@@ -28,8 +30,49 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
     });
   }
 
+  void _onSecondaryAnimationStatus(AnimationStatus status) {
+    if (status == AnimationStatus.forward || status == AnimationStatus.completed) {
+      if (_focusNode.hasFocus) {
+        _focusNode.unfocus();
+      }
+    } else if (status == AnimationStatus.dismissed) {
+      if (_focusNode.hasFocus) {
+        _focusNode.unfocus();
+      }
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final modalRoute = ModalRoute.of(context);
+    final secAnim = modalRoute?.secondaryAnimation;
+    if (_secondaryAnimation != secAnim) {
+      _secondaryAnimation?.removeStatusListener(_onSecondaryAnimationStatus);
+      _secondaryAnimation = secAnim;
+      _secondaryAnimation?.addStatusListener(_onSecondaryAnimationStatus);
+    }
+    if (modalRoute != null && !modalRoute.isCurrent) {
+      if (_focusNode.hasFocus) {
+        _focusNode.unfocus();
+      }
+    }
+  }
+
+  void _closeAndNavigate(VoidCallback navAction) {
+    _focusNode.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
+    _controller.clear();
+    setState(() {
+      _query = '';
+      _isSearching = false;
+    });
+    navAction();
+  }
+
   @override
   void dispose() {
+    _secondaryAnimation?.removeStatusListener(_onSecondaryAnimationStatus);
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -134,9 +177,23 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
         matchedQBanks.isNotEmpty ||
         matchedNotes.isNotEmpty;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+    final isSearchActive = _focusNode.hasFocus || _isSearching || _query.isNotEmpty;
+
+    return PopScope(
+      canPop: !isSearchActive,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _focusNode.unfocus();
+        FocusScope.of(context).unfocus();
+        setState(() {
+          _query = '';
+          _controller.clear();
+          _isSearching = false;
+        });
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
         // The Search Bar Text Field with fluid focus width expansion
         AnimatedContainer(
           duration: const Duration(milliseconds: 220),
@@ -168,6 +225,10 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
           child: TextField(
             controller: _controller,
             focusNode: _focusNode,
+            autofocus: false,
+            onTapOutside: (_) {
+              _focusNode.unfocus();
+            },
             cursorColor: AppTheme.accentPrimary,
             style: TextStyle(
               fontSize: 14,
@@ -283,7 +344,8 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
               : const SizedBox.shrink(),
         ),
       ],
-    );
+    ),
+  );
   }
 
   List<Widget> _buildCascadingResultItems({
@@ -312,20 +374,10 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
             index: cascadeIndex++,
             query: _query,
             child: ListTile(
-              leading: Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: meta.accent.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: SubjectSketchIcon(
-                    subjectId: s.id,
-                    color: meta.accent,
-                    size: 18,
-                  ),
-                ),
+              leading: SubjectSketchIcon(
+                subjectId: s.id,
+                color: meta.accent,
+                size: 24,
               ),
               title: Row(
                 children: [
@@ -343,12 +395,7 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
                 style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
               ),
               trailing: const Icon(Icons.chevron_right, size: 18),
-              onTap: () {
-                _focusNode.unfocus();
-                _controller.clear();
-                setState(() => _isSearching = false);
-                context.push('/curriculum/${s.id}');
-              },
+              onTap: () => _closeAndNavigate(() => context.push('/curriculum/${s.id}')),
             ),
           ),
         );
@@ -401,12 +448,7 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
                 style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
               ),
               trailing: const Icon(Icons.chevron_right, size: 18),
-              onTap: () {
-                _focusNode.unfocus();
-                _controller.clear();
-                setState(() => _isSearching = false);
-                context.push('/curriculum/${s.id}/$chIndex');
-              },
+              onTap: () => _closeAndNavigate(() => context.push('/curriculum/${s.id}/$chIndex')),
             ),
           ),
         );
@@ -465,12 +507,7 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
                 style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
               ),
               trailing: const Icon(Icons.chevron_right, size: 18),
-              onTap: () {
-                _focusNode.unfocus();
-                _controller.clear();
-                setState(() => _isSearching = false);
-                context.push('/curriculum/${s.id}/$chIndex?tab=videos&itemId=${v.id}');
-              },
+              onTap: () => _closeAndNavigate(() => context.push('/curriculum/${s.id}/$chIndex?tab=videos&itemId=${v.id}')),
             ),
           ),
         );
@@ -525,12 +562,7 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
                 style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
               ),
               trailing: const Icon(Icons.chevron_right, size: 18),
-              onTap: () {
-                _focusNode.unfocus();
-                _controller.clear();
-                setState(() => _isSearching = false);
-                context.push('/curriculum/${s.id}/$chIndex?tab=qbank&itemId=${q.id}');
-              },
+              onTap: () => _closeAndNavigate(() => context.push('/curriculum/${s.id}/$chIndex?tab=qbank&itemId=${q.id}')),
             ),
           ),
         );
@@ -585,12 +617,7 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
                 style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
               ),
               trailing: const Icon(Icons.chevron_right, size: 18),
-              onTap: () {
-                _focusNode.unfocus();
-                _controller.clear();
-                setState(() => _isSearching = false);
-                context.push('/curriculum/${s.id}/$chIndex?tab=notes&itemId=${n.id}');
-              },
+              onTap: () => _closeAndNavigate(() => context.push('/curriculum/${s.id}/$chIndex?tab=notes&itemId=${n.id}')),
             ),
           ),
         );

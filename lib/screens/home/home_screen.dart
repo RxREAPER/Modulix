@@ -545,10 +545,10 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
               width: 88,
               height: 88,
               decoration: BoxDecoration(
-                color: AppTheme.parchmentSurface,
+                color: AppTheme.accentSubtle,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: AppTheme.borderLight,
+                  color: AppTheme.accentPrimary.withValues(alpha: 0.35),
                   width: 1.5,
                 ),
               ),
@@ -556,7 +556,7 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
               child: Icon(
                 Icons.checklist_rounded,
                 size: 42,
-                color: AppTheme.inkForeground.withValues(alpha: 0.65),
+                color: AppTheme.accentPrimary,
               ),
             ),
           ),
@@ -578,11 +578,11 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
               key: TourTargetRegistry.keyFor(TourTargetId.todaysTasksTarget),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9.5),
               decoration: BoxDecoration(
-                color: AppTheme.inkForeground,
+                color: AppTheme.accentPrimary,
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.inkForeground.withValues(alpha: 0.15),
+                    color: AppTheme.accentPrimary.withValues(alpha: 0.25),
                     offset: const Offset(0, 2),
                     blurRadius: 6,
                   ),
@@ -594,7 +594,7 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
                   Icon(
                     Icons.playlist_add_check_rounded,
                     size: 17,
-                    color: AppTheme.paperBackground,
+                    color: AppTheme.onAccent,
                   ),
                   const SizedBox(width: 7),
                   Text(
@@ -602,7 +602,7 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
                     style: AppTypography.buttonLabel(
                       fontSize: 13.0,
                       fontWeight: FontWeight.w600,
-                      color: AppTheme.paperBackground,
+                      color: AppTheme.onAccent,
                       letterSpacing: 0.15,
                     ),
                   ),

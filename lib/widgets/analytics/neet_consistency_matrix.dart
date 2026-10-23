@@ -478,7 +478,42 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
             ],
           ),
 
-          const SizedBox(height: 12),
+          if (_selectedWeeksCount > 14) ...[
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+                  decoration: BoxDecoration(
+                    color: accent.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: accent.withValues(alpha: 0.22),
+                      width: 1.0,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.swap_horiz_rounded, size: 14, color: accent),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Slide horizontally to explore full $_selectedWeeksCount-week timeline',
+                        style: TextStyle(
+                          fontSize: 10.0,
+                          fontWeight: FontWeight.w600,
+                          color: accent,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+
+          const SizedBox(height: 10),
 
           // Legend Footer
           Row(

@@ -251,8 +251,6 @@ class _FocusTimerAnalyticsPageState
                     _timeframePill(0, '7D'),
                     const SizedBox(width: 6),
                     _timeframePill(1, '30D'),
-                    const SizedBox(width: 6),
-                    _timeframePill(2, 'All'),
                   ],
                 ),
               ],

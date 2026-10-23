@@ -758,7 +758,7 @@ class _ModuleTabPill extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.cardWhite : Colors.transparent,
           borderRadius: BorderRadius.circular(9),
@@ -777,19 +777,22 @@ class _ModuleTabPill extends StatelessWidget {
           children: [
             Icon(
               icon,
-              size: 15,
+              size: 14,
               color: isSelected ? accentColor : AppTheme.mutedText,
             ),
-            const SizedBox(width: 5),
+            const SizedBox(width: 4),
             Flexible(
-              child: Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTypography.compactAction(
-                  fontSize: 12.0,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? AppTheme.inkForeground : AppTheme.mutedText,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  style: AppTypography.compactAction(
+                    fontSize: 12.0,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected ? AppTheme.inkForeground : AppTheme.mutedText,
+                  ),
                 ),
               ),
             ),

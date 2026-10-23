@@ -415,18 +415,10 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
                 child: Row(
                   children: [
                     if (meta != null) ...[
-                      Container(
-                        width: 38,
-                        height: 38,
-                        decoration: BoxDecoration(
-                          color: meta.accent.withValues(alpha: 0.14),
-                          shape: BoxShape.circle,
-                        ),
-                        child: SubjectSketchIcon(
-                          subjectId: plan.targetSubject,
-                          color: meta.accent,
-                          size: 22,
-                        ),
+                      SubjectSketchIcon(
+                        subjectId: plan.targetSubject,
+                        color: meta.accent,
+                        size: 26,
                       ),
                       const SizedBox(width: 12),
                     ],

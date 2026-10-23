@@ -504,6 +504,10 @@ class _MainShellState extends ConsumerState<MainShell>
 
   @override
   Widget build(BuildContext context) {
+    // Watch app theme data to trigger live re-renders across all shell tabs on preset switch
+    final themeData = ref.watch(appThemeDataProvider);
+    AppTheme.current = themeData.extension;
+
     final isSessionActive = ref.watch(
       focusTimerProvider.select((s) => s.sessionActive),
     );

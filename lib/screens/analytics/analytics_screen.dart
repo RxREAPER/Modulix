@@ -545,7 +545,7 @@ class _HeroStreakCard extends StatelessWidget {
   }
 }
 
-class _LiveFlameBadge extends StatelessWidget {
+class _LiveFlameBadge extends StatefulWidget {
   final Color color;
   final double size;
 
@@ -555,30 +555,60 @@ class _LiveFlameBadge extends StatelessWidget {
   });
 
   @override
+  State<_LiveFlameBadge> createState() => _LiveFlameBadgeState();
+}
+
+class _LiveFlameBadgeState extends State<_LiveFlameBadge>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+    _scale = Tween<double>(begin: 0.94, end: 1.08).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.3),
-            blurRadius: 5,
-            spreadRadius: 0.8,
-          ),
-        ],
-      ),
-      child: Icon(
-        Icons.local_fire_department_rounded,
-        color: color,
-        size: size,
+    return ScaleTransition(
+      scale: _scale,
+      child: Container(
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          color: widget.color.withValues(alpha: 0.16),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: widget.color.withValues(alpha: 0.35),
+              blurRadius: 6,
+              spreadRadius: 1.0,
+            ),
+          ],
+        ),
+        child: Icon(
+          Icons.local_fire_department_rounded,
+          color: widget.color,
+          size: widget.size,
+        ),
       ),
     );
   }
 }
 
-class _ShiningMedalBadge extends StatelessWidget {
+class _ShiningMedalBadge extends StatefulWidget {
   final Color color;
   final double size;
 
@@ -588,28 +618,58 @@ class _ShiningMedalBadge extends StatelessWidget {
   });
 
   @override
+  State<_ShiningMedalBadge> createState() => _ShiningMedalBadgeState();
+}
+
+class _ShiningMedalBadgeState extends State<_ShiningMedalBadge>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat(reverse: true);
+    _scale = Tween<double>(begin: 0.96, end: 1.06).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: color.withValues(alpha: 0.35),
-          width: 1.0,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.15),
-            blurRadius: 5,
-            spreadRadius: 0.5,
+    return ScaleTransition(
+      scale: _scale,
+      child: Container(
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          color: widget.color.withValues(alpha: 0.14),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: widget.color.withValues(alpha: 0.4),
+            width: 1.0,
           ),
-        ],
-      ),
-      child: Icon(
-        Icons.military_tech_rounded,
-        color: color,
-        size: size,
+          boxShadow: [
+            BoxShadow(
+              color: widget.color.withValues(alpha: 0.22),
+              blurRadius: 6,
+              spreadRadius: 0.8,
+            ),
+          ],
+        ),
+        child: Icon(
+          Icons.military_tech_rounded,
+          color: widget.color,
+          size: widget.size,
+        ),
       ),
     );
   }

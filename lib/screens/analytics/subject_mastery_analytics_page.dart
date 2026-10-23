@@ -201,7 +201,6 @@ class _SubjectMasteryAnalyticsPageState
             // ── 2. Subject Cards List (1st Year to Final Year) ─────────────
             ...subjectCards.map((item) {
               final s = item['subject'] as Subject;
-              final meta = subjectMeta(s.id);
               final double pct = item['pct'] as double;
               final int vDone = item['videosDone'] as int;
               final int vTot = item['videos'] as int;
@@ -230,24 +229,10 @@ class _SubjectMasteryAnalyticsPageState
                       children: [
                         Row(
                           children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: meta.accent.withValues(alpha: 0.14),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: meta.accent.withValues(alpha: 0.40),
-                                  width: 1.4,
-                                ),
-                              ),
-                              child: Center(
-                                child: SubjectSketchIcon(
-                                  subjectId: s.id,
-                                  color: meta.accent,
-                                  size: 26,
-                                ),
-                              ),
+                            SubjectSketchIcon(
+                              subjectId: s.id,
+                              color: subjectMeta(s.id).accent,
+                              size: 32,
                             ),
                             const SizedBox(width: 14),
                             Expanded(
@@ -264,7 +249,7 @@ class _SubjectMasteryAnalyticsPageState
                               progress: pct,
                               size: 44,
                               strokeWidth: 4.5,
-                              progressColor: meta.accent,
+                              progressColor: AppTheme.accentPrimary,
                               percentageStyle: AppTypography.metricValue(
                                 fontSize: 11.0,
                                 fontWeight: FontWeight.w700,
@@ -297,14 +282,14 @@ class _SubjectMasteryAnalyticsPageState
                                   style: AppTypography.compactAction(
                                     fontSize: 11.0,
                                     fontWeight: FontWeight.w600,
-                                    color: meta.accent,
+                                    color: AppTheme.accentPrimary,
                                   ),
                                 ),
                                 const SizedBox(width: 2),
                                 Icon(
                                   Icons.chevron_right_rounded,
                                   size: 16,
-                                  color: meta.accent,
+                                  color: AppTheme.accentPrimary,
                                 ),
                               ],
                             ),

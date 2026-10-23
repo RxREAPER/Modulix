@@ -31,6 +31,29 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-046] Standalone Subtle Subject Icons De-Enclosure & Search Auto-Focus Keyboard Bugfix
+- **Timestamp:** 2026-10-24 04:12 UTC
+- **Category:** UI / UX / Search Engine / Performance / Bugfix
+- **Files Modified (9 files):**
+  - `lib/widgets/curriculum/square_subject_card.dart` (Removed 44x44 container decoration box and border; rendered clean standalone `SubjectSketchIcon`)
+  - `lib/widgets/curriculum/subject_header_card.dart` (Removed 50x50 container decoration box and border; rendered clean standalone `SubjectSketchIcon`)
+  - `lib/screens/plan/plan_screen.dart` (Removed circular container background and border from horizontal subject scroll; rendered clean standalone `SubjectSketchIcon`)
+  - `lib/screens/analytics/subject_mastery_analytics_page.dart` (Removed 44x44 container decoration box; rendered clean standalone `SubjectSketchIcon`)
+  - `lib/widgets/automated_module_tracker.dart` (Removed circular container background around `SubjectSketchIcon`)
+  - `lib/screens/curriculum/module_tasks_screen.dart` (Removed circular container background around `SubjectSketchIcon`)
+  - `lib/widgets/curriculum/curriculum_search_bar.dart` (Added route secondary animation listener to auto-unfocus on route transition, `autofocus: false`, `onTapOutside: (_) => _focusNode.unfocus()`, cleaned search result leading icon, and created `_closeAndNavigate`)
+  - `lib/screens/curriculum/curriculum_screen.dart` (Unfocus before navigating to subject card, unfocus on filter chip switch, wrapped `CustomScrollView` in `NotificationListener<ScrollStartNotification>` and `GestureDetector` to dismiss keyboard on scroll and canvas tap)
+  - `lib/screens/curriculum/subject_screen.dart` (Unfocus primary focus in `appBar` back button and `PopScope`)
+- **Summary:**
+  - **Subject Icons De-Enclosure:** Completely removed the colored background enclosure boxes, borders, and circular/square containers around subject icons across Library cards, Subject detail header, Plan horizontal scroll, Subject Mastery analytics, Home tracker, and Module tasks. Kept all 20 subject icons subtle, light, and rendered cleanly in their distinctive subject accent color without box enclosures.
+  - **Search Auto-Focus & Keyboard Trigger Fix:** Eliminated the bug where the curriculum search box repeatedly triggered keyboard popups, auto-selected search, and re-opened the keyboard when popping back from a subject card. Added route-aware secondary animation listening, tap-outside dismissing, scroll-start dismissing, pre-navigation unfocus, and clean state reset.
+- **Verification:**
+  - `flutter analyze lib/`: **No issues found (100% clean)**
+  - `flutter test test/progress_overhaul_test.dart test/clinical_analytics_widgets_test.dart`: **All 15 tests passed (100%)**
+  - `flutter build apk --debug`: **Built successfully (`build/app/outputs/flutter-apk/app-debug.apk`) in 193.7s**
+  - Installed on physical OnePlus 13R (`ba009d81`, Android 16 / API 36) via `adb install -r`.
+- **Build Status:** ✅ Included in Build (Installed on OnePlus 13R ba009d81)
+
 ### [CKPT-045] Dynamic Theme Consistency for Progress Gauges, Tags, Hubs, and Top Sync Badge
 - **Timestamp:** 2026-10-24 02:40 UTC
 - **Category:** Theme Engine / Design Tokens / Analytics / Visual Consistency

@@ -172,10 +172,10 @@ class UnitCard extends StatelessWidget {
               children: [
                 Text(
                   '$percent%',
-                  style: AppTypography.microBadge(
-                    fontSize: 11.0,
-                    fontWeight: FontWeight.w700,
-                    color: isComplete ? AppTheme.accentPrimary : AppTheme.inkForeground,
+                  style: AppTypography.cardMeta(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w600,
+                    color: isComplete ? AppTheme.accentPrimary : AppTheme.mutedText,
                   ),
                 ),
                 const SizedBox(width: 4),

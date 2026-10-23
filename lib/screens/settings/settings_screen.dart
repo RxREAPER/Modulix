@@ -172,7 +172,7 @@ class _DoctorProfileCard extends ConsumerWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: AppTheme.primaryBlue.withValues(alpha: 0.35),
+                    color: AppTheme.accentPrimary.withValues(alpha: 0.35),
                     width: 2.2,
                   ),
                 ),
@@ -264,7 +264,7 @@ class _ProfileCardAction extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: AppTheme.primaryBlue),
+            Icon(icon, size: 14, color: AppTheme.accentPrimary),
             const SizedBox(width: 5),
             Text(
               label,
@@ -370,7 +370,7 @@ class _CloudSyncSection extends ConsumerWidget {
                         style: AppTypography.cardSubtitle(
                           fontSize: 12.0,
                           color: isAuthenticated
-                              ? Colors.green.shade700
+                              ? AppTheme.accentEmerald
                               : AppTheme.mutedText,
                         ),
                       ),
@@ -448,7 +448,7 @@ class _CloudSyncSection extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 11, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppTheme.inkForeground,
+                      color: AppTheme.accentPrimary,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
@@ -459,14 +459,14 @@ class _CloudSyncSection extends ConsumerWidget {
                           style: AppTypography.buttonLabel(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w600,
-                            color: AppTheme.paperBackground,
+                            color: AppTheme.onAccent,
                           ),
                         ),
                         const SizedBox(width: 3),
                         Icon(
                           Icons.arrow_forward_rounded,
                           size: 11,
-                          color: AppTheme.paperBackground,
+                          color: AppTheme.onAccent,
                         ),
                       ],
                     ),
@@ -688,18 +688,18 @@ class _SyllabusEditionSection extends ConsumerWidget {
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    color: (isEdition8 ? AppTheme.primaryBlue : Colors.teal)
+                    color: (isEdition8 ? AppTheme.accentPrimary : AppTheme.accentSecondary)
                         .withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: (isEdition8 ? AppTheme.primaryBlue : Colors.teal)
+                      color: (isEdition8 ? AppTheme.accentPrimary : AppTheme.accentSecondary)
                           .withValues(alpha: 0.3),
                       width: 1.2,
                     ),
                   ),
                   child: Icon(
                     Icons.school_outlined,
-                    color: isEdition8 ? AppTheme.primaryBlue : Colors.teal,
+                    color: isEdition8 ? AppTheme.accentPrimary : AppTheme.accentSecondary,
                     size: 22,
                   ),
                 ),
@@ -728,7 +728,7 @@ class _SyllabusEditionSection extends ConsumerWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: Colors.green.withValues(alpha: 0.12),
+                              color: AppTheme.accentEmerald.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
@@ -736,7 +736,7 @@ class _SyllabusEditionSection extends ConsumerWidget {
                               style: AppTypography.microBadge(
                                 fontSize: 8.5,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.green,
+                                color: AppTheme.accentEmerald,
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -812,16 +812,16 @@ class _NotificationsPreferencesSection extends StatelessWidget {
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    color: Colors.amber.withValues(alpha: 0.12),
+                    color: AppTheme.accentTertiary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: Colors.amber.withValues(alpha: 0.3),
+                      color: AppTheme.accentTertiary.withValues(alpha: 0.3),
                       width: 1.2,
                     ),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.notifications_active_outlined,
-                    color: Colors.amber,
+                    color: AppTheme.accentTertiary,
                     size: 22,
                   ),
                 ),
@@ -893,8 +893,8 @@ class _ResourceHubsSection extends ConsumerWidget {
           subtitle: 'Replay feature walkthrough & configure doctor profile',
           tag: 'PROFILE SETUP',
           icon: Icons.explore_outlined,
-          iconColor: AppTheme.primaryBlue,
-          iconBg: AppTheme.primaryBlue.withValues(alpha: 0.12),
+          iconColor: AppTheme.accentPrimary,
+          iconBg: AppTheme.accentSubtle,
           onTap: () => context.push('/onboarding?replay=true'),
         ),
 
@@ -906,8 +906,8 @@ class _ResourceHubsSection extends ConsumerWidget {
           subtitle: 'Interactive feature guide, pacing engine & timer tips',
           tag: 'GUIDE',
           icon: Icons.menu_book_rounded,
-          iconColor: Colors.purple,
-          iconBg: Colors.purple.withValues(alpha: 0.12),
+          iconColor: AppTheme.accentSecondary,
+          iconBg: AppTheme.accentSecondary.withValues(alpha: 0.12),
           onTap: () => LearnTheAppSheet.show(context),
         ),
 
@@ -919,8 +919,8 @@ class _ResourceHubsSection extends ConsumerWidget {
           subtitle: 'Export/import JSON backups & review privacy legal terms',
           tag: 'SECURITY',
           icon: Icons.shield_outlined,
-          iconColor: Colors.teal,
-          iconBg: Colors.teal.withValues(alpha: 0.12),
+          iconColor: AppTheme.accentTertiary,
+          iconBg: AppTheme.accentTertiary.withValues(alpha: 0.12),
           onTap: () => DataPrivacySheet.show(context),
         ),
 
@@ -932,8 +932,8 @@ class _ResourceHubsSection extends ConsumerWidget {
           subtitle: 'Version info, medical disclaimer & reset progress',
           tag: 'ABOUT',
           icon: Icons.info_outline_rounded,
-          iconColor: Colors.blueGrey,
-          iconBg: Colors.blueGrey.withValues(alpha: 0.12),
+          iconColor: AppTheme.accentQuaternary,
+          iconBg: AppTheme.accentQuaternary.withValues(alpha: 0.12),
           onTap: () => AboutSupportSheet.show(context),
         ),
       ],

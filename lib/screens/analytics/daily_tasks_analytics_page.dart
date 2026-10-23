@@ -281,7 +281,7 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                                 color: count > 0
                                     ? (isToday
                                         ? AppTheme.accentPrimary
-                                        : AppTheme.accentEmerald)
+                                        : AppTheme.accentSecondary)
                                     : (AppTheme.current.isDark
                                         ? Colors.white.withValues(alpha: 0.06)
                                         : AppTheme.borderLight),

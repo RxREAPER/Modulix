@@ -464,6 +464,7 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
         return PopScope(
           canPop: canPop,
           onPopInvokedWithResult: (didPop, _) {
+            FocusManager.instance.primaryFocus?.unfocus();
             if (didPop) return;
             try {
               context.go('/curriculum');
@@ -476,6 +477,7 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
               leading: IconButton(
                 icon: Icon(Icons.arrow_back_rounded, color: AppTheme.inkForeground),
                 onPressed: () {
+                  FocusManager.instance.primaryFocus?.unfocus();
                   if (Navigator.of(context).canPop()) {
                     Navigator.of(context).pop();
                   } else {
@@ -538,52 +540,7 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                           onTapAnalytics: () => context.go('/curriculum/${widget.subjectId}/analytics'),
                         ),
 
-                        const SizedBox(height: 18),
-
-                        // 2. Units Section Header with Quick Jump
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'CLINICAL UNITS (${subject.chapters.length})',
-                              style: AppTypography.sectionMicroHeader(
-                                fontSize: 10.5,
-                                letterSpacing: 0.8,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () => _openIndexSheet(
-                                  subject: subject,
-                                  completedVideos: completedVideos,
-                                  completedQBanks: completedQBanks,
-                                  completedNotes: completedNotes,
-                                ),
-                                borderRadius: BorderRadius.circular(8),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.format_list_bulleted_rounded, size: 13, color: Colors.grey.shade700),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        'Jump to Unit (Index) ▾',
-                                        style: AppTypography.compactAction(
-                                          fontSize: 11.0,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey.shade700,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        const SizedBox(height: 14),
 
                         const SizedBox(height: 6),
                         const InSituHintPill(

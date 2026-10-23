@@ -134,27 +134,39 @@ class CurriculumScreen extends ConsumerWidget {
                               label: 'Default',
                               isSelected:
                                   sortMode == CurriculumSortMode.defaultOrder,
-                              onTap: () => ref
-                                  .read(curriculumSortProvider.notifier)
-                                  .setMode(CurriculumSortMode.defaultOrder),
+                              onTap: () {
+                                FocusScope.of(context).unfocus();
+                                FocusManager.instance.primaryFocus?.unfocus();
+                                ref
+                                    .read(curriculumSortProvider.notifier)
+                                    .setMode(CurriculumSortMode.defaultOrder);
+                              },
                             ),
                             const SizedBox(width: 8),
                             _CurriculumSortFilterChip(
                               label: 'Most Recent',
                               isSelected:
                                   sortMode == CurriculumSortMode.mostRecent,
-                              onTap: () => ref
-                                  .read(curriculumSortProvider.notifier)
-                                  .setMode(CurriculumSortMode.mostRecent),
+                              onTap: () {
+                                FocusScope.of(context).unfocus();
+                                FocusManager.instance.primaryFocus?.unfocus();
+                                ref
+                                    .read(curriculumSortProvider.notifier)
+                                    .setMode(CurriculumSortMode.mostRecent);
+                              },
                             ),
                             const SizedBox(width: 8),
                             _CurriculumSortFilterChip(
                               label: 'Year Wise',
                               isSelected:
                                   sortMode == CurriculumSortMode.yearWise,
-                              onTap: () => ref
-                                  .read(curriculumSortProvider.notifier)
-                                  .setMode(CurriculumSortMode.yearWise),
+                              onTap: () {
+                                FocusScope.of(context).unfocus();
+                                FocusManager.instance.primaryFocus?.unfocus();
+                                ref
+                                    .read(curriculumSortProvider.notifier)
+                                    .setMode(CurriculumSortMode.yearWise);
+                              },
                             ),
                           ],
                         ),
@@ -231,8 +243,11 @@ class CurriculumScreen extends ConsumerWidget {
                         final card = SquareSubjectCard(
                           subject: subject,
                           completion: completion,
-                          onTap: () =>
-                              context.go('/curriculum/${subject.id}'),
+                          onTap: () {
+                            FocusScope.of(context).unfocus();
+                            FocusManager.instance.primaryFocus?.unfocus();
+                            context.go('/curriculum/${subject.id}');
+                          },
                         );
 
                         if (year == kCurriculumYears.first) {
@@ -284,8 +299,11 @@ class CurriculumScreen extends ConsumerWidget {
                       final card = SquareSubjectCard(
                         subject: subject,
                         completion: completion,
-                        onTap: () =>
-                            context.go('/curriculum/${subject.id}'),
+                        onTap: () {
+                          FocusScope.of(context).unfocus();
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          context.go('/curriculum/${subject.id}');
+                        },
                       );
 
                       if (index == 0) {
@@ -310,10 +328,24 @@ class CurriculumScreen extends ConsumerWidget {
             );
           }
 
-          return CustomScrollView(
-            physics: const BouncingScrollPhysics(
-                parent: AlwaysScrollableScrollPhysics()),
-            slivers: slivers,
+          return NotificationListener<ScrollStartNotification>(
+            onNotification: (_) {
+              FocusScope.of(context).unfocus();
+              FocusManager.instance.primaryFocus?.unfocus();
+              return false;
+            },
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () {
+                FocusScope.of(context).unfocus();
+                FocusManager.instance.primaryFocus?.unfocus();
+              },
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics()),
+                slivers: slivers,
+              ),
+            ),
           );
         },
       ),
@@ -339,7 +371,8 @@ class _CurriculumSortFilterChip extends StatelessWidget {
       pressedScale: 0.94,
       borderRadius: BorderRadius.circular(12),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
+        duration: const Duration(milliseconds: 90),
+        curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6.5),
         decoration: isSelected
             ? BoxDecoration(

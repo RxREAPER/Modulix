@@ -216,7 +216,6 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                     itemBuilder: (ctx, i) {
                     final sub = subjectsList[i];
                     final isSelected = sub.id == _selectedSubject;
-                    final meta = subjectMeta(sub.id);
 
                     return ApplePressable(
                       pressedScale: 0.94,
@@ -260,21 +259,21 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                             horizontal: 8, vertical: 10),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? meta.accent.withValues(alpha: 0.12)
+                              ? AppTheme.accentSubtle
                               : AppTheme.cardWhite,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: isSelected
-                                ? AppTheme.sketchBorderColor
+                                ? AppTheme.accentPrimary
                                 : AppTheme.borderLight,
-                            width: isSelected ? 2.2 : 1.2,
+                            width: isSelected ? 2.0 : 1.2,
                           ),
                           boxShadow: isSelected
                               ? [
-                                  const BoxShadow(
-                                    color: Color(0x181C1C1C),
-                                    offset: Offset(3, 3),
-                                    blurRadius: 0,
+                                  BoxShadow(
+                                    color: AppTheme.accentPrimary.withValues(alpha: 0.18),
+                                    offset: const Offset(2, 2),
+                                    blurRadius: 4,
                                   ),
                                 ]
                               : null,
@@ -282,18 +281,10 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Container(
-                              width: 38,
-                              height: 38,
-                              decoration: BoxDecoration(
-                                color: meta.accent.withValues(alpha: 0.2),
-                                shape: BoxShape.circle,
-                              ),
-                              child: SubjectSketchIcon(
-                                subjectId: sub.id,
-                                color: meta.accent,
-                                size: 22,
-                              ),
+                            SubjectSketchIcon(
+                              subjectId: sub.id,
+                              color: subjectMeta(sub.id).accent,
+                              size: 28,
                             ),
                             const SizedBox(height: 6),
                             Text(
@@ -1016,7 +1007,7 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
       children: [
         Row(
           children: [
-            Icon(icon, size: 17, color: AppTheme.primaryBlue),
+            Icon(icon, size: 17, color: AppTheme.accentPrimary),
             const SizedBox(width: 8),
             Text(
               title,

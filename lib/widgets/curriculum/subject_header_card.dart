@@ -47,17 +47,10 @@ class SubjectHeaderCard extends StatelessWidget {
             // Top Row: Medical Icon Badge + Title + Analytics CTA
             Row(
               children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: meta.accent.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: meta.accent, width: 1.8),
-                  ),
-                  child: Center(
-                    child: SubjectSketchIcon(subjectId: subject.id, color: meta.accent, size: 30),
-                  ),
+                SubjectSketchIcon(
+                  subjectId: subject.id,
+                  color: meta.accent,
+                  size: 38,
                 ),
                 const SizedBox(width: 14),
                 Expanded(

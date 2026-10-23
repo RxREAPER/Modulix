@@ -433,18 +433,10 @@ class AutomatedModuleTracker extends ConsumerWidget {
                   Expanded(
                     child: Row(
                       children: [
-                        Container(
-                          width: 38,
-                          height: 38,
-                          decoration: BoxDecoration(
-                            color: meta.accent.withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
-                          ),
-                          child: SubjectSketchIcon(
-                            subjectId: subjectId,
-                            color: meta.accent,
-                            size: 22,
-                          ),
+                        SubjectSketchIcon(
+                          subjectId: subjectId,
+                          color: meta.accent,
+                          size: 26,
                         ),
                         const SizedBox(width: 12),
                         Expanded(
