@@ -246,8 +246,8 @@ void main() {
       // Hub 3
       expect(find.text('Daily Tasks Analytics'), findsOneWidget);
 
-      // Hub 4: 19 MBBS Subjects Mastery
-      expect(find.text('19 MBBS Subjects Mastery'), findsOneWidget);
+      // Hub 4: Subject Mastery
+      expect(find.text('Subject Mastery'), findsOneWidget);
     });
   });
 
@@ -347,9 +347,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('19 MBBS Subjects Mastery'), findsOneWidget);
-      expect(find.text('All (19)'), findsOneWidget);
-      expect(find.text('Pre-Clinical (3)'), findsOneWidget);
+      expect(find.text('Subject Mastery'), findsOneWidget);
       expect(find.text('Anatomy'), findsOneWidget);
       expect(find.text('Pathology'), findsOneWidget);
     });

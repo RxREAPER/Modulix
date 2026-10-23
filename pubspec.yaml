@@ -84,3 +84,7 @@ flutter:
       fonts:
         - asset: assets/fonts/CabinSketch-Bold.ttf
           weight: 700
+    - family: EBGaramond
+      fonts:
+        - asset: assets/fonts/EBGaramond-Italic.ttf
+          style: italic

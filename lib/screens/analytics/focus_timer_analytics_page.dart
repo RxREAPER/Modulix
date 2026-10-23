@@ -126,9 +126,9 @@ class _FocusTimerAnalyticsPageState
         ),
         title: Text(
           'Focus & Deep Work',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w900,
+          style: AppTheme.headingStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
             color: AppTheme.inkForeground,
           ),
         ),
@@ -302,120 +302,247 @@ class _FocusTimerAnalyticsPageState
                   SizedBox(
                     height: 170,
                     child: RepaintBoundary(
-                      child: BarChart(
-                        BarChartData(
-                        maxY: (maxHours * 1.15).ceilToDouble(),
-                        barTouchData: BarTouchData(
-                          touchTooltipData: BarTouchTooltipData(
-                            getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                              final item = dailyData[group.x.toInt()];
-                              return BarTooltipItem(
-                                '${item['dateStr']}\n${_formatDuration(item['secs'] as int)}',
-                                const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 11,
+                      child: _selectedDaysIndex == 0
+                          ? BarChart(
+                              BarChartData(
+                                maxY: (maxHours * 1.15).ceilToDouble(),
+                                barTouchData: BarTouchData(
+                                  touchTooltipData: BarTouchTooltipData(
+                                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                                      final item = dailyData[group.x.toInt()];
+                                      return BarTooltipItem(
+                                        '${item['dateStr']}\n${_formatDuration(item['secs'] as int)}',
+                                        const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 11,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  touchCallback: (event, response) {
+                                    if (response?.spot != null &&
+                                        event is! FlTapUpEvent &&
+                                        event is! FlPanEndEvent) {
+                                      setState(() {
+                                        _touchedBarIndex =
+                                            response!.spot!.touchedBarGroupIndex;
+                                      });
+                                    } else if (event is FlTapUpEvent ||
+                                        event is FlPanEndEvent) {
+                                      setState(() {
+                                        _touchedBarIndex = null;
+                                      });
+                                    }
+                                  },
                                 ),
-                              );
-                            },
-                          ),
-                          touchCallback: (event, response) {
-                            if (response?.spot != null &&
-                                event is! FlTapUpEvent &&
-                                event is! FlPanEndEvent) {
-                              setState(() {
-                                _touchedBarIndex =
-                                    response!.spot!.touchedBarGroupIndex;
-                              });
-                            } else if (event is FlTapUpEvent ||
-                                event is FlPanEndEvent) {
-                              setState(() {
-                                _touchedBarIndex = null;
-                              });
-                            }
-                          },
-                        ),
-                        titlesData: FlTitlesData(
-                          show: true,
-                          topTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false)),
-                          rightTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false)),
-                          leftTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              reservedSize: 28,
-                              interval: 2,
-                              getTitlesWidget: (val, _) => Text(
-                                '${val.toInt()}h',
-                                style: TextStyle(
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppTheme.mutedText,
-                                ),
-                              ),
-                            ),
-                          ),
-                          bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              getTitlesWidget: (val, _) {
-                                final idx = val.toInt();
-                                if (idx < 0 || idx >= dailyData.length) {
-                                  return const SizedBox.shrink();
-                                }
-                                if (_selectedDaysIndex != 0 && idx % 5 != 0) {
-                                  return const SizedBox.shrink();
-                                }
-                                return Padding(
-                                  padding: const EdgeInsets.only(top: 6),
-                                  child: Text(
-                                    dailyData[idx]['label'] as String,
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppTheme.mutedText,
+                                titlesData: FlTitlesData(
+                                  show: true,
+                                  topTitles: const AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false)),
+                                  rightTitles: const AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false)),
+                                  leftTitles: AxisTitles(
+                                    sideTitles: SideTitles(
+                                      showTitles: true,
+                                      reservedSize: 28,
+                                      interval: 2,
+                                      getTitlesWidget: (val, _) => Text(
+                                        '${val.toInt()}h',
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppTheme.mutedText,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                        gridData: FlGridData(
-                          show: true,
-                          drawVerticalLine: false,
-                          horizontalInterval: 2,
-                          getDrawingHorizontalLine: (value) => FlLine(
-                            color: AppTheme.borderLight,
-                            strokeWidth: 0.8,
-                          ),
-                        ),
-                        borderData: FlBorderData(show: false),
-                        barGroups: List.generate(dailyData.length, (i) {
-                          final h = dailyData[i]['hours'] as double;
-                          final isSelected = _touchedBarIndex == i;
-                          return BarChartGroupData(
-                            x: i,
-                            barRods: [
-                              BarChartRodData(
-                                toY: h,
-                                width: _selectedDaysIndex == 0 ? 16 : 6,
-                                color: isSelected
-                                    ? AppTheme.inkForeground
-                                    : (h >= 4.0
-                                        ? const Color(0xFF10B981)
-                                        : AppTheme.accentPrimary),
-                                borderRadius: BorderRadius.circular(4),
+                                  bottomTitles: AxisTitles(
+                                    sideTitles: SideTitles(
+                                      showTitles: true,
+                                      getTitlesWidget: (val, _) {
+                                        final idx = val.toInt();
+                                        if (idx < 0 || idx >= dailyData.length) {
+                                          return const SizedBox.shrink();
+                                        }
+                                        return Padding(
+                                          padding: const EdgeInsets.only(top: 6),
+                                          child: Text(
+                                            dailyData[idx]['label'] as String,
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppTheme.mutedText,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                gridData: FlGridData(
+                                  show: true,
+                                  drawVerticalLine: false,
+                                  horizontalInterval: 2,
+                                  getDrawingHorizontalLine: (value) => FlLine(
+                                    color: AppTheme.borderLight,
+                                    strokeWidth: 0.8,
+                                  ),
+                                ),
+                                borderData: FlBorderData(show: false),
+                                barGroups: List.generate(dailyData.length, (i) {
+                                  final h = dailyData[i]['hours'] as double;
+                                  final isSelected = _touchedBarIndex == i;
+                                  return BarChartGroupData(
+                                    x: i,
+                                    barRods: [
+                                      BarChartRodData(
+                                        toY: h,
+                                        width: 16,
+                                        color: isSelected
+                                            ? AppTheme.inkForeground
+                                            : (h >= 4.0
+                                                ? const Color(0xFF10B981)
+                                                : AppTheme.accentPrimary),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ],
+                                  );
+                                }),
                               ),
-                            ],
-                          );
-                        }),
-                      ),
+                            )
+                          : LineChart(
+                              LineChartData(
+                                minX: 0,
+                                maxX: (dailyData.length - 1).toDouble(),
+                                minY: 0,
+                                maxY: (maxHours * 1.25).clamp(4.0, 24.0),
+                                lineTouchData: LineTouchData(
+                                  touchTooltipData: LineTouchTooltipData(
+                                    getTooltipItems: (touchedSpots) {
+                                      return touchedSpots.map((spot) {
+                                        final idx = spot.x.toInt();
+                                        if (idx < 0 || idx >= dailyData.length) return null;
+                                        final item = dailyData[idx];
+                                        return LineTooltipItem(
+                                          '${item['dateStr']}\n${_formatDuration(item['secs'] as int)}',
+                                          const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 11,
+                                          ),
+                                        );
+                                      }).toList();
+                                    },
+                                  ),
+                                ),
+                                extraLinesData: ExtraLinesData(
+                                  horizontalLines: [
+                                    HorizontalLine(
+                                      y: 4.0,
+                                      color: const Color(0xFF10B981).withValues(alpha: 0.6),
+                                      strokeWidth: 1.2,
+                                      dashArray: [5, 4],
+                                      label: HorizontalLineLabel(
+                                        show: true,
+                                        alignment: Alignment.topRight,
+                                        padding: const EdgeInsets.only(right: 6, bottom: 2),
+                                        style: const TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF10B981),
+                                        ),
+                                        labelResolver: (_) => 'Goal 4h',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                titlesData: FlTitlesData(
+                                  show: true,
+                                  topTitles: const AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false)),
+                                  rightTitles: const AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false)),
+                                  leftTitles: AxisTitles(
+                                    sideTitles: SideTitles(
+                                      showTitles: true,
+                                      reservedSize: 28,
+                                      interval: 2,
+                                      getTitlesWidget: (val, _) => Text(
+                                        '${val.toInt()}h',
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppTheme.mutedText,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  bottomTitles: AxisTitles(
+                                    sideTitles: SideTitles(
+                                      showTitles: true,
+                                      interval: _selectedDaysIndex == 1 ? 5 : 15,
+                                      getTitlesWidget: (val, _) {
+                                        final idx = val.toInt();
+                                        if (idx < 0 || idx >= dailyData.length) {
+                                          return const SizedBox.shrink();
+                                        }
+                                        return Padding(
+                                          padding: const EdgeInsets.only(top: 6),
+                                          child: Text(
+                                            dailyData[idx]['dateStr'] as String,
+                                            style: TextStyle(
+                                              fontSize: 8.5,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppTheme.mutedText,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                gridData: FlGridData(
+                                  show: true,
+                                  drawVerticalLine: false,
+                                  horizontalInterval: 2,
+                                  getDrawingHorizontalLine: (value) => FlLine(
+                                    color: AppTheme.borderLight,
+                                    strokeWidth: 0.8,
+                                  ),
+                                ),
+                                borderData: FlBorderData(show: false),
+                                lineBarsData: [
+                                  LineChartBarData(
+                                    spots: List.generate(
+                                      dailyData.length,
+                                      (i) => FlSpot(i.toDouble(), dailyData[i]['hours'] as double),
+                                    ),
+                                    isCurved: true,
+                                    curveSmoothness: 0.28,
+                                    preventCurveOverShooting: true,
+                                    color: AppTheme.accentPrimary,
+                                    barWidth: 2.6,
+                                    isStrokeCapRound: true,
+                                    dotData: const FlDotData(show: false),
+                                    belowBarData: BarAreaData(
+                                      show: true,
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          AppTheme.accentPrimary.withValues(alpha: 0.28),
+                                          AppTheme.accentPrimary.withValues(alpha: 0.02),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                     ),
                   ),
-                ),
-              ],
+                ],
               ),
             ),
 
@@ -431,7 +558,7 @@ class _FocusTimerAnalyticsPageState
               ),
               child: ChronotypeHeatStrip(
                 hourMinutes: hourMinutes,
-                activeColor: const Color(0xFF6366F1),
+                activeColor: AppTheme.accentPrimary,
               ),
             ),
 

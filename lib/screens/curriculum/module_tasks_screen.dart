@@ -30,7 +30,6 @@ class ModuleTasksScreen extends ConsumerStatefulWidget {
 
 class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
   static String? _lastCheckedKey;
-  String _activeTab = 'all'; // 'all', 'videos', 'qbank', 'notes'
 
   @override
   Widget build(BuildContext context) {
@@ -68,11 +67,10 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
           ),
         title: Text(
           'Module Based Tasks',
-          style: TextStyle(
+          style: AppTheme.headingStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
             color: AppTheme.inkForeground,
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.3,
           ),
         ),
         actions: [
@@ -323,32 +321,7 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
 
                 const SizedBox(height: 16),
 
-                // PART 2: The New Unit View
-                if (targetSubject != null && targetChapters.isNotEmpty) ...[
-                  _buildUnitSection(
-                    context: context,
-                    targetSubject: targetSubject,
-                    targetChapters: targetChapters,
-                    activeChapter: activeChapter ?? targetChapters.first,
-                    activeChapterIndex: activeChapterIndex,
-                    isUnitScope: isUnitScope,
-                    editionState: editionState,
-                  ),
-                  const SizedBox(height: 18),
-                ],
-
-                // Completion Notice Card if unit/scope is complete
-                if (isCurrentScopeFullyCompleted) ...[
-                  _buildCompletionCard(
-                    context: context,
-                    isUnitScope: isUnitScope,
-                    unitName: unitDisplayName,
-                    subjectName: subjectName,
-                  ),
-                  const SizedBox(height: 16),
-                ],
-
-                // PART 3: The New Module View (Today's Tasks & Module Switcher)
+                // PART 2: The New Module View (Today's Video Modules)
                 _buildModuleSection(
                   context: context,
                   ref: ref,
@@ -361,6 +334,33 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
                   staleIds: staleIds,
                   isCurrentScopeFullyCompleted: isCurrentScopeFullyCompleted,
                 ),
+
+                const SizedBox(height: 18),
+
+                // Completion Notice Card if unit/scope is complete
+                if (isCurrentScopeFullyCompleted) ...[
+                  _buildCompletionCard(
+                    context: context,
+                    isUnitScope: isUnitScope,
+                    unitName: unitDisplayName,
+                    subjectName: subjectName,
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // PART 3: The Target Units View
+                if (targetSubject != null && targetChapters.isNotEmpty) ...[
+                  _buildUnitSection(
+                    context: context,
+                    targetSubject: targetSubject,
+                    targetChapters: targetChapters,
+                    activeChapter: activeChapter ?? targetChapters.first,
+                    activeChapterIndex: activeChapterIndex,
+                    isUnitScope: isUnitScope,
+                    editionState: editionState,
+                  ),
+                  const SizedBox(height: 18),
+                ],
 
                 const SizedBox(height: 36),
               ],
@@ -727,7 +727,7 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
     );
   }
 
-  /// PART 3: The New Module View
+  /// PART 2: Today's Video Modules View
   Widget _buildModuleSection({
     required BuildContext context,
     required WidgetRef ref,
@@ -740,36 +740,8 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
     required List<String> staleIds,
     required bool isCurrentScopeFullyCompleted,
   }) {
-    final meta = targetSubject != null ? subjectMeta(targetSubject.id) : null;
-    final accentColor = meta?.accent ?? AppTheme.primaryBlue;
-
-    // Filter items based on _activeTab
-    final bool showVideos = _activeTab == 'all' || _activeTab == 'videos';
-    final bool showQBank = _activeTab == 'all' || _activeTab == 'qbank';
-    final bool showNotes = _activeTab == 'all' || _activeTab == 'notes';
-
     final completedVideosCount =
         batchVideos.where((v) => editionState.completedVideos.containsKey(v.id)).length;
-    final completedQBanksCount =
-        planQBanks.where((q) => editionState.completedQBanks.containsKey(q.id)).length;
-    final completedNotesCount =
-        planNotes.where((n) => editionState.completedNotes.containsKey(n.id)).length;
-
-    int totalVisible = 0;
-    int completedVisible = 0;
-    if (_activeTab == 'videos') {
-      totalVisible = batchVideos.length;
-      completedVisible = completedVideosCount;
-    } else if (_activeTab == 'qbank') {
-      totalVisible = planQBanks.length;
-      completedVisible = completedQBanksCount;
-    } else if (_activeTab == 'notes') {
-      totalVisible = planNotes.length;
-      completedVisible = completedNotesCount;
-    } else {
-      totalVisible = batchVideos.length + planQBanks.length + planNotes.length;
-      completedVisible = completedVideosCount + completedQBanksCount + completedNotesCount;
-    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -780,15 +752,14 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
           children: [
             Text(
               "Today's Modules",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
+              style: AppTheme.headingStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
                 color: AppTheme.inkForeground,
-                letterSpacing: -0.2,
               ),
             ),
             Text(
-              '$completedVisible of $totalVisible completed',
+              '$completedVideosCount of ${batchVideos.length} completed',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -799,59 +770,8 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
         ),
         const SizedBox(height: 12),
 
-        // Filter Switcher Chips: All, Videos, Q-Bank, Notes
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          child: Row(
-            children: [
-              _buildFilterChip(
-                label: 'All',
-                count: batchVideos.length + planQBanks.length + planNotes.length,
-                isSelected: _activeTab == 'all',
-                color: accentColor,
-                onTap: () => setState(() => _activeTab = 'all'),
-              ),
-              const SizedBox(width: 8),
-              _buildFilterChip(
-                label: 'Videos',
-                count: batchVideos.length,
-                icon: Icons.play_circle_outline_rounded,
-                isSelected: _activeTab == 'videos',
-                color: AppTheme.accentPrimary,
-                onTap: () => setState(() => _activeTab = 'videos'),
-              ),
-              if (planQBanks.isNotEmpty) ...[
-                const SizedBox(width: 8),
-                _buildFilterChip(
-                  label: 'Q-Bank',
-                  count: planQBanks.length,
-                  icon: Icons.quiz_outlined,
-                  isSelected: _activeTab == 'qbank',
-                  color: const Color(0xFFF97316),
-                  onTap: () => setState(() => _activeTab = 'qbank'),
-                ),
-              ],
-              if (planNotes.isNotEmpty) ...[
-                const SizedBox(width: 8),
-                _buildFilterChip(
-                  label: 'Notes',
-                  count: planNotes.length,
-                  icon: Icons.menu_book_rounded,
-                  isSelected: _activeTab == 'notes',
-                  color: const Color(0xFF10B981),
-                  onTap: () => setState(() => _activeTab = 'notes'),
-                ),
-              ],
-            ],
-          ),
-        ),
-        const SizedBox(height: 14),
-
-        // Module Cards
-        if (showVideos && batchVideos.isNotEmpty) ...[
-          if (_activeTab == 'all' && (planQBanks.isNotEmpty || planNotes.isNotEmpty))
-            _buildSectionSubHeader('VIDEOS (${batchVideos.length})', AppTheme.accentPrimary),
+        // Video Module Cards
+        if (batchVideos.isNotEmpty) ...[
           for (int i = 0; i < batchVideos.length; i++)
             _buildVideoTaskTile(
               context: context,
@@ -863,37 +783,7 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
               targetSubject: targetSubject,
               subjectName: subjectName,
             ),
-        ],
-
-        if (showQBank && planQBanks.isNotEmpty) ...[
-          if (_activeTab == 'all')
-            _buildSectionSubHeader('Q-BANK (${planQBanks.length})', const Color(0xFFF97316)),
-          for (final qbank in planQBanks)
-            _buildQBankTaskTile(
-              context: context,
-              ref: ref,
-              qbank: qbank,
-              isDone: editionState.completedQBanks.containsKey(qbank.id),
-              targetSubject: targetSubject,
-              subjectName: subjectName,
-            ),
-        ],
-
-        if (showNotes && planNotes.isNotEmpty) ...[
-          if (_activeTab == 'all')
-            _buildSectionSubHeader('NOTES (${planNotes.length})', const Color(0xFF10B981)),
-          for (final note in planNotes)
-            _buildNotesTaskTile(
-              context: context,
-              ref: ref,
-              note: note,
-              isDone: editionState.completedNotes.containsKey(note.id),
-              targetSubject: targetSubject,
-              subjectName: subjectName,
-            ),
-        ],
-
-        if (totalVisible == 0 && !isCurrentScopeFullyCompleted)
+        ] else if (!isCurrentScopeFullyCompleted)
           Container(
             padding: const EdgeInsets.all(24),
             decoration: AppTheme.sketchDecoration(
@@ -903,7 +793,7 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
             ),
             child: Center(
               child: Text(
-                'No modules pending in this filter.',
+                'No video modules pending for today.',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -913,85 +803,6 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
             ),
           ),
       ],
-    );
-  }
-
-  Widget _buildFilterChip({
-    required String label,
-    required int count,
-    IconData? icon,
-    required bool isSelected,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return ApplePressable(
-      pressedScale: 0.94,
-      onTap: () {
-        HapticFeedback.selectionClick();
-        onTap();
-      },
-      borderRadius: BorderRadius.circular(10),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? color.withValues(alpha: 0.14)
-              : AppTheme.cardWhite,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected ? color : AppTheme.borderLight,
-            width: isSelected ? 1.4 : 1.0,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(
-                icon,
-                size: 14,
-                color: isSelected ? color : AppTheme.inkForeground.withValues(alpha: 0.7),
-              ),
-              const SizedBox(width: 5),
-            ],
-            Text(
-              '$label ($count)',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: isSelected ? color : AppTheme.inkForeground,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionSubHeader(String title, Color color) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10, bottom: 8),
-      child: Row(
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.5,
-              color: color,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Container(
-              height: 0.8,
-              color: AppTheme.parchmentBorder.withValues(alpha: 0.6),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -1196,6 +1007,7 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildQBankTaskTile({
     required BuildContext context,
     required WidgetRef ref,
@@ -1353,6 +1165,7 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildNotesTaskTile({
     required BuildContext context,
     required WidgetRef ref,

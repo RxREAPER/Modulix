@@ -202,9 +202,13 @@ class _AmbientSoundSheetState extends State<AmbientSoundSheet> {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          'Multi-Track Desk Mixer',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: ink),
+                        Flexible(
+                          child: Text(
+                            'Multi-Track Desk Mixer',
+                            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: ink),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Container(
@@ -229,6 +233,8 @@ class _AmbientSoundSheetState extends State<AmbientSoundSheet> {
                     Text(
                       'Layer ambient sounds & balance channel volumes',
                       style: TextStyle(fontSize: 11.5, color: secondary),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),

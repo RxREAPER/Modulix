@@ -51,11 +51,10 @@ class CurriculumScreen extends ConsumerWidget {
           children: [
             Text(
               'Library',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
+              style: AppTheme.headingStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w700,
                 color: AppTheme.inkForeground,
-                letterSpacing: -0.5,
               ),
             ),
           ],

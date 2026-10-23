@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../models/time_log.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/daily_tasks_provider.dart';
 import '../../providers/syllabus_provider.dart';
@@ -34,11 +33,21 @@ class AnalyticsScreen extends ConsumerWidget {
     return '${m}m';
   }
 
-  static Map<String, int> _aggregateDailyFocusSecs(List<TimeLog> logs) {
+
+  static Map<String, int> _aggregateDailyCompleted(Map<String, dynamic> completedItems) {
     final map = <String, int>{};
-    for (final log in logs) {
-      final key = DateFormat('yyyy-MM-dd').format(log.timestamp);
-      map[key] = (map[key] ?? 0) + log.durationSecs;
+    for (final val in completedItems.values) {
+      if (val is String && val.isNotEmpty) {
+        final key = val.split('T').first;
+        if (key.length == 10) {
+          map[key] = (map[key] ?? 0) + 1;
+        }
+      } else if (val is Map && val['date'] != null) {
+        final key = val['date'].toString().split('T').first;
+        if (key.length == 10) {
+          map[key] = (map[key] ?? 0) + 1;
+        }
+      }
     }
     return map;
   }
@@ -177,9 +186,9 @@ class AnalyticsScreen extends ConsumerWidget {
         centerTitle: false,
         title: Text(
           'Progress',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w900,
+          style: AppTheme.headingStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
             color: AppTheme.inkForeground,
           ),
         ),
@@ -383,11 +392,11 @@ class AnalyticsScreen extends ConsumerWidget {
 
             const SizedBox(height: 14),
 
-            // ── Hub Card 4: 19 MBBS Subjects Mastery ─────────────────────────
+            // ── Hub Card 4: Subject Mastery ──────────────────────────────────
             _HubCard(
-              title: '19 MBBS Subjects Mastery',
+              title: 'Subject Mastery',
               subtitle:
-                  'Complete curriculum tracking across Pre, Para & Clinical',
+                  'Complete curriculum tracking across all 19 subjects',
               badge: '${(mbbsProgress * 100).round()}% MBBS',
               badgeColor: const Color(0xFF8B5CF6),
               icon: Icons.layers_outlined,
@@ -418,8 +427,8 @@ class AnalyticsScreen extends ConsumerWidget {
             // ── NEET-PG Consistency Matrix Section ───────────────────────────
             NeetConsistencyMatrix(
               dailyVideos: edition.dailyHistory,
-              dailyFocusSecs: _aggregateDailyFocusSecs(timeLogs),
-              dailyTasks: dailyTasksState.dateHistory,
+              dailyQBanks: _aggregateDailyCompleted(edition.completedQBanks),
+              dailyNotes: _aggregateDailyCompleted(edition.completedNotes),
               accentColor: AppTheme.accentPrimary,
               weeksCount: 52,
             ),

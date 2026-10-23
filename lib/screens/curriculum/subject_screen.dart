@@ -488,9 +488,9 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
               ),
               title: Text(
                 subject.displayName,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
+                style: AppTheme.headingStyle(
+                  fontSize: 23,
+                  fontWeight: FontWeight.w700,
                   color: AppTheme.inkForeground,
                 ),
               ),

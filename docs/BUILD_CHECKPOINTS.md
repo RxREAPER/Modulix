@@ -8,6 +8,43 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-038] EB Garamond Italic Headings, Bottom Nav Dock Persistence Fix, Remodeled High-Density Unit Cards, Module Tasks Hierarchy & Videos Only, Focus & Deep Work Pacing Line Chart & Dual-Encoded Chronotype, Subject Mastery Syllabus Ordering & Overflow Fix, Monday-Aligned NEET-PG Consistency Matrix with Videos/Q-Banks/Notes Metrics & Root Sheet
+- **Timestamp:** 2026-10-23 06:45 UTC
+- **Category:** Typography & Branding / Navigation Polish / Curriculum Layout Redesign / Analytics Data Visualizations / NEET-PG Heatmap Matrix
+- **Files Added (1 file):**
+  - `assets/fonts/EBGaramond-Italic.ttf` (offline bundled EB Garamond Italic font asset)
+- **Files Modified (15 files):**
+  - `pubspec.yaml` (registered EBGaramond font family)
+  - `lib/theme/app_theme.dart` (implemented `AppTheme.headingStyle()` and updated light/dark AppBar title themes)
+  - `lib/app.dart` (fixed bottom navigation bar disappearance using branch index bounds)
+  - `lib/screens/home/home_screen.dart` (migrated greeting and section titles to EB Garamond Italic)
+  - `lib/screens/curriculum/curriculum_screen.dart` (migrated Library title to EB Garamond Italic)
+  - `lib/screens/curriculum/subject_screen.dart` (migrated Subject title to EB Garamond Italic)
+  - `lib/screens/curriculum/chapter_screen.dart` (redesigned top bar with subject name above unit heading)
+  - `lib/screens/curriculum/module_tasks_screen.dart` (reordered Today's Modules below Subject card, restricted to videos only, EB Garamond title)
+  - `lib/screens/analytics/analytics_screen.dart` (renamed Hub 4 to Subject Mastery, wired Videos/Q-Banks/Notes into Consistency Matrix)
+  - `lib/screens/analytics/focus_timer_analytics_page.dart` (added smooth LineChart with area gradient and 4h goal line for 30D/All-Time, theme-adaptive chronotype)
+  - `lib/screens/analytics/subject_mastery_analytics_page.dart` (renamed to Subject Mastery, default 1st-to-final year order, removed phase pills, fixed overflows)
+  - `lib/widgets/curriculum/unit_card.dart` (remodeled to high-density 62px layout with badge, progress line, and counts)
+  - `lib/widgets/analytics/chronotype_heat_strip.dart` (dual height-and-color encoding from 5px to 28px, 4-quadrant circadian daypart breakdown)
+  - `lib/widgets/analytics/neet_consistency_matrix.dart` (strictly Monday-aligned calendar weeks, Videos/Q-Banks/Notes metric chips, useRootNavigator bottom sheet)
+  - `test/clinical_analytics_widgets_test.dart` & `test/progress_overhaul_test.dart` (updated tests for matrix metric chips, Subject Mastery, and chronotype layout)
+- **Summary:**
+  - **1. Remodeled High-Density Unit Cards:** Redesigned `UnitCard` into a sleek 62px horizontal layout with left unit badge (`01` / `✓`), center title in EB Garamond Italic + integrated micro-progress bar and `$completed/$total` count, and right completion percentage and chevron.
+  - **2. Global EB Garamond Italic Typography:** Bundled `EBGaramond-Italic.ttf` offline with zero network latency, exposed via `AppTheme.headingStyle()`, and applied across all screen headings, app bars, and hub titles.
+  - **3. Unit Screen Top Bar:** Upgraded `ChapterScreen` AppBar to display the Subject Name in uppercase accent color above the Unit Title in EB Garamond Italic.
+  - **4. Module Based Tasks Structure:** Reordered layout to place Today's Modules directly below the Subject banner card, followed by Target Units. Today's Modules is strictly restricted to Video modules only.
+  - **5. Focus & Deep Work Overhaul:** Replaced cramped 30D/All-Time vertical bars with a smooth curved `LineChart` featuring area gradient fill, 4h goal reference line, and interactive touch tooltip. Redesigned `ChronotypeHeatStrip` with physical height-encoded bars and a 4-part circadian daypart breakdown (Night, Morning, Afternoon, Evening).
+  - **6. Subject Mastery Redesign:** Renamed title to "Subject Mastery", removed Pre-Clinical / Para-Clinical phase filter pills, preserved natural MBBS 1st-to-final year syllabus order, and resolved pixel overflows with flexible `Wrap` layouts.
+  - **7. NEET-PG Consistency Matrix Overhaul:** Corrected calendar day alignment to strictly anchor on Mondays matching M/W/F labels, aligned month headers above week columns, replaced Time/Tasks filters with Videos / Q-Banks / Notes, and ensured daily snapshot bottom sheet opens cleanly with `useRootNavigator: true`.
+  - **8. Bottom Nav Bar Disappearance Fix:** Resolved intermittent dock disappearance on main pages by replacing brittle URL matching with branch state index bounds (`currentIndex >= 0 && currentIndex <= 3 && !canBranchPop`).
+- **Verification:**
+  - `flutter analyze lib/ test/`: **No issues found!** (0 errors, 0 warnings).
+  - `flutter test`: **100% of all 288 tests passed!**
+- **Build Status:** Pending APK Build
+
+---
+
 ### [CKPT-037] Daily Desk Pad Fluid Container Morphing, NEET-PG Consistency Matrix & Pacing Velocity Burn-Up Chart
 - **Timestamp:** 2026-10-23 04:50 UTC
 - **Category:** UI/UX Fluid Animations / Container Morphing / NEET-PG Consistency Heatmap / Pacing Trajectory & Burn-Up Charts / Flutter 3.41+ Modernization

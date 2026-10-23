@@ -144,11 +144,11 @@ class HomeScreen extends ConsumerWidget {
                         const SizedBox(height: 2),
                         Text(
                           'Focus, $doctorName.',
-                          style: TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.5,
+                          style: AppTheme.headingStyle(
+                            fontSize: 34,
+                            fontWeight: FontWeight.w700,
                             color: AppTheme.inkForeground,
+                            letterSpacing: -0.3,
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -258,11 +258,10 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
                 children: [
                   Text(
                     "Today's tasks",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
+                    style: AppTheme.headingStyle(
+                      fontSize: 23,
+                      fontWeight: FontWeight.w700,
                       color: AppTheme.inkForeground,
-                      letterSpacing: -0.3,
                     ),
                   ),
                   const SizedBox(height: 2),

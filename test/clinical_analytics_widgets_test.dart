@@ -75,6 +75,35 @@ void main() {
       expect(find.text('Tasks'), findsOneWidget);
     });
 
+    testWidgets('renders and switches Q-Banks and Notes metric chips', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: NeetConsistencyMatrix(
+                dailyVideos: sampleVideoHistory,
+                dailyQBanks: const {'2026-10-22': 30},
+                dailyNotes: const {'2026-10-22': 2},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Videos'), findsOneWidget);
+      expect(find.text('Q-Banks'), findsOneWidget);
+      expect(find.text('Notes'), findsOneWidget);
+
+      await tester.tap(find.text('Q-Banks'));
+      await tester.pumpAndSettle();
+      expect(find.text('Q-Banks'), findsOneWidget);
+
+      await tester.tap(find.text('Notes'));
+      await tester.pumpAndSettle();
+      expect(find.text('Notes'), findsOneWidget);
+    });
+
     testWidgets('HeatmapCalendar backward-compatibility adapter renders correctly', (tester) async {
       await tester.pumpWidget(
         MaterialApp(

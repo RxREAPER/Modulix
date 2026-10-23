@@ -94,6 +94,25 @@ class AppTheme {
     );
   }
 
+  /// Official EB Garamond Italic typography for all screen headings, unit titles, and subjects
+  static TextStyle headingStyle({
+    double fontSize = 24.0,
+    FontWeight fontWeight = FontWeight.w600,
+    Color? color,
+    double? letterSpacing,
+    double? height,
+  }) {
+    return TextStyle(
+      fontFamily: 'EBGaramond',
+      fontStyle: FontStyle.italic,
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color ?? inkForeground,
+      letterSpacing: letterSpacing,
+      height: height,
+    );
+  }
+
   // Brand colors
   static const _primaryPurple = Color(0xFF6C3BAA);
   static const _accentRose = Color(0xFFF43F5E);
@@ -131,9 +150,11 @@ class AppTheme {
         centerTitle: false,
         titleTextStyle: TextStyle(
           color: colorScheme.onSurface,
+          fontFamily: 'EBGaramond',
+          fontStyle: FontStyle.italic,
           fontSize: 24,
           fontWeight: FontWeight.w700,
-          letterSpacing: -0.5,
+          letterSpacing: -0.3,
         ),
         iconTheme: IconThemeData(color: colorScheme.onSurface),
       ),
@@ -218,9 +239,11 @@ class AppTheme {
         centerTitle: false,
         titleTextStyle: TextStyle(
           color: colorScheme.onSurface,
+          fontFamily: 'EBGaramond',
+          fontStyle: FontStyle.italic,
           fontSize: 24,
           fontWeight: FontWeight.w700,
-          letterSpacing: -0.5,
+          letterSpacing: -0.3,
         ),
         iconTheme: IconThemeData(color: colorScheme.onSurface),
       ),

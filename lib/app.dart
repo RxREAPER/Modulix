@@ -521,9 +521,9 @@ class _MainShellState extends ConsumerState<MainShell>
     final canBranchPop = currentBranchNavKey?.currentState?.canPop() ?? false;
     final canRootPop = _rootNavigatorKey.currentState?.canPop() ?? false;
 
-    // Determine whether the current view is a root main page or a subpage
-    const mainPaths = {'/', '/curriculum', '/analytics', '/settings'};
-    final isMainPage = mainPaths.contains(widget.currentPath) && !canBranchPop;
+    // Determine whether the current branch is at its root main page
+    final isMainBranch = currentIndex >= 0 && currentIndex <= 3;
+    final isMainPage = isMainBranch && !canBranchPop;
 
     return PopScope(
       canPop: currentIndex == 0 && !canRootPop && !canBranchPop,

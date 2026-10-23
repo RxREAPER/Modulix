@@ -204,13 +204,33 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
                   }
                 },
               ),
-              title: Text(
-                chapter.name,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: AppTheme.inkForeground,
-                  fontWeight: FontWeight.w800,
-                ),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    subject.displayName.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
+                      color: meta.accent,
+                    ),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    chapter.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTheme.headingStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.inkForeground,
+                    ),
+                  ),
+                ],
               ),
               actions: [
                 IconButton(

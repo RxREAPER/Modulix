@@ -21,8 +21,6 @@ class SubjectMasteryAnalyticsPage extends ConsumerStatefulWidget {
 
 class _SubjectMasteryAnalyticsPageState
     extends ConsumerState<SubjectMasteryAnalyticsPage> {
-  int _selectedPhaseIndex = 0; // 0: All (19), 1: Pre-Clinical, 2: Para-Clinical, 3: Clinical
-
   static const _preClinicalIds = {'anatomy', 'anat', 'physiology', 'physio', 'biochemistry', 'biochem'};
   static const _paraClinicalIds = {'pathology', 'path', 'pharmacology', 'pharm', 'microbiology', 'micro', 'forensic_medicine', 'fmt', 'forensic'};
 
@@ -31,17 +29,6 @@ class _SubjectMasteryAnalyticsPageState
     if (_preClinicalIds.contains(lower)) return '1st Prof · Pre-Clinical';
     if (_paraClinicalIds.contains(lower)) return '2nd Prof · Para-Clinical';
     return '3rd Prof · Clinical';
-  }
-
-  bool _matchesPhase(String subjectId, int phaseIndex) {
-    if (phaseIndex == 0) return true;
-    final lower = subjectId.toLowerCase();
-    if (phaseIndex == 1) return _preClinicalIds.contains(lower);
-    if (phaseIndex == 2) return _paraClinicalIds.contains(lower);
-    if (phaseIndex == 3) {
-      return !_preClinicalIds.contains(lower) && !_paraClinicalIds.contains(lower);
-    }
-    return true;
   }
 
   @override
@@ -71,6 +58,7 @@ class _SubjectMasteryAnalyticsPageState
 
     final List<Map<String, dynamic>> subjectCards = [];
 
+    // Preserves syllabus order from 1st Year (Pre-Clinical) to Final Year (Clinical)
     for (final s in subjects) {
       int sVideos = 0;
       int sVideosDone = 0;
@@ -122,17 +110,9 @@ class _SubjectMasteryAnalyticsPageState
       });
     }
 
-    // Sort subjects by completion descending
-    subjectCards.sort((a, b) => (b['pct'] as double).compareTo(a['pct'] as double));
-
     final int grandTotal = totalAllVideos + totalAllQBanks + totalAllNotes;
     final int grandDone = completedAllVideos + completedAllQBanks + completedAllNotes;
     final double overallProgress = grandTotal > 0 ? (grandDone / grandTotal) : 0.0;
-
-    final filteredCards = subjectCards.where((item) {
-      final s = item['subject'] as Subject;
-      return _matchesPhase(s.id, _selectedPhaseIndex);
-    }).toList();
 
     return Scaffold(
       backgroundColor: AppTheme.paperBackground,
@@ -150,10 +130,10 @@ class _SubjectMasteryAnalyticsPageState
           },
         ),
         title: Text(
-          '19 MBBS Subjects Mastery',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w900,
+          'Subject Mastery',
+          style: AppTheme.headingStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
             color: AppTheme.inkForeground,
           ),
         ),
@@ -234,13 +214,13 @@ class _SubjectMasteryAnalyticsPageState
                             color: AppTheme.inkForeground,
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        Row(
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 6,
                           children: [
                             _miniMetric('Videos', '$completedAllVideos/$totalAllVideos', AppTheme.accentPrimary),
-                            const SizedBox(width: 12),
                             _miniMetric('QBank', '$completedAllQBanks/$totalAllQBanks', const Color(0xFF3B82F6)),
-                            const SizedBox(width: 12),
                             _miniMetric('Notes', '$completedAllNotes/$totalAllNotes', const Color(0xFF10B981)),
                           ],
                         ),
@@ -251,25 +231,10 @@ class _SubjectMasteryAnalyticsPageState
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 18),
 
-            // ── 2. Phase Filter Switcher ───────────────────────────────────
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: Row(
-                children: [
-                  _phasePill(0, 'All (19)'),
-                  _phasePill(1, 'Pre-Clinical (3)'),
-                  _phasePill(2, 'Para-Clinical (4)'),
-                  _phasePill(3, 'Clinical (12)'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-
-            // ── 3. Subject Cards List ──────────────────────────────────────
-            ...filteredCards.map((item) {
+            // ── 2. Subject Cards List (1st Year to Final Year) ─────────────
+            ...subjectCards.map((item) {
               final s = item['subject'] as Subject;
               final meta = subjectMeta(s.id);
               final double pct = item['pct'] as double;
@@ -350,15 +315,21 @@ class _SubjectMasteryAnalyticsPageState
                           ],
                         ),
                         const SizedBox(height: 14),
-                        // Resource pills row
+                        // Resource pills row with Wrap protection
                         Row(
                           children: [
-                            _resourceTag('Videos', '$vDone/$vTot', AppTheme.accentPrimary),
+                            Expanded(
+                              child: Wrap(
+                                spacing: 6,
+                                runSpacing: 6,
+                                children: [
+                                  _resourceTag('Videos', '$vDone/$vTot', AppTheme.accentPrimary),
+                                  _resourceTag('QBank', '$qDone/$qTot', const Color(0xFF3B82F6)),
+                                  _resourceTag('Notes', '$nDone/$nTot', const Color(0xFF10B981)),
+                                ],
+                              ),
+                            ),
                             const SizedBox(width: 8),
-                            _resourceTag('QBank', '$qDone/$qTot', const Color(0xFF3B82F6)),
-                            const SizedBox(width: 8),
-                            _resourceTag('Notes', '$nDone/$nTot', const Color(0xFF10B981)),
-                            const Spacer(),
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -423,38 +394,6 @@ class _SubjectMasteryAnalyticsPageState
           fontSize: 10,
           fontWeight: FontWeight.w800,
           color: color,
-        ),
-      ),
-    );
-  }
-
-  Widget _phasePill(int index, String label) {
-    final isSelected = _selectedPhaseIndex == index;
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        setState(() {
-          _selectedPhaseIndex = index;
-        });
-      },
-      child: Container(
-        margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-        decoration: BoxDecoration(
-          color: isSelected ? AppTheme.inkForeground : AppTheme.cardWhite,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppTheme.inkForeground : AppTheme.borderLight,
-            width: 1.2,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-            color: isSelected ? AppTheme.paperBackground : AppTheme.inkForeground,
-          ),
         ),
       ),
     );
