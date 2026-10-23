@@ -31,6 +31,20 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-040] Analytics Hero Streak Card Text Overflow Defense & Responsive Font Scaling
+- **Timestamp:** 2026-10-23 15:55 UTC
+- **Category:** UI Polish / Responsive Layout / Defensive Overflow Protection
+- **Files Modified (1 file):**
+  - `lib/screens/analytics/analytics_screen.dart` (Wrapped streak card label in `Expanded` with `TextOverflow.ellipsis`, fine-tuned font size to 11.5 to cleanly fit full words without truncation, wrapped unit in `Flexible`, and defended subtitle)
+- **Summary:**
+  - Prevented right-overflow on compact display widths when rendering `STUDY STREAK` and `BEST STREAK` in EB Garamond Italic by wrapping the label in `Expanded` with `maxLines: 1` and `TextOverflow.ellipsis`, and adjusting `fontSize` to 11.5 for clean fit.
+- **Verification:**
+  - `flutter analyze lib/screens/analytics/analytics_screen.dart`: **No issues found!**
+  - `flutter test test/clinical_analytics_widgets_test.dart test/progress_overhaul_test.dart`: **All tests passed!**
+- **Build Status:** ✅ Included in Build (Installed & Verified on OnePlus 13R ba009d81)
+
+---
+
 ### [CKPT-039] Unit Detail Top Bar Simplification, Enlarged NEET-PG Consistency Matrix, Subject Mastery Library Icons, and Expanded EB Garamond Italic Typography
 - **Timestamp:** 2026-10-23 06:55 UTC
 - **Category:** UI Polish / Typography & Design System / Consistency Matrix Scaling / Subject Mastery Visual Parity
@@ -50,7 +64,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Verification:**
   - `flutter analyze lib/ test/`: **No issues found!** (0 errors, 0 warnings).
   - `flutter test`: **100% of all 288 tests passed!**
-- **Build Status:** Pending APK Build / Hot Reload Ready
+- **Build Status:** ✅ Included in Build (Installed & Verified on OnePlus 13R ba009d81)
 
 ---
 

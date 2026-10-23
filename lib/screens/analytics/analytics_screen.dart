@@ -474,14 +474,19 @@ class _HeroStreakCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  label,
-                  style: AppTheme.headingStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.inkForeground,
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTheme.headingStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.inkForeground,
+                    ),
                   ),
                 ),
+                const SizedBox(width: 4),
                 trailingWidget,
               ],
             ),
@@ -511,12 +516,16 @@ class _HeroStreakCard extends StatelessWidget {
                     ),
                   ),
                 const SizedBox(width: 4),
-                Text(
-                  unit,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.mutedText,
+                Flexible(
+                  child: Text(
+                    unit,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.mutedText,
+                    ),
                   ),
                 ),
               ],
@@ -524,6 +533,8 @@ class _HeroStreakCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               sub,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
