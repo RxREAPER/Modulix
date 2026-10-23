@@ -287,18 +287,17 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                     children: [
                       Text(
                         'PROFILE',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
+                        style: AppTypography.microBadge(
+                          fontSize: 10.0,
                           letterSpacing: 1.2,
                           color: AppTheme.primaryBlue,
                         ),
                       ),
                       Text(
                         'Customize',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
+                        style: AppTypography.dialogTitle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.w700,
                           color: AppTheme.inkForeground,
                         ),
                       ),
@@ -350,18 +349,17 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                               name,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
+                              style: AppTypography.cardTitle(
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.w700,
                                 color: AppTheme.inkForeground,
                               ),
                             ),
                             const SizedBox(height: 3),
                             Text(
                               'Live preview',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
+                              style: AppTypography.cardMeta(
+                                fontSize: 11.0,
                                 color: AppTheme.mutedText,
                               ),
                             ),
@@ -376,9 +374,8 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                 const SizedBox(height: 20),
                 Text(
                   'DISPLAY NAME',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
+                  style: AppTypography.sectionMicroHeader(
+                    fontSize: 11.0,
                     letterSpacing: 1.0,
                     color: AppTheme.inkForeground,
                   ),
@@ -404,16 +401,15 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                       if (text.isNotEmpty) notifier.setDoctorName(text);
                       setState(() => _nameDirty = false);
                     },
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
+                    style: AppTypography.cardTitle(
+                      fontSize: 15.0,
+                      fontWeight: FontWeight.w600,
                       color: AppTheme.inkForeground,
                     ),
                     decoration: InputDecoration(
                       hintText: 'e.g. Dr. Arjun',
-                      hintStyle: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                      hintStyle: AppTypography.cardSubtitle(
+                        fontSize: 14.0,
                         color: Colors.grey.shade400,
                       ),
                       filled: true,
@@ -447,9 +443,8 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                 const SizedBox(height: 20),
                 Text(
                   'CHOOSE YOUR AVATAR',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
+                  style: AppTypography.sectionMicroHeader(
+                    fontSize: 11.0,
                     letterSpacing: 1.0,
                     color: AppTheme.inkForeground,
                   ),
@@ -457,8 +452,8 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                 const SizedBox(height: 4),
                 Text(
                   'Select your companion avatar for your profile',
-                  style: TextStyle(
-                    fontSize: 11,
+                  style: AppTypography.cardSubtitle(
+                    fontSize: 11.5,
                     color: AppTheme.mutedText,
                   ),
                 ),
@@ -610,12 +605,12 @@ class _ProfileCustomizeSheetState extends ConsumerState<ProfileCustomizeSheet> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Done',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
+                  style: AppTypography.buttonLabel(
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.paperBackground,
                   ),
                 ),
               ),

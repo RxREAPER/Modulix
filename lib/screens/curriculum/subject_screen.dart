@@ -267,10 +267,10 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                               const SizedBox(width: 4),
                               Text(
                                 'UNITS',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.5,
+                                style: AppTypography.microBadge(
+                                  fontSize: 10.0,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.6,
                                   color: categoryColor,
                                 ),
                               ),
@@ -281,9 +281,9 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                         Expanded(
                           child: Text(
                             'Unit Index (${displayChapters.length} Units)',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
+                            style: AppTypography.dialogTitle(
+                              fontSize: 16.0,
+                              fontWeight: FontWeight.w600,
                               color: AppTheme.inkForeground,
                             ),
                           ),
@@ -343,10 +343,9 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                                         ? Icon(Icons.check_rounded, size: 18, color: AppTheme.accentPrimary)
                                         : Text(
                                             unitNumberFormatted,
-                                            style: TextStyle(
-                                              fontSize: 12.5,
-                                              fontWeight: FontWeight.w800,
-                                              fontFamily: 'monospace',
+                                            style: AppTypography.metricValue(
+                                              fontSize: 12.0,
+                                              fontWeight: FontWeight.w700,
                                               color: Colors.grey.shade700,
                                             ),
                                           ),
@@ -359,9 +358,9 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                                     chapter.name,
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
+                                    style: AppTypography.cardTitle(
                                       fontSize: 14.5,
-                                      fontWeight: FontWeight.w700,
+                                      fontWeight: FontWeight.w600,
                                       color: isComplete
                                           ? Colors.grey.shade600
                                           : AppTheme.inkForeground,
@@ -547,9 +546,8 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                           children: [
                             Text(
                               'CLINICAL UNITS (${subject.chapters.length})',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
+                              style: AppTypography.sectionMicroHeader(
+                                fontSize: 10.5,
                                 letterSpacing: 0.8,
                                 color: Colors.grey.shade600,
                               ),
@@ -573,9 +571,9 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                                       const SizedBox(width: 4),
                                       Text(
                                         'Jump to Unit (Index) ▾',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
+                                        style: AppTypography.compactAction(
+                                          fontSize: 11.0,
+                                          fontWeight: FontWeight.w600,
                                           color: Colors.grey.shade700,
                                         ),
                                       ),

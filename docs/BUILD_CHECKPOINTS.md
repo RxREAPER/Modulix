@@ -31,6 +31,31 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-043] Global Typography Modernization Across Cards, Buttons, Dialogs, Bottom Sheets & Video Tiles
+- **Timestamp:** 2026-10-24 01:30 UTC
+- **Category:** Design System / Typography Refactoring / UI Polish / Mobile Ergonomics
+- **Files Modified (8 files):**
+  - `lib/theme/app_typography.dart` (Extended design system tokens with `buttonLabel`, `compactAction`, `dialogTitle`, `dialogBody`, and `sectionMicroHeader`)
+  - `lib/widgets/curriculum/subject_header_card.dart` (Modernized subject header card: title to `cardTitle(18.5, w700)`, subtitle to `cardSubtitle(11.5)`, analytics action to `compactAction(11.0)`, and metrics to `metricValue(13.5, w700)` with tabular figures)
+  - `lib/screens/curriculum/subject_screen.dart` (Modernized unit section header to `sectionMicroHeader(10.5)`, Jump to Unit button to `compactAction(11.0)`, and Unit Index bottom sheet to `microBadge`, `dialogTitle(16.0)`, and `cardTitle(14.5)`)
+  - `lib/screens/curriculum/chapter_screen.dart` (Modernized `Bulk` action button to `compactAction(11.5)`, Bulk Complete dialog to `dialogTitle(18.0)`, `dialogBody(13.5)`, and `buttonLabel(13.5)`, `_ModuleTabPill` to `compactAction(12.0)`, and stat chips to `cardMeta(11.5)`)
+  - `lib/widgets/video_tile.dart` (Replaced chunky `w900 16px` serial number with `metricValue(14.5, w700)` tabular figures, video title to `cardTitle(13.5, w600)`, and duration/completion meta to `cardMeta(11.0)`)
+  - `lib/screens/curriculum/module_tasks_screen.dart` (Modernized header card scope subtitle to `cardSubtitle(11.5)`, status badge to `microBadge(10.0)`, 3-column plan metrics to `metricLabel` + `metricValue(14.0)` with tabular figures, navigation action to `compactAction(11.5)`, and Setup button to `buttonLabel(12.5)`)
+  - `lib/screens/settings/settings_screen.dart` (Modernized doctor profile card name to `cardTitle(20.0, w700)`, profile action chips to `compactAction(11.5)`, and Edit Doctor Name dialog to `dialogTitle(18.0)` and `buttonLabel(13.5)`)
+  - `lib/widgets/profile/profile_customization.dart` (Modernized persona customization sheet: modal header badge to `microBadge`, title to `dialogTitle(18.0)`, live preview to `cardTitle(18.0)`, section headers to `sectionMicroHeader(11.0)`, and Done button to `buttonLabel(15.0)`)
+- **Summary:**
+  - Extended the calibrated typography token engine (`AppTypography`) across all secondary and detail screens, functional cards, interactive buttons, modal dialogs, and bottom sheets.
+  - Eliminated arbitrary `w800`/`w900` font weights and disparate inline `TextStyle` declarations across Subject, Chapter/Unit detail, Video Tiles, Module Tasks Timeline, Settings, and Profile Customization.
+  - Enforced strict dual-layer hierarchy: EB Garamond Italic is reserved exclusively for high-level page anchors, screen AppBar titles, and marquee headings, while all functional cards, dialogs, buttons, and numeric counters use calibrated interface sans with tabular figures.
+- **Verification:**
+  - `flutter analyze lib/theme/ lib/widgets/ lib/screens/`: **0 errors, 0 warnings (100% clean)**
+  - `flutter test test/clinical_analytics_widgets_test.dart test/chapter_screen_test.dart test/subject_unit_index_test.dart`: **All 29 tests passed (100%)**
+  - `flutter build apk --debug`: **Build succeeded (`build/app/outputs/flutter-apk/app-debug.apk`, 247.7MB)**
+  - Verified on physical device: OnePlus 13R (`ba009d81`, Android 16 / API 36) via screenshot inspections across Home, Subject, Unit Index Sheet, Chapter Video Tiles, Bulk Dialog, Module Tasks, Settings, and Profile Sheet.
+- **Build Status:** ✅ Included in Build (Installed & Verified on OnePlus 13R ba009d81)
+
+---
+
 ### [CKPT-042] Professional UI Typography Engine & Card Design System Overhaul
 - **Timestamp:** 2026-10-23 23:45 UTC
 - **Category:** Design System / Typography Hierarchy / UI Polish

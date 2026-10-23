@@ -267,9 +267,9 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
                               const SizedBox(width: 4),
                               Text(
                                 'Bulk',
-                                style: TextStyle(
+                                style: AppTypography.compactAction(
                                   fontSize: 11.5,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w600,
                                   color: meta.accent,
                                 ),
                               ),
@@ -678,9 +678,9 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
             const SizedBox(width: 10),
             Text(
               title,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
+              style: AppTypography.dialogTitle(
+                fontSize: 18.0,
+                fontWeight: FontWeight.w700,
                 color: AppTheme.inkForeground,
               ),
             ),
@@ -688,11 +688,9 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
         ),
         content: Text(
           content,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
+          style: AppTypography.dialogBody(
+            fontSize: 13.5,
             color: Colors.grey.shade800,
-            height: 1.35,
           ),
         ),
         actions: [
@@ -700,8 +698,9 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'Cancel',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
+              style: AppTypography.buttonLabel(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w600,
                 color: AppTheme.mutedText,
               ),
             ),
@@ -719,9 +718,13 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
               HapticFeedback.heavyImpact();
               onConfirm();
             },
-            child: const Text(
+            child: Text(
               'Mark Complete',
-              style: TextStyle(fontWeight: FontWeight.w800),
+              style: AppTypography.buttonLabel(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.paperBackground,
+              ),
             ),
           ),
         ],
@@ -783,11 +786,10 @@ class _ModuleTabPill extends StatelessWidget {
                 title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  color:
-                      isSelected ? AppTheme.inkForeground : AppTheme.mutedText,
+                style: AppTypography.compactAction(
+                  fontSize: 12.0,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? AppTheme.inkForeground : AppTheme.mutedText,
                 ),
               ),
             ),
@@ -1129,9 +1131,13 @@ class _StatChip extends StatelessWidget {
         children: [
           Icon(icon, size: 13, color: color),
           const SizedBox(width: 5),
-          Text(label,
-              style: TextStyle(
-                  fontSize: 12, fontWeight: FontWeight.w600, color: color)),
+          Text(
+            label,
+            style: AppTypography.cardMeta(
+              fontSize: 11.5,
+              color: color,
+            ),
+          ),
         ],
       ),
     );

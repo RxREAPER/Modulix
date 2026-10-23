@@ -99,8 +99,8 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
                     const SizedBox(width: 4),
                     Text(
                       'Setup',
-                      style: TextStyle(
-                        fontSize: 12,
+                      style: AppTypography.buttonLabel(
+                        fontSize: 12.5,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.inkForeground,
                       ),
@@ -447,10 +447,9 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
                           const SizedBox(height: 2),
                           Text(
                             isUnitScope ? 'Unit: $selectedUnitDisplay' : 'Scope: $selectedUnitDisplay',
-                            style: TextStyle(
+                            style: AppTypography.cardSubtitle(
                               fontSize: 11.5,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey.shade600,
+                              color: AppTheme.mutedText,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -471,10 +470,9 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
                 ),
                 child: Text(
                   paceStatusText.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.4,
+                  style: AppTypography.microBadge(
+                    fontSize: 10.0,
+                    letterSpacing: 0.5,
                     color: paceStatusColor,
                   ),
                 ),
@@ -625,9 +623,8 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
                   children: [
                     Text(
                       'All Units',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
+                      style: AppTypography.compactAction(
+                        fontSize: 11.5,
                         color: meta.accent,
                       ),
                     ),
@@ -687,10 +684,8 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 9,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.5,
+          style: AppTypography.metricLabel(
+            fontSize: 9.0,
             color: Colors.grey.shade600,
           ),
         ),
@@ -702,9 +697,9 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
           children: [
             Text(
               value,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
+              style: AppTypography.metricValue(
+                fontSize: 14.0,
+                fontWeight: FontWeight.w700,
                 color: highlightColor ?? AppTheme.inkForeground,
               ),
             ),
@@ -712,9 +707,8 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
               const SizedBox(width: 3),
               Text(
                 unit,
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w600,
+                style: AppTypography.cardMeta(
+                  fontSize: 9.5,
                   color: Colors.grey.shade600,
                 ),
               ),

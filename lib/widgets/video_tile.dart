@@ -65,10 +65,10 @@ class VideoTile extends StatelessWidget {
                 child: Center(
                   child: Text(
                     '$serialNumber',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
+                    style: AppTypography.metricValue(
+                      fontWeight: FontWeight.w700,
                       color: isCompleted ? Colors.green.shade800 : tileColor,
-                      fontSize: 16,
+                      fontSize: 14.5,
                     ),
                   ),
                 ),
@@ -82,8 +82,8 @@ class VideoTile extends StatelessWidget {
                     AnimatedStrikeText(
                       text: video.title,
                       isStruck: isCompleted,
-                      style: TextStyle(
-                        fontSize: 13,
+                      style: AppTypography.cardTitle(
+                        fontSize: 13.5,
                         fontWeight: FontWeight.w600,
                         color: cs.onSurface,
                       ),
@@ -99,14 +99,14 @@ class VideoTile extends StatelessWidget {
                           Icon(
                             Icons.schedule_rounded,
                             size: 12,
-                            color: cs.onSurface.withValues(alpha: 0.35),
+                            color: cs.onSurface.withValues(alpha: 0.45),
                           ),
                           const SizedBox(width: 4),
                           Text(
                             video.durationLabel,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: cs.onSurface.withValues(alpha: 0.4),
+                            style: AppTypography.cardMeta(
+                              fontSize: 11.0,
+                              color: cs.onSurface.withValues(alpha: 0.5),
                             ),
                           ),
                         ],
@@ -121,8 +121,8 @@ class VideoTile extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(
                             _formatCompletionDate(completedAt!),
-                            style: const TextStyle(
-                              fontSize: 11,
+                            style: AppTypography.cardMeta(
+                              fontSize: 11.0,
                               color: Colors.green,
                             ),
                           ),

@@ -128,4 +128,81 @@ class AppTypography {
       letterSpacing: 0.1,
     );
   }
+
+  // ── 5. Buttons, Actions & Pills ───────────────────────────────────────
+
+  /// Primary or secondary filled/outlined button label
+  static TextStyle buttonLabel({
+    Color? color,
+    double fontSize = 14.0,
+    FontWeight fontWeight = FontWeight.w600,
+    double letterSpacing = 0.2,
+  }) {
+    return TextStyle(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color ?? AppTheme.paperBackground,
+      letterSpacing: letterSpacing,
+    );
+  }
+
+  /// Compact action text inside chips, pills, and auxiliary bar buttons
+  static TextStyle compactAction({
+    Color? color,
+    double fontSize = 11.5,
+    FontWeight fontWeight = FontWeight.w600,
+    double letterSpacing = 0.2,
+  }) {
+    return TextStyle(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color ?? AppTheme.inkForeground,
+      letterSpacing: letterSpacing,
+    );
+  }
+
+  // ── 6. Dialogs, Sheets & Section Micro-Headers ───────────────────────
+
+  /// Title heading inside Dialogs, Bottom Sheets, and Alert Popups
+  static TextStyle dialogTitle({
+    Color? color,
+    double fontSize = 18.0,
+    FontWeight fontWeight = FontWeight.w700,
+  }) {
+    return TextStyle(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color ?? AppTheme.inkForeground,
+      letterSpacing: -0.3,
+    );
+  }
+
+  /// Body text inside Dialogs, confirmation descriptions, and Sheet instructions
+  static TextStyle dialogBody({
+    Color? color,
+    double fontSize = 13.5,
+    FontWeight fontWeight = FontWeight.w400,
+  }) {
+    return TextStyle(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color ?? AppTheme.inkForeground,
+      letterSpacing: 0.0,
+      height: 1.4,
+    );
+  }
+
+  /// Uppercase section micro-header (e.g., "CLINICAL UNITS (9)", "CHOOSE YOUR AVATAR")
+  static TextStyle sectionMicroHeader({
+    Color? color,
+    double fontSize = 10.5,
+    double letterSpacing = 0.8,
+  }) {
+    return TextStyle(
+      fontSize: fontSize,
+      fontWeight: FontWeight.w700,
+      color: color ?? AppTheme.mutedText,
+      letterSpacing: letterSpacing,
+    );
+  }
 }

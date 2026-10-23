@@ -84,8 +84,10 @@ class SettingsScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           side: BorderSide(color: AppTheme.sketchBorderColor, width: 1.8),
         ),
-        title: const Text('Edit Doctor Name',
-            style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+        title: Text(
+          'Edit Doctor Name',
+          style: AppTypography.dialogTitle(fontSize: 18.0),
+        ),
         content: TextField(
           controller: ctrl,
           autofocus: true,
@@ -97,8 +99,13 @@ class SettingsScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel',
-                style: TextStyle(color: AppTheme.mutedText)),
+            child: Text(
+              'Cancel',
+              style: AppTypography.buttonLabel(
+                fontSize: 13.5,
+                color: AppTheme.mutedText,
+              ),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -114,7 +121,13 @@ class SettingsScreen extends StatelessWidget {
               }
               Navigator.pop(ctx);
             },
-            child: const Text('Save'),
+            child: Text(
+              'Save',
+              style: AppTypography.buttonLabel(
+                fontSize: 13.5,
+                color: AppTheme.paperBackground,
+              ),
+            ),
           ),
         ],
       ),
@@ -180,11 +193,10 @@ class _DoctorProfileCard extends ConsumerWidget {
                       doctorName.startsWith('Dr') ? doctorName : 'Dr. $doctorName',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
+                      style: AppTypography.cardTitle(
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.w700,
                         color: AppTheme.inkForeground,
-                        letterSpacing: -0.4,
                       ),
                     ),
                   ],
@@ -259,9 +271,8 @@ class _ProfileCardAction extends StatelessWidget {
               maxLines: 1,
               softWrap: false,
               overflow: TextOverflow.clip,
-              style: TextStyle(
+              style: AppTypography.compactAction(
                 fontSize: 11.5,
-                fontWeight: FontWeight.w800,
                 color: AppTheme.inkForeground,
               ),
             ),

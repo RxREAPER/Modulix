@@ -66,19 +66,17 @@ class SubjectHeaderCard extends StatelessWidget {
                     children: [
                       Text(
                         subject.displayName,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
+                        style: AppTypography.cardTitle(
+                          fontSize: 18.5,
+                          fontWeight: FontWeight.w700,
                           color: AppTheme.inkForeground,
-                          letterSpacing: -0.3,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         '${subject.chapters.length} Units · ${subject.totalHours.toStringAsFixed(1)} Total Hours',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                        style: AppTypography.cardSubtitle(
+                          fontSize: 11.5,
                           color: AppTheme.mutedText,
                         ),
                       ),
@@ -96,13 +94,13 @@ class SubjectHeaderCard extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.bar_chart_rounded, size: 16, color: AppTheme.inkForeground),
+                      Icon(Icons.bar_chart_rounded, size: 15, color: AppTheme.inkForeground),
                       const SizedBox(width: 4),
                       Text(
                         'Analytics',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
+                        style: AppTypography.compactAction(
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.w600,
                           color: AppTheme.inkForeground,
                         ),
                       ),
@@ -174,9 +172,8 @@ class SubjectHeaderCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Text(
                   '${(totalVids - completedVideosCount)} left',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                  style: AppTypography.cardMeta(
+                    fontSize: 11.0,
                     color: AppTheme.mutedText,
                   ),
                 ),
@@ -200,9 +197,8 @@ class SubjectHeaderCard extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 9,
-              fontWeight: FontWeight.w800,
+            style: AppTypography.metricLabel(
+              fontSize: 9.5,
               letterSpacing: 0.6,
               color: Colors.grey.shade500,
             ),
@@ -212,10 +208,9 @@ class SubjectHeaderCard extends StatelessWidget {
             fit: BoxFit.scaleDown,
             child: Text(
               value,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-                fontFamily: 'monospace',
+              style: AppTypography.metricValue(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w700,
                 color: color,
               ),
             ),
