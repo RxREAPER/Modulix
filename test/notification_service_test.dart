@@ -130,7 +130,7 @@ void main() {
       notifier.toggleBreak();
       final breakState = container.read(focusTimerProvider);
       expect(breakState.phase, TimerPhase.onBreak);
-      expect(breakState.remainingSeconds, 5 * 60);
+      expect(breakState.breakSecondsElapsed, 0);
 
       notifier.toggleBreak();
       final focusState = container.read(focusTimerProvider);

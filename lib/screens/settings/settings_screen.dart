@@ -60,6 +60,8 @@ class SettingsScreen extends ConsumerWidget {
         children: const [
           _DoctorProfileCard(),
           SizedBox(height: 16),
+          _MedicalArenaSection(),
+          SizedBox(height: 16),
           _CloudSyncSection(),
           SizedBox(height: 16),
           _ThemeAppearanceSection(),
@@ -280,6 +282,262 @@ class _ProfileCardAction extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ── Medical Arena & Leaderboard Section ───────────────────────
+class _MedicalArenaSection extends ConsumerWidget {
+  const _MedicalArenaSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(appThemeDataProvider);
+    final appStateAsync = ref.watch(appStateProvider);
+    final appState = appStateAsync.value ?? AppState.empty;
+    final notifier = ref.read(appStateProvider.notifier);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'MEDICAL ARENA & LEADERBOARD',
+              style: AppTypography.sectionMicroHeader(
+                fontSize: 10.5,
+                letterSpacing: 1.1,
+                color: AppTheme.mutedText,
+              ),
+            ),
+            ApplePressable(
+              onTap: () => context.push('/analytics/leaderboard'),
+              child: Row(
+                children: [
+                  Text(
+                    'Open Arena',
+                    style: AppTypography.compactAction(
+                      fontSize: 11,
+                      color: AppTheme.accentPrimary,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 11,
+                    color: AppTheme.accentPrimary,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: AppTheme.cardWhite,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.sketchBorderColor, width: 1.4),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.inkForeground.withValues(alpha: 0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Leaderboard Participation Toggle
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Arena Participation',
+                          style: AppTypography.cardTitle(
+                            fontSize: 14,
+                            color: AppTheme.inkForeground,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Rank on Daily, Weekly & All-Time boards with verified focus hours.',
+                          style: AppTypography.cardSubtitle(
+                            fontSize: 11.5,
+                            color: AppTheme.mutedText,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Switch.adaptive(
+                    value: appState.leaderboardVisible,
+                    activeTrackColor: AppTheme.accentPrimary,
+                    onChanged: (val) {
+                      notifier.updateLeaderboardIdentity(visible: val);
+                    },
+                  ),
+                ],
+              ),
+              const Divider(height: 20, thickness: 0.8),
+              // 2. Arena Alias / Doctor Name
+              ApplePressable(
+                onTap: () => _editArenaAlias(
+                  context,
+                  notifier,
+                  (appState.leaderboardDisplayName?.isNotEmpty ?? false)
+                      ? appState.leaderboardDisplayName!
+                      : appState.doctorName,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Arena Alias',
+                            style: AppTypography.cardTitle(
+                              fontSize: 13.5,
+                              color: AppTheme.inkForeground,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            appState.publicDisplayName,
+                            style: AppTypography.cardSubtitle(
+                              fontSize: 12,
+                              color: AppTheme.accentPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      Icons.edit_rounded,
+                      size: 16,
+                      color: AppTheme.mutedText,
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 20, thickness: 0.8),
+              // 3. Incognito Mode
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Incognito Mode',
+                          style: AppTypography.cardTitle(
+                            fontSize: 13.5,
+                            color: AppTheme.inkForeground,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Conceal identity as "Dr. Anonymous" while competing.',
+                          style: AppTypography.cardSubtitle(
+                            fontSize: 11.5,
+                            color: AppTheme.mutedText,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Switch.adaptive(
+                    value: appState.isLeaderboardAnonymous,
+                    activeTrackColor: AppTheme.accentPrimary,
+                    onChanged: (val) {
+                      notifier.updateLeaderboardIdentity(isAnonymous: val);
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  static void _editArenaAlias(
+      BuildContext context, AppStateNotifier notifier, String current) {
+    final ctrl = TextEditingController(text: current);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.cardWhite,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: AppTheme.sketchBorderColor, width: 1.8),
+        ),
+        title: Text(
+          'Arena Alias',
+          style: AppTypography.dialogTitle(fontSize: 18.0),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'This name appears on the Top 20 podium and rankings.',
+              style: AppTypography.dialogBody(fontSize: 12.0),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: ctrl,
+              autofocus: true,
+              textCapitalization: TextCapitalization.words,
+              decoration: const InputDecoration(
+                hintText: 'e.g. Dr. Safi',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Cancel',
+              style: AppTypography.buttonLabel(
+                  fontSize: 13.5, color: AppTheme.mutedText),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.inkForeground,
+              foregroundColor: AppTheme.paperBackground,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {
+              final text = ctrl.text.trim();
+              if (text.isNotEmpty) {
+                notifier.updateLeaderboardIdentity(displayName: text);
+              }
+              Navigator.pop(ctx);
+            },
+            child: Text(
+              'Save',
+              style: AppTypography.buttonLabel(
+                  fontSize: 13.5, color: AppTheme.paperBackground),
+            ),
+          ),
+        ],
       ),
     );
   }

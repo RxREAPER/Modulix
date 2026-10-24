@@ -80,6 +80,36 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-057] Medical Arena Universal Competitive Leaderboard & 10-Tier Career Progression
+- **Timestamp:** 2026-10-25 02:20 UTC
+- **Category:** Feature / Medical Arena Leaderboard & Progression System
+- **Files Modified/Created (13 files):**
+  - `lib/models/user_rank.dart` (New: 10-tier clinical level progression Intern → Professor, `LeaderboardScale` [daily, weekly, allTime], `LeaderboardEntry`, and `UserStanding` with defensive deserialization)
+  - `lib/widgets/rank_badge.dart` (New: Modernist typographic rank badge strictly tag-free with monospace numerals)
+  - `lib/providers/leaderboard_provider.dart` (New: `LeaderboardState`, `LeaderboardNotifier`, local SQLite time aggregation for Today/Week/All-Time, peer cohort synthesis, remote Supabase sync query)
+  - `lib/widgets/analytics/editorial_podium.dart` (New: Tag-free staggered podium for Ranks 1, 2, 3 with tactile spring animations and peak accent)
+  - `lib/widgets/analytics/personal_standing_dock.dart` (New: Pinned bottom dock displaying personal rank, focus hours, distance to Top 20, and 1-tap focus launch)
+  - `lib/screens/analytics/leaderboard_screen.dart` (New: Medical Arena screen with 3-scale spring switcher, personal standing card, Top 3 podium, Top 20 list, and identity edit bottom sheet)
+  - `lib/models/app_state.dart` (Modified: Added `leaderboardDisplayName`, `isLeaderboardAnonymous`, `leaderboardVisible` [ON by default], `publicDisplayName`)
+  - `lib/providers/app_state_provider.dart` (Modified: Added `updateLeaderboardIdentity` and `updateState`)
+  - `lib/app.dart` (Modified: Registered `/analytics/leaderboard` route)
+  - `lib/screens/analytics/analytics_screen.dart` (Modified: Added Hub Card 0 "Medical Arena" navigating to `/analytics/leaderboard`)
+  - `lib/services/sync_service.dart` (Modified: Synchronized `display_name` and `leaderboard_visible` to Supabase `profiles`)
+  - `lib/screens/settings/settings_screen.dart` (Modified: Added `_MedicalArenaSection` with arena alias modal, incognito toggle, and participation switch)
+  - `test/leaderboard_test.dart` (New: 4 unit tests verifying level thresholds, progression pacing, and defensive JSON deserialization)
+- **Summary:**
+  - Designed and deployed the Medical Arena Leaderboard feature accessible from the Analytics / Progress screen.
+  - Features 3 competitive scales: Daily (today's hours), Weekly (last 7 days), and All-Time.
+  - Implements Top 20 rankings strictly adhering to the "NO TAGS, MODERN SLEEK MINIMALISTIC DESIGN" rule (no pills, no cartoon badges, no emojis).
+  - Pinned sticky dock displays user's standing if ranked outside Top 20 with precise seconds needed to break into the Top 20.
+  - 10-tier medical career progression based on cumulative focus hours (Intern → Junior Resident → Senior Resident → Fellow → Attending → Specialist → Consultant → Associate Professor → Head of Dept → Professor).
+  - Settings page integration allows customizing Arena Alias, toggling Incognito Mode ("Dr. Anonymous"), or opting out of leaderboard participation (ON by default).
+- **Verification:**
+  - `flutter analyze`: **No issues found! (0 errors, 0 warnings)**
+  - `flutter test test/leaderboard_test.dart`: **All 4 tests passed! (100%)**
+  - `flutter test test/notification_service_test.dart`: **All 7 tests passed! (100%)**
+- **Status:** ⏳ Pending APK Build / Verified via Static Analysis & Unit Tests
+
 ### [CKPT-056] Daily Tasks AppBar Optimization, Chronotype Header Overflow Fix & Timer Verification
 - **Timestamp:** 2026-10-24 19:45 UTC
 - **Category:** Polish / Overflow Fix / Device Verification

@@ -271,7 +271,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
     switch (m) {
       case TimerMode.pomodoro: return 'Pomodoro';
       case TimerMode.countUp: return 'Count-Up';
-      case TimerMode.moduleLinked: return 'Module-Linked';
+      case TimerMode.moduleLinked: return 'Pomodoro';
     }
   }
 
@@ -306,9 +306,11 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
 
     final displaySecs = !timer.hasTarget
         ? 0
-        : (timer.mode == TimerMode.countUp
-            ? timer.focusSecondsElapsed
-            : timer.remainingSeconds);
+        : (timer.isBreak
+            ? timer.breakSecondsElapsed
+            : (timer.mode == TimerMode.countUp
+                ? timer.focusSecondsElapsed
+                : timer.remainingSeconds));
 
     final canPop = ModalRoute.of(context)?.canPop ?? false;
     return PopScope(

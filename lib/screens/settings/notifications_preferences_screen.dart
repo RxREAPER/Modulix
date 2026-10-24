@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../providers/app_state_provider.dart';
+import '../../providers/focus_timer_provider.dart';
 import '../../services/notification_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
@@ -400,6 +401,44 @@ class NotificationsPreferencesScreen extends ConsumerWidget {
                       value: appState.focusTimerAlertsEnabled,
                       activeTrackColor: AppTheme.primaryBlue,
                       onChanged: (val) => notifier.setFocusTimerAlerts(val),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Divider(height: 1, color: AppTheme.borderLight),
+                const SizedBox(height: 14),
+
+                // 5. Keep Screen Awake During Focus
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Keep Screen Awake During Focus',
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.inkForeground,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Prevents device screen from sleeping while timer or flip clock is running',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: AppTheme.mutedText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Switch.adaptive(
+                      value: ref.watch(focusTimerProvider.select((s) => s.keepScreenAwake)),
+                      activeTrackColor: AppTheme.primaryBlue,
+                      onChanged: (val) => ref.read(focusTimerProvider.notifier).setKeepScreenAwake(val),
                     ),
                   ],
                 ),

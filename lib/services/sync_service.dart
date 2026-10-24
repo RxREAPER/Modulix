@@ -11,6 +11,7 @@ import '../providers/daily_tasks_provider.dart';
 import '../providers/time_log_provider.dart';
 import 'auth_service.dart';
 import 'database_service.dart';
+import 'metrics_service.dart';
 import 'network_resilience_service.dart';
 import 'storage_service.dart';
 
@@ -88,6 +89,8 @@ class SyncService {
       if (profileRes != null) {
         // Merge remote profile attributes if non-default
         final docName = profileRes['doctor_name'] as String? ?? '';
+        final displayName = profileRes['display_name'] as String?;
+        final lbVisible = profileRes['leaderboard_visible'] as bool? ?? true;
         final avatarIcon = profileRes['avatar_icon_id'] as String? ?? 'letter';
         final avatarColor = profileRes['avatar_color_id'] as String? ?? 'indigo';
         final palette = profileRes['palette_preset_id'] as String? ?? 'paper';
@@ -102,6 +105,8 @@ class SyncService {
 
         final mergedAppState = localAppState.copyWith(
           doctorName: docName.isNotEmpty ? docName : localAppState.doctorName,
+          leaderboardDisplayName: displayName ?? localAppState.leaderboardDisplayName,
+          leaderboardVisible: lbVisible,
           avatarIconId: avatarIcon,
           avatarColorId: avatarColor,
           palettePresetId: palette,
@@ -117,6 +122,8 @@ class SyncService {
         await client.from('profiles').upsert({
           'id': userId,
           'doctor_name': localAppState.doctorName,
+          'display_name': localAppState.publicDisplayName,
+          'leaderboard_visible': localAppState.leaderboardVisible,
           'avatar_icon_id': localAppState.avatarIconId,
           'avatar_color_id': localAppState.avatarColorId,
           'palette_preset_id': localAppState.palettePresetId,
@@ -282,6 +289,37 @@ class SyncService {
         }
       }
       await ref.read(timeLogsProvider.notifier).reloadFromDatabase();
+
+      // Aggregate and sync leaderboard stats to profile
+      try {
+        final allLogs = await DatabaseService.instance.getAllTimeLogs();
+        final startHour = localAppState.dayStartHour;
+        final todayStart = MetricsService.studyDayStart(startHour);
+        final dayOfWeek = DateTime.now().weekday;
+        final monday = DateTime.now().subtract(Duration(days: dayOfWeek - 1));
+        final weekStart = DateTime(monday.year, monday.month, monday.day);
+
+        int totalSecs = 0;
+        int dailySecs = 0;
+        int weeklySecs = 0;
+
+        for (final l in allLogs) {
+          totalSecs += l.durationSecs;
+          if (l.timestamp.isAfter(todayStart)) dailySecs += l.durationSecs;
+          if (l.timestamp.isAfter(weekStart)) weeklySecs += l.durationSecs;
+        }
+
+        await client.from('profiles').update({
+          'display_name': localAppState.publicDisplayName,
+          'total_study_secs': totalSecs,
+          'daily_study_secs': dailySecs,
+          'weekly_study_secs': weeklySecs,
+          'leaderboard_visible': localAppState.leaderboardVisible,
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        }).eq('id', userId);
+      } catch (e) {
+        debugPrint('[SyncService] Leaderboard stats aggregate update: $e');
+      }
 
       // ── 4. SYNC DAILY DESK TASKS ──────────────────────────────────────────
       final prefs = await SharedPreferences.getInstance();

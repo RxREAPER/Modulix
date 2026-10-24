@@ -34,6 +34,12 @@ class FocusTimerState {
   final int pomodoroPresetMins;
   final int pomodoroBreakMins;
   final int modulePresetMins;
+  final int pomodoroTotalCycles;
+  final int pomodoroCurrentCycle;
+  final int pomodoroCompletedCycles;
+  final int pomodoroLongBreakMins;
+  final int pomodoroLongBreakInterval;
+  final bool isLongBreak;
   final TimerThemeData theme;
   final String activeSoundId;
   final bool sessionActive;
@@ -57,6 +63,12 @@ class FocusTimerState {
     this.pomodoroPresetMins = 25,
     this.pomodoroBreakMins = 5,
     this.modulePresetMins = 15,
+    this.pomodoroTotalCycles = 4,
+    this.pomodoroCurrentCycle = 1,
+    this.pomodoroCompletedCycles = 0,
+    this.pomodoroLongBreakMins = 15,
+    this.pomodoroLongBreakInterval = 4,
+    this.isLongBreak = false,
     required this.theme,
     this.activeSoundId = 'none',
     this.sessionActive = false,
@@ -85,6 +97,12 @@ class FocusTimerState {
     int? pomodoroPresetMins,
     int? pomodoroBreakMins,
     int? modulePresetMins,
+    int? pomodoroTotalCycles,
+    int? pomodoroCurrentCycle,
+    int? pomodoroCompletedCycles,
+    int? pomodoroLongBreakMins,
+    int? pomodoroLongBreakInterval,
+    bool? isLongBreak,
     TimerThemeData? theme,
     String? activeSoundId,
     bool? sessionActive,
@@ -109,6 +127,12 @@ class FocusTimerState {
       pomodoroPresetMins: pomodoroPresetMins ?? this.pomodoroPresetMins,
       pomodoroBreakMins: pomodoroBreakMins ?? this.pomodoroBreakMins,
       modulePresetMins: modulePresetMins ?? this.modulePresetMins,
+      pomodoroTotalCycles: pomodoroTotalCycles ?? this.pomodoroTotalCycles,
+      pomodoroCurrentCycle: pomodoroCurrentCycle ?? this.pomodoroCurrentCycle,
+      pomodoroCompletedCycles: pomodoroCompletedCycles ?? this.pomodoroCompletedCycles,
+      pomodoroLongBreakMins: pomodoroLongBreakMins ?? this.pomodoroLongBreakMins,
+      pomodoroLongBreakInterval: pomodoroLongBreakInterval ?? this.pomodoroLongBreakInterval,
+      isLongBreak: isLongBreak ?? this.isLongBreak,
       theme: theme ?? this.theme,
       activeSoundId: activeSoundId ?? this.activeSoundId,
       sessionActive: sessionActive ?? this.sessionActive,
@@ -170,20 +194,11 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     int? durationMins,
   }) {
     final bool isCountUpType = topicType.toLowerCase() == 'qbank' || topicType.toLowerCase() == 'notes';
-    final bool isModule = !isCountUpType && durationMins != null && durationMins > 0;
-    final newMode = isCountUpType
-        ? TimerMode.countUp
-        : (isModule ? TimerMode.moduleLinked : state.mode);
-    final int nextSeconds;
-    if (newMode == TimerMode.countUp) {
-      nextSeconds = 0;
-    } else if (isModule) {
-      nextSeconds = durationMins * 60;
-    } else if (newMode == TimerMode.pomodoro) {
-      nextSeconds = state.pomodoroPresetMins * 60;
-    } else {
-      nextSeconds = 0;
-    }
+    final newMode = isCountUpType ? TimerMode.countUp : TimerMode.pomodoro;
+    final int presetMins = (durationMins != null && durationMins > 0)
+        ? durationMins
+        : state.pomodoroPresetMins;
+    final int nextSeconds = (newMode == TimerMode.countUp) ? 0 : (presetMins * 60);
 
     state = state.copyWith(
       hasTarget: true,
@@ -194,7 +209,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
       chapterName: chapterName,
       topicType: topicType,
       mode: newMode,
-      modulePresetMins: isModule ? durationMins : state.modulePresetMins,
+      pomodoroPresetMins: presetMins,
       remainingSeconds: nextSeconds,
     );
   }
@@ -332,6 +347,55 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     );
   }
 
+  void setPomodoroTotalCycles(int cycles) {
+    if (state.isRunning) return;
+    final clamped = cycles.clamp(1, 12);
+    state = state.copyWith(pomodoroTotalCycles: clamped);
+  }
+
+  void adjustPomodoroTotalCycles(int delta) {
+    if (state.isRunning) return;
+    final clamped = (state.pomodoroTotalCycles + delta).clamp(1, 12);
+    state = state.copyWith(pomodoroTotalCycles: clamped);
+  }
+
+  void setPomodoroLongBreakMinutes(int mins) {
+    if (state.isRunning) return;
+    final clamped = mins.clamp(1, 60);
+    state = state.copyWith(pomodoroLongBreakMins: clamped);
+  }
+
+  void adjustPomodoroLongBreakMinutes(int delta) {
+    if (state.isRunning) return;
+    final clamped = (state.pomodoroLongBreakMins + delta).clamp(1, 60);
+    state = state.copyWith(pomodoroLongBreakMins: clamped);
+  }
+
+  void setPomodoroLongBreakInterval(int interval) {
+    if (state.isRunning) return;
+    final clamped = interval.clamp(1, 12);
+    state = state.copyWith(pomodoroLongBreakInterval: clamped);
+  }
+
+  void resetPomodoroCycles() {
+    state = state.copyWith(
+      pomodoroCompletedCycles: 0,
+      pomodoroCurrentCycle: 1,
+      isLongBreak: false,
+    );
+  }
+
+  void nextPomodoroCycle() {
+    final next = state.pomodoroCurrentCycle < state.pomodoroTotalCycles
+        ? state.pomodoroCurrentCycle + 1
+        : 1;
+    state = state.copyWith(
+      pomodoroCurrentCycle: next,
+      phase: TimerPhase.focusing,
+      remainingSeconds: state.pomodoroPresetMins * 60,
+    );
+  }
+
   void setModulePreset(int mins) {
     if (state.isRunning) return;
     final clamped = mins.clamp(1, 300);
@@ -361,7 +425,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
         currentRemaining = state.pomodoroPresetMins * 60;
       }
 
-      if (state.mode != TimerMode.countUp && currentRemaining > 0) {
+      if (newPhase != TimerPhase.onBreak && state.mode != TimerMode.countUp && currentRemaining > 0) {
         _sessionTargetEndTime = now.add(Duration(seconds: currentRemaining));
       } else {
         _sessionTargetEndTime = null;
@@ -382,11 +446,11 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
       if (alertsEnabled) {
         _updateRealtimeNotification();
 
-        if (state.mode != TimerMode.countUp && state.remainingSeconds > 0) {
+        if (newPhase != TimerPhase.onBreak && state.mode != TimerMode.countUp && state.remainingSeconds > 0) {
           NotificationService.instance.scheduleFocusTimerEnd(
             duration: Duration(seconds: state.remainingSeconds),
             topicTitle: state.topicTitle,
-            isBreak: newPhase == TimerPhase.onBreak,
+            isBreak: false,
           );
         }
       }
@@ -399,41 +463,36 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     final alertsEnabled =
         _ref.read(appStateProvider).valueOrNull?.focusTimerAlertsEnabled ?? true;
     final willBeBreak = state.phase != TimerPhase.onBreak;
-    final int nextSeconds;
     if (willBeBreak) {
-      nextSeconds = state.mode == TimerMode.pomodoro ? state.pomodoroBreakMins * 60 : state.remainingSeconds;
+      // Break is now a count-up timer!
+      _sessionTargetEndTime = null;
+      _lastTickWallTime = DateTime.now();
       state = state.copyWith(
         phase: TimerPhase.onBreak,
-        remainingSeconds: nextSeconds,
+        breakSecondsElapsed: 0,
       );
     } else {
-      nextSeconds = _computeRemaining();
+      // Return to focusing: resume countdown from preserved focus remaining seconds
+      final now = DateTime.now();
+      _lastTickWallTime = now;
+      final resumeSeconds = state.remainingSeconds > 0
+          ? state.remainingSeconds
+          : _computeRemaining();
+      if (state.mode != TimerMode.countUp && resumeSeconds > 0) {
+        _sessionTargetEndTime = now.add(Duration(seconds: resumeSeconds));
+      } else {
+        _sessionTargetEndTime = null;
+      }
       state = state.copyWith(
         phase: TimerPhase.focusing,
-        remainingSeconds: nextSeconds,
+        remainingSeconds: resumeSeconds,
       );
-    }
-
-    final now = DateTime.now();
-    _lastTickWallTime = now;
-    if (state.mode != TimerMode.countUp && nextSeconds > 0) {
-      _sessionTargetEndTime = now.add(Duration(seconds: nextSeconds));
-    } else {
-      _sessionTargetEndTime = null;
     }
 
     if (alertsEnabled) {
       NotificationService.instance.cancelFocusTimerEnd();
       if (state.isRunning) {
         _updateRealtimeNotification();
-
-        if (state.mode != TimerMode.countUp && nextSeconds > 0) {
-          NotificationService.instance.scheduleFocusTimerEnd(
-            duration: Duration(seconds: nextSeconds),
-            topicTitle: state.topicTitle,
-            isBreak: willBeBreak,
-          );
-        }
       }
     }
   }
@@ -593,6 +652,21 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     if (!state.isRunning) return;
 
     final now = DateTime.now();
+
+    if (state.phase == TimerPhase.onBreak) {
+      if (_lastTickWallTime != null) {
+        final elapsed = now.difference(_lastTickWallTime!).inSeconds;
+        if (elapsed > 0) {
+          _lastTickWallTime = now;
+          state = state.copyWith(
+            breakSecondsElapsed: state.breakSecondsElapsed + elapsed,
+          );
+          _updateRealtimeNotification();
+        }
+      }
+      return;
+    }
+
     if (state.mode == TimerMode.countUp) {
       if (_lastTickWallTime != null) {
         final elapsed = now.difference(_lastTickWallTime!).inSeconds;
@@ -618,17 +692,10 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
         final safeElapsed = elapsed > 0 ? elapsed : 0;
         _lastTickWallTime = now;
 
-        if (state.phase == TimerPhase.onBreak) {
-          state = state.copyWith(
-            remainingSeconds: remaining,
-            breakSecondsElapsed: state.breakSecondsElapsed + safeElapsed,
-          );
-        } else {
-          state = state.copyWith(
-            remainingSeconds: remaining,
-            focusSecondsElapsed: state.focusSecondsElapsed + safeElapsed,
-          );
-        }
+        state = state.copyWith(
+          remainingSeconds: remaining,
+          focusSecondsElapsed: state.focusSecondsElapsed + safeElapsed,
+        );
         _updateRealtimeNotification();
       }
     }
@@ -639,6 +706,22 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
 
     final now = DateTime.now();
 
+    // 1. Break Phase: Count-up break timer!
+    if (state.phase == TimerPhase.onBreak) {
+      _lastTickWallTime ??= now;
+      final elapsedDiff = now.difference(_lastTickWallTime!).inMilliseconds;
+      if (elapsedDiff < 1000) return;
+      final wholeSeconds = elapsedDiff ~/ 1000;
+      _lastTickWallTime = _lastTickWallTime!.add(Duration(seconds: wholeSeconds));
+
+      state = state.copyWith(
+        breakSecondsElapsed: state.breakSecondsElapsed + wholeSeconds,
+      );
+      _updateRealtimeNotification();
+      return;
+    }
+
+    // 2. Count-Up Focus Mode
     if (state.mode == TimerMode.countUp) {
       _lastTickWallTime ??= now;
       final elapsedDiff = now.difference(_lastTickWallTime!).inMilliseconds;
@@ -653,6 +736,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
       return;
     }
 
+    // 3. Countdown Focus Mode (Pomodoro)
     if (_sessionTargetEndTime == null) return;
 
     final diffMs = _sessionTargetEndTime!.difference(now).inMilliseconds;
@@ -668,17 +752,10 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     if (delta <= 0) return;
 
     _lastTickWallTime = now;
-    if (state.phase == TimerPhase.onBreak) {
-      state = state.copyWith(
-        breakSecondsElapsed: state.breakSecondsElapsed + delta,
-        remainingSeconds: remaining,
-      );
-    } else {
-      state = state.copyWith(
-        focusSecondsElapsed: state.focusSecondsElapsed + delta,
-        remainingSeconds: remaining,
-      );
-    }
+    state = state.copyWith(
+      focusSecondsElapsed: state.focusSecondsElapsed + delta,
+      remainingSeconds: remaining,
+    );
   }
 
   void _onCountdownComplete() {
@@ -699,15 +776,27 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
       }
       state = s.copyWith(
         isRunning: false,
-        remainingSeconds: 0,
+        phase: TimerPhase.idle,
       );
     } else {
       if (alertsEnabled) {
         NotificationService.instance.showFocusTimerCompleted(topicTitle: s.topicTitle);
       }
+
+      final nextCompleted = s.pomodoroCompletedCycles + 1;
+      final isLong = (nextCompleted % s.pomodoroLongBreakInterval == 0);
+      final nextCycle = s.pomodoroCurrentCycle < s.pomodoroTotalCycles
+          ? s.pomodoroCurrentCycle + 1
+          : s.pomodoroCurrentCycle;
+
       state = s.copyWith(
         isRunning: false,
         remainingSeconds: 0,
+        pomodoroCompletedCycles: nextCompleted,
+        pomodoroCurrentCycle: nextCycle,
+        isLongBreak: isLong,
+        phase: TimerPhase.onBreak,
+        breakSecondsElapsed: 0,
       );
 
       // Auto-complete module/daily tasks
@@ -741,7 +830,10 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     final int whenMs;
     final bool isCountdown;
 
-    if (state.mode == TimerMode.countUp) {
+    if (isBreak) {
+      isCountdown = false;
+      whenMs = nowMs - (state.breakSecondsElapsed * 1000);
+    } else if (state.mode == TimerMode.countUp) {
       isCountdown = false;
       whenMs = nowMs - (state.focusSecondsElapsed * 1000);
     } else {
@@ -754,17 +846,17 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     }
 
     final title = isBreak
-        ? 'Recharge Break'
+        ? (state.isLongBreak ? 'Long Break' : 'Recharge Break')
         : (state.topicTitle.trim().isNotEmpty &&
                 state.topicTitle != 'Select a task or mode to start'
             ? state.topicTitle.trim()
             : 'General Focus');
 
     final subtitle = isBreak
-        ? 'Taking a short rest'
+        ? (state.isLongBreak ? 'Recharging between cycles' : 'Resting (Count-up)')
         : (state.subjectName.isNotEmpty &&
                 state.subjectName != 'No Target Selected'
-            ? '${state.subjectName} · ${state.mode == TimerMode.pomodoro ? "Pomodoro" : (state.mode == TimerMode.moduleLinked ? "Module Target" : "Count-Up")}'
+            ? '${state.subjectName} · ${state.mode == TimerMode.pomodoro ? "Pomodoro" : "Count-Up"}'
             : (state.mode == TimerMode.countUp
                 ? 'Count-Up Mode'
                 : 'Pomodoro Focus'));
@@ -785,7 +877,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
       case TimerMode.pomodoro:
         return state.pomodoroPresetMins * 60;
       case TimerMode.moduleLinked:
-        return state.modulePresetMins * 60;
+        return state.pomodoroPresetMins * 60;
       case TimerMode.countUp:
         return 0;
     }

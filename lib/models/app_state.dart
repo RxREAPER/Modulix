@@ -182,6 +182,9 @@ class AppState {
   final bool moduleTasksReminderEnabled;
   final String moduleTasksReminderTime; // e.g. '08:00'
   final bool focusTimerAlertsEnabled;
+  final String? leaderboardDisplayName;
+  final bool isLeaderboardAnonymous;
+  final bool leaderboardVisible;
   final Map<String, EditionState> editions; // keyed by edition id
 
   const AppState({
@@ -201,8 +204,17 @@ class AppState {
     this.moduleTasksReminderEnabled = true,
     this.moduleTasksReminderTime = '08:00',
     this.focusTimerAlertsEnabled = true,
+    this.leaderboardDisplayName,
+    this.isLeaderboardAnonymous = false,
+    this.leaderboardVisible = true,
     this.editions = const {},
   });
+
+  String get publicDisplayName => isLeaderboardAnonymous
+      ? 'Dr. Anonymous'
+      : (leaderboardDisplayName != null && leaderboardDisplayName!.trim().isNotEmpty
+          ? leaderboardDisplayName!.trim()
+          : doctorName);
 
   EditionState get currentEdition =>
       editions[activeEdition] ?? const EditionState();
@@ -224,6 +236,9 @@ class AppState {
     bool? moduleTasksReminderEnabled,
     String? moduleTasksReminderTime,
     bool? focusTimerAlertsEnabled,
+    String? leaderboardDisplayName,
+    bool? isLeaderboardAnonymous,
+    bool? leaderboardVisible,
     Map<String, EditionState>? editions,
   }) {
     return AppState(
@@ -246,6 +261,11 @@ class AppState {
           moduleTasksReminderTime ?? this.moduleTasksReminderTime,
       focusTimerAlertsEnabled:
           focusTimerAlertsEnabled ?? this.focusTimerAlertsEnabled,
+      leaderboardDisplayName:
+          leaderboardDisplayName ?? this.leaderboardDisplayName,
+      isLeaderboardAnonymous:
+          isLeaderboardAnonymous ?? this.isLeaderboardAnonymous,
+      leaderboardVisible: leaderboardVisible ?? this.leaderboardVisible,
       editions: editions ?? this.editions,
     );
   }
@@ -276,6 +296,9 @@ class AppState {
         'moduleTasksReminderEnabled': moduleTasksReminderEnabled,
         'moduleTasksReminderTime': moduleTasksReminderTime,
         'focusTimerAlertsEnabled': focusTimerAlertsEnabled,
+        'leaderboardDisplayName': leaderboardDisplayName,
+        'isLeaderboardAnonymous': isLeaderboardAnonymous,
+        'leaderboardVisible': leaderboardVisible,
         'editions': editions.map((k, v) => MapEntry(k, v.toJson())),
       };
 
@@ -302,6 +325,9 @@ class AppState {
             json['moduleTasksReminderTime']?.toString() ?? '08:00',
         focusTimerAlertsEnabled:
             json['focusTimerAlertsEnabled'] as bool? ?? true,
+        leaderboardDisplayName: json['leaderboardDisplayName']?.toString(),
+        isLeaderboardAnonymous: json['isLeaderboardAnonymous'] as bool? ?? false,
+        leaderboardVisible: json['leaderboardVisible'] as bool? ?? true,
         editions: (json['editions'] as Map?)?.entries.fold<Map<String, EditionState>>(
               {},
               (acc, entry) {

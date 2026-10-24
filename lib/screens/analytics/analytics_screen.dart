@@ -20,6 +20,7 @@ import '../../widgets/loading/app_shimmer.dart';
 import '../../widgets/analytics/progress_radial_gauge.dart';
 import '../../widgets/analytics/concentric_donut_indicator.dart';
 import '../../widgets/analytics/segmented_velocity_pill.dart';
+import '../../providers/leaderboard_provider.dart';
 
 class AnalyticsScreen extends ConsumerWidget {
   const AnalyticsScreen({super.key});
@@ -59,6 +60,8 @@ class AnalyticsScreen extends ConsumerWidget {
     final syllabusAsync = ref.watch(activeSyllabusProvider);
     final timeLogs = ref.watch(timeLogsProvider);
     final tasksHubState = ref.watch(tasksHubProvider).valueOrNull;
+    final leaderboardState = ref.watch(leaderboardProvider);
+    final dailyStanding = leaderboardState.userDailyStanding;
 
     final appState = appStateAsync.value;
     final subjects = syllabusAsync.value ?? [];
@@ -334,6 +337,37 @@ class AnalyticsScreen extends ConsumerWidget {
               icon: Icons.donut_small_rounded,
               margin: EdgeInsets.only(bottom: 12),
             ),
+
+            // ── Hub Card 0: Medical Arena & Leaderboard ───────────────────────
+            _HubCard(
+              title: 'Medical Arena',
+              subtitle: 'Rank #${dailyStanding.rank} Today · ${dailyStanding.level.title}',
+              badge: dailyStanding.level.shortCode,
+              badgeColor: AppTheme.accentPrimary,
+              icon: Icons.military_tech_outlined,
+              iconColor: AppTheme.accentPrimary,
+              iconBg: AppTheme.accentPrimary.withValues(alpha: 0.12),
+              progress: dailyStanding.level.progressToNext(dailyStanding.totalSeconds),
+              indicatorWidget: ProgressRadialGauge(
+                progress: dailyStanding.level.progressToNext(dailyStanding.totalSeconds),
+                size: 46,
+                strokeWidth: 4.8,
+                progressColor: AppTheme.accentPrimary,
+                percentageStyle: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: 'monospace',
+                  color: AppTheme.inkForeground,
+                ),
+              ),
+              stat1Label: 'Daily Rank',
+              stat1Value: '#${dailyStanding.rank}',
+              stat2Label: 'Career Level',
+              stat2Value: dailyStanding.level.title,
+              onTap: () => context.push('/analytics/leaderboard'),
+            ),
+
+            const SizedBox(height: 14),
 
             // ── Hub Card 1: Module Plan Progress ─────────────────────────────
             _HubCard(

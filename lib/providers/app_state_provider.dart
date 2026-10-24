@@ -41,6 +41,24 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
     SyncService.instance.schedulePush(ref);
   }
 
+  Future<void> updateState(AppState updated) async {
+    state = AsyncData(updated);
+    unawaited(StorageService.instance.save(updated));
+    SyncService.instance.schedulePush(ref);
+  }
+
+  Future<void> updateLeaderboardIdentity({
+    String? displayName,
+    bool? isAnonymous,
+    bool? visible,
+  }) async {
+    await _update((s) => s.copyWith(
+          leaderboardDisplayName: displayName,
+          isLeaderboardAnonymous: isAnonymous,
+          leaderboardVisible: visible,
+        ));
+  }
+
   // Onboarding
   Future<void> completeOnboarding({
     required String doctorName,
