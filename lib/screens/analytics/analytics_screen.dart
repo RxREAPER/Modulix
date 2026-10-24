@@ -1074,9 +1074,20 @@ class _FocusLeaderboardSpecialBox extends StatelessWidget {
                     ),
                   ],
                 ),
-                CheerfulAnimatedTrophy(
-                  rank: dailyStanding.rank <= 3 ? dailyStanding.rank : 1,
-                  size: 30,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CheerfulAnimatedTrophy(
+                      rank: dailyStanding.rank <= 3 ? dailyStanding.rank : 1,
+                      size: 28,
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 13,
+                      color: Colors.white.withValues(alpha: 0.45),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -1206,53 +1217,6 @@ class _FocusLeaderboardSpecialBox extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 12),
-
-            // Bottom Action Bar: Glowing Neon Interactive Button
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
-                ),
-                borderRadius: BorderRadius.circular(9),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.35),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Daily • Weekly • Monthly • Yearly',
-                    style: TextStyle(
-                      fontSize: 11.0,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'View Arena',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(width: 4),
-                      Icon(Icons.arrow_forward_rounded, size: 13, color: Colors.white),
-                    ],
-                  ),
-                ],
-              ),
             ),
           ],
         ),

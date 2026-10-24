@@ -60,7 +60,7 @@ class SettingsScreen extends ConsumerWidget {
         children: const [
           _DoctorProfileCard(),
           SizedBox(height: 16),
-          _MedicalArenaSection(),
+          _FocusLeaderboardSection(),
           SizedBox(height: 16),
           _CloudSyncSection(),
           SizedBox(height: 16),
@@ -287,9 +287,9 @@ class _ProfileCardAction extends StatelessWidget {
   }
 }
 
-// ── Medical Arena & Leaderboard Section ───────────────────────
-class _MedicalArenaSection extends ConsumerWidget {
-  const _MedicalArenaSection();
+// ── Focus Leaderboard Section ──────────────────────────────────
+class _FocusLeaderboardSection extends ConsumerWidget {
+  const _FocusLeaderboardSection();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -389,9 +389,9 @@ class _MedicalArenaSection extends ConsumerWidget {
                 ],
               ),
               const Divider(height: 20, thickness: 0.8),
-              // 2. Arena Alias / Doctor Name
+              // 2. Leaderboard Name / Doctor Name
               ApplePressable(
-                onTap: () => _editArenaAlias(
+                onTap: () => _editLeaderboardName(
                   context,
                   notifier,
                   (appState.leaderboardDisplayName?.isNotEmpty ?? false)
@@ -405,7 +405,7 @@ class _MedicalArenaSection extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Arena Alias',
+                            'Leaderboard Name',
                             style: AppTypography.cardTitle(
                               fontSize: 13.5,
                               color: AppTheme.inkForeground,
@@ -474,7 +474,7 @@ class _MedicalArenaSection extends ConsumerWidget {
     );
   }
 
-  static void _editArenaAlias(
+  static void _editLeaderboardName(
       BuildContext context, AppStateNotifier notifier, String current) {
     final ctrl = TextEditingController(text: current);
     showDialog(
@@ -486,7 +486,7 @@ class _MedicalArenaSection extends ConsumerWidget {
           side: BorderSide(color: AppTheme.sketchBorderColor, width: 1.8),
         ),
         title: Text(
-          'Arena Alias',
+          'Leaderboard Name',
           style: AppTypography.dialogTitle(fontSize: 18.0),
         ),
         content: Column(

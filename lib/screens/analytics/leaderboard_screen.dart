@@ -9,6 +9,7 @@ import '../../theme/app_theme.dart';
 import '../../widgets/analytics/editorial_podium.dart';
 import '../../widgets/analytics/personal_standing_dock.dart';
 import '../../widgets/animations/apple_pressable.dart';
+import '../../widgets/profile/profile_customization.dart';
 import '../../widgets/rank_badge.dart';
 
 /// Modulix Focus Leaderboard Screen.
@@ -100,7 +101,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'TOP 20 CONTENDERS',
+                          'TOP 20',
                           style: TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w800,
@@ -217,7 +218,7 @@ class _TactileScaleSwitcher extends StatelessWidget {
   }
 }
 
-/// Reset Reminder & Schedule Countdown Card
+/// Clean Reset Reminder & Schedule Countdown Text (Not in a box)
 class _ResetReminderBanner extends StatelessWidget {
   final LeaderboardScale activeScale;
 
@@ -227,7 +228,6 @@ class _ResetReminderBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final String countdownText;
-    final String nextCycleText;
     final IconData icon;
 
     switch (activeScale) {
@@ -236,9 +236,8 @@ class _ResetReminderBanner extends StatelessWidget {
         final diff = tomorrow.difference(now);
         final hours = diff.inHours;
         final mins = diff.inMinutes % 60;
-        countdownText = 'Daily board resets in ${hours}h ${mins}m';
-        nextCycleText = 'Tomorrow at 12:00 AM • Fresh podium daily';
-        icon = Icons.today_rounded;
+        countdownText = 'Daily board resets in ${hours}h ${mins}m • Tomorrow at 12:00 AM';
+        icon = Icons.access_time_rounded;
         break;
 
       case LeaderboardScale.weekly:
@@ -247,9 +246,8 @@ class _ResetReminderBanner extends StatelessWidget {
         final diff = nextMonday.difference(now);
         final days = diff.inDays;
         final hours = diff.inHours % 24;
-        countdownText = 'Week ends in ${days}d ${hours}h';
         final monthName = _monthAbbr(nextMonday.month);
-        nextCycleText = 'Resets Monday, $monthName ${nextMonday.day} • Weekly champion crowned';
+        countdownText = 'Week ends in ${days}d ${hours}h • Resets Monday, $monthName ${nextMonday.day}';
         icon = Icons.date_range_rounded;
         break;
 
@@ -260,9 +258,8 @@ class _ResetReminderBanner extends StatelessWidget {
         final diff = nextMonth.difference(now);
         final days = diff.inDays;
         final hours = diff.inHours % 24;
-        countdownText = 'Month ends in ${days}d ${hours}h';
         final nextMonthName = _monthName(nextMonth.month);
-        nextCycleText = 'New board starts $nextMonthName 1 • Monthly honor roll';
+        countdownText = 'Month ends in ${days}d ${hours}h • Resets $nextMonthName 1';
         icon = Icons.calendar_month_rounded;
         break;
 
@@ -270,53 +267,30 @@ class _ResetReminderBanner extends StatelessWidget {
         final nextYear = DateTime(now.year + 1, 1, 1);
         final diff = nextYear.difference(now);
         final days = diff.inDays;
-        countdownText = 'Season ends in $days days';
-        nextCycleText = '${nextYear.year} season starts Jan 1 • Grand residency ranking';
-        icon = Icons.emoji_events_outlined;
+        countdownText = 'Season ends in $days days • Resets Jan 1, ${nextYear.year}';
+        icon = Icons.timer_outlined;
         break;
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-      decoration: BoxDecoration(
-        color: AppTheme.cardBackground,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppTheme.cardBorder, width: 0.8),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(7),
-            decoration: BoxDecoration(
-              color: AppTheme.accentPrimary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, size: 16, color: AppTheme.accentPrimary),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  countdownText,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.inkForeground,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  nextCycleText,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: AppTheme.mutedText,
-                  ),
-                ),
-              ],
+          Icon(icon, size: 13, color: AppTheme.accentPrimary),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              countdownText,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.2,
+                color: AppTheme.mutedText,
+              ),
             ),
           ),
         ],
@@ -366,6 +340,15 @@ class _LeaderboardRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
+
+          // Doctor Avatar
+          ProfileAvatar(
+            size: 26,
+            colorId: entry.avatarColorId,
+            iconId: entry.avatarIconId,
+            doctorName: entry.displayName,
+          ),
+          const SizedBox(width: 10),
 
           // Doctor Name
           Expanded(

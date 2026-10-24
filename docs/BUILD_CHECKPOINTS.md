@@ -6,6 +6,22 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ---
 
+## 🚀 Build Manifest v1.11.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (237MB)
+- **Device Tested:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
+- **Compilation Time:** 192.0s | **Test Suite:** 6/6 Leaderboard Tests Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-058]`, `[CKPT-059]`
+
+### Key Highlights & Releases in v1.11.0:
+1. **Focus Leaderboard Motion Graphics Podium (`lib/widgets/analytics/editorial_podium.dart`):** High-octane motion graphics overhaul for the Top 3 podium pedestals. Staggered rising spring curves on tab switch, obsidian metallic base fills, laser-etched cyber energy meter side graduations that dynamically flare, sweeping high-specular reflection beam, crowning luminous neon rim beam, and pulsating holographic avatar aura halos (Gold for 1st, Silver for 2nd, Bronze for 3rd).
+2. **Elimination of Single-Alphabet Initials S, V, A (`lib/providers/leaderboard_provider.dart`, `lib/widgets/analytics/editorial_podium.dart`):** Assigned rich, authentic character avatar assets (`cute_plague_doctor`, `avatar_dark_knight`, `september_glow`, `avatar_six_eyes`, etc.) to all peer cohorts and implemented intelligent fallback in `_resolvePodiumAvatar` so raw letter circles never appear on the podium.
+3. **Clean, Unboxed Reset Countdown Text (`lib/screens/analytics/leaderboard_screen.dart`):** Removed container box styling in favor of minimalist, elegant centered text with clock/calendar icon under the 4 scale tabs. Stripped out redundant marketing taglines ("fresh podium daily", "weekly champion crowned", "monthly honor roll", "grand residency ranking").
+4. **Header Renamed to "TOP 20" (`lib/screens/analytics/leaderboard_screen.dart`):** Replaced "TOP 20 CONTENDERS" with clean, authoritative "TOP 20".
+5. **Enriched Top 20 List Rows (`lib/screens/analytics/leaderboard_screen.dart`):** Integrated compact 26px `ProfileAvatar` alongside doctor names and `Level 1`..`Level 10` rank badges.
+6. **Progress Screen Special Box Streamlining (`lib/screens/analytics/analytics_screen.dart`):** Completely removed the bottom action bar with "Daily • Weekly • Monthly • Yearly • View Arena" text, eliminating all horizontal overflow while adding a sleek forward chevron indicator next to the cheerful animated trophy.
+
+---
+
 ## 🚀 Build Manifest v1.10.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk`
 - **Device Tested:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
@@ -139,7 +155,28 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Verification:**
   - `flutter analyze`: **No issues found! (0 errors, 0 warnings)**
   - `flutter test test/leaderboard_test.dart`: **All 6 tests passed! (100%)**
-- **Status:** Pending APK Build
+- **Status:** ✅ Included in Build v1.11.0
+
+### [CKPT-059] Focus Leaderboard Motion Graphics Podium, Unboxed Reset Text & Avatar Restyle
+- **Timestamp:** 2026-10-25 04:25 UTC
+- **Category:** Motion & Visual Restyling / Focus Leaderboard Overhaul
+- **Files Modified (4 files):**
+  - `lib/widgets/analytics/editorial_podium.dart`: Complete motion graphics overhaul. Converted to `StatefulWidget` with dual animation controllers (`_riseController` for staggered spring entrance curve, `_motionController` for continuous specular sweep). Custom-painted obsidian metallic pedestals (`_PodiumMotionPainter`) with dynamic laser-etched energy meter side ticks, moving diagonal reflection beam, crowning luminous neon rim, holographic capsule rank plaques (`1ST`, `2ND`, `3RD`), and pulsating avatar aura halos. Implemented `_resolvePodiumAvatar` to guarantee zero raw alphabet initials (S, V, A).
+  - `lib/providers/leaderboard_provider.dart`: Replaced generic/letter avatar placeholders with distinct, rich character avatars from `kProfileAvatars` (`cute_plague_doctor`, `avatar_dark_knight`, `september_glow`, `avatar_six_eyes`, etc.) across all 20 peer cohorts.
+  - `lib/screens/analytics/leaderboard_screen.dart`: Removed box/container styling on the schedule reset countdown in favor of clean, centered text with clock/calendar icon. Stripped out redundant marketing taglines ("fresh podium daily", "weekly champion crowned", "monthly honor roll", "grand residency ranking"). Renamed section header from "TOP 20 CONTENDERS" to "TOP 20". Integrated 26px `ProfileAvatar` into all Top 20 list rows.
+  - `lib/screens/analytics/analytics_screen.dart`: Removed bottom action bar ("Daily • Weekly • Monthly • Yearly • View Arena") from `_FocusLeaderboardSpecialBox`, eliminating any viewport overflow, and added sleek forward chevron arrow next to the cheerful animated trophy.
+- **Summary:**
+  - Implemented high-octane motion graphics for the Top 3 podium pedestals with staggered rising physics, laser cyber meter tick marks, reflection shimmer, and pulsating avatar halos.
+  - Eliminated single-alphabet initials (S, V, A) on the podium and throughout Top 20, replacing them with authentic illustrated avatars.
+  - Unboxed the reset reminder into clean, minimalist text and removed all promotional taglines.
+  - Renamed header to "TOP 20" and streamlined the special-feature box on the Progress screen.
+- **Verification:**
+  - `flutter analyze`: **No issues found! (0 errors, 0 warnings)**
+  - `flutter test test/leaderboard_test.dart`: **All 6 tests passed! (100%)**
+  - Full debug APK built: `build/app/outputs/flutter-apk/app-debug.apk` (237MB)
+  - Installed and verified live on physical device OnePlus 13R (`ba009d81`, Android 16).
+  - Captured verification screenshots: `progress_screen_new.png`, `focus_leaderboard_screen_new.png`, `focus_leaderboard_weekly.png`.
+- **Status:** ✅ Included in Build v1.11.0
 
 ### [CKPT-057] Medical Arena Universal Competitive Leaderboard & 10-Tier Career Progression
 - **Timestamp:** 2026-10-25 02:20 UTC
