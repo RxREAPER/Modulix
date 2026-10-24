@@ -408,6 +408,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
         }
 
         // Also check if this matches a daily desk task by id or 'vid_$tId'
+        final focusMins = state.focusSecondsElapsed ~/ 60;
         final deskNotifier = _ref.read(dailyTasksProvider.notifier);
         final deskState = _ref.read(dailyTasksProvider);
         for (final task in deskState.tasks) {
@@ -415,16 +416,23 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
             if (task.id == tId ||
                 task.id == 'vid_$tId' ||
                 task.title.trim().toLowerCase() == state.topicTitle.trim().toLowerCase()) {
+              if (focusMins > 0) {
+                await deskNotifier.logFocusMinutes(task.id, focusMins);
+              }
               await deskNotifier.markTaskComplete(task.id);
             }
           }
         }
       } else if (state.hasTarget && state.topicTitle.isNotEmpty) {
+        final focusMins = state.focusSecondsElapsed ~/ 60;
         final deskNotifier = _ref.read(dailyTasksProvider.notifier);
         final deskState = _ref.read(dailyTasksProvider);
         for (final task in deskState.tasks) {
           if (!deskState.completedIds.contains(task.id)) {
             if (task.title.trim().toLowerCase() == state.topicTitle.trim().toLowerCase()) {
+              if (focusMins > 0) {
+                await deskNotifier.logFocusMinutes(task.id, focusMins);
+              }
               await deskNotifier.markTaskComplete(task.id);
             }
           }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -7,6 +8,8 @@ import '../../providers/app_state_provider.dart';
 import '../../providers/daily_tasks_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/animations/page_entrance.dart';
+import '../../widgets/animations/apple_pressable.dart';
+import '../../widgets/study_task_card.dart';
 import '../../widgets/analytics/progress_radial_gauge.dart';
 import '../../widgets/analytics/segmented_velocity_pill.dart';
 
@@ -53,14 +56,26 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
       }
     }
 
-    // Category distribution
+    // Category, Subject, and Priority distributions
     final Map<TaskCategory, int> categoryCounts = {};
     final Map<TaskCategory, int> categoryCompleted = {};
+    final Map<MedicalSubject, int> subjectCounts = {};
+    final Map<MedicalSubject, int> subjectCompleted = {};
+    final Map<TaskPriority, int> priorityCounts = {};
+    final Map<TaskPriority, int> priorityCompleted = {};
+
     for (final task in tasks) {
       categoryCounts[task.category] = (categoryCounts[task.category] ?? 0) + 1;
+      subjectCounts[task.subject] = (subjectCounts[task.subject] ?? 0) + 1;
+      priorityCounts[task.priority] = (priorityCounts[task.priority] ?? 0) + 1;
+
       if (completedIds.contains(task.id)) {
         categoryCompleted[task.category] =
             (categoryCompleted[task.category] ?? 0) + 1;
+        subjectCompleted[task.subject] =
+            (subjectCompleted[task.subject] ?? 0) + 1;
+        priorityCompleted[task.priority] =
+            (priorityCompleted[task.priority] ?? 0) + 1;
       }
     }
 
@@ -106,6 +121,33 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
           ),
         ),
         actions: [
+          ApplePressable(
+            pressedScale: 0.94,
+            onTap: () => context.push('/planner'),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: AppTheme.inkForeground,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.calendar_month_rounded, size: 12, color: AppTheme.paperBackground),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Planner',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.paperBackground,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Center(
@@ -429,9 +471,9 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
 
             const SizedBox(height: 20),
 
-            // ── 4. Today's Desk Pad Items ─────────────────────────────────
+            // ── 4. Priority Velocity Breakdown ────────────────────────────
             Text(
-              'TODAY\'S DESK PAD ITEMS',
+              'PRIORITY VELOCITY',
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
@@ -441,44 +483,229 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
 
-            if (tasks.isNotEmpty)
-              ...tasks.map((task) {
-                final isDone = completedIds.contains(task.id);
+            Row(
+              children: TaskPriority.values.map((prio) {
+                final count = priorityCounts[prio] ?? 0;
+                final done = priorityCompleted[prio] ?? 0;
+                final color = StudyTaskCard.priorityColor(prio);
+
+                return Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                    decoration: AppTheme.sketchDecoration(
+                      backgroundColor: AppTheme.cardWhite,
+                      borderRadius: 14,
+                      shadowOffset: 2,
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              prio.label.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w800,
+                                color: AppTheme.inkForeground,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          '$done/$count',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            fontFamily: 'monospace',
+                            color: AppTheme.inkForeground,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          count > 0 ? '${((done / count) * 100).round()}%' : '--',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.mutedText,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+
+            if (subjectCounts.isNotEmpty) ...[
+              const SizedBox(height: 20),
+
+              // ── 5. Medical Subject Breakdown ──────────────────────────────
+              Text(
+                'MEDICAL SUBJECT SCOPE',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.1,
+                  color: AppTheme.mutedText,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              ...subjectCounts.entries.map((entry) {
+                final subj = entry.key;
+                final count = entry.value;
+                final done = subjectCompleted[subj] ?? 0;
+                final pct = count > 0 ? (done / count) : 0.0;
+
                 return Container(
                   margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                   decoration: AppTheme.sketchDecoration(
                     backgroundColor: AppTheme.cardWhite,
                     borderRadius: 14,
+                    shadowOffset: 2,
                   ),
                   child: Row(
                     children: [
-                      Icon(
-                        isDone
-                            ? Icons.check_circle_rounded
-                            : Icons.radio_button_unchecked_rounded,
-                        size: 18,
-                        color: isDone
-                            ? ext.accent
-                            : AppTheme.mutedText,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AppTheme.accentSubtle,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          subj.shortCode,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.inkForeground,
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: Text(
-                          task.title,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: isDone
-                                ? AppTheme.mutedText
-                                : AppTheme.inkForeground,
-                            decoration:
-                                isDone ? TextDecoration.lineThrough : null,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              subj.label,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.inkForeground,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(3),
+                              child: LinearProgressIndicator(
+                                value: pct,
+                                minHeight: 4,
+                                backgroundColor: ext.borderSubtle,
+                                valueColor: AlwaysStoppedAnimation(ext.accent),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '$done/$count',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          fontFamily: 'monospace',
+                          color: pct >= 1.0 ? ext.accent : AppTheme.inkForeground,
                         ),
                       ),
                     ],
                   ),
+                );
+              }),
+            ],
+
+            const SizedBox(height: 20),
+
+            // ── 6. Today's Desk Pad Items ─────────────────────────────────
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'TODAY\'S DESK PAD ITEMS',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.1,
+                    color: AppTheme.mutedText,
+                  ),
+                ),
+                ApplePressable(
+                  pressedScale: 0.94,
+                  onTap: () => context.push('/planner'),
+                  child: Text(
+                    'Full Planner →',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: ext.accent,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            if (tasks.isEmpty)
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+                decoration: AppTheme.sketchDecoration(
+                  backgroundColor: AppTheme.cardWhite,
+                  borderRadius: 16,
+                  shadowOffset: 2,
+                ),
+                child: Column(
+                  children: [
+                    Icon(Icons.check_circle_outline_rounded, size: 30, color: AppTheme.mutedText),
+                    const SizedBox(height: 8),
+                    Text(
+                      'No tasks scheduled on desk pad today',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.inkForeground,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              ...tasks.map((task) {
+                final isDone = completedIds.contains(task.id);
+                return StudyTaskCard(
+                  id: task.id,
+                  title: task.title,
+                  category: task.category,
+                  subject: task.subject,
+                  priority: task.priority,
+                  estimatedMinutes: task.estimatedMinutes,
+                  actualMinutesSpent: task.actualMinutesSpent,
+                  isRecurring: task.isRecurring,
+                  isCompleted: isDone,
+                  onToggle: () async {
+                    final finishedAll = await ref.read(dailyTasksProvider.notifier).toggleTask(task.id);
+                    if (finishedAll) {
+                      HapticFeedback.heavyImpact();
+                    }
+                  },
                 );
               }),
           ],

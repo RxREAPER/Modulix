@@ -257,13 +257,35 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "Today's tasks",
-                    style: AppTheme.headingStyle(
-                      fontSize: 23,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.inkForeground,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        "Today's tasks",
+                        style: AppTheme.headingStyle(
+                          fontSize: 23,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.inkForeground,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      ApplePressable(
+                        pressedScale: 0.90,
+                        onTap: () => context.push('/planner'),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: AppTheme.parchmentSurface,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppTheme.borderLight, width: 1),
+                          ),
+                          child: Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 11,
+                            color: AppTheme.inkForeground,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -281,35 +303,68 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
                 ],
               ),
             ),
-            if (deskTasks.isNotEmpty)
-              ApplePressable(
-                pressedScale: 0.94,
-                onPressed: () => _openTaskSheet(context, ref, deskTasks),
-                child: Container(
-                  decoration: AppTheme.sketchDecoration(
-                    backgroundColor: AppTheme.cardWhite,
-                    borderRadius: 10,
-                    borderWidth: 1.4,
-                    shadowOffset: 1.5,
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.add_rounded, size: 15, color: AppTheme.inkForeground),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Add',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.inkForeground,
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ApplePressable(
+                  pressedScale: 0.94,
+                  onTap: () => context.push('/planner'),
+                  child: Container(
+                    decoration: AppTheme.sketchDecoration(
+                      backgroundColor: AppTheme.parchmentSurface,
+                      borderRadius: 10,
+                      borderWidth: 1.2,
+                      shadowOffset: 1.5,
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.calendar_month_rounded, size: 13, color: AppTheme.inkForeground),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Planner',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.inkForeground,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(width: 8),
+                ApplePressable(
+                  pressedScale: 0.94,
+                  onPressed: () => _openTaskSheet(context, ref, deskTasks),
+                  child: Container(
+                    decoration: AppTheme.sketchDecoration(
+                      backgroundColor: AppTheme.cardWhite,
+                      borderRadius: 10,
+                      borderWidth: 1.4,
+                      shadowOffset: 1.5,
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.add_rounded, size: 15, color: AppTheme.inkForeground),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Add',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.inkForeground,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
         const SizedBox(height: 14),
@@ -332,7 +387,12 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
                 id: task.id,
                 title: task.title,
                 category: task.category,
-                customSubtitle: 'Goal #${index + 1}',
+                subject: task.subject,
+                priority: task.priority,
+                estimatedMinutes: task.estimatedMinutes,
+                actualMinutesSpent: task.actualMinutesSpent,
+                isRecurring: task.isRecurring,
+                customSubtitle: null,
                 isCompleted: isDone,
                 onToggle: () async {
                   final finishedAll = await ref.read(dailyTasksProvider.notifier).toggleTask(task.id);

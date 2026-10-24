@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../models/daily_desk_task.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/daily_tasks_provider.dart';
 import '../../providers/syllabus_provider.dart';
@@ -150,34 +151,115 @@ class AnalyticsScreen extends ConsumerWidget {
       }
     }
 
-    // ── 3. Daily Tasks Summary ─────────────────────────────────────────────
+    // ── 3. Daily Tasks Summary & Velocity Insights ───────────────────────
     final totalTasks = dailyTasksState.tasks.length;
     final doneTasks = dailyTasksState.completedIds.length;
+    final pendingTasks = totalTasks - doneTasks;
     final double tasksProgress =
         totalTasks > 0 ? (doneTasks / totalTasks) : 0.0;
+
+    int p1Pending = 0;
+    int estRemainingMins = 0;
+    final Map<MedicalSubject, int> subjectPendingCounts = {};
+    for (final t in dailyTasksState.tasks) {
+      if (!dailyTasksState.completedIds.contains(t.id)) {
+        if (t.priority == TaskPriority.p1urgent) p1Pending++;
+        estRemainingMins += (t.estimatedMinutes ?? 30);
+        if (t.subject != MedicalSubject.general) {
+          subjectPendingCounts[t.subject] =
+              (subjectPendingCounts[t.subject] ?? 0) + 1;
+        }
+      }
+    }
+
+    String? topPendingSubjectName;
+    if (subjectPendingCounts.isNotEmpty) {
+      final sorted = subjectPendingCounts.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+      topPendingSubjectName = sorted.first.key.label;
+    }
+
+    String tasksSubtitle;
+    if (p1Pending > 0) {
+      tasksSubtitle =
+          '$p1Pending Urgent (P1) pending · ~${estRemainingMins}m remaining';
+    } else if (pendingTasks > 0) {
+      tasksSubtitle =
+          '$pendingTasks pending${topPendingSubjectName != null ? ' in $topPendingSubjectName' : ''} · ~${estRemainingMins}m focus';
+    } else if (totalTasks > 0 && doneTasks == totalTasks) {
+      tasksSubtitle = 'All $totalTasks goals completed today · Target met';
+    } else {
+      tasksSubtitle = 'No tasks scheduled · Tap to open task planner';
+    }
 
     // ── 4. Overall 19 MBBS Subjects Mastery ────────────────────────────────
     int totalMbbsItems = 0;
     int completedMbbsItems = 0;
+    String? subjectAttentionName;
+    double minCompletionRate = 1.0;
+
     for (final s in subjects) {
+      int sTotal = 0;
+      int sDone = 0;
       for (final ch in s.chapters) {
-        totalMbbsItems += ch.videos.length + ch.notes.length;
+        final count = ch.videos.length + ch.notes.length;
+        totalMbbsItems += count;
+        sTotal += count;
         for (final v in ch.videos) {
-          if (edition.completedVideos.containsKey(v.id)) completedMbbsItems++;
+          if (edition.completedVideos.containsKey(v.id)) {
+            completedMbbsItems++;
+            sDone++;
+          }
         }
         for (final n in ch.notes) {
-          if (edition.completedNotes.containsKey(n.id)) completedMbbsItems++;
+          if (edition.completedNotes.containsKey(n.id)) {
+            completedMbbsItems++;
+            sDone++;
+          }
         }
       }
       for (final qch in s.qbankChapters) {
         totalMbbsItems += qch.qbanks.length;
+        sTotal += qch.qbanks.length;
         for (final q in qch.qbanks) {
-          if (edition.completedQBanks.containsKey(q.id)) completedMbbsItems++;
+          if (edition.completedQBanks.containsKey(q.id)) {
+            completedMbbsItems++;
+            sDone++;
+          }
+        }
+      }
+      if (sTotal > 0) {
+        final rate = sDone / sTotal;
+        if (rate < minCompletionRate) {
+          minCompletionRate = rate;
+          subjectAttentionName = s.name;
         }
       }
     }
     final double mbbsProgress =
         totalMbbsItems > 0 ? (completedMbbsItems / totalMbbsItems) : 0.0;
+
+    final String masterySubtitle = subjectAttentionName != null && minCompletionRate < 0.99
+        ? '$subjectAttentionName needs focus · ${(minCompletionRate * 100).round()}% complete'
+        : 'Complete curriculum tracking across all 19 subjects';
+
+    // ── 5. Focus Peak Subject ──────────────────────────────────────────────
+    final Map<String, int> focusSubjectSeconds = {};
+    for (final log in timeLogs) {
+      if (log.topicTitle.isNotEmpty) {
+        focusSubjectSeconds[log.topicTitle] =
+            (focusSubjectSeconds[log.topicTitle] ?? 0) + log.durationSecs;
+      }
+    }
+    String topFocusSubject = 'MBBS Flow';
+    if (focusSubjectSeconds.isNotEmpty) {
+      final sortedFocus = focusSubjectSeconds.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+      topFocusSubject = sortedFocus.first.key;
+      if (topFocusSubject.length > 13) {
+        topFocusSubject = '${topFocusSubject.substring(0, 12)}…';
+      }
+    }
 
     return Scaffold(
       backgroundColor: AppTheme.paperBackground,
@@ -341,8 +423,8 @@ class AnalyticsScreen extends ConsumerWidget {
               ),
               stat1Label: 'Today\'s Flow',
               stat1Value: _formatDuration(todayFocusSecs),
-              stat2Label: 'All-Time Logs',
-              stat2Value: '${timeLogs.length} sessions',
+              stat2Label: 'Top Subject',
+              stat2Value: topFocusSubject,
               onTap: () => context.push('/analytics/focus-analytics'),
             ),
 
@@ -352,9 +434,7 @@ class AnalyticsScreen extends ConsumerWidget {
             _HubCard(
               key: TourTargetRegistry.keyFor(TourTargetId.analyticsTasksHub),
               title: 'Daily Tasks Analytics',
-              subtitle: totalTasks > 0
-                  ? '$doneTasks of $totalTasks tasks checked off today'
-                  : 'No tasks scheduled on desk pad',
+              subtitle: tasksSubtitle,
               badge: totalTasks > 0 ? '$doneTasks/$totalTasks' : '0/0',
               badgeColor: AppTheme.accentEmerald,
               icon: Icons.check_circle_outline_rounded,
@@ -384,10 +464,10 @@ class AnalyticsScreen extends ConsumerWidget {
                       isPositiveVelocity: tasksProgress >= 0.5,
                     )
                   : null,
-              stat1Label: 'Completion Rate',
-              stat1Value: '${(tasksProgress * 100).round()}%',
-              stat2Label: 'Desk Tasks',
-              stat2Value: '$totalTasks planned',
+              stat1Label: 'Pending',
+              stat1Value: '$pendingTasks targets',
+              stat2Label: 'Est. Remaining',
+              stat2Value: '~${estRemainingMins}m',
               onTap: () => context.push('/analytics/tasks-analytics'),
             ),
 
@@ -396,8 +476,7 @@ class AnalyticsScreen extends ConsumerWidget {
             // ── Hub Card 4: Subject Mastery ──────────────────────────────────
             _HubCard(
               title: 'Subject Mastery',
-              subtitle:
-                  'Complete curriculum tracking across all 19 subjects',
+              subtitle: masterySubtitle,
               badge: '${(mbbsProgress * 100).round()}% MBBS',
               badgeColor: AppTheme.accentTertiary,
               icon: Icons.layers_outlined,

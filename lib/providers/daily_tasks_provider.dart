@@ -176,7 +176,20 @@ class DailyTasksNotifier extends StateNotifier<DailyTasksState> {
             history[lastDate] = completed.length;
           }
         }
-        loadedTasks = loadedTasks.where((t) => !completed.contains(t.id)).toList();
+        final remainingTasks = loadedTasks.where((t) => !completed.contains(t.id)).toList();
+
+        // Auto-clone recurring completed tasks so they reappear on the new day
+        final recurringCompleted = loadedTasks.where((t) => completed.contains(t.id) && t.isRecurring).toList();
+        for (final recTask in recurringCompleted) {
+          final cloned = recTask.copyWith(
+            id: 'task_${DateTime.now().millisecondsSinceEpoch}_${recTask.title.hashCode}',
+            actualMinutesSpent: 0,
+            scheduledDate: today,
+          );
+          remainingTasks.add(cloned);
+        }
+
+        loadedTasks = remainingTasks;
         completed = <String>{};
 
         await prefs.setString(_kLastActiveDateKey, today);
@@ -297,6 +310,32 @@ class DailyTasksNotifier extends StateNotifier<DailyTasksState> {
     await _persist();
   }
 
+  Future<void> addTask(DailyDeskTask task) async {
+    await _loadFuture;
+    final updatedTasks = List<DailyDeskTask>.from(state.tasks)..add(task);
+    final updatedDeleted = Set<String>.from(state.deletedIds)..remove(task.id);
+    state = state.copyWith(tasks: updatedTasks, deletedIds: updatedDeleted);
+    await _persist();
+  }
+
+  Future<void> updateTask(DailyDeskTask updated) async {
+    await _loadFuture;
+    final updatedTasks = state.tasks.map((t) => t.id == updated.id ? updated : t).toList();
+    state = state.copyWith(tasks: updatedTasks);
+    await _persist();
+  }
+
+  Future<void> logFocusMinutes(String taskId, int minutes) async {
+    await _loadFuture;
+    final updatedTasks = state.tasks.map((t) {
+      if (t.id != taskId) return t;
+      final prev = t.actualMinutesSpent ?? 0;
+      return t.copyWith(actualMinutesSpent: prev + minutes);
+    }).toList();
+    state = state.copyWith(tasks: updatedTasks);
+    await _persist();
+  }
+
   Future<void> reorderTasks(int oldIndex, int newIndex) async {
     await _loadFuture;
     if (oldIndex < 0 || oldIndex >= state.tasks.length) return;
@@ -373,6 +412,18 @@ class DailyTasksNotifier extends StateNotifier<DailyTasksState> {
           }
         }
         final remainingTasks = state.tasks.where((t) => !state.completedIds.contains(t.id)).toList();
+
+        // Auto-clone recurring completed tasks so they reappear on the new day
+        final recurringCompleted = state.tasks.where((t) => state.completedIds.contains(t.id) && t.isRecurring).toList();
+        for (final recTask in recurringCompleted) {
+          final cloned = recTask.copyWith(
+            id: 'task_${DateTime.now().millisecondsSinceEpoch}_${recTask.title.hashCode}',
+            actualMinutesSpent: 0,
+            scheduledDate: today,
+          );
+          remainingTasks.add(cloned);
+        }
+
         final updatedCompleted = <String>{};
 
         state = state.copyWith(

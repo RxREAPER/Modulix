@@ -31,6 +31,33 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-048] Medical Study Task Planner, Actionable Priority Velocity & Progress Analytics Overhaul
+- **Timestamp:** 2026-10-24 04:15 UTC
+- **Category:** Feature / Medical Task Planner / Priority Velocity & Actionable Analytics Overhaul
+- **Files Modified & Added (12 files):**
+  - `lib/models/daily_desk_task.dart`: Added `MedicalSubject` enum (19 MBBS clinical/preclinical/paraclinical subjects + General with short codes: `ANAT`, `PHARM`, `PATH`, `MED`, `SURG`, etc.), `TaskPriority` enum (`p1urgent`, `p2high`, `p3medium`, `p4low`), scheduling date, estimated vs actual minutes, recurrence flag, and defensive null-safe deserialization per AGENTS.md rules.
+  - `lib/models/plan_task_filter.dart` (NEW): Filter criteria model supporting subject chips, priority levels, category, and date range.
+  - `lib/providers/daily_tasks_provider.dart`: Added `addTask`, `updateTask`, `logFocusMinutes`, and automatic midnight rollover cloning for recurring study tasks.
+  - `lib/providers/focus_timer_provider.dart`: Connected completed focus timer sessions to automatically credit study duration onto matching daily desk tasks.
+  - `lib/widgets/study_task_card.dart`: Redesigned task cards with color-coded priority dots (`●`), medical subject pill (`PHARM`, `ANAT`, `PATH`), duration pills (`actual/est`), and recurrence icon.
+  - `lib/screens/planner/planner_screen.dart` (NEW): Dedicated high-density Study Task Planner screen with date header, velocity progress meter, 19 MBBS subject filter scroller, priority-grouped collapsible sections (P1 Urgent to P4 Low), quick-add modal sheet, and swipe-to-dismiss with undo.
+  - `lib/screens/planner/plan_tomorrow_sheet.dart` (NEW): Clinical desk rollover and tomorrow preparation sheet allowing carry-forward of pending items and scheduling recurring MBBS routines.
+  - `lib/app.dart`: Registered `/planner` route in GoRouter.
+  - `lib/screens/home/home_screen.dart`: Enhanced "Today's tasks" header with direct arrow navigation `→` and quick "Planner" button to access the Study Task Planner.
+  - `lib/screens/analytics/analytics_screen.dart`: Transformed Hub Cards into actionable velocity centers (pending urgent items, remaining study minutes, subject needing attention).
+  - `lib/screens/analytics/daily_tasks_analytics_page.dart`: Upgraded sub-page with direct Planner button, Priority Velocity breakdown (P1–P4 counts & completion %), and Medical Subject distribution.
+  - `test/medical_planner_test.dart` (NEW): Comprehensive unit & widget tests covering model serialization/deserialization, legacy map tolerance, immutability, `StudyTaskCard` badges, and `PlannerScreen` rendering.
+- **Summary:**
+  - Full-blown medical task planner tailored exclusively for NEET-PG and MBBS students.
+  - Priority velocity replaces passive task counts with urgent items pending, estimated minutes remaining, and completion velocity.
+  - Zero text clutter: clean priority dots, compact subject pills, and actionable velocity insights matching Modulix's clinical aesthetic.
+- **Verification:**
+  - `flutter analyze`: **0 issues found across all files (100% clean)**
+  - `flutter test test/medical_planner_test.dart test/progress_overhaul_test.dart test/study_desk_test.dart`: **All 22 tests passed (100%)**
+  - `flutter build apk --debug`: **Built successfully (`build/app/outputs/flutter-apk/app-debug.apk`) in 189.7s**
+  - **Device Installed:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
+- **Build Status:** ✅ Included in Build
+
 ### [CKPT-047] Live Theme Bridge, Settings Cards Reactivity & Daily Tasks / Subject Mastery Harmonization
 - **Timestamp:** 2026-10-24 01:00 UTC
 - **Category:** Theme Engine / Reactive Riverpod Architecture / UI Bugfix / Sub-Page Harmonization

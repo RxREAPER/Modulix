@@ -10,6 +10,11 @@ class StudyTaskCard extends StatelessWidget {
   final String id;
   final String title;
   final TaskCategory category;
+  final MedicalSubject subject;
+  final TaskPriority priority;
+  final int? estimatedMinutes;
+  final int? actualMinutesSpent;
+  final bool isRecurring;
   final String? customSubtitle;
   final bool isCompleted;
   final VoidCallback onToggle;
@@ -21,12 +26,30 @@ class StudyTaskCard extends StatelessWidget {
     required this.id,
     required this.title,
     this.category = TaskCategory.general,
+    this.subject = MedicalSubject.general,
+    this.priority = TaskPriority.p3medium,
+    this.estimatedMinutes,
+    this.actualMinutesSpent,
+    this.isRecurring = false,
     this.customSubtitle,
     required this.isCompleted,
     required this.onToggle,
     this.onDismissed,
     this.dragHandle,
   });
+
+  static Color priorityColor(TaskPriority priority) {
+    switch (priority) {
+      case TaskPriority.p1urgent:
+        return AppTheme.accentPrimary;
+      case TaskPriority.p2high:
+        return const Color(0xFFEAB308);
+      case TaskPriority.p3medium:
+        return AppTheme.accentSecondary;
+      case TaskPriority.p4low:
+        return AppTheme.mutedText;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,21 +110,40 @@ class StudyTaskCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      AnimatedStrikeText(
-                        text: title,
-                        isStruck: isCompleted,
-                        style: TextStyle(
-                          fontSize: 14.5,
-                          fontWeight: isCompleted ? FontWeight.w500 : FontWeight.w700,
-                          color: AppTheme.inkForeground,
-                        ),
-                        strikeColor: AppTheme.mutedText,
-                        strikeThickness: 2.0,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
                       Row(
+                        children: [
+                          // Priority indicator dot
+                          Container(
+                            width: 7.5,
+                            height: 7.5,
+                            margin: const EdgeInsets.only(right: 7),
+                            decoration: BoxDecoration(
+                              color: isCompleted ? AppTheme.mutedText : priorityColor(priority),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          Expanded(
+                            child: AnimatedStrikeText(
+                              text: title,
+                              isStruck: isCompleted,
+                              style: TextStyle(
+                                fontSize: 14.5,
+                                fontWeight: isCompleted ? FontWeight.w500 : FontWeight.w700,
+                                color: AppTheme.inkForeground,
+                              ),
+                              strikeColor: AppTheme.mutedText,
+                              strikeThickness: 2.0,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 5),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           // Category Tag Chip
                           Container(
@@ -137,8 +179,66 @@ class StudyTaskCard extends StatelessWidget {
                               ],
                             ),
                           ),
-                          if (customSubtitle != null && customSubtitle!.isNotEmpty) ...[
-                            const SizedBox(width: 8),
+                          // Subject Chip (if not general)
+                          if (subject != MedicalSubject.general)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6.5, vertical: 2.5),
+                              decoration: BoxDecoration(
+                                color: isCompleted ? AppTheme.parchmentSurface : AppTheme.accentSubtle,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: isCompleted ? AppTheme.borderLight : AppTheme.accentPrimary.withValues(alpha: 0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Text(
+                                subject.shortCode,
+                                style: TextStyle(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.4,
+                                  color: isCompleted ? AppTheme.mutedText : AppTheme.inkForeground,
+                                ),
+                              ),
+                            ),
+                          // Estimated / Actual Time Pill
+                          if (estimatedMinutes != null && estimatedMinutes! > 0)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                              decoration: BoxDecoration(
+                                color: AppTheme.parchmentSurface,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: AppTheme.borderLight,
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.schedule_rounded, size: 10, color: AppTheme.mutedText),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    actualMinutesSpent != null && actualMinutesSpent! > 0
+                                        ? '${actualMinutesSpent}m/${estimatedMinutes}m'
+                                        : '${estimatedMinutes}m',
+                                    style: TextStyle(
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.mutedText,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          // Recurring Indicator
+                          if (isRecurring)
+                            Icon(
+                              Icons.repeat_rounded,
+                              size: 13,
+                              color: AppTheme.mutedText,
+                            ),
+                          if (customSubtitle != null && customSubtitle!.isNotEmpty)
                             Text(
                               customSubtitle!,
                               style: TextStyle(
@@ -147,7 +247,6 @@ class StudyTaskCard extends StatelessWidget {
                                 color: Colors.grey.shade500,
                               ),
                             ),
-                          ],
                         ],
                       ),
                     ],
