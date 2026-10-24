@@ -6,6 +6,22 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ---
 
+## 🚀 Build Manifest v1.7.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk`
+- **Device Tested:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
+- **Compilation Time:** 179.6s | **Test Suite:** 8/8 Tasks Tests Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-051]`
+
+### Key Highlights & Releases in v1.7.0:
+1. **Module-Based Project Mode & Progressive Disclosure (`lib/widgets/tasks/project_setup_catalogue_sheet.dart`):** Replaced legacy color picker with a dual-mode catalogue ("Module based" vs "Self Study"). Module mode progressively discloses Subject -> Unit -> Deadline & Modules/day -> dynamic calculation text ("X modules at Y/day · Finishes in Z days") without visual clutter or extra tags.
+2. **Automated Syllabus Video Pipeline Scheduling (`lib/providers/tasks_hub_provider.dart`):** On project confirmation, unit video modules are extracted and auto-scheduled across Today (Day 0), Tomorrow (Day 1), and upcoming days (This Week) according to the configured daily pace.
+3. **Self Study Project Mode with "General Study" (`lib/widgets/tasks/project_setup_catalogue_sheet.dart`):** Dedicated Self Study mode with an exclusive "General Study" non-curriculum option, optional unit selection, and an empty user-driven task queue.
+4. **Interactive Focus Timer Linking (`lib/widgets/tasks/task_row.dart`, `lib/providers/focus_timer_provider.dart`):** Integrated tactile Play button (`Icons.play_arrow_rounded`) beside every task across Today, Tomorrow, This Week, and Project views that immediately binds and launches the Focus Timer.
+5. **Marked Module Swipe-Down Animated Completion (`lib/screens/tasks/today_page.dart`):** Interactive checkmarking smoothly animates completed tasks down into a dedicated `COMPLETED (N)` section with struck-through text and tomato-red accents.
+6. **Project Management & Telemetry Overview (`lib/screens/tasks/project_page.dart`):** Project details screen displays mode badge, pace, dynamic progress bar (`X tasks · Y done (Z%)`), live study session telemetry from SQLite `time_logs`, active/completed queues, and an options menu (Edit, Archive, Delete with cascade).
+
+---
+
 ## 🚀 Build Manifest v1.6.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk`
 - **Device Tested:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
@@ -55,7 +71,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - Added marked module swipe-down completion animation on Today page.
   - Added project management (Edit, Archive, Delete) and session telemetry on Project Page.
 - **Verification:** 8/8 automated unit tests passed (`flutter test test/tasks_hub_test.dart`). `flutter analyze` 100% clean (0 issues).
-- **Build Status:** ⏳ Pending APK Build
+- **Build Status:** ✅ Included in Build (Commit 5559f0c, verified on OnePlus 13R)
 
 ---
 
