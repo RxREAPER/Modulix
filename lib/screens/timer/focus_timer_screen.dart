@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/timer_theme.dart';
 import '../../providers/focus_timer_provider.dart';
+import '../../providers/app_state_provider.dart';
 import '../../widgets/timer/ambient_sound_sheet.dart';
 import '../../widgets/timer/timer_background_picker.dart';
 import '../../widgets/timer/task_picker_sheet.dart';
@@ -272,6 +273,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(appThemeDataProvider);
     ref.listen<bool>(
       focusTimerProvider.select((s) => s.keepScreenAwake),
       (prev, next) {

@@ -37,6 +37,7 @@ class CurriculumScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(appThemeDataProvider);
     final syllabus = ref.watch(activeSyllabusProvider);
     final completionMap = ref.watch(syllabusMetricsProvider);
     final appState = ref.watch(appStateProvider).value;

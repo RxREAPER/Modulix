@@ -3,9 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
 import '../providers/sync_provider.dart';
+import '../providers/app_state_provider.dart';
 import '../screens/auth/auth_screen.dart';
 import '../services/sync_service.dart';
-import '../theme/app_theme.dart';
 
 /// Interactive sync status chip indicating cloud connection and allowing manual sync / login
 class SyncStatusBadge extends ConsumerWidget {
@@ -14,6 +14,8 @@ class SyncStatusBadge extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final themeData = ref.watch(appThemeDataProvider);
+    final ext = themeData.extension;
     final isAuthenticated = ref.watch(isAuthenticatedProvider);
     final syncStatus = ref.watch(syncStatusProvider);
 
@@ -29,10 +31,10 @@ class SyncStatusBadge extends ConsumerWidget {
             vertical: compact ? 4.5 : 5.5,
           ),
           decoration: BoxDecoration(
-            color: AppTheme.accentSubtle,
+            color: ext.accentSubtle,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: AppTheme.accentPrimary.withValues(alpha: 0.35),
+              color: ext.accent.withValues(alpha: 0.35),
               width: 1.1,
             ),
           ),
@@ -42,7 +44,7 @@ class SyncStatusBadge extends ConsumerWidget {
               Icon(
                 Icons.cloud_outlined,
                 size: compact ? 12 : 14,
-                color: AppTheme.accentPrimary,
+                color: ext.accent,
               ),
               const SizedBox(width: 5),
               Text(
@@ -50,7 +52,7 @@ class SyncStatusBadge extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: compact ? 10.5 : 11.5,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.accentPrimary,
+                  color: ext.accent,
                 ),
               ),
             ],
@@ -65,12 +67,12 @@ class SyncStatusBadge extends ConsumerWidget {
 
     switch (syncStatus) {
       case SyncStatus.syncing:
-        badgeColor = AppTheme.accentPrimary;
+        badgeColor = ext.accent;
         badgeIcon = Icons.sync_rounded;
         badgeLabel = 'Syncing';
         break;
       case SyncStatus.synced:
-        badgeColor = AppTheme.accentEmerald;
+        badgeColor = ext.isDark ? const Color(0xFF10B981) : const Color(0xFF059669);
         badgeIcon = Icons.cloud_done_rounded;
         badgeLabel = 'Synced';
         break;
@@ -81,7 +83,7 @@ class SyncStatusBadge extends ConsumerWidget {
         badgeLabel = 'Offline';
         break;
       case SyncStatus.idle:
-        badgeColor = AppTheme.accentPrimary;
+        badgeColor = ext.accent;
         badgeIcon = Icons.cloud_outlined;
         badgeLabel = 'Cloud';
         break;

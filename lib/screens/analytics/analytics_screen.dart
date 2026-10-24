@@ -54,6 +54,7 @@ class AnalyticsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(appThemeDataProvider);
     final appStateAsync = ref.watch(appStateProvider);
     final syllabusAsync = ref.watch(activeSyllabusProvider);
     final timeLogs = ref.watch(timeLogsProvider);

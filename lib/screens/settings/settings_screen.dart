@@ -15,12 +15,13 @@ import '../../providers/auth_provider.dart';
 import '../../providers/sync_provider.dart';
 import '../../widgets/animations/apple_pressable.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   final String? from;
   const SettingsScreen({super.key, this.from});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(appThemeDataProvider);
     final activeTheme = context.modulixTheme;
 
     return Scaffold(
@@ -141,6 +142,7 @@ class _DoctorProfileCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(appThemeDataProvider);
     final appState = ref.watch(appStateProvider).valueOrNull;
     if (appState == null) return const SizedBox.shrink();
 
@@ -289,6 +291,7 @@ class _CloudSyncSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(appThemeDataProvider);
     final isAuthenticated = ref.watch(isAuthenticatedProvider);
     final currentUser = ref.watch(currentUserProvider);
     final syncStatus = ref.watch(syncStatusProvider);
@@ -648,6 +651,7 @@ class _SyllabusEditionSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(appThemeDataProvider);
     final activeEdition =
         ref.watch(appStateProvider.select((s) => s.valueOrNull?.activeEdition)) ??
             'marrow_8';
@@ -772,11 +776,12 @@ class _SyllabusEditionSection extends ConsumerWidget {
 }
 
 // ── 5. Notifications & Preferences Section ────────────────────────
-class _NotificationsPreferencesSection extends StatelessWidget {
+class _NotificationsPreferencesSection extends ConsumerWidget {
   const _NotificationsPreferencesSection();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(appThemeDataProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -874,6 +879,7 @@ class _ResourceHubsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(appThemeDataProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

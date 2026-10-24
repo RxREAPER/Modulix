@@ -71,7 +71,7 @@ class SegmentedVelocityPill extends StatelessWidget {
                     ? Icons.trending_up_rounded
                     : Icons.trending_flat_rounded,
                 size: 13,
-                color: isPositiveVelocity ? const Color(0xFF10B981) : AppTheme.mutedText,
+                color: isPositiveVelocity ? activeColor : AppTheme.mutedText,
               ),
               const SizedBox(width: 4),
               Text(
@@ -79,7 +79,7 @@ class SegmentedVelocityPill extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: isPositiveVelocity ? const Color(0xFF10B981) : AppTheme.mutedText,
+                  color: isPositiveVelocity ? activeColor : AppTheme.mutedText,
                 ),
               ),
             ],

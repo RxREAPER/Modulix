@@ -28,6 +28,7 @@ class _StudyPlanAnalyticsPageState
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(appThemeDataProvider);
     final appStateAsync = ref.watch(appStateProvider);
     final syllabusAsync = ref.watch(activeSyllabusProvider);
 

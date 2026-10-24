@@ -36,6 +36,7 @@ class _FocusTimerAnalyticsPageState
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(appThemeDataProvider);
     final timeLogs = ref.watch(timeLogsProvider);
     final dayStartHour =
         ref.watch(appStateProvider.select((s) => s.valueOrNull?.dayStartHour ?? 5));

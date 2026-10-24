@@ -15,6 +15,8 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final themeData = ref.watch(appThemeDataProvider);
+    final ext = themeData.extension;
     final dayStartHour = ref.watch(
         appStateProvider.select((s) => s.valueOrNull?.dayStartHour ?? 5));
     final tasksState = ref.watch(dailyTasksProvider);
@@ -110,16 +112,16 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppTheme.accentSubtle,
+                  color: ext.accentSubtle,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.accentPrimary, width: 1.2),
+                  border: Border.all(color: ext.accent, width: 1.2),
                 ),
                 child: Text(
                   '$completedCount/$totalTasks Tasks',
                   style: AppTypography.compactAction(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.accentPrimary,
+                    color: ext.accent,
                   ),
                 ),
               ),
@@ -148,7 +150,7 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                     progress: completionPct,
                     size: 88,
                     strokeWidth: 8,
-                    progressColor: AppTheme.accentPrimary,
+                    progressColor: ext.accent,
                     percentageStyle: AppTypography.metricValue(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
@@ -246,7 +248,7 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
-                          color: AppTheme.accentAmber,
+                          color: ext.accent,
                         ),
                       ),
                     ],
@@ -280,11 +282,11 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                               decoration: BoxDecoration(
                                 color: count > 0
                                     ? (isToday
-                                        ? AppTheme.accentPrimary
-                                        : AppTheme.accentSecondary)
-                                    : (AppTheme.current.isDark
+                                        ? ext.accent
+                                        : ext.accent.withValues(alpha: 0.38))
+                                    : (ext.isDark
                                         ? Colors.white.withValues(alpha: 0.06)
-                                        : AppTheme.borderLight),
+                                        : ext.borderSubtle),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                             ),
@@ -367,7 +369,7 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                     ),
                   TaskCategory.general => (
                       'General Tasks',
-                      AppTheme.accentEmerald,
+                      ext.accent,
                       Icons.check_circle_outline_rounded
                     ),
                 };
@@ -403,7 +405,7 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                               fontSize: 11,
                               fontWeight: FontWeight.w800,
                               fontFamily: 'monospace',
-                              color: catPct >= 1.0 ? AppTheme.accentEmerald : AppTheme.inkForeground,
+                              color: catPct >= 1.0 ? ext.accent : AppTheme.inkForeground,
                             ),
                           ),
                         ],
@@ -414,9 +416,9 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                         child: LinearProgressIndicator(
                           value: catPct,
                           minHeight: 5,
-                          backgroundColor: AppTheme.current.isDark
+                          backgroundColor: ext.isDark
                               ? Colors.white.withValues(alpha: 0.08)
-                              : AppTheme.borderLight,
+                              : ext.borderSubtle,
                           valueColor: AlwaysStoppedAnimation(catColor),
                         ),
                       ),
@@ -457,7 +459,7 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                             : Icons.radio_button_unchecked_rounded,
                         size: 18,
                         color: isDone
-                            ? AppTheme.accentEmerald
+                            ? ext.accent
                             : AppTheme.mutedText,
                       ),
                       const SizedBox(width: 10),

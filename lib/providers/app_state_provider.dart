@@ -9,6 +9,7 @@ import '../services/crash_reporting_service.dart';
 import '../services/metrics_service.dart';
 import '../services/sync_service.dart';
 import '../theme/modulix_theme.dart';
+import '../theme/app_theme.dart';
 
 // ─── App State ───────────────────────────────────────────────────────────────
 
@@ -19,6 +20,8 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
   @override
   Future<AppState> build() async {
     final loaded = StorageService.instance.load();
+    final preset = PalettePreset.fromId(loaded.palettePresetId);
+    AppTheme.current = ModulixThemeExtension.from(preset: preset);
     NotificationService.instance.syncAllReminders(loaded);
     // Trigger standard system permission popup ("Allow Modulix to send you notifications?")
     if (loaded.dailyReminderEnabled ||
@@ -380,6 +383,7 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
 
   Future<void> setPalettePreset(String presetId) async {
     final preset = PalettePreset.fromId(presetId);
+    AppTheme.current = ModulixThemeExtension.from(preset: preset);
     await _update((s) => s.copyWith(
           palettePresetId: preset.id,
           accentColorId: preset.id,
@@ -448,6 +452,9 @@ final appThemeDataProvider = Provider<ModulixAppThemeData>((ref) {
     ThemePref.dark => ThemeMode.dark,
     ThemePref.system => preset.isDark ? ThemeMode.dark : ThemeMode.light,
   };
+
+  // Synchronously sync the static bridge on every emission
+  AppTheme.current = activeExt;
 
   return ModulixAppThemeData(
     lightTheme: activeTheme,

@@ -31,6 +31,29 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-047] Live Theme Bridge, Settings Cards Reactivity & Daily Tasks / Subject Mastery Harmonization
+- **Timestamp:** 2026-10-24 01:00 UTC
+- **Category:** Theme Engine / Reactive Riverpod Architecture / UI Bugfix / Sub-Page Harmonization
+- **Files Modified (12 files):**
+  - `lib/providers/app_state_provider.dart` (Synchronously synced `AppTheme.current` on `AppStateNotifier.build()`, `setPalettePreset()`, and within `appThemeDataProvider`)
+  - `lib/screens/settings/settings_screen.dart` (Converted `SettingsScreen` and `_NotificationsPreferencesSection` to `ConsumerWidget`s watching `appThemeDataProvider`; watched `appThemeDataProvider` across `_DoctorProfileCard`, `_CloudSyncSection`, `_SyllabusEditionSection`, and `_ResourceHubsSection`)
+  - `lib/widgets/sync_status_badge.dart` (Watched `appThemeDataProvider` and bound idle, syncing, and unauthenticated chips to dynamic `ext.accent` and `ext.accentSubtle`)
+  - `lib/screens/home/home_screen.dart` (Watched `appThemeDataProvider` so "Today's desk is quiet" medallion, check illustration, and "Set up today's tasks" button adapt immediately)
+  - `lib/screens/analytics/daily_tasks_analytics_page.dart` (Watched `appThemeDataProvider`, bound 14-day activity matrix bars, streak, category velocity indicators, and desk task checkmarks to dynamic theme tokens)
+  - `lib/widgets/analytics/segmented_velocity_pill.dart` (Replaced hardcoded `Color(0xFF10B981)` with `activeColor` for velocity trend icon and text)
+  - `lib/screens/analytics/subject_mastery_analytics_page.dart` (Watched `appThemeDataProvider`, bound hero radial gauge, mini metrics, per-subject radial gauges, resource tags, and "Curriculum >" action button to dynamic theme tokens)
+  - `lib/screens/curriculum/curriculum_screen.dart`, `lib/screens/analytics/analytics_screen.dart`, `lib/screens/timer/focus_timer_screen.dart`, `lib/screens/analytics/study_plan_analytics_page.dart`, `lib/screens/analytics/focus_timer_analytics_page.dart` (Watched `appThemeDataProvider` to ensure root navigation branches and analytics sub-pages re-render live on theme switch)
+- **Summary:**
+  - **Live Dynamic Theme Engine:** Diagnosed and eliminated the root cause where theme changes in Theme Studio required an app restart to take effect. Synchronized `AppTheme.current` synchronously within `AppStateNotifier.setPalettePreset()` and `appThemeDataProvider`, preventing stale theme token reads.
+  - **Settings & Profile Reactivity:** Ensured "Cloud Sync", "Syllabus and Curriculum", "Notifications and Preferences", and Resource Hub cards ("Welcome Tour", "App Guide & Reference", "Data & Privacy", "About & Support") dynamically re-render immediately upon theme switch.
+  - **Daily Tasks & Desk Pad Sub-Page:** Replaced hardcoded greens and stale tokens in the 14-day activity matrix, category indicators, and completion checkmarks with dynamic palette tokens.
+  - **Subject Mastery Sub-Page:** Dynamically harmonized all radial gauges, mini metric dots, resource tags, and action buttons with the active theme palette.
+- **Verification:**
+  - `flutter analyze lib/`: **No issues found (100% clean)**
+  - `flutter test test/progress_overhaul_test.dart test/clinical_analytics_widgets_test.dart`: **All 15 tests passed (100%)**
+  - `flutter build apk --debug`: **Built successfully (`build/app/outputs/flutter-apk/app-debug.apk`) in 177.6s**
+- **Build Status:** ✅ Included in Build
+
 ### [CKPT-046] Standalone Subtle Subject Icons De-Enclosure & Search Auto-Focus Keyboard Bugfix
 - **Timestamp:** 2026-10-24 04:12 UTC
 - **Category:** UI / UX / Search Engine / Performance / Bugfix

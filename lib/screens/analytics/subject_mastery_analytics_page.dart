@@ -24,6 +24,8 @@ class _SubjectMasteryAnalyticsPageState
     extends ConsumerState<SubjectMasteryAnalyticsPage> {
   @override
   Widget build(BuildContext context) {
+    final themeData = ref.watch(appThemeDataProvider);
+    final ext = themeData.extension;
     final appState = ref.watch(appStateProvider).valueOrNull;
     final syllabusAsync = ref.watch(activeSyllabusProvider);
     final subjects = syllabusAsync.value ?? [];
@@ -150,11 +152,11 @@ class _SubjectMasteryAnalyticsPageState
                     progress: overallProgress,
                     size: 88,
                     strokeWidth: 8,
-                    progressColor: AppTheme.accentPrimary,
+                    progressColor: ext.accent,
                     percentageStyle: AppTypography.metricValue(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.inkForeground,
+                      color: ext.inkForeground,
                     ),
                   ),
                   const SizedBox(width: 20),
@@ -176,7 +178,7 @@ class _SubjectMasteryAnalyticsPageState
                           style: AppTypography.cardTitle(
                             fontSize: 15.5,
                             fontWeight: FontWeight.w700,
-                            color: AppTheme.inkForeground,
+                            color: ext.inkForeground,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -184,9 +186,9 @@ class _SubjectMasteryAnalyticsPageState
                           spacing: 12,
                           runSpacing: 6,
                           children: [
-                            _miniMetric('Videos', '$completedAllVideos/$totalAllVideos', AppTheme.accentPrimary),
-                            _miniMetric('QBank', '$completedAllQBanks/$totalAllQBanks', AppTheme.accentSecondary),
-                            _miniMetric('Notes', '$completedAllNotes/$totalAllNotes', AppTheme.accentTertiary),
+                            _miniMetric('Videos', '$completedAllVideos/$totalAllVideos', ext.accent),
+                            _miniMetric('QBank', '$completedAllQBanks/$totalAllQBanks', ext.secondaryAccent),
+                            _miniMetric('Notes', '$completedAllNotes/$totalAllNotes', ext.tertiaryAccent),
                           ],
                         ),
                       ],
@@ -241,7 +243,7 @@ class _SubjectMasteryAnalyticsPageState
                                 style: AppTheme.headingStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
-                                  color: AppTheme.inkForeground,
+                                  color: ext.inkForeground,
                                 ),
                               ),
                             ),
@@ -249,11 +251,11 @@ class _SubjectMasteryAnalyticsPageState
                               progress: pct,
                               size: 44,
                               strokeWidth: 4.5,
-                              progressColor: AppTheme.accentPrimary,
+                              progressColor: ext.accent,
                               percentageStyle: AppTypography.metricValue(
                                 fontSize: 11.0,
                                 fontWeight: FontWeight.w700,
-                                color: AppTheme.inkForeground,
+                                color: ext.inkForeground,
                               ),
                             ),
                           ],
@@ -267,9 +269,9 @@ class _SubjectMasteryAnalyticsPageState
                                 spacing: 6,
                                 runSpacing: 6,
                                 children: [
-                                  _resourceTag('Videos', '$vDone/$vTot', AppTheme.accentPrimary),
-                                  _resourceTag('QBank', '$qDone/$qTot', AppTheme.accentSecondary),
-                                  _resourceTag('Notes', '$nDone/$nTot', AppTheme.accentTertiary),
+                                  _resourceTag('Videos', '$vDone/$vTot', ext.accent),
+                                  _resourceTag('QBank', '$qDone/$qTot', ext.secondaryAccent),
+                                  _resourceTag('Notes', '$nDone/$nTot', ext.tertiaryAccent),
                                 ],
                               ),
                             ),
@@ -282,14 +284,14 @@ class _SubjectMasteryAnalyticsPageState
                                   style: AppTypography.compactAction(
                                     fontSize: 11.0,
                                     fontWeight: FontWeight.w600,
-                                    color: AppTheme.accentPrimary,
+                                    color: ext.accent,
                                   ),
                                 ),
                                 const SizedBox(width: 2),
                                 Icon(
                                   Icons.chevron_right_rounded,
                                   size: 16,
-                                  color: AppTheme.accentPrimary,
+                                  color: ext.accent,
                                 ),
                               ],
                             ),
@@ -329,8 +331,9 @@ class _SubjectMasteryAnalyticsPageState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
+        color: color.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.25), width: 1.0),
       ),
       child: Text(
         '$label: $value',
