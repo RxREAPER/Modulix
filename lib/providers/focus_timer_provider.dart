@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/timer_theme.dart';
 import '../models/time_log.dart';
+import '../models/daily_desk_task.dart';
 import 'time_log_provider.dart';
 import 'app_state_provider.dart';
 import 'daily_tasks_provider.dart';
@@ -35,6 +36,7 @@ class FocusTimerState {
   final String activeSoundId;
   final bool sessionActive;
   final bool hasTarget;
+  final String? boundTaskId;
   final bool keepScreenAwake;
 
   const FocusTimerState({
@@ -57,11 +59,13 @@ class FocusTimerState {
     this.activeSoundId = 'none',
     this.sessionActive = false,
     this.hasTarget = false,
+    this.boundTaskId,
     this.keepScreenAwake = true,
   });
 
   bool get isBreak => phase == TimerPhase.onBreak;
   int get pomodoroMinutes => pomodoroPresetMins;
+  bool get isTaskBound => boundTaskId != null && boundTaskId!.isNotEmpty;
 
   FocusTimerState copyWith({
     bool? isRunning,
@@ -83,6 +87,8 @@ class FocusTimerState {
     String? activeSoundId,
     bool? sessionActive,
     bool? hasTarget,
+    String? boundTaskId,
+    bool clearBoundTask = false,
     bool? keepScreenAwake,
   }) {
     return FocusTimerState(
@@ -105,6 +111,7 @@ class FocusTimerState {
       activeSoundId: activeSoundId ?? this.activeSoundId,
       sessionActive: sessionActive ?? this.sessionActive,
       hasTarget: hasTarget ?? this.hasTarget,
+      boundTaskId: clearBoundTask ? null : (boundTaskId ?? this.boundTaskId),
       keepScreenAwake: keepScreenAwake ?? this.keepScreenAwake,
     );
   }
@@ -188,6 +195,55 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
       modulePresetMins: isModule ? durationMins : state.modulePresetMins,
       remainingSeconds: nextSeconds,
     );
+  }
+
+  /// Binds the timer directly to a DailyDeskTask and immediately starts focus session
+  void startTaskFocus(DailyDeskTask task) {
+    final int presetMins = (task.estimatedMinutes != null && task.estimatedMinutes! > 0)
+        ? task.estimatedMinutes!
+        : 25;
+
+    _ticker?.cancel();
+
+    state = state.copyWith(
+      boundTaskId: task.id,
+      hasTarget: true,
+      subjectId: task.subject.shortCode.toLowerCase(),
+      subjectName: task.subject.label,
+      topicId: task.id,
+      topicTitle: task.title,
+      chapterName: task.subject.label,
+      topicType: task.category.name,
+      mode: TimerMode.pomodoro,
+      pomodoroPresetMins: presetMins,
+      remainingSeconds: presetMins * 60,
+      focusSecondsElapsed: 0,
+      breakSecondsElapsed: 0,
+      phase: TimerPhase.focusing,
+      sessionActive: true,
+      isRunning: false,
+    );
+
+    // Immediately begin ticking
+    startOrPause();
+  }
+
+  /// Unbinds current task from the timer, reverting to general session
+  void unbindTask() {
+    state = state.copyWith(
+      clearBoundTask: true,
+      hasTarget: false,
+      subjectId: 'general',
+      subjectName: 'General Focus',
+      topicTitle: 'General Focus Session',
+    );
+  }
+
+  /// Toggles the bound desk task completed status in-situ without leaving timer
+  Future<void> toggleBoundTaskCompleted() async {
+    final taskId = state.boundTaskId;
+    if (taskId == null || taskId.isEmpty) return;
+    await _ref.read(dailyTasksProvider.notifier).toggleTask(taskId);
   }
 
   void changeMode(TimerMode newMode) {
@@ -411,9 +467,11 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
         final focusMins = state.focusSecondsElapsed ~/ 60;
         final deskNotifier = _ref.read(dailyTasksProvider.notifier);
         final deskState = _ref.read(dailyTasksProvider);
+        final targetTaskId = state.boundTaskId ?? tId;
         for (final task in deskState.tasks) {
           if (!deskState.completedIds.contains(task.id)) {
-            if (task.id == tId ||
+            if (task.id == targetTaskId ||
+                task.id == tId ||
                 task.id == 'vid_$tId' ||
                 task.title.trim().toLowerCase() == state.topicTitle.trim().toLowerCase()) {
               if (focusMins > 0) {

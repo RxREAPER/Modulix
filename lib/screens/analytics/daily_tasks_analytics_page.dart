@@ -6,12 +6,14 @@ import 'package:intl/intl.dart';
 import '../../models/daily_desk_task.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/daily_tasks_provider.dart';
+import '../../providers/focus_timer_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/study_task_card.dart';
 import '../../widgets/analytics/progress_radial_gauge.dart';
 import '../../widgets/analytics/segmented_velocity_pill.dart';
+import '../../widgets/analytics/chronotype_timeline_grid.dart';
 
 class DailyTasksAnalyticsPage extends ConsumerWidget {
   const DailyTasksAnalyticsPage({super.key});
@@ -26,6 +28,10 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
     final tasks = tasksState.tasks;
     final completedIds = tasksState.completedIds;
     final dateHistory = tasksState.dateHistory;
+    final activeBoundTaskId =
+        ref.watch(focusTimerProvider.select((s) => s.boundTaskId));
+    final isFocusRunning =
+        ref.watch(focusTimerProvider.select((s) => s.isRunning));
 
     final totalTasks = tasks.length;
     final completedCount =
@@ -349,6 +355,11 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                 ],
               ),
             ),
+
+            const SizedBox(height: 20),
+
+            // ── Chronotype 24H Timeline Grid ──────────────────────────────
+            const ChronotypeTimelineGrid(),
 
             const SizedBox(height: 20),
 
@@ -698,8 +709,15 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                   priority: task.priority,
                   estimatedMinutes: task.estimatedMinutes,
                   actualMinutesSpent: task.actualMinutesSpent,
+                  estimatedBlocks: task.effectiveEstimatedBlocks,
+                  completedBlocks: task.effectiveCompletedBlocks,
                   isRecurring: task.isRecurring,
                   isCompleted: isDone,
+                  isFocusActive: isFocusRunning && activeBoundTaskId == task.id,
+                  onStartFocus: () {
+                    ref.read(focusTimerProvider.notifier).startTaskFocus(task);
+                    context.push('/timer');
+                  },
                   onToggle: () async {
                     final finishedAll = await ref.read(dailyTasksProvider.notifier).toggleTask(task.id);
                     if (finishedAll) {

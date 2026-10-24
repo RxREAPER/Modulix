@@ -9,11 +9,12 @@ import '../../models/daily_desk_task.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/syllabus_provider.dart';
 import '../../providers/daily_tasks_provider.dart';
+import '../../providers/focus_timer_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/automated_module_tracker.dart';
 import '../../widgets/study_desk_clock.dart';
 import '../../widgets/study_task_card.dart';
-import '../../widgets/task_setup_sheet.dart';
+import '../../widgets/planner/keyboard_docked_task_input.dart';
 import '../../widgets/profile/profile_customization.dart';
 import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/animations/apple_pressable.dart';
@@ -239,6 +240,7 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
   @override
   Widget build(BuildContext context) {
     final dailyTasksState = ref.watch(dailyTasksProvider);
+    final timerState = ref.watch(focusTimerProvider);
     final deskTasks = dailyTasksState.tasks;
     final completedTaskIds = dailyTasksState.completedIds;
 
@@ -382,6 +384,7 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
             itemBuilder: (context, index) {
               final task = deskTasks[index];
               final isDone = completedTaskIds.contains(task.id);
+              final isFocusActive = timerState.isRunning && timerState.boundTaskId == task.id;
 
               final taskCard = StudyTaskCard(
                 id: task.id,
@@ -391,14 +394,22 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
                 priority: task.priority,
                 estimatedMinutes: task.estimatedMinutes,
                 actualMinutesSpent: task.actualMinutesSpent,
+                estimatedBlocks: task.effectiveEstimatedBlocks,
+                completedBlocks: task.effectiveCompletedBlocks,
                 isRecurring: task.isRecurring,
                 customSubtitle: null,
                 isCompleted: isDone,
+                isFocusActive: isFocusActive,
                 onToggle: () async {
                   final finishedAll = await ref.read(dailyTasksProvider.notifier).toggleTask(task.id);
                   if (finishedAll) {
                     HapticFeedback.heavyImpact();
                   }
+                },
+                onStartFocus: () {
+                  HapticFeedback.mediumImpact();
+                  ref.read(focusTimerProvider.notifier).startTaskFocus(task);
+                  context.push('/timer');
                 },
                 onDismissed: () {
                   final removedTask = task;
@@ -681,13 +692,7 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
     WidgetRef ref,
     List<DailyDeskTask> currentTasks,
   ) {
-    TaskSetupSheet.show(
-      context,
-      currentTasks: currentTasks,
-      onConfirmTasks: (updatedTasks) {
-        ref.read(dailyTasksProvider.notifier).setTasks(updatedTasks);
-      },
-    );
+    KeyboardDockedTaskInput.show(context);
   }
 }
 

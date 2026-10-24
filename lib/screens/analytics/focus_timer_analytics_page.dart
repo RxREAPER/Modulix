@@ -10,7 +10,8 @@ import '../../services/metrics_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/analytics/concentric_donut_indicator.dart';
-import '../../widgets/analytics/chronotype_heat_strip.dart';
+import '../../widgets/analytics/chronotype_timeline_grid.dart';
+import '../../widgets/analytics/subject_time_distribution_card.dart';
 
 class FocusTimerAnalyticsPage extends ConsumerStatefulWidget {
   const FocusTimerAnalyticsPage({super.key});
@@ -48,17 +49,12 @@ class _FocusTimerAnalyticsPageState
     int videoSecs = 0;
     int qbankSecs = 0;
     int notesSecs = 0;
-    final Map<int, int> hourMinutes = {};
 
     for (final log in timeLogs) {
       totalSecs += log.durationSecs;
       if (log.timestamp.isAfter(effectiveTodayStart)) {
         todaySecs += log.durationSecs;
       }
-
-      // Hour histogram
-      final h = log.timestamp.hour;
-      hourMinutes[h] = (hourMinutes[h] ?? 0) + (log.durationSecs ~/ 60);
 
       final lowerTitle = log.topicTitle.toLowerCase();
       final lowerType = log.topicType.toLowerCase();
@@ -543,19 +539,13 @@ class _FocusTimerAnalyticsPageState
 
             const SizedBox(height: 20),
 
-            // ── 3. Chronotype 24H Heat Strip ───────────────────────────────
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: AppTheme.sketchDecoration(
-                backgroundColor: AppTheme.cardWhite,
-                borderRadius: 20,
-                shadowOffset: 3,
-              ),
-              child: ChronotypeHeatStrip(
-                hourMinutes: hourMinutes,
-                activeColor: AppTheme.accentPrimary,
-              ),
-            ),
+            // ── 3. Chronotype 24H Timeline Grid ────────────────────────────
+            const ChronotypeTimelineGrid(),
+
+            const SizedBox(height: 20),
+
+            // ── 4. MBBS Subject Time Distribution ──────────────────────────
+            const SubjectTimeDistributionCard(),
 
             const SizedBox(height: 20),
 

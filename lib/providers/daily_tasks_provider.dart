@@ -329,8 +329,14 @@ class DailyTasksNotifier extends StateNotifier<DailyTasksState> {
     await _loadFuture;
     final updatedTasks = state.tasks.map((t) {
       if (t.id != taskId) return t;
-      final prev = t.actualMinutesSpent ?? 0;
-      return t.copyWith(actualMinutesSpent: prev + minutes);
+      final prevMinutes = t.actualMinutesSpent ?? 0;
+      final newMinutes = prevMinutes + minutes;
+      final addedBlocks = minutes ~/ 25;
+      final newBlocks = t.completedBlocks + (addedBlocks > 0 ? addedBlocks : (newMinutes ~/ 25 > prevMinutes ~/ 25 ? 1 : 0));
+      return t.copyWith(
+        actualMinutesSpent: newMinutes,
+        completedBlocks: newBlocks,
+      );
     }).toList();
     state = state.copyWith(tasks: updatedTasks);
     await _persist();

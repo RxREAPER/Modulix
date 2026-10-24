@@ -186,5 +186,36 @@ void main() {
       expect(find.text('Medicine'), findsOneWidget);
       expect(find.text('PATH'), findsOneWidget);
     });
+
+    test('DailyDeskTask block calculation and Focus To-Do fields serialization', () {
+      const taskWithMins = DailyDeskTask(
+        id: 'task_blocks_1',
+        title: 'Pharmacology ANS',
+        category: TaskCategory.video,
+        estimatedMinutes: 50, // 50 ~/ 25 = 2 blocks
+        actualMinutesSpent: 25, // 25 ~/ 25 = 1 block
+      );
+
+      expect(taskWithMins.effectiveEstimatedBlocks, 2);
+      expect(taskWithMins.effectiveCompletedBlocks, 1);
+
+      const taskWithExplicitBlocks = DailyDeskTask(
+        id: 'task_blocks_2',
+        title: 'Biochemistry Glycolysis',
+        category: TaskCategory.revision,
+        estimatedBlocks: 4,
+        completedBlocks: 2,
+        scheduledTimeSlot: '09:00 - 10:40',
+      );
+
+      expect(taskWithExplicitBlocks.effectiveEstimatedBlocks, 4);
+      expect(taskWithExplicitBlocks.effectiveCompletedBlocks, 2);
+
+      final map = taskWithExplicitBlocks.toMap();
+      final restored = DailyDeskTask.fromMap(map);
+      expect(restored.estimatedBlocks, 4);
+      expect(restored.completedBlocks, 2);
+      expect(restored.scheduledTimeSlot, '09:00 - 10:40');
+    });
   });
 }

@@ -6,10 +6,12 @@ import 'package:intl/intl.dart';
 import '../../models/daily_desk_task.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/daily_tasks_provider.dart';
+import '../../providers/focus_timer_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/study_task_card.dart';
+import '../../widgets/planner/keyboard_docked_task_input.dart';
 import 'plan_tomorrow_sheet.dart';
 
 class PlannerScreen extends ConsumerStatefulWidget {
@@ -24,17 +26,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   bool _hideCompleted = false;
 
   void _openQuickAddSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      sheetAnimationStyle: const AnimationStyle(
-        duration: Duration(milliseconds: 320),
-        reverseDuration: Duration(milliseconds: 240),
-      ),
-      builder: (context) => _QuickAddTaskSheet(
-        initialSubject: _selectedSubject ?? MedicalSubject.general,
-      ),
+    KeyboardDockedTaskInput.show(
+      context,
+      initialSubject: _selectedSubject ?? MedicalSubject.general,
     );
   }
 
@@ -413,6 +407,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     required Set<String> completedIds,
   }) {
     if (tasks.isEmpty) return const SizedBox.shrink();
+    final timerState = ref.watch(focusTimerProvider);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
@@ -453,6 +448,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
           const SizedBox(height: 10),
           ...tasks.map((task) {
             final isDone = completedIds.contains(task.id);
+            final isFocusActive = timerState.isRunning && timerState.boundTaskId == task.id;
             return StudyTaskCard(
               id: task.id,
               title: task.title,
@@ -461,13 +457,21 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
               priority: task.priority,
               estimatedMinutes: task.estimatedMinutes,
               actualMinutesSpent: task.actualMinutesSpent,
+              estimatedBlocks: task.effectiveEstimatedBlocks,
+              completedBlocks: task.effectiveCompletedBlocks,
               isRecurring: task.isRecurring,
               isCompleted: isDone,
+              isFocusActive: isFocusActive,
               onToggle: () async {
                 final finishedAll = await ref.read(dailyTasksProvider.notifier).toggleTask(task.id);
                 if (finishedAll) {
                   HapticFeedback.heavyImpact();
                 }
+              },
+              onStartFocus: () {
+                HapticFeedback.mediumImpact();
+                ref.read(focusTimerProvider.notifier).startTaskFocus(task);
+                context.push('/timer');
               },
               onDismissed: () {
                 final index = ref.read(dailyTasksProvider).tasks.indexWhere((t) => t.id == task.id);
@@ -531,421 +535,3 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   }
 }
 
-class _QuickAddTaskSheet extends ConsumerStatefulWidget {
-  final MedicalSubject initialSubject;
-  const _QuickAddTaskSheet({required this.initialSubject});
-
-  @override
-  ConsumerState<_QuickAddTaskSheet> createState() => _QuickAddTaskSheetState();
-}
-
-class _QuickAddTaskSheetState extends ConsumerState<_QuickAddTaskSheet> {
-  final TextEditingController _titleController = TextEditingController();
-  late MedicalSubject _subject;
-  TaskCategory _category = TaskCategory.revision;
-  TaskPriority _priority = TaskPriority.p2high;
-  int? _estimatedMinutes = 45;
-  bool _isRecurring = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _subject = widget.initialSubject;
-  }
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    super.dispose();
-  }
-
-  void _saveTask() {
-    final title = _titleController.text.trim();
-    if (title.isEmpty) return;
-
-    HapticFeedback.lightImpact();
-    ref.read(dailyTasksProvider.notifier).addTask(
-      DailyDeskTask(
-        id: 'task_${DateTime.now().millisecondsSinceEpoch}',
-        title: title,
-        category: _category,
-        subject: _subject,
-        priority: _priority,
-        estimatedMinutes: _estimatedMinutes,
-        isRecurring: _isRecurring,
-      ),
-    );
-    Navigator.pop(context);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: bottomInset),
-      child: Container(
-        constraints: BoxConstraints(maxHeight: screenHeight * 0.85),
-        decoration: BoxDecoration(
-          color: AppTheme.cardWhite,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border(top: BorderSide(color: AppTheme.borderLight, width: 1.2)),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.inkForeground.withValues(alpha: 0.12),
-              offset: const Offset(0, -4),
-              blurRadius: 16,
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Drag Handle
-              Center(
-                child: Container(
-                  width: 44,
-                  height: 4.5,
-                  margin: const EdgeInsets.only(bottom: 14),
-                  decoration: BoxDecoration(
-                    color: AppTheme.borderLight,
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                ),
-              ),
-
-              Text(
-                'New Study Task',
-                style: AppTheme.headingStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.inkForeground,
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Title Input
-              Container(
-                decoration: BoxDecoration(
-                  color: AppTheme.parchmentSurface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.borderLight, width: 1.2),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                child: TextField(
-                  controller: _titleController,
-                  autofocus: true,
-                  cursorColor: AppTheme.inkForeground,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.inkForeground,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'e.g. Autonomic Nervous System 50 MCQs',
-                    hintStyle: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade400,
-                    ),
-                    border: InputBorder.none,
-                  ),
-                  onSubmitted: (_) => _saveTask(),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Category Modality Chips
-              Text(
-                'MODALITY',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.8,
-                  color: AppTheme.mutedText,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: TaskCategory.values.map((cat) {
-                  final isSelected = _category == cat;
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      child: ApplePressable(
-                        pressedScale: 0.94,
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          setState(() => _category = cat);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 6),
-                          decoration: BoxDecoration(
-                            color: isSelected ? AppTheme.inkForeground : AppTheme.parchmentSurface,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: isSelected ? AppTheme.inkForeground : AppTheme.borderLight,
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              cat.label,
-                              style: TextStyle(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w700,
-                                color: isSelected ? AppTheme.paperBackground : AppTheme.inkForeground,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Medical Subject Scroller
-              Text(
-                'MEDICAL SUBJECT PRESET',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.8,
-                  color: AppTheme.mutedText,
-                ),
-              ),
-              const SizedBox(height: 8),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                child: Row(
-                  children: MedicalSubject.values.map((subj) {
-                    final isSelected = _subject == subj;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 6),
-                      child: ApplePressable(
-                        pressedScale: 0.94,
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          setState(() => _subject = subj);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: isSelected ? AppTheme.accentPrimary : AppTheme.parchmentSurface,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: isSelected ? AppTheme.accentPrimary : AppTheme.borderLight,
-                            ),
-                          ),
-                          child: Text(
-                            subj.label,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: isSelected ? AppTheme.onAccent : AppTheme.inkForeground,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Priority & Estimated Time Row
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'PRIORITY',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.8,
-                            color: AppTheme.mutedText,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: TaskPriority.values.map((prio) {
-                            final isSel = _priority == prio;
-                            final color = StudyTaskCard.priorityColor(prio);
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: ApplePressable(
-                                pressedScale: 0.88,
-                                onTap: () {
-                                  HapticFeedback.selectionClick();
-                                  setState(() => _priority = prio);
-                                },
-                                child: Container(
-                                  width: 28,
-                                  height: 28,
-                                  decoration: BoxDecoration(
-                                    color: color.withValues(alpha: isSel ? 0.25 : 0.08),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: isSel ? color : Colors.transparent,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  child: Center(
-                                    child: Container(
-                                      width: 10,
-                                      height: 10,
-                                      decoration: BoxDecoration(
-                                        color: color,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'EST. DURATION',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.8,
-                            color: AppTheme.mutedText,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [30, 45, 60, 90].map((mins) {
-                            final isSel = _estimatedMinutes == mins;
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 6),
-                              child: ApplePressable(
-                                pressedScale: 0.94,
-                                onTap: () {
-                                  HapticFeedback.selectionClick();
-                                  setState(() => _estimatedMinutes = isSel ? null : mins);
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    color: isSel ? AppTheme.inkForeground : AppTheme.parchmentSurface,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    '${mins}m',
-                                    style: TextStyle(
-                                      fontSize: 10.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: isSel ? AppTheme.paperBackground : AppTheme.inkForeground,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // Recurring toggle
-              ApplePressable(
-                pressedScale: 0.98,
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  setState(() => _isRecurring = !_isRecurring);
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppTheme.parchmentSurface,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: _isRecurring ? AppTheme.accentPrimary : AppTheme.borderLight,
-                      width: _isRecurring ? 1.4 : 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.repeat_rounded,
-                        size: 18,
-                        color: _isRecurring ? AppTheme.accentPrimary : AppTheme.mutedText,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Auto-reappear on desk daily (Recurring)',
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.inkForeground,
-                          ),
-                        ),
-                      ),
-                      Icon(
-                        _isRecurring ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-                        size: 18,
-                        color: _isRecurring ? AppTheme.accentPrimary : AppTheme.mutedText,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Confirm button
-              ApplePressable(
-                pressedScale: 0.97,
-                onTap: _saveTask,
-                child: Container(
-                  width: double.infinity,
-                  height: 46,
-                  decoration: BoxDecoration(
-                    color: AppTheme.inkForeground,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Place on Study Desk',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.paperBackground,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

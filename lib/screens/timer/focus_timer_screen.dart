@@ -14,6 +14,10 @@ import 'package:video_player/video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'fullscreen_timer_screen.dart';
 import '../../theme/app_theme.dart';
+import '../../models/daily_desk_task.dart';
+import '../../providers/daily_tasks_provider.dart';
+import '../../widgets/animations/animated_check_stroke.dart';
+import '../../widgets/animations/animated_strike_text.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/in_situ_hint_pill.dart';
 import '../../widgets/discovery_pulse.dart';
@@ -368,53 +372,60 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // 1 & 2. Subject & Topic (Tappable to configure)
-                    ApplePressable(
-                      onTap: () => _SessionConfigSheet.show(
-                        context,
-                        onShowCustomDialog: _showCustomMinutesDialog,
+                    // 1 & 2. Subject & Topic (Tappable to configure or active bound task card)
+                    if (timer.isTaskBound) ...[
+                      _BoundTaskHeaderCard(
+                        isLight: isLight,
+                        theme: theme,
                       ),
-                      pressedScale: 0.97,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Text(
-                              timer.hasTarget
-                                  ? timer.subjectName
-                                  : 'NO TARGET SELECTED',
-                              textAlign: TextAlign.center,
-                              style: AppTheme.headingStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.8,
-                                color: isLight ? theme.accentColor : Colors.white,
+                    ] else ...[
+                      ApplePressable(
+                        onTap: () => _SessionConfigSheet.show(
+                          context,
+                          onShowCustomDialog: _showCustomMinutesDialog,
+                        ),
+                        pressedScale: 0.97,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              child: Text(
+                                timer.hasTarget
+                                    ? timer.subjectName
+                                    : 'NO TARGET SELECTED',
+                                textAlign: TextAlign.center,
+                                style: AppTheme.headingStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.8,
+                                  color: isLight ? theme.accentColor : Colors.white,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 28),
-                            child: Text(
-                              timer.hasTarget
-                                  ? (timer.chapterName.isNotEmpty
-                                      ? '${timer.chapterName} · ${timer.topicTitle}'
-                                      : timer.topicTitle)
-                                  : 'Select a study target & mode to start',
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: isLight ? const Color(0xFF64748B) : Colors.white.withValues(alpha: 0.85),
+                            const SizedBox(height: 4),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 28),
+                              child: Text(
+                                timer.hasTarget
+                                    ? (timer.chapterName.isNotEmpty
+                                        ? '${timer.chapterName} · ${timer.topicTitle}'
+                                        : timer.topicTitle)
+                                    : 'Select a study target & mode to start',
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: isLight ? const Color(0xFF64748B) : Colors.white.withValues(alpha: 0.85),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
 
                     const SizedBox(height: 24),
 
@@ -1701,4 +1712,174 @@ class _SessionDoneDialog extends StatelessWidget {
     );
   }
 }
+
+class _BoundTaskHeaderCard extends ConsumerWidget {
+  final bool isLight;
+  final TimerThemeData theme;
+
+  const _BoundTaskHeaderCard({
+    required this.isLight,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final timer = ref.watch(focusTimerProvider);
+    final deskState = ref.watch(dailyTasksProvider);
+    final taskId = timer.boundTaskId ?? '';
+    final isDone = deskState.completedIds.contains(taskId);
+
+    final task = deskState.tasks.firstWhere(
+      (t) => t.id == taskId,
+      orElse: () => DailyDeskTask(
+        id: taskId,
+        title: timer.topicTitle,
+        subject: MedicalSubject.fromString(timer.subjectName),
+      ),
+    );
+
+    final bgColor = isLight
+        ? (isDone ? AppTheme.parchmentSurface : AppTheme.cardWhite)
+        : const Color(0xFF1E1E24);
+    final borderColor = isLight
+        ? (isDone ? AppTheme.borderLight : AppTheme.sketchBorderColor)
+        : const Color(0xFF33333F);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: AppTheme.sketchDecoration(
+        backgroundColor: bgColor,
+        borderRadius: 16,
+        shadowOffset: 2,
+        borderColor: isDone ? borderColor : theme.accentColor.withValues(alpha: 0.8),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Row(
+        children: [
+          // Square Sketch Checkbox (instant completion in timer)
+          ApplePressable(
+            onTap: () {
+              HapticFeedback.heavyImpact();
+              ref.read(focusTimerProvider.notifier).toggleBoundTaskCompleted();
+            },
+            pressedScale: 0.9,
+            child: Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: isDone ? AppTheme.accentPrimary : Colors.transparent,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: isDone ? AppTheme.accentPrimary : (isLight ? AppTheme.sketchBorderColor : Colors.white54),
+                  width: 1.8,
+                ),
+              ),
+              child: Center(
+                child: AnimatedCheckStroke(
+                  checked: isDone,
+                  size: 16,
+                  color: AppTheme.onAccent,
+                  strokeWidth: 2.2,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          // Title & Details
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppTheme.parchmentSurface,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: AppTheme.borderLight),
+                      ),
+                      child: Text(
+                        task.subject.shortCode,
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.inkForeground,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: AnimatedStrikeText(
+                        text: task.title,
+                        isStruck: isDone,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: isLight ? AppTheme.inkForeground : Colors.white,
+                        ),
+                        strikeColor: isLight ? AppTheme.mutedText : Colors.white60,
+                        strikeThickness: 2.0,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.hourglass_bottom_rounded,
+                      size: 11,
+                      color: isLight ? AppTheme.mutedText : Colors.white70,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      task.completedBlocks > 0
+                          ? 'Block ${task.completedBlocks} of ${task.effectiveEstimatedBlocks}'
+                          : '${task.effectiveEstimatedBlocks} Focus Blocks',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                        color: isLight ? AppTheme.mutedText : Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+          // Detach/Unbind Button
+          ApplePressable(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              ref.read(focusTimerProvider.notifier).unbindTask();
+            },
+            pressedScale: 0.9,
+            child: Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: isLight ? AppTheme.parchmentSurface : Colors.white10,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.close_rounded,
+                size: 16,
+                color: isLight ? AppTheme.mutedText : Colors.white70,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 

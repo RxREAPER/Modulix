@@ -136,14 +136,49 @@ class _MiniTimerOverlayState extends ConsumerState<MiniTimerOverlay> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Pulsing status dot indicating focus vs break
-                  _CapsulePulsingDot(
-                    color: isBreak
-                        ? const Color(0xFF2DD4BF)
-                        : (timer.isRunning ? const Color(0xFF4ADE80) : const Color(0xFFFBBF24)),
-                    isPaused: !timer.isRunning,
+                  // Circular progress ring hugging the timer
+                  SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      value: timer.mode == TimerMode.countUp
+                          ? (displaySeconds % 60) / 60.0
+                          : (timer.pomodoroPresetMins > 0
+                              ? ((timer.pomodoroPresetMins * 60 - displaySeconds) /
+                                      (timer.pomodoroPresetMins * 60))
+                                  .clamp(0.0, 1.0)
+                              : 0.0),
+                      strokeWidth: 2.2,
+                      backgroundColor: Colors.white12,
+                      valueColor: AlwaysStoppedAnimation<Color>(accentColor),
+                    ),
                   ),
                   const SizedBox(width: 8),
+
+                  // Bound task subject badge if task is active
+                  if (timer.isTaskBound) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: accentColor.withValues(alpha: 0.22),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: accentColor.withValues(alpha: 0.5),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Text(
+                        timer.subjectId.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          color: accentColor,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                  ],
 
                   // Elapsed / remaining countdown timer only
                   Text(
@@ -174,85 +209,3 @@ class _MiniTimerOverlayState extends ConsumerState<MiniTimerOverlay> {
   }
 }
 
-class _CapsulePulsingDot extends StatefulWidget {
-  final Color color;
-  final bool isPaused;
-
-  const _CapsulePulsingDot({
-    required this.color,
-    required this.isPaused,
-  });
-
-  @override
-  State<_CapsulePulsingDot> createState() => _CapsulePulsingDotState();
-}
-
-class _CapsulePulsingDotState extends State<_CapsulePulsingDot>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl;
-  late final Animation<double> _scaleAnim;
-  late final Animation<double> _glowAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 950),
-    );
-
-    _scaleAnim = Tween<double>(begin: 0.85, end: 1.25).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
-    );
-
-    _glowAnim = Tween<double>(begin: 0.4, end: 1.0).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
-    );
-
-    if (!widget.isPaused) {
-      _ctrl.repeat(reverse: true);
-    }
-  }
-
-  @override
-  void didUpdateWidget(_CapsulePulsingDot old) {
-    super.didUpdateWidget(old);
-    if (!widget.isPaused && !_ctrl.isAnimating) {
-      _ctrl.repeat(reverse: true);
-    } else if (widget.isPaused && _ctrl.isAnimating) {
-      _ctrl.stop();
-      _ctrl.value = 0.4;
-    }
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _ctrl,
-      builder: (_, __) {
-        return Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: widget.color.withValues(alpha: widget.isPaused ? 0.4 : _glowAnim.value),
-            shape: BoxShape.circle,
-            boxShadow: [
-              if (!widget.isPaused)
-                BoxShadow(
-                  color: widget.color.withValues(alpha: 0.6 * _glowAnim.value),
-                  blurRadius: 6 * _scaleAnim.value,
-                  spreadRadius: 1 * _scaleAnim.value,
-                ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}

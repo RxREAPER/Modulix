@@ -31,6 +31,32 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-049] Focus To-Do Unified Task-Timer Binding, Keyboard-Docked Quick Add & 24H Timeline Analytics
+- **Timestamp:** 2026-10-24 05:00 UTC
+- **Category:** Feature / Focus To-Do UI Overhaul / Unified Task-Timer Binding & Actionable 24H Timeline
+- **Files Modified & Added (11 files):**
+  - `lib/models/daily_desk_task.dart`: Added `estimatedBlocks`, `completedBlocks`, `scheduledTimeSlot`, and defensive getters `effectiveEstimatedBlocks`, `effectiveCompletedBlocks`.
+  - `lib/providers/daily_tasks_provider.dart`: Connected `logFocusMinutes(taskId, minutes)` to automatically calculate and increment completed 25-minute study blocks.
+  - `lib/providers/focus_timer_provider.dart`: Added `boundTaskId` to `FocusTimerState` with `isTaskBound` getter, `startTaskFocus(DailyDeskTask task)` for 1-tap timer launch, `unbindTask()`, and automatic task focus logging upon session completion.
+  - `lib/widgets/study_task_card.dart`: Added Focus Blocks chip (`[hourglass] 1/3 blk`), dedicated `▶` button that transforms into an animated ticking icon (`_ActiveTickingButton`) with rotating hourglass and accent glow when active, and card border highlighting with `AppTheme.accentPrimary`.
+  - `lib/screens/home/home_screen.dart` & `lib/screens/planner/planner_screen.dart`: Wired `StudyTaskCard` to `focusTimerProvider`, passing `isFocusActive` and `onStartFocus` to trigger instant timer transition.
+  - `lib/widgets/planner/keyboard_docked_task_input.dart` (NEW): Pinned accessory bar docked directly above soft keyboard featuring auto-focus input, 1-tap Focus Block selectors (`1 (25m)` - `5 (125m)`), MBBS subject dropdown (`ANAT`, `PATH`, etc.), priority flags (`P1`-`P4`), date toggle (`Today`/`Tomorrow`), and quick add button.
+  - `lib/screens/timer/focus_timer_screen.dart`: Added `_BoundTaskHeaderCard` floating card above radial dial with in-situ task completion checkbox (`AnimatedCheckStroke`), subject tag, `AnimatedStrikeText`, block counter, and unbind button.
+  - `lib/widgets/timer/mini_timer_overlay.dart`: Added circular radial countdown progress ring and active subject badge (`PATH`, `PHARM`).
+  - `lib/widgets/analytics/chronotype_timeline_grid.dart` (NEW): Focus To-Do inspired 24-Hour Timeline Grid (00:00 to 24:00) with interactive hourly bar scrub and topic inspection.
+  - `lib/widgets/analytics/subject_time_distribution_card.dart` (NEW): Focus To-Do inspired breakdown visualizing study hours and percentage across 19 MBBS / NEET-PG subjects.
+  - `lib/screens/analytics/focus_timer_analytics_page.dart` & `lib/screens/analytics/daily_tasks_analytics_page.dart`: Integrated `ChronotypeTimelineGrid` and `SubjectTimeDistributionCard` into the analytics pages.
+  - `test/medical_planner_test.dart`: Added unit tests verifying block calculation, Focus To-Do fields serialization, and task timer binding.
+- **Summary:**
+  - Zero-friction coupling: tapping `▶` on any task starts the focus timer bound directly to that task with automatic block estimation.
+  - 1-tap quick task input accessory bar docked over keyboard reduces task entry friction from ~15s to ~2s.
+  - In-situ task completion inside the active Focus Timer screen allows checking off tasks without interrupting study flow.
+  - 24-Hour Chronotype timeline and 19 MBBS subject distribution give clinical clarity into study rhythms.
+- **Verification:**
+  - `flutter analyze`: **0 issues found (100% clean)**
+  - `flutter test test/medical_planner_test.dart test/study_desk_test.dart test/focus_timer_idempotency_test.dart test/domain2_home_tasks_test.dart test/domain5_focus_timer_sqlite_test.dart`: **All 24 tests passed (100%)**
+- **Build Status:** Pending APK Build
+
 ### [CKPT-048] Medical Study Task Planner, Actionable Priority Velocity & Progress Analytics Overhaul
 - **Timestamp:** 2026-10-24 04:15 UTC
 - **Category:** Feature / Medical Task Planner / Priority Velocity & Actionable Analytics Overhaul

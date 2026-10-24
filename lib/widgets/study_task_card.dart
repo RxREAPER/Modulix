@@ -14,10 +14,14 @@ class StudyTaskCard extends StatelessWidget {
   final TaskPriority priority;
   final int? estimatedMinutes;
   final int? actualMinutesSpent;
+  final int? estimatedBlocks;
+  final int completedBlocks;
   final bool isRecurring;
   final String? customSubtitle;
   final bool isCompleted;
+  final bool isFocusActive;
   final VoidCallback onToggle;
+  final VoidCallback? onStartFocus;
   final VoidCallback? onDismissed;
   final Widget? dragHandle;
 
@@ -30,10 +34,14 @@ class StudyTaskCard extends StatelessWidget {
     this.priority = TaskPriority.p3medium,
     this.estimatedMinutes,
     this.actualMinutesSpent,
+    this.estimatedBlocks,
+    this.completedBlocks = 0,
     this.isRecurring = false,
     this.customSubtitle,
     required this.isCompleted,
+    this.isFocusActive = false,
     required this.onToggle,
+    this.onStartFocus,
     this.onDismissed,
     this.dragHandle,
   });
@@ -68,8 +76,10 @@ class StudyTaskCard extends StatelessWidget {
             decoration: AppTheme.sketchDecoration(
               backgroundColor: isCompleted ? AppTheme.parchmentSurface : AppTheme.cardWhite,
               borderRadius: 16,
-              shadowOffset: isCompleted ? 1 : 3.5,
-              borderColor: isCompleted ? AppTheme.borderLight : AppTheme.sketchBorderColor,
+              shadowOffset: isFocusActive ? 4.5 : (isCompleted ? 1 : 3.5),
+              borderColor: isFocusActive
+                  ? AppTheme.accentPrimary
+                  : (isCompleted ? AppTheme.borderLight : AppTheme.sketchBorderColor),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
@@ -201,6 +211,49 @@ class StudyTaskCard extends StatelessWidget {
                                 ),
                               ),
                             ),
+                          // Focus Blocks Pill
+                          Builder(
+                            builder: (context) {
+                              final effectiveBlocks = estimatedBlocks ??
+                                  ((estimatedMinutes != null && estimatedMinutes! > 0)
+                                      ? (estimatedMinutes! / 25).ceil().clamp(1, 12)
+                                      : 1);
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                                decoration: BoxDecoration(
+                                  color: isFocusActive
+                                      ? AppTheme.accentPrimary.withValues(alpha: 0.12)
+                                      : AppTheme.parchmentSurface,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: isFocusActive ? AppTheme.accentPrimary : AppTheme.borderLight,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.hourglass_bottom_rounded,
+                                      size: 10,
+                                      color: isFocusActive ? AppTheme.accentPrimary : AppTheme.mutedText,
+                                    ),
+                                    const SizedBox(width: 3),
+                                    Text(
+                                      completedBlocks > 0
+                                          ? '$completedBlocks/$effectiveBlocks blk'
+                                          : '$effectiveBlocks ${effectiveBlocks == 1 ? "blk" : "blks"}',
+                                      style: TextStyle(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: isFocusActive ? AppTheme.accentPrimary : AppTheme.mutedText,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
                           // Estimated / Actual Time Pill
                           if (estimatedMinutes != null && estimatedMinutes! > 0)
                             Container(
@@ -252,6 +305,36 @@ class StudyTaskCard extends StatelessWidget {
                     ],
                   ),
                 ),
+
+                // Dedicated Play / Ticking Focus Action Button
+                if (onStartFocus != null && !isCompleted) ...[
+                  const SizedBox(width: 10),
+                  ApplePressable(
+                    onTap: onStartFocus,
+                    hapticStyle: HapticStyle.medium,
+                    child: isFocusActive
+                        ? const _ActiveTickingButton()
+                        : Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: AppTheme.parchmentSurface,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppTheme.sketchBorderColor,
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Center(
+                              child: Icon(
+                                Icons.play_arrow_rounded,
+                                size: 20,
+                                color: AppTheme.inkForeground,
+                              ),
+                            ),
+                          ),
+                  ),
+                ],
 
                 if (dragHandle != null) ...[
                   const SizedBox(width: 8),
@@ -326,4 +409,65 @@ class StudyTaskCard extends StatelessWidget {
     }
   }
 }
+
+class _ActiveTickingButton extends StatefulWidget {
+  const _ActiveTickingButton();
+
+  @override
+  State<_ActiveTickingButton> createState() => _ActiveTickingButtonState();
+}
+
+class _ActiveTickingButtonState extends State<_ActiveTickingButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 34,
+      height: 34,
+      decoration: BoxDecoration(
+        color: AppTheme.accentPrimary,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: AppTheme.sketchBorderColor,
+          width: 1.6,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.accentPrimary.withValues(alpha: 0.35),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Center(
+        child: RotationTransition(
+          turns: _ctrl,
+          child: Icon(
+            Icons.hourglass_top_rounded,
+            size: 17,
+            color: AppTheme.onAccent,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 
