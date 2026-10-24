@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,12 +17,14 @@ import '../../widgets/animations/apple_pressable.dart';
 /// - Mathematical 50/50 split across middle horizontal crease line
 /// - Heroic condensed typography with zero duplication
 /// - Pure minimal cards: No battery icon, No date, No day
-/// - Tiny crisp seconds block ("30") in the corner
-/// - Prominent top Cross ('X') button to exit fullscreen
+/// - Dynamic Digits: Under 1h => Card 1 = MM, Card 2 = SS (no corner seconds)
+///                  1h or more => Card 1 = HH, Card 2 = MM (corner seconds SS)
+/// - Subtle topic label displayed cleanly at the top bar
+/// - Auto-sleep controls (fading overlay controls out after 3.5s inactivity)
+/// - Tap anywhere on screen wakes up controls (does NOT pause timer)
 /// - Dedicated Resume / Pause button below the flip cards
 /// - 90° Desk Mode in portrait (matching exact physical orientation in photo)
 ///   with instant toggle to upright portrait or native landscape
-/// - Tap anywhere on screen to toggle pause/resume; double-tap or 'X' to exit
 class FullscreenTimerScreen extends ConsumerStatefulWidget {
   const FullscreenTimerScreen({super.key});
 
@@ -32,19 +35,36 @@ class FullscreenTimerScreen extends ConsumerStatefulWidget {
 
 class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
   bool _forceRotatedPortrait = true;
+  bool _showControls = true;
+  Timer? _sleepTimer;
 
   @override
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    _resetControlsSleepTimer();
+  }
+
+  void _resetControlsSleepTimer() {
+    _sleepTimer?.cancel();
+    if (!_showControls && mounted) {
+      setState(() => _showControls = true);
+    }
+    _sleepTimer = Timer(const Duration(milliseconds: 3500), () {
+      if (mounted) {
+        setState(() => _showControls = false);
+      }
+    });
   }
 
   void _onTogglePlayPause() {
+    _resetControlsSleepTimer();
     ref.read(focusTimerProvider.notifier).startOrPause();
   }
 
   @override
   void dispose() {
+    _sleepTimer?.cancel();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
@@ -56,7 +76,9 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
         MediaQuery.of(context).orientation == Orientation.landscape;
 
     final int effectiveSeconds;
-    if (t.mode == TimerMode.countUp) {
+    if (t.isBreak) {
+      effectiveSeconds = t.breakSecondsElapsed;
+    } else if (t.mode == TimerMode.countUp) {
       effectiveSeconds = t.focusSecondsElapsed;
     } else if (t.remainingSeconds == 0 && !t.isRunning) {
       effectiveSeconds = t.pomodoroPresetMins * 60;
@@ -64,12 +86,30 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
       effectiveSeconds = t.remainingSeconds;
     }
 
-    final h = effectiveSeconds ~/ 3600;
-    final m = (effectiveSeconds % 3600) ~/ 60;
-    final sec = effectiveSeconds % 60;
-    final mStr = m.toString().padLeft(2, '0');
-    final sStr = sec.toString().padLeft(2, '0');
-    final hStr = h.toString().padLeft(2, '0');
+    final bool hasHours = effectiveSeconds >= 3600;
+    final int card1Value;
+    final int card2Value;
+    final String? cornerSeconds;
+
+    if (hasHours) {
+      // >= 1 hour: Card 1 = HH, Card 2 = MM, Corner = SS
+      final h = effectiveSeconds ~/ 3600;
+      final m = (effectiveSeconds % 3600) ~/ 60;
+      final s = effectiveSeconds % 60;
+      card1Value = h;
+      card2Value = m;
+      cornerSeconds = s.toString().padLeft(2, '0');
+    } else {
+      // < 1 hour: Card 1 = MM, Card 2 = SS, Corner = none
+      final m = effectiveSeconds ~/ 60;
+      final s = effectiveSeconds % 60;
+      card1Value = m;
+      card2Value = s;
+      cornerSeconds = null;
+    }
+
+    final card1Str = card1Value.toString().padLeft(2, '0');
+    final card2Str = card2Value.toString().padLeft(2, '0');
 
     return PopScope(
       canPop: true,
@@ -77,49 +117,70 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
         backgroundColor: const Color(0xFF000000),
         body: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: _onTogglePlayPause,
+          onTap: () {
+            // Wakes up / refreshes the controls sleep timer on touch without pausing timer
+            _resetControlsSleepTimer();
+          },
           onDoubleTap: () => Navigator.pop(context),
           child: SafeArea(
             child: Column(
               children: [
-                // ── Top Bar: Cross sign of exit & rotation toggle ──
-                _buildTopBar(isLandscape),
+                // ── Top Bar: Cross sign of exit, subtle topic, & rotation toggle ──
+                AnimatedOpacity(
+                  opacity: _showControls ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 300),
+                  child: IgnorePointer(
+                    ignoring: !_showControls,
+                    child: _buildTopBar(t, isLandscape),
+                  ),
+                ),
 
-                // ── Center: Majestic Flip Cards ──
+                // ── Center: Majestic Flip Cards (Design preserved 100% intact) ──
                 Expanded(
                   child: Center(
                     child: isLandscape
                         ? _buildLandscapeLayout(
-                            hours: hStr,
-                            minutes: mStr,
-                            seconds: sStr,
+                            card1: card1Str,
+                            card2: card2Str,
+                            cornerSeconds: cornerSeconds,
                           )
                         : _forceRotatedPortrait
                             ? _buildDeskModePortraitLayout(
-                                hours: hStr,
-                                minutes: mStr,
-                                seconds: sStr,
+                                card1: card1Str,
+                                card2: card2Str,
+                                cornerSeconds: cornerSeconds,
                               )
                             : _buildUprightPortraitLayout(
-                                hours: hStr,
-                                minutes: mStr,
-                                seconds: sStr,
+                                card1: card1Str,
+                                card2: card2Str,
+                                cornerSeconds: cornerSeconds,
                               ),
                   ),
                 ),
 
                 // ── Medical Wave Visualizer ──
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 4),
-                  child: MedicalWaveVisualizer(
-                    height: 18,
-                    color: Colors.white.withValues(alpha: 0.55),
-                    showBaseline: false,
+                AnimatedOpacity(
+                  opacity: _showControls ? 0.75 : 0.12,
+                  duration: const Duration(milliseconds: 300),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 4),
+                    child: MedicalWaveVisualizer(
+                      height: 18,
+                      color: Colors.white.withValues(alpha: 0.55),
+                      showBaseline: false,
+                    ),
                   ),
                 ),
 
                 // ── Bottom: Dedicated Resume / Pause button below ──
-                _buildBottomResumePauseButton(t),
+                AnimatedOpacity(
+                  opacity: _showControls ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 300),
+                  child: IgnorePointer(
+                    ignoring: !_showControls,
+                    child: _buildBottomResumePauseButton(t),
+                  ),
+                ),
               ],
             ),
           ),
@@ -128,8 +189,9 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
     );
   }
 
-  Widget _buildTopBar(bool isLandscape) {
+  Widget _buildTopBar(FocusTimerState t, bool isLandscape) {
     final isAudioActive = AmbientAudioService.instance.isPlaying;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Row(
@@ -156,6 +218,31 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
             tooltip: 'Exit Fullscreen',
             onPressed: () => Navigator.pop(context),
           ),
+
+          // Subtle Topic Title (Non-distracting, clean)
+          if (t.hasTarget)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                child: Text(
+                  t.chapterName.isNotEmpty
+                      ? '${t.subjectName} · ${t.topicTitle}'
+                      : (t.topicTitle.isNotEmpty ? t.topicTitle : t.subjectName),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.6,
+                    color: Colors.white.withValues(alpha: 0.45),
+                  ),
+                ),
+              ),
+            )
+          else
+            const Spacer(),
+
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -182,7 +269,10 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
                   ),
                 ),
                 tooltip: 'Ambient Desk Mixer',
-                onPressed: () => AmbientSoundSheet.show(context),
+                onPressed: () {
+                  _resetControlsSleepTimer();
+                  AmbientSoundSheet.show(context);
+                },
               ),
               if (!isLandscape) ...[
                 const SizedBox(width: 8),
@@ -208,6 +298,7 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
                   ),
                   tooltip: 'Toggle 90° Desk Mode',
                   onPressed: () {
+                    _resetControlsSleepTimer();
                     setState(() {
                       _forceRotatedPortrait = !_forceRotatedPortrait;
                     });
@@ -224,6 +315,7 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
   Widget _buildBottomResumePauseButton(FocusTimerState t) {
     final isRunning = t.isRunning;
     final isStarted = t.focusSecondsElapsed > 0 ||
+        t.breakSecondsElapsed > 0 ||
         (t.remainingSeconds > 0 &&
             t.remainingSeconds < t.pomodoroPresetMins * 60);
     final label = isRunning ? 'PAUSE' : (isStarted ? 'RESUME' : 'START');
@@ -283,9 +375,9 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
   }
 
   Widget _buildDeskModePortraitLayout({
-    required String hours,
-    required String minutes,
-    required String seconds,
+    required String card1,
+    required String card2,
+    String? cornerSeconds,
   }) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -307,9 +399,9 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
           height: 1.0,
         );
 
-        final hoursCard = SketchFlipCard(
-          key: const ValueKey('card_desk_hours'),
-          value: hours,
+        final card1Widget = SketchFlipCard(
+          key: const ValueKey('card_desk_card1'),
+          value: card1,
           width: cardW,
           height: cardH,
           borderRadius: 26.0,
@@ -318,25 +410,27 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
           borderColor: const Color(0xFF161719),
         );
 
-        final minutesCard = SketchFlipCard(
-          key: const ValueKey('card_desk_minutes'),
-          value: minutes,
+        final card2Widget = SketchFlipCard(
+          key: const ValueKey('card_desk_card2'),
+          value: card2,
           width: cardW,
           height: cardH,
           borderRadius: 26.0,
           textStyle: textStyle,
           cardColor: const Color(0xFF222326),
           borderColor: const Color(0xFF161719),
-          bottomRightWidget: Text(
-            seconds,
-            style: TextStyle(
-              fontSize: (cardH * 0.14).clamp(16.0, 36.0),
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFFD4D4D8),
-              fontFeatures: const [FontFeature.tabularFigures()],
-              height: 1.0,
-            ),
-          ),
+          bottomRightWidget: cornerSeconds != null
+              ? Text(
+                  cornerSeconds,
+                  style: TextStyle(
+                    fontSize: (cardH * 0.14).clamp(16.0, 36.0),
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFFD4D4D8),
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                    height: 1.0,
+                  ),
+                )
+              : null,
         );
 
         return FittedBox(
@@ -349,11 +443,11 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Under quarterTurns: 1:
-                // Left child (x=0) maps to TOP of screen (Hours)
-                hoursCard,
+                // Left child (x=0) maps to TOP of screen (Card 1)
+                card1Widget,
                 const SizedBox(width: 14),
-                // Right child (x=W) maps to BOTTOM of screen (Minutes)
-                minutesCard,
+                // Right child (x=W) maps to BOTTOM of screen (Card 2)
+                card2Widget,
               ],
             ),
           ),
@@ -363,9 +457,9 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
   }
 
   Widget _buildUprightPortraitLayout({
-    required String hours,
-    required String minutes,
-    required String seconds,
+    required String card1,
+    required String card2,
+    String? cornerSeconds,
   }) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -385,9 +479,9 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
           height: 1.0,
         );
 
-        final hoursCard = SketchFlipCard(
-          key: const ValueKey('card_upright_hours'),
-          value: hours,
+        final card1Widget = SketchFlipCard(
+          key: const ValueKey('card_upright_card1'),
+          value: card1,
           width: cardW,
           height: cardH,
           borderRadius: 24.0,
@@ -396,25 +490,27 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
           borderColor: const Color(0xFF161719),
         );
 
-        final minutesCard = SketchFlipCard(
-          key: const ValueKey('card_upright_minutes'),
-          value: minutes,
+        final card2Widget = SketchFlipCard(
+          key: const ValueKey('card_upright_card2'),
+          value: card2,
           width: cardW,
           height: cardH,
           borderRadius: 24.0,
           textStyle: textStyle,
           cardColor: const Color(0xFF222326),
           borderColor: const Color(0xFF161719),
-          bottomRightWidget: Text(
-            seconds,
-            style: TextStyle(
-              fontSize: (cardH * 0.14).clamp(16.0, 34.0),
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFFD4D4D8),
-              fontFeatures: const [FontFeature.tabularFigures()],
-              height: 1.0,
-            ),
-          ),
+          bottomRightWidget: cornerSeconds != null
+              ? Text(
+                  cornerSeconds,
+                  style: TextStyle(
+                    fontSize: (cardH * 0.14).clamp(16.0, 34.0),
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFFD4D4D8),
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                    height: 1.0,
+                  ),
+                )
+              : null,
         );
 
         return FittedBox(
@@ -424,9 +520,9 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              hoursCard,
+              card1Widget,
               const SizedBox(height: 14),
-              minutesCard,
+              card2Widget,
             ],
           ),
         );
@@ -435,9 +531,9 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
   }
 
   Widget _buildLandscapeLayout({
-    required String hours,
-    required String minutes,
-    required String seconds,
+    required String card1,
+    required String card2,
+    String? cornerSeconds,
   }) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -457,9 +553,9 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
           height: 1.0,
         );
 
-        final hoursCard = SketchFlipCard(
-          key: const ValueKey('card_landscape_hours'),
-          value: hours,
+        final card1Widget = SketchFlipCard(
+          key: const ValueKey('card_landscape_card1'),
+          value: card1,
           width: cardW,
           height: cardH,
           borderRadius: 26.0,
@@ -468,25 +564,27 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
           borderColor: const Color(0xFF161719),
         );
 
-        final minutesCard = SketchFlipCard(
-          key: const ValueKey('card_landscape_minutes'),
-          value: minutes,
+        final card2Widget = SketchFlipCard(
+          key: const ValueKey('card_landscape_card2'),
+          value: card2,
           width: cardW,
           height: cardH,
           borderRadius: 26.0,
           textStyle: textStyle,
           cardColor: const Color(0xFF222326),
           borderColor: const Color(0xFF161719),
-          bottomRightWidget: Text(
-            seconds,
-            style: TextStyle(
-              fontSize: (cardH * 0.14).clamp(16.0, 38.0),
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFFD4D4D8),
-              fontFeatures: const [FontFeature.tabularFigures()],
-              height: 1.0,
-            ),
-          ),
+          bottomRightWidget: cornerSeconds != null
+              ? Text(
+                  cornerSeconds,
+                  style: TextStyle(
+                    fontSize: (cardH * 0.14).clamp(16.0, 38.0),
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFFD4D4D8),
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                    height: 1.0,
+                  ),
+                )
+              : null,
         );
 
         return FittedBox(
@@ -496,9 +594,9 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              hoursCard,
+              card1Widget,
               const SizedBox(width: 14),
-              minutesCard,
+              card2Widget,
             ],
           ),
         );
@@ -506,4 +604,3 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
     );
   }
 }
-

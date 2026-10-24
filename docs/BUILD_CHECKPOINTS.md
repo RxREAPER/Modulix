@@ -80,6 +80,25 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-058] Focus Timer Streamlining, Pomodoro Cycles, Count-Up Rest & Immersive Flip Clock
+- **Timestamp:** 2026-10-25 02:45 UTC
+- **Category:** Feature & Polish / Focus Timer Streamlining & Immersive Flip Clock
+- **Files Modified (5 files):**
+  - `lib/providers/focus_timer_provider.dart` (Added Pomodoro cycles state, long break intervals, cycle advancement, and converted break mode to count-up stopwatch preserving remaining focus seconds)
+  - `lib/widgets/timer/task_picker_sheet.dart` (Streamlined to strictly 2 tabs: Daily Tasks and Module Based Tasks; pruned text field and 20-subject tree)
+  - `lib/screens/settings/notifications_preferences_screen.dart` (Added 'Keep Screen Awake During Focus' row in settings preferences)
+  - `lib/screens/timer/focus_timer_screen.dart` (Added `CYCLE X OF Y` row with cycle status dots, count-up break header and stopwatch time, updated setup sheet with cycle steppers, removed keep awake switch)
+  - `lib/screens/timer/fullscreen_timer_screen.dart` (Subtle low-contrast topic header, removed clock face tap-to-pause, 3.5s controls auto-sleep with tap-to-wake, dynamic flip card digits [MM:SS for <1h, HH:MM with corner SS for >=1h], authentic charcoal split-card design 100% intact)
+- **Summary:**
+  - Streamlined topic selection strictly to Daily Tasks and Module Based Tasks with live task binding.
+  - Implemented comprehensive Pomodoro cycle management with configurable total cycles (e.g. 4), long break intervals, and count-up break tracking.
+  - Relocated 'Keep Screen Awake' setting to global preferences, defaulting to enabled.
+  - Preserved 100% of the authentic charcoal flip card design, Desk Mode (90° rotation), and tactile styling while adding non-distracting topic info, auto-sleep fading controls, and dynamic MM:SS flip cards for sub-1-hour sessions.
+- **Verification:**
+  - `flutter analyze`: **No issues found! (0 errors, 0 warnings)**
+  - `flutter test test/focus_timer_idempotency_test.dart`: **All 5 tests passed! (100%)**
+- **Status:** ⏳ Pending APK Build / Verified via Static Analysis & Unit Tests
+
 ### [CKPT-057] Medical Arena Universal Competitive Leaderboard & 10-Tier Career Progression
 - **Timestamp:** 2026-10-25 02:20 UTC
 - **Category:** Feature / Medical Arena Leaderboard & Progression System

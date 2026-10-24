@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -188,6 +187,65 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
           Navigator.of(dCtx).pop();
           notifier.resetSessionForSameTask();
         },
+      ),
+    );
+  }
+
+  Widget _buildPomodoroCycleRow(FocusTimerState timer, bool isLight, Color accent) {
+    final total = timer.pomodoroTotalCycles;
+    final completed = timer.pomodoroCompletedCycles;
+    final current = timer.pomodoroCurrentCycle;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: isLight
+            ? const Color(0xFFF1F5F9).withValues(alpha: 0.9)
+            : Colors.white.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isLight ? const Color(0xFFE2E8F0) : Colors.white.withValues(alpha: 0.15),
+          width: 1.0,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'CYCLE $current OF $total',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.8,
+              color: isLight ? const Color(0xFF475569) : Colors.white70,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(total, (i) {
+              final cycleNum = i + 1;
+              final isCompleted = cycleNum <= completed;
+              final isActive = cycleNum == current && !timer.isBreak;
+              final isIntervalBreak = (cycleNum % timer.pomodoroLongBreakInterval == 0);
+
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isCompleted
+                      ? const Color(0xFF10B981)
+                      : (isActive ? accent : (isLight ? const Color(0xFFCBD5E1) : Colors.white24)),
+                  border: isIntervalBreak
+                      ? Border.all(color: const Color(0xFFF59E0B), width: 1.2)
+                      : null,
+                ),
+              );
+            }),
+          ),
+        ],
       ),
     );
   }
@@ -433,7 +491,9 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
 
                     // 3. Study Time: Heading
                     Text(
-                      'Study Time:',
+                      timer.isBreak
+                          ? (timer.isLongBreak ? 'Long Break:' : 'Recharge Break:')
+                          : 'Study Time:',
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
@@ -496,6 +556,12 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
 
                     const SizedBox(height: 14),
 
+                    // Pomodoro Integrated Cycle Indicator
+                    if (timer.mode == TimerMode.pomodoro && timer.hasTarget) ...[
+                      _buildPomodoroCycleRow(timer, isLight, theme.accentColor),
+                      const SizedBox(height: 12),
+                    ],
+
                     // 7. Phase Label Badge
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -514,7 +580,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                         !timer.hasTarget
                             ? '○  AWAITING TARGET'
                             : (timer.isBreak
-                                ? '●  BREAK'
+                                ? (timer.isLongBreak ? '●  LONG BREAK' : '●  BREAK')
                                 : (timer.isRunning ? '●  FOCUSING' : '○  READY')),
                         style: TextStyle(
                           fontSize: 11,
@@ -1026,9 +1092,8 @@ class _SessionConfigSheet extends ConsumerWidget {
           _sectionLabel('FOCUS MODE', secondary),
           const SizedBox(height: 8),
           ...[
-            (TimerMode.pomodoro, Icons.timer_outlined, 'Pomodoro', 'Custom focus & break intervals'),
+            (TimerMode.pomodoro, Icons.timer_outlined, 'Pomodoro', 'Configurable focus cycles & long breaks'),
             (TimerMode.countUp, Icons.arrow_upward_rounded, 'Count-Up', 'Open stopwatch — tracks study time'),
-            (TimerMode.moduleLinked, Icons.bookmark_border_rounded, 'Module-Linked', 'Synced from video / QBank / notes'),
           ].map(((TimerMode m, IconData icon, String name, String desc) r) {
             final sel = r.$1 == timer.mode;
             return GestureDetector(
@@ -1083,9 +1148,9 @@ class _SessionConfigSheet extends ConsumerWidget {
           }),
           const SizedBox(height: 16),
 
-          // ── SECTION 3: Variables (only for pomodoro / module-linked) ─────
+          // ── SECTION 3: Variables (only for pomodoro) ─────
           if (timer.mode == TimerMode.pomodoro) ...[
-            _sectionLabel('TIMER VARIABLES', secondary),
+            _sectionLabel('POMODORO CYCLES & INTERVALS', secondary),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(14),
@@ -1094,145 +1159,103 @@ class _SessionConfigSheet extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: border, width: 1.2),
               ),
-              child: Row(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: _buildStepper(
-                      context: context,
-                      label: 'FOCUS',
-                      value: timer.pomodoroMinutes,
-                      onDec: () => notifier.adjustPomodoroMinutes(-1),
-                      onInc: () => notifier.adjustPomodoroMinutes(1),
-                      onTap: () => onShowCustomDialog(
-                        context: context,
-                        title: 'Focus Duration',
-                        currentMins: timer.pomodoroMinutes,
-                        minMins: 1,
-                        maxMins: 180,
-                        onSave: notifier.setPomodoroMinutes,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStepper(
+                          context: context,
+                          label: 'FOCUS DURATION',
+                          value: timer.pomodoroMinutes,
+                          unit: 'm',
+                          onDec: () => notifier.adjustPomodoroMinutes(-1),
+                          onInc: () => notifier.adjustPomodoroMinutes(1),
+                          onTap: () => onShowCustomDialog(
+                            context: context,
+                            title: 'Focus Duration',
+                            currentMins: timer.pomodoroMinutes,
+                            minMins: 1,
+                            maxMins: 180,
+                            onSave: notifier.setPomodoroMinutes,
+                          ),
+                        ),
                       ),
-                    ),
+                      Container(width: 1, height: 40, margin: const EdgeInsets.symmetric(horizontal: 12), color: border),
+                      Expanded(
+                        child: _buildStepper(
+                          context: context,
+                          label: 'TOTAL CYCLES',
+                          value: timer.pomodoroTotalCycles,
+                          unit: 'x',
+                          onDec: () => notifier.adjustPomodoroTotalCycles(-1),
+                          onInc: () => notifier.adjustPomodoroTotalCycles(1),
+                          onTap: () => onShowCustomDialog(
+                            context: context,
+                            title: 'Total Pomodoro Cycles',
+                            currentMins: timer.pomodoroTotalCycles,
+                            minMins: 1,
+                            maxMins: 16,
+                            onSave: notifier.setPomodoroTotalCycles,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  Container(width: 1, height: 40, margin: const EdgeInsets.symmetric(horizontal: 12), color: border),
-                  Expanded(
-                    child: _buildStepper(
-                      context: context,
-                      label: 'BREAK',
-                      value: timer.pomodoroBreakMins,
-                      onDec: () => notifier.adjustPomodoroBreakMinutes(-1),
-                      onInc: () => notifier.adjustPomodoroBreakMinutes(1),
-                      onTap: () => onShowCustomDialog(
-                        context: context,
-                        title: 'Break Duration',
-                        currentMins: timer.pomodoroBreakMins,
-                        minMins: 1,
-                        maxMins: 60,
-                        onSave: notifier.setPomodoroBreakMinutes,
+                  const SizedBox(height: 12),
+                  Divider(height: 1, color: border),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStepper(
+                          context: context,
+                          label: 'LONG BREAK',
+                          value: timer.pomodoroLongBreakMins,
+                          unit: 'm',
+                          onDec: () => notifier.adjustPomodoroLongBreakMinutes(-1),
+                          onInc: () => notifier.adjustPomodoroLongBreakMinutes(1),
+                          onTap: () => onShowCustomDialog(
+                            context: context,
+                            title: 'Long Break Duration',
+                            currentMins: timer.pomodoroLongBreakMins,
+                            minMins: 1,
+                            maxMins: 60,
+                            onSave: notifier.setPomodoroLongBreakMinutes,
+                          ),
+                        ),
                       ),
-                    ),
+                      Container(width: 1, height: 40, margin: const EdgeInsets.symmetric(horizontal: 12), color: border),
+                      Expanded(
+                        child: _buildStepper(
+                          context: context,
+                          label: 'LONG INTERVAL',
+                          value: timer.pomodoroLongBreakInterval,
+                          unit: 'cyc',
+                          onDec: () {
+                            if (timer.pomodoroLongBreakInterval > 2) {
+                              notifier.setPomodoroLongBreakInterval(timer.pomodoroLongBreakInterval - 1);
+                            }
+                          },
+                          onInc: () {
+                            notifier.setPomodoroLongBreakInterval(timer.pomodoroLongBreakInterval + 1);
+                          },
+                          onTap: () => onShowCustomDialog(
+                            context: context,
+                            title: 'Long Break Interval',
+                            currentMins: timer.pomodoroLongBreakInterval,
+                            minMins: 2,
+                            maxMins: 10,
+                            onSave: notifier.setPomodoroLongBreakInterval,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
-              ),
-            ),
-          ] else if (timer.mode == TimerMode.moduleLinked) ...[
-            _sectionLabel('TARGET DURATION', secondary),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: cardBg,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: border, width: 1.2),
-              ),
-              child: _buildStepper(
-                context: context,
-                label: 'MODULE TARGET',
-                value: timer.modulePresetMins,
-                onDec: () => notifier.setModulePreset(timer.modulePresetMins - 1),
-                onInc: () => notifier.setModulePreset(timer.modulePresetMins + 1),
-                onTap: () => onShowCustomDialog(
-                  context: context,
-                  title: 'Module Target Duration',
-                  currentMins: timer.modulePresetMins,
-                  minMins: 1,
-                  maxMins: 180,
-                  onSave: notifier.setModulePreset,
-                ),
               ),
             ),
           ],
-
-          const SizedBox(height: 16),
-
-          // ── SECTION 4: Keep Screen Awake ───────────────────────────────────
-          _sectionLabel('DISPLAY', secondary),
-          const SizedBox(height: 8),
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => notifier.setKeepScreenAwake(!timer.keepScreenAwake),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: cardBg,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: border, width: 1.2),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: timer.keepScreenAwake
-                          ? accent.withValues(alpha: 0.12)
-                          : const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      timer.keepScreenAwake
-                          ? Icons.smartphone_rounded
-                          : Icons.screen_lock_portrait_rounded,
-                      color: timer.keepScreenAwake ? accent : secondary,
-                      size: 18,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Keep Screen Awake',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w800,
-                            color: ink,
-                          ),
-                        ),
-                        Text(
-                          'Prevent display from sleeping during session',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: secondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  CupertinoSwitch(
-                    value: timer.keepScreenAwake,
-                    activeTrackColor: accent,
-                    inactiveTrackColor: AppTheme.borderLight,
-                    thumbColor: Colors.white,
-                    onChanged: (val) {
-                      notifier.setKeepScreenAwake(val);
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     ),
@@ -1253,6 +1276,7 @@ class _SessionConfigSheet extends ConsumerWidget {
     required BuildContext context,
     required String label,
     required int value,
+    String unit = 'm',
     required VoidCallback onDec,
     required VoidCallback onInc,
     required VoidCallback onTap,
@@ -1283,7 +1307,7 @@ class _SessionConfigSheet extends ConsumerWidget {
                 ),
                 child: Center(
                   child: Text(
-                    '${value}m',
+                    '$value$unit',
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: ink),
                   ),
                 ),
