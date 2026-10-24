@@ -6,6 +6,22 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ---
 
+## 🚀 Build Manifest v1.9.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk`
+- **Device Targeted:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
+- **Compilation Time:** 172.0s | **Test Suite:** 9/9 Tasks Tests Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-053]`, `[CKPT-054]`, `[CKPT-055]`
+
+### Key Highlights & Releases in v1.9.0:
+1. **Custom Study Projects (`lib/screens/daily_tasks/daily_tasks_screen.dart`, `lib/providers/tasks_hub_provider.dart`):** Shifted Projects focus to self-study / custom study rituals (Subject -> Unit) without auto-populating video syllabus modules. Added interactive "+ Add task" queue within each project card for bespoke study tasks.
+2. **Organic Paper Desk Input (`lib/screens/daily_tasks/daily_tasks_screen.dart`):** Replaced enclosed boxed input containers with an unboxed, subtle hairline underline text field resting directly on the warm paper surface.
+3. **Tactile Sliding Pill Switcher (`lib/screens/daily_tasks/daily_tasks_screen.dart`):** Replaced generic buttons with a tactile, spring-animated sliding pill container with custom ink thumb shadow, dual state icons (`check_circle_outline_rounded` / `folder_outlined`), and haptic feedback.
+4. **Subtle Home Desk Intra-Project Hierarchy (`lib/screens/home/home_screen.dart`):** Implemented micro-subtle editorial grouping separating standalone tasks from project tasks, and clearly distinguishing Project A from Project B with 10px uppercase subject-unit headers and a 1.5px vertical guide notch—zero cards, zero boxes, zero tags, zero extra colors.
+5. **Unified Daily Tasks Analytics (`lib/screens/analytics/daily_tasks_analytics_page.dart`, `lib/screens/analytics/analytics_screen.dart`):** Completely overhauled the Daily Tasks analytics view to read live data from `tasksHubProvider`. Added Project Specific Details section with real-time 2.5px progress bars and task checklists, alongside Standalone Rituals metrics.
+6. **Focus Timer Task Auto-Completion (`lib/providers/focus_timer_provider.dart`, `lib/providers/tasks_hub_provider.dart`):** Connected timer completion triggers (`_onCountdownComplete` and `finishSession`) to mark the active bound task as complete automatically.
+
+---
+
 ## 🚀 Build Manifest v1.8.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk`
 - **Device Tested:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
@@ -82,7 +98,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - Unified Daily Tasks analytics under Progress screen with project-specific breakdowns.
   - Automated task completion when focus timer sessions finish.
 - **Verification:** `flutter test test/tasks_hub_test.dart` (9/9 passed). `flutter analyze` 100% clean (0 issues).
-- **Status:** Pending APK Build
+- **Status:** ✅ Included in Build
 
 ### [CKPT-054] Daily Tasks Complete Minimalist Redesign, Unboxed Vertical Text Continuations & Projects Engine
 - **Timestamp:** 2026-10-24 13:35 UTC
@@ -114,7 +130,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - Modernized `StudyTaskCard` with borderless library subject icons and high-yield category badges.
   - Elevated `KeyboardDockedTaskInput` with 4 tactile task type pills and fine-grained block selectors.
 - **Verification:** `flutter test test/tasks_hub_test.dart` (9/9 passed). `flutter analyze` 100% clean (0 issues).
-- **Status:** Pending APK Build
+- **Status:** ✅ Included in Build
 
 ### [CKPT-052] Tasks Hub Progressive Catalogue Collapse, Borderless Editorial Project UX, Tactile Type Pickers & Bucket Completion
 - **Timestamp:** 2026-10-24 11:15 UTC
