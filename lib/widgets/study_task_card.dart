@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/daily_desk_task.dart';
+import '../data/subjects_metadata.dart';
 import '../theme/app_theme.dart';
 import 'animations/animated_check_stroke.dart';
 import 'animations/animated_strike_text.dart';
@@ -46,16 +47,76 @@ class StudyTaskCard extends StatelessWidget {
     this.dragHandle,
   });
 
+  static Color categoryColor(TaskCategory cat) {
+    switch (cat) {
+      case TaskCategory.video:
+        return const Color(0xFF3B82F6);
+      case TaskCategory.qbank:
+        return const Color(0xFF10B981);
+      case TaskCategory.notes:
+        return const Color(0xFFF59E0B);
+      case TaskCategory.revision:
+        return const Color(0xFF8B5CF6);
+      case TaskCategory.general:
+        return const Color(0xFF6B7280);
+    }
+  }
+
   static Color priorityColor(TaskPriority priority) {
     switch (priority) {
       case TaskPriority.p1urgent:
-        return AppTheme.accentPrimary;
+        return const Color(0xFFEF4444);
       case TaskPriority.p2high:
-        return const Color(0xFFEAB308);
+        return const Color(0xFFF59E0B);
       case TaskPriority.p3medium:
-        return AppTheme.accentSecondary;
+        return const Color(0xFF3B82F6);
       case TaskPriority.p4low:
-        return AppTheme.mutedText;
+        return const Color(0xFF10B981);
+    }
+  }
+
+  static String _subjectKey(MedicalSubject subject) {
+    switch (subject) {
+      case MedicalSubject.anatomy:
+        return 'anatomy';
+      case MedicalSubject.physiology:
+        return 'physiology';
+      case MedicalSubject.biochemistry:
+        return 'biochemistry';
+      case MedicalSubject.pharmacology:
+        return 'pharmacology';
+      case MedicalSubject.pathology:
+        return 'pathology';
+      case MedicalSubject.microbiology:
+        return 'microbiology';
+      case MedicalSubject.forensicMedicine:
+        return 'forensic_medicine';
+      case MedicalSubject.communityMedicine:
+        return 'community_medicine';
+      case MedicalSubject.ent:
+        return 'ent';
+      case MedicalSubject.ophthalmology:
+        return 'ophthalmology';
+      case MedicalSubject.psychiatry:
+        return 'psychiatry';
+      case MedicalSubject.radiology:
+        return 'radiology';
+      case MedicalSubject.dermatology:
+        return 'dermatology';
+      case MedicalSubject.surgery:
+        return 'surgery';
+      case MedicalSubject.orthopedics:
+        return 'orthopaedics';
+      case MedicalSubject.obgyn:
+        return 'obstetrics_and_gynaecology';
+      case MedicalSubject.medicine:
+        return 'medicine';
+      case MedicalSubject.pediatrics:
+        return 'paediatrics';
+      case MedicalSubject.anesthesia:
+        return 'anaesthesia';
+      case MedicalSubject.general:
+        return 'general';
     }
   }
 
@@ -151,18 +212,22 @@ class StudyTaskCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 5),
                       Wrap(
-                        spacing: 6,
-                        runSpacing: 4,
+                        spacing: 8,
+                        runSpacing: 5,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          // Category Tag Chip
+                          // Category Tag Chip with distinctive color
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                             decoration: BoxDecoration(
-                              color: AppTheme.parchmentSurface,
+                              color: isCompleted
+                                  ? AppTheme.parchmentSurface
+                                  : categoryColor(category).withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: AppTheme.borderLight,
+                                color: isCompleted
+                                    ? AppTheme.borderLight
+                                    : categoryColor(category).withValues(alpha: 0.35),
                                 width: 1,
                               ),
                             ),
@@ -172,7 +237,9 @@ class StudyTaskCard extends StatelessWidget {
                                 Icon(
                                   _categoryIcon(category),
                                   size: 11,
-                                  color: isCompleted ? AppTheme.mutedText : AppTheme.inkForeground,
+                                  color: isCompleted
+                                      ? AppTheme.mutedText
+                                      : categoryColor(category),
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -183,107 +250,74 @@ class StudyTaskCard extends StatelessWidget {
                                     letterSpacing: 0.5,
                                     color: isCompleted
                                         ? AppTheme.mutedText
-                                        : AppTheme.inkForeground,
+                                        : categoryColor(category),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          // Subject Chip (if not general)
-                          if (subject != MedicalSubject.general)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6.5, vertical: 2.5),
-                              decoration: BoxDecoration(
-                                color: isCompleted ? AppTheme.parchmentSurface : AppTheme.accentSubtle,
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                  color: isCompleted ? AppTheme.borderLight : AppTheme.accentPrimary.withValues(alpha: 0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Text(
-                                subject.shortCode,
-                                style: TextStyle(
-                                  fontSize: 9.5,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.4,
-                                  color: isCompleted ? AppTheme.mutedText : AppTheme.inkForeground,
-                                ),
-                              ),
+                          // Subject with authentic library icon & accent color (borderless)
+                          if (subject != MedicalSubject.general) ...[
+                            Builder(
+                              builder: (context) {
+                                final meta = subjectMeta(_subjectKey(subject));
+                                final color = isCompleted ? AppTheme.mutedText : meta.accent;
+                                return Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      meta.icon,
+                                      size: 13,
+                                      color: color,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      subject.shortCode,
+                                      style: TextStyle(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: color,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
                             ),
-                          // Focus Blocks Pill
+                          ],
+                          // Focus Blocks / Duration Pill
                           Builder(
                             builder: (context) {
                               final effectiveBlocks = estimatedBlocks ??
                                   ((estimatedMinutes != null && estimatedMinutes! > 0)
                                       ? (estimatedMinutes! / 25).ceil().clamp(1, 12)
                                       : 1);
-                              return Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
-                                decoration: BoxDecoration(
-                                  color: isFocusActive
-                                      ? AppTheme.accentPrimary.withValues(alpha: 0.12)
-                                      : AppTheme.parchmentSurface,
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: isFocusActive ? AppTheme.accentPrimary : AppTheme.borderLight,
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.hourglass_bottom_rounded,
-                                      size: 10,
-                                      color: isFocusActive ? AppTheme.accentPrimary : AppTheme.mutedText,
-                                    ),
-                                    const SizedBox(width: 3),
-                                    Text(
-                                      completedBlocks > 0
-                                          ? '$completedBlocks/$effectiveBlocks blk'
-                                          : '$effectiveBlocks ${effectiveBlocks == 1 ? "blk" : "blks"}',
-                                      style: TextStyle(
-                                        fontSize: 9.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: isFocusActive ? AppTheme.accentPrimary : AppTheme.mutedText,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                          // Estimated / Actual Time Pill
-                          if (estimatedMinutes != null && estimatedMinutes! > 0)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
-                              decoration: BoxDecoration(
-                                color: AppTheme.parchmentSurface,
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                  color: AppTheme.borderLight,
-                                  width: 1,
-                                ),
-                              ),
-                              child: Row(
+                              final durationText = (estimatedMinutes != null && estimatedMinutes! > 0)
+                                  ? (actualMinutesSpent != null && actualMinutesSpent! > 0
+                                      ? '${actualMinutesSpent}m/${estimatedMinutes}m'
+                                      : '${estimatedMinutes}m')
+                                  : '${effectiveBlocks * 25}m';
+
+                              return Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.schedule_rounded, size: 10, color: AppTheme.mutedText),
+                                  Icon(
+                                    Icons.hourglass_bottom_rounded,
+                                    size: 11,
+                                    color: isFocusActive ? AppTheme.accentPrimary : AppTheme.mutedText,
+                                  ),
                                   const SizedBox(width: 3),
                                   Text(
-                                    actualMinutesSpent != null && actualMinutesSpent! > 0
-                                        ? '${actualMinutesSpent}m/${estimatedMinutes}m'
-                                        : '${estimatedMinutes}m',
+                                    '$effectiveBlocks blk · $durationText',
                                     style: TextStyle(
-                                      fontSize: 9.5,
+                                      fontSize: 10.5,
                                       fontWeight: FontWeight.w600,
-                                      color: AppTheme.mutedText,
+                                      color: isFocusActive ? AppTheme.accentPrimary : AppTheme.mutedText,
                                     ),
                                   ),
                                 ],
-                              ),
-                            ),
+                              );
+                            },
+                          ),
                           // Recurring Indicator
                           if (isRecurring)
                             Icon(

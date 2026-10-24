@@ -24,11 +24,6 @@ import 'screens/settings/notifications_preferences_screen.dart';
 import 'screens/settings/settings_screen.dart';
 import 'screens/settings/theme_studio_screen.dart';
 import 'screens/timer/focus_timer_screen.dart';
-import 'screens/tasks/tasks_hub_screen.dart';
-import 'screens/tasks/today_page.dart';
-import 'screens/tasks/tomorrow_page.dart';
-import 'screens/tasks/this_week_page.dart';
-import 'screens/tasks/project_page.dart';
 import 'services/auth_service.dart';
 import 'services/sync_service.dart';
 import 'theme/app_theme.dart';
@@ -43,7 +38,6 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final _shellNavigatorKeyHome = GlobalKey<NavigatorState>(debugLabel: 'shellHome');
 final _shellNavigatorKeyCurriculum = GlobalKey<NavigatorState>(debugLabel: 'shellCurriculum');
 final _shellNavigatorKeyAnalytics = GlobalKey<NavigatorState>(debugLabel: 'shellAnalytics');
-final _shellNavigatorKeyTasks = GlobalKey<NavigatorState>(debugLabel: 'shellTasks');
 final _shellNavigatorKeySettings = GlobalKey<NavigatorState>(debugLabel: 'shellSettings');
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -229,53 +223,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // Branch 3: Tasks Hub
-          StatefulShellBranch(
-            navigatorKey: _shellNavigatorKeyTasks,
-            routes: [
-              GoRoute(
-                path: '/tasks',
-                pageBuilder: (context, state) => _buildFadeTransitionPage(
-                  state: state,
-                  child: const TasksHubScreen(),
-                ),
-                routes: [
-                  GoRoute(
-                    path: 'today',
-                    pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
-                      state: state,
-                      child: const TodayPage(),
-                    ),
-                  ),
-                  GoRoute(
-                    path: 'tomorrow',
-                    pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
-                      state: state,
-                      child: const TomorrowPage(),
-                    ),
-                  ),
-                  GoRoute(
-                    path: 'this-week',
-                    pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
-                      state: state,
-                      child: const ThisWeekPage(),
-                    ),
-                  ),
-                  GoRoute(
-                    path: 'project/:id',
-                    pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
-                      state: state,
-                      child: ProjectPage(
-                        projectId: state.pathParameters['id'] ?? '',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-          // Branch 4: Profile & Settings
+          // Branch 3: Profile & Settings
           StatefulShellBranch(
             navigatorKey: _shellNavigatorKeySettings,
             routes: [
@@ -554,13 +502,6 @@ class _MainShellState extends ConsumerState<MainShell>
       path: '/analytics'
     ),
     (
-      icon: Icons.checklist_outlined,
-      activeIcon: Icons.checklist_rounded,
-      label: 'Tasks',
-      sketchType: SketchNavIconType.tasks,
-      path: '/tasks'
-    ),
-    (
       icon: Icons.person_outline,
       activeIcon: Icons.person_rounded,
       label: 'Profile',
@@ -585,8 +526,7 @@ class _MainShellState extends ConsumerState<MainShell>
       0 => _shellNavigatorKeyHome,
       1 => _shellNavigatorKeyCurriculum,
       2 => _shellNavigatorKeyAnalytics,
-      3 => _shellNavigatorKeyTasks,
-      4 => _shellNavigatorKeySettings,
+      3 => _shellNavigatorKeySettings,
       _ => null,
     };
 
@@ -597,7 +537,7 @@ class _MainShellState extends ConsumerState<MainShell>
     final normalizedPath = widget.currentPath.isEmpty
         ? '/'
         : widget.currentPath.split('?').first;
-    const mainPaths = {'/', '/curriculum', '/analytics', '/tasks', '/settings'};
+    const mainPaths = {'/', '/curriculum', '/analytics', '/settings'};
     final isMainPage = mainPaths.contains(normalizedPath);
 
     return PopScope(

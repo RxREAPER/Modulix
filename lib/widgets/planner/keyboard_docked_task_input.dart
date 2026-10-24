@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../models/daily_desk_task.dart';
+import '../../data/subjects_metadata.dart';
 import '../../providers/daily_tasks_provider.dart';
 import '../../theme/app_theme.dart';
 import '../animations/apple_pressable.dart';
@@ -52,10 +53,87 @@ class _KeyboardDockedTaskInputState
   final FocusNode _focusNode = FocusNode();
 
   late MedicalSubject _selectedSubject;
-  TaskCategory _selectedCategory = TaskCategory.revision;
+  TaskCategory _selectedCategory = TaskCategory.video;
   TaskPriority _selectedPriority = TaskPriority.p2high;
-  int _selectedBlocks = 1; // 1 block = 25m
+  int _selectedBlocks = 2; // default 2 blocks (50m) or custom
+  int? _customEstimatedMinutes = 35; // auto-filled by type
   DateTime _selectedDate = DateTime.now();
+
+  static const _taskTypes = [
+    (
+      category: TaskCategory.video,
+      label: 'Video',
+      minutes: 35,
+      icon: Icons.play_circle_outline_rounded,
+      color: Color(0xFF3B82F6),
+    ),
+    (
+      category: TaskCategory.qbank,
+      label: 'Q-Bank',
+      minutes: 40,
+      icon: Icons.quiz_outlined,
+      color: Color(0xFF10B981),
+    ),
+    (
+      category: TaskCategory.notes,
+      label: 'Notes',
+      minutes: 25,
+      icon: Icons.description_outlined,
+      color: Color(0xFFF59E0B),
+    ),
+    (
+      category: TaskCategory.revision,
+      label: 'Revision',
+      minutes: 20,
+      icon: Icons.replay_rounded,
+      color: Color(0xFF8B5CF6),
+    ),
+  ];
+
+  static String _subjectKey(MedicalSubject subject) {
+    switch (subject) {
+      case MedicalSubject.anatomy:
+        return 'anatomy';
+      case MedicalSubject.physiology:
+        return 'physiology';
+      case MedicalSubject.biochemistry:
+        return 'biochemistry';
+      case MedicalSubject.pharmacology:
+        return 'pharmacology';
+      case MedicalSubject.pathology:
+        return 'pathology';
+      case MedicalSubject.microbiology:
+        return 'microbiology';
+      case MedicalSubject.forensicMedicine:
+        return 'forensic_medicine';
+      case MedicalSubject.communityMedicine:
+        return 'community_medicine';
+      case MedicalSubject.ent:
+        return 'ent';
+      case MedicalSubject.ophthalmology:
+        return 'ophthalmology';
+      case MedicalSubject.psychiatry:
+        return 'psychiatry';
+      case MedicalSubject.radiology:
+        return 'radiology';
+      case MedicalSubject.dermatology:
+        return 'dermatology';
+      case MedicalSubject.surgery:
+        return 'surgery';
+      case MedicalSubject.orthopedics:
+        return 'orthopaedics';
+      case MedicalSubject.obgyn:
+        return 'obstetrics_and_gynaecology';
+      case MedicalSubject.medicine:
+        return 'medicine';
+      case MedicalSubject.pediatrics:
+        return 'paediatrics';
+      case MedicalSubject.anesthesia:
+        return 'anaesthesia';
+      case MedicalSubject.general:
+        return 'general';
+    }
+  }
 
   @override
   void initState() {
@@ -75,13 +153,14 @@ class _KeyboardDockedTaskInputState
     if (title.isEmpty) return;
 
     HapticFeedback.lightImpact();
+    final effectiveEstMinutes = _customEstimatedMinutes ?? (_selectedBlocks * 25);
     final task = DailyDeskTask(
       id: 'task_${DateTime.now().millisecondsSinceEpoch}',
       title: title,
       category: _selectedCategory,
       subject: _selectedSubject,
       priority: _selectedPriority,
-      estimatedMinutes: _selectedBlocks * 25,
+      estimatedMinutes: effectiveEstMinutes,
       estimatedBlocks: _selectedBlocks,
       scheduledDate: DateFormat('yyyy-MM-dd').format(_selectedDate),
     );
@@ -217,33 +296,178 @@ class _KeyboardDockedTaskInputState
 
             const SizedBox(height: 12),
 
-            // Row 1: Quick Focus Block Selector (1B, 2B, 3B, 4B)
+            // Row 1: Tactile Task Type Selector Pills (Video, Q-Bank, Notes, Revision)
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
               child: Row(
                 children: [
-                  Text(
-                    'FOCUS BLOCKS:',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.6,
-                      color: AppTheme.mutedText,
+                  for (final item in _taskTypes)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ApplePressable(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() {
+                            _selectedCategory = item.category;
+                            _customEstimatedMinutes = item.minutes;
+                            _selectedBlocks = (item.minutes / 25).ceil().clamp(1, 5);
+                          });
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 160),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: _selectedCategory == item.category
+                                ? item.color.withValues(alpha: 0.14)
+                                : AppTheme.parchmentSurface,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: _selectedCategory == item.category
+                                  ? item.color
+                                  : AppTheme.borderLight,
+                              width: _selectedCategory == item.category ? 1.6 : 1.0,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                item.icon,
+                                size: 14,
+                                color: _selectedCategory == item.category
+                                    ? item.color
+                                    : AppTheme.inkForeground,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                '${item.label} · ${item.minutes}m',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: _selectedCategory == item.category
+                                      ? FontWeight.w700
+                                      : FontWeight.w600,
+                                  color: _selectedCategory == item.category
+                                      ? item.color
+                                      : AppTheme.inkForeground,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // Row 2: Metadata Controls (Subject with authentic icon, Focus Blocks, Priority, Date)
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  // Subject Selector Pill with authentic library icon & color
+                  PopupMenuButton<MedicalSubject>(
+                    initialValue: _selectedSubject,
+                    onSelected: (sub) {
+                      HapticFeedback.selectionClick();
+                      setState(() => _selectedSubject = sub);
+                    },
+                    color: AppTheme.cardWhite,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      side: BorderSide(color: AppTheme.sketchBorderColor, width: 1.5),
+                    ),
+                    itemBuilder: (context) => MedicalSubject.values
+                        .map(
+                          (sub) {
+                            final meta = subjectMeta(_subjectKey(sub));
+                            return PopupMenuItem(
+                              value: sub,
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    meta.icon,
+                                    size: 16,
+                                    color: meta.accent,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    sub.label,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: sub == _selectedSubject
+                                          ? FontWeight.w700
+                                          : FontWeight.w500,
+                                      color: AppTheme.inkForeground,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        )
+                        .toList(),
+                    child: Builder(
+                      builder: (context) {
+                        final meta = subjectMeta(_subjectKey(_selectedSubject));
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: AppTheme.parchmentSurface,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppTheme.borderLight, width: 1.2),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                meta.icon,
+                                size: 14,
+                                color: _selectedSubject == MedicalSubject.general
+                                    ? AppTheme.inkForeground
+                                    : meta.accent,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                _selectedSubject.shortCode,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: _selectedSubject == MedicalSubject.general
+                                      ? AppTheme.inkForeground
+                                      : meta.accent,
+                                ),
+                              ),
+                              const SizedBox(width: 2),
+                              Icon(Icons.arrow_drop_down_rounded, size: 16, color: AppTheme.mutedText),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ),
+
                   const SizedBox(width: 8),
+
+                  // Quick Blocks Selector
                   for (int b = 1; b <= 5; b++)
                     Padding(
                       padding: const EdgeInsets.only(right: 6),
                       child: ApplePressable(
                         onTap: () {
                           HapticFeedback.selectionClick();
-                          setState(() => _selectedBlocks = b);
+                          setState(() {
+                            _selectedBlocks = b;
+                            _customEstimatedMinutes = b * 25;
+                          });
                         },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 140),
-                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4.5),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
                           decoration: BoxDecoration(
                             color: _selectedBlocks == b
                                 ? AppTheme.accentPrimary
@@ -266,9 +490,9 @@ class _KeyboardDockedTaskInputState
                                     ? AppTheme.onAccent
                                     : AppTheme.mutedText,
                               ),
-                              const SizedBox(width: 4),
+                              const SizedBox(width: 3),
                               Text(
-                                '$b (${b * 25}m)',
+                                '${b}B',
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
@@ -282,151 +506,6 @@ class _KeyboardDockedTaskInputState
                         ),
                       ),
                     ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            // Row 2: Medical Metadata Selectors (Subject, Category, Priority, Date)
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: Row(
-                children: [
-                  // Subject Selector Pill
-                  PopupMenuButton<MedicalSubject>(
-                    initialValue: _selectedSubject,
-                    onSelected: (sub) {
-                      HapticFeedback.selectionClick();
-                      setState(() => _selectedSubject = sub);
-                    },
-                    color: AppTheme.cardWhite,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      side: BorderSide(color: AppTheme.sketchBorderColor, width: 1.5),
-                    ),
-                    itemBuilder: (context) => MedicalSubject.values
-                        .map(
-                          (sub) => PopupMenuItem(
-                            value: sub,
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.parchmentSurface,
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(color: AppTheme.borderLight),
-                                  ),
-                                  child: Text(
-                                    sub.shortCode,
-                                    style: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  sub.label,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: sub == _selectedSubject
-                                        ? FontWeight.w700
-                                        : FontWeight.w500,
-                                    color: AppTheme.inkForeground,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                        .toList(),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: AppTheme.parchmentSurface,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppTheme.borderLight, width: 1.2),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.local_hospital_outlined, size: 13, color: AppTheme.inkForeground),
-                          const SizedBox(width: 5),
-                          Text(
-                            _selectedSubject.shortCode,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              color: AppTheme.inkForeground,
-                            ),
-                          ),
-                          const SizedBox(width: 2),
-                          Icon(Icons.arrow_drop_down_rounded, size: 16, color: AppTheme.mutedText),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(width: 6),
-
-                  // Category Selector Pill
-                  PopupMenuButton<TaskCategory>(
-                    initialValue: _selectedCategory,
-                    onSelected: (cat) {
-                      HapticFeedback.selectionClick();
-                      setState(() => _selectedCategory = cat);
-                    },
-                    color: AppTheme.cardWhite,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      side: BorderSide(color: AppTheme.sketchBorderColor, width: 1.5),
-                    ),
-                    itemBuilder: (context) => TaskCategory.values
-                        .map(
-                          (cat) => PopupMenuItem(
-                            value: cat,
-                            child: Text(
-                              cat.label,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: cat == _selectedCategory
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
-                                color: AppTheme.inkForeground,
-                              ),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: AppTheme.parchmentSurface,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppTheme.borderLight, width: 1.2),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.label_outline_rounded, size: 13, color: AppTheme.mutedText),
-                          const SizedBox(width: 4),
-                          Text(
-                            _selectedCategory.label,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: AppTheme.inkForeground,
-                            ),
-                          ),
-                          const SizedBox(width: 2),
-                          Icon(Icons.arrow_drop_down_rounded, size: 16, color: AppTheme.mutedText),
-                        ],
-                      ),
-                    ),
-                  ),
 
                   const SizedBox(width: 6),
 

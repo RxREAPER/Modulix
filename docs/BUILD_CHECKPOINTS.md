@@ -64,6 +64,22 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-053] Revert Standalone Tasks Tab & Elevate Core Today's Tasks Experience
+- **Timestamp:** 2026-10-24 13:20 UTC
+- **Category:** Architecture / Navigation / Home Desk Today's Tasks
+- **Files Modified (4 files):**
+  - `lib/app.dart`: Reverted bottom navigation shell from 5 tabs back to 4 authentic tabs (Home, Library, Progress, Profile) with central floating Focus Timer; removed `/tasks` branch and unused task page imports; normalized `mainPaths`.
+  - `lib/screens/home/home_screen.dart`: Split Today's Tasks into active and completed queues; added smooth 220ms swipe-down animation (`AnimatedSlide` & `AnimatedOpacity`) when checking off tasks; added collapsible `COMPLETED (N)` section; updated counter subtitle to show remaining focus time (`~Xm remaining focus`).
+  - `lib/widgets/study_task_card.dart`: Integrated authentic borderless Library subject icons and colors (`SubjectMeta` from `lib/data/subjects_metadata.dart`); streamlined metadata row (subject icon + shortCode, category tag, focus blocks and duration); retained 1-tap Focus Timer play launcher.
+  - `lib/widgets/planner/keyboard_docked_task_input.dart`: Replaced hidden category dropdown with a tactile row of 4 pills: **Video** (35m, `#3B82F6`), **Q-Bank** (40m, `#10B981`), **Notes** (25m, `#F59E0B`), and **Revision** (20m, `#8B5CF6`) with haptics and auto-filled durations; integrated library subject icons in the subject picker; added fine-grained block selectors (`1B`..`5B`).
+- **Summary:**
+  - Fully restored the authentic 4-tab bottom navigation with central Focus Timer launcher.
+  - Transformed the Home screen "Today's Tasks" section into a responsive study desk with active/completed separation and fluid swipe-down completion animation.
+  - Modernized `StudyTaskCard` with borderless library subject icons and high-yield category badges.
+  - Elevated `KeyboardDockedTaskInput` with 4 tactile task type pills and fine-grained block selectors.
+- **Verification:** `flutter test test/tasks_hub_test.dart` (9/9 passed). `flutter analyze` 100% clean (0 issues).
+- **Status:** Pending APK Build
+
 ### [CKPT-052] Tasks Hub Progressive Catalogue Collapse, Borderless Editorial Project UX, Tactile Type Pickers & Bucket Completion
 - **Timestamp:** 2026-10-24 11:15 UTC
 - **Category:** UI/UX Refinement / Tasks Hub / Editorial Visuals & Buckets

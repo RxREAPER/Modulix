@@ -205,6 +205,8 @@ class _HomeTasksSection extends ConsumerStatefulWidget {
 
 class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
   bool _seenFirstDeskIntro = false;
+  bool _completedSectionExpanded = true;
+  final Set<String> _animatingTaskIds = {};
 
   @override
   void initState() {
@@ -237,6 +239,21 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
     }
   }
 
+  Future<void> _handleToggleActiveTask(DailyDeskTask task) async {
+    if (_animatingTaskIds.contains(task.id)) return;
+    setState(() {
+      _animatingTaskIds.add(task.id);
+    });
+    HapticFeedback.mediumImpact();
+    await Future.delayed(const Duration(milliseconds: 220));
+    if (!mounted) return;
+    _animatingTaskIds.remove(task.id);
+    final finishedAll = await ref.read(dailyTasksProvider.notifier).toggleTask(task.id);
+    if (finishedAll) {
+      HapticFeedback.heavyImpact();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final dailyTasksState = ref.watch(dailyTasksProvider);
@@ -244,9 +261,21 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
     final deskTasks = dailyTasksState.tasks;
     final completedTaskIds = dailyTasksState.completedIds;
 
+    final activeTasks = deskTasks.where((t) => !completedTaskIds.contains(t.id)).toList();
+    final completedTasks = deskTasks.where((t) => completedTaskIds.contains(t.id)).toList();
+
     final totalCount = deskTasks.length;
-    final completedCount = deskTasks.where((t) => completedTaskIds.contains(t.id)).length;
+    final completedCount = completedTasks.length;
     final isAllDone = totalCount > 0 && completedCount == totalCount;
+
+    final remainingFocusMinutes = activeTasks.fold<int>(
+      0,
+      (sum, t) {
+        final est = t.estimatedMinutes;
+        final minutes = (est != null && est > 0) ? est : (t.effectiveEstimatedBlocks * 25);
+        return sum + minutes;
+      },
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -295,7 +324,9 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
                         ? 'Plan a focused study day'
                         : isAllDone
                             ? 'All goals completed · Great focus today, Doctor'
-                            : '$completedCount of $totalCount completed',
+                            : remainingFocusMinutes > 0
+                                ? '$completedCount of $totalCount completed · ~${remainingFocusMinutes}m remaining focus'
+                                : '$completedCount of $totalCount completed',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: isAllDone ? FontWeight.w700 : FontWeight.w500,
@@ -343,94 +374,251 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
         const SizedBox(height: 14),
         if (deskTasks.isEmpty)
           _buildEmptyTasksState(context, ref, deskTasks)
-        else
-          ReorderableListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: deskTasks.length,
-            onReorderItem: (oldIndex, newIndex) {
-              HapticFeedback.lightImpact();
-              ref.read(dailyTasksProvider.notifier).reorderTasks(oldIndex, newIndex);
-            },
-            itemBuilder: (context, index) {
-              final task = deskTasks[index];
-              final isDone = completedTaskIds.contains(task.id);
-              final isFocusActive = timerState.isRunning && timerState.boundTaskId == task.id;
+        else ...[
+          if (activeTasks.isNotEmpty)
+            ReorderableListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: activeTasks.length,
+              onReorderItem: (oldIndex, newIndex) {
+                HapticFeedback.lightImpact();
+                final reorderedActive = List<DailyDeskTask>.from(activeTasks);
+                final item = reorderedActive.removeAt(oldIndex);
+                reorderedActive.insert(newIndex, item);
+                final allTasks = [...reorderedActive, ...completedTasks];
+                ref.read(dailyTasksProvider.notifier).setTasks(allTasks);
+              },
+              itemBuilder: (context, index) {
+                final task = activeTasks[index];
+                final isAnimatingOut = _animatingTaskIds.contains(task.id);
+                final isFocusActive = timerState.isRunning && timerState.boundTaskId == task.id;
 
-              final taskCard = StudyTaskCard(
-                id: task.id,
-                title: task.title,
-                category: task.category,
-                subject: task.subject,
-                priority: task.priority,
-                estimatedMinutes: task.estimatedMinutes,
-                actualMinutesSpent: task.actualMinutesSpent,
-                estimatedBlocks: task.effectiveEstimatedBlocks,
-                completedBlocks: task.effectiveCompletedBlocks,
-                isRecurring: task.isRecurring,
-                customSubtitle: null,
-                isCompleted: isDone,
-                isFocusActive: isFocusActive,
-                onToggle: () async {
-                  final finishedAll = await ref.read(dailyTasksProvider.notifier).toggleTask(task.id);
-                  if (finishedAll) {
-                    HapticFeedback.heavyImpact();
-                  }
-                },
-                onStartFocus: () {
-                  HapticFeedback.mediumImpact();
-                  ref.read(focusTimerProvider.notifier).startTaskFocus(task);
-                  context.push('/timer');
-                },
-                onDismissed: () {
-                  final removedTask = task;
-                  final wasCompleted = isDone;
-                  ref.read(dailyTasksProvider.notifier).removeTaskAt(index);
+                final taskCard = StudyTaskCard(
+                  id: task.id,
+                  title: task.title,
+                  category: task.category,
+                  subject: task.subject,
+                  priority: task.priority,
+                  estimatedMinutes: task.estimatedMinutes,
+                  actualMinutesSpent: task.actualMinutesSpent,
+                  estimatedBlocks: task.effectiveEstimatedBlocks,
+                  completedBlocks: task.effectiveCompletedBlocks,
+                  isRecurring: task.isRecurring,
+                  customSubtitle: null,
+                  isCompleted: false,
+                  isFocusActive: isFocusActive,
+                  onToggle: () => _handleToggleActiveTask(task),
+                  onStartFocus: () {
+                    HapticFeedback.mediumImpact();
+                    ref.read(focusTimerProvider.notifier).startTaskFocus(task);
+                    context.push('/timer');
+                  },
+                  onDismissed: () {
+                    final taskIndex = deskTasks.indexWhere((t) => t.id == task.id);
+                    if (taskIndex != -1) {
+                      final removedTask = task;
+                      ref.read(dailyTasksProvider.notifier).removeTaskAt(taskIndex);
 
-                  ScaffoldMessenger.of(context).clearSnackBars();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      duration: const Duration(seconds: 4),
-                      content: Text('Removed "${removedTask.title}"'),
-                      action: SnackBarAction(
-                        label: 'Undo',
-                        textColor: AppTheme.highlightStrong,
-                        onPressed: () {
-                          ref.read(dailyTasksProvider.notifier).insertTaskAt(index, removedTask, wasCompleted);
-                        },
+                      ScaffoldMessenger.of(context).clearSnackBars();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          duration: const Duration(seconds: 4),
+                          content: Text('Removed "${removedTask.title}"'),
+                          action: SnackBarAction(
+                            label: 'Undo',
+                            textColor: AppTheme.highlightStrong,
+                            onPressed: () {
+                              ref.read(dailyTasksProvider.notifier).insertTaskAt(taskIndex, removedTask, false);
+                            },
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  dragHandle: ReorderableDragStartListener(
+                    index: index,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      child: Icon(
+                        Icons.drag_indicator_rounded,
+                        size: 20,
+                        color: Colors.grey.shade400,
                       ),
                     ),
-                  );
-                },
-                dragHandle: ReorderableDragStartListener(
-                  index: index,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    child: Icon(
-                      Icons.drag_indicator_rounded,
-                      size: 20,
-                      color: Colors.grey.shade400,
-                    ),
                   ),
-                ),
-              );
+                );
 
-              if (index == 0) {
-                return KeyedSubtree(
-                  key: ValueKey(task.id),
-                  child: Container(
-                    key: TourTargetRegistry.keyFor(TourTargetId.todaysTasksTarget),
+                final animatedCard = AnimatedSlide(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInCubic,
+                  offset: isAnimatingOut ? const Offset(0, 0.22) : Offset.zero,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 180),
+                    opacity: isAnimatingOut ? 0.0 : 1.0,
                     child: taskCard,
                   ),
                 );
-              }
 
-              return KeyedSubtree(
-                key: ValueKey(task.id),
-                child: taskCard,
-              );
-            },
-          ),
+                if (index == 0) {
+                  return KeyedSubtree(
+                    key: ValueKey(task.id),
+                    child: Container(
+                      key: TourTargetRegistry.keyFor(TourTargetId.todaysTasksTarget),
+                      child: animatedCard,
+                    ),
+                  );
+                }
+
+                return KeyedSubtree(
+                  key: ValueKey(task.id),
+                  child: animatedCard,
+                );
+              },
+            )
+          else if (completedTasks.isNotEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                  width: 1.2,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF10B981),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.check_rounded, size: 16, color: Colors.white),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "All today's tasks completed!",
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.inkForeground,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Add another task or take a well-deserved break.',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.mutedText,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (completedTasks.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            InkWell(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                setState(() => _completedSectionExpanded = !_completedSectionExpanded);
+              },
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+                child: Row(
+                  children: [
+                    Icon(
+                      _completedSectionExpanded
+                          ? Icons.keyboard_arrow_down_rounded
+                          : Icons.keyboard_arrow_right_rounded,
+                      size: 18,
+                      color: AppTheme.mutedText,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'COMPLETED (${completedTasks.length})',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                        color: AppTheme.mutedText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (_completedSectionExpanded) ...[
+              const SizedBox(height: 6),
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: completedTasks.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 6),
+                itemBuilder: (context, index) {
+                  final task = completedTasks[index];
+                  return StudyTaskCard(
+                    key: ValueKey('completed_${task.id}'),
+                    id: task.id,
+                    title: task.title,
+                    category: task.category,
+                    subject: task.subject,
+                    priority: task.priority,
+                    estimatedMinutes: task.estimatedMinutes,
+                    actualMinutesSpent: task.actualMinutesSpent,
+                    estimatedBlocks: task.effectiveEstimatedBlocks,
+                    completedBlocks: task.effectiveCompletedBlocks,
+                    isRecurring: task.isRecurring,
+                    customSubtitle: null,
+                    isCompleted: true,
+                    isFocusActive: false,
+                    onToggle: () async {
+                      HapticFeedback.selectionClick();
+                      await ref.read(dailyTasksProvider.notifier).toggleTask(task.id);
+                    },
+                    onStartFocus: () {
+                      HapticFeedback.mediumImpact();
+                      ref.read(focusTimerProvider.notifier).startTaskFocus(task);
+                      context.push('/timer');
+                    },
+                    onDismissed: () {
+                      final taskIndex = deskTasks.indexWhere((t) => t.id == task.id);
+                      if (taskIndex != -1) {
+                        final removedTask = task;
+                        ref.read(dailyTasksProvider.notifier).removeTaskAt(taskIndex);
+
+                        ScaffoldMessenger.of(context).clearSnackBars();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            duration: const Duration(seconds: 4),
+                            content: Text('Removed "${removedTask.title}"'),
+                            action: SnackBarAction(
+                              label: 'Undo',
+                              textColor: AppTheme.highlightStrong,
+                              onPressed: () {
+                                ref.read(dailyTasksProvider.notifier).insertTaskAt(taskIndex, removedTask, true);
+                              },
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  );
+                },
+              ),
+            ],
+          ],
+        ],
       ],
     );
   }
