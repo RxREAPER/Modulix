@@ -31,6 +31,37 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-050] Standalone White-Mode Tasks Hub, 6th Nav Tab, Time Buckets & Projects Engine
+- **Timestamp:** 2026-10-24 07:20 UTC
+- **Category:** Architecture / Tasks Hub / Dedicated White-Mode Design System & 6th Nav Tab
+- **Files Modified & Added (12 files):**
+  - `lib/theme/tasks_theme.dart` (NEW): Completely isolated minimalist pure-white design system (`#FFFFFF` background, `#111827` primary ink, `#EF4444` fixed tomato-red accent, SF/Inter sans-serif typography, zero sketch textures).
+  - `lib/models/task_item.dart` (NEW): Standalone TaskItem model with priority enums (P1-P4), due date, hour/minute, project ID, sub-tasks, tags, and ISO-8601 SQLite serialization.
+  - `lib/models/task_project.dart` (NEW): TaskProject model with 8-color preset swatches, icon names, sort order, and SQLite persistence.
+  - `lib/services/database_service.dart`: Bumped SQLite DB version to 3 with schema migrations adding `task_items` and `task_projects` tables with indexing.
+  - `lib/providers/tasks_hub_provider.dart` (NEW): Riverpod AsyncNotifier providing tasks/projects CRUD, `todayTasks`, `tomorrowTasks`, `thisWeekTasks`, project grouping, and estimated study hours calculation.
+  - `lib/widgets/nav/sketch_nav_icons.dart`: Added `SketchNavIconType.tasks` enum and dedicated clipboard/checklist vector painter.
+  - `lib/widgets/lovable_nav_bar.dart`: Expanded navigation dock to support 6 tabs + center Focus (7 slots dynamic layout: Home, Library, Progress, Focus [center], Tasks, Profile).
+  - `lib/app.dart`: Wired branch 3 (`_shellNavigatorKeyTasks`) with `/tasks` root and sub-routes `/tasks/today`, `/tasks/tomorrow`, `/tasks/this-week`, `/tasks/project/:id`, shifted settings to branch 4, and updated `mainPaths`.
+  - `lib/screens/tasks/tasks_hub_screen.dart` (NEW): Root dashboard index featuring clean modern headers, Today/Tomorrow/This Week time buckets with live task counts & hours, customizable Projects section with project count, Add Project tile, and floating quick-add button.
+  - `lib/screens/tasks/today_page.dart` (NEW): Dedicated Today shell page with modern AppBar, empty state, and QuickAddSheet integration.
+  - `lib/screens/tasks/tomorrow_page.dart` (NEW): Dedicated Tomorrow shell page.
+  - `lib/screens/tasks/this_week_page.dart` (NEW): Dedicated This Week shell page.
+  - `lib/screens/tasks/project_page.dart` (NEW): Dynamic Project shell page with project options menu (edit/delete) and task list.
+  - `lib/widgets/tasks/`: `tasks_theme_wrapper.dart`, `tasks_bucket_row.dart`, `task_row.dart`, `tasks_quick_add_sheet.dart`, `add_project_sheet.dart`.
+  - `lib/screens/home/home_screen.dart`: Removed old Planner button shortcut.
+  - `test/tasks_hub_test.dart` (NEW): Unit test suite for task serialization, time bucketing, and hours calculation.
+- **Summary:**
+  - Added 6th icon to bottom navigation dock (Tasks checklist).
+  - Built pure white-mode modern design system completely separate from Modulix Theme Studio.
+  - Tasks Hub root acts as an active dashboard displaying time buckets (Today, Tomorrow, This Week) and customizable Projects.
+  - Created dedicated sub-pages for Today, Tomorrow, This Week, and individual Projects.
+- **Verification:**
+  - `flutter analyze`: **0 issues found (100% clean)**
+  - `flutter test test/tasks_hub_test.dart`: **All 4 tests passed (100%)**
+  - `flutter build apk --debug`: **Built successfully (`build/app/outputs/flutter-apk/app-debug.apk`) in 315.6s**
+- **Build Status:** ✅ Included in Build (app-debug.apk compiled)
+
 ### [CKPT-049] Focus To-Do Unified Task-Timer Binding, Keyboard-Docked Quick Add & 24H Timeline Analytics
 - **Timestamp:** 2026-10-24 05:00 UTC
 - **Category:** Feature / Focus To-Do UI Overhaul / Unified Task-Timer Binding & Actionable 24H Timeline

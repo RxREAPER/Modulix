@@ -9,7 +9,7 @@ import '../models/time_log.dart';
 
 const String _kDbName = 'modulix.db';
 const String _kLegacyDbName = 'flowmd.db';
-const int _kDbVersion = 2;
+const int _kDbVersion = 3;
 const String _kLegacyTimeLogsKey = 'flowmd_time_logs_v1';
 const String _kMetaLegacyMigrated = 'migrated_legacy_time_logs';
 
@@ -98,11 +98,15 @@ class DatabaseService {
             value TEXT NOT NULL
           )
         ''');
+        await _createTasksTables(db);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
           await db.execute(
               'CREATE INDEX IF NOT EXISTS idx_time_logs_subject_timestamp ON time_logs(subject_id, timestamp ASC)');
+        }
+        if (oldVersion < 3) {
+          await _createTasksTables(db);
         }
       },
     );
@@ -111,6 +115,49 @@ class DatabaseService {
     await _migrateLegacyPreferences(db);
 
     return db;
+  }
+
+  /// Creates the Tasks Hub tables (task_items + task_projects).
+  /// Called both in onCreate (fresh install) and onUpgrade v2→v3.
+  static Future<void> _createTasksTables(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS task_projects (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        color_hex TEXT NOT NULL DEFAULT '#6B7280',
+        icon_name TEXT NOT NULL DEFAULT 'list',
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS task_items (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        note TEXT,
+        due_date TEXT,
+        due_hour INTEGER,
+        due_minute INTEGER,
+        project_id TEXT,
+        priority INTEGER NOT NULL DEFAULT 4,
+        is_completed INTEGER NOT NULL DEFAULT 0,
+        completed_at TEXT,
+        sub_tasks TEXT NOT NULL DEFAULT '[]',
+        tags TEXT NOT NULL DEFAULT '[]',
+        estimated_minutes INTEGER,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY (project_id) REFERENCES task_projects(id) ON DELETE SET NULL
+      )
+    ''');
+
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_task_items_due_date ON task_items(due_date)');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_task_items_project_id ON task_items(project_id)');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_task_items_is_completed ON task_items(is_completed)');
   }
 
   Future<void> _migrateLegacyPreferences(Database db) async {

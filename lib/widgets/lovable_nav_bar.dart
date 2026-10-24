@@ -144,6 +144,9 @@ class _LovableNavBarState extends State<LovableNavBar>
     if (l.contains('analytics') || l.contains('progress') || l.contains('chart') || l.contains('trophy')) {
       return SketchNavIconType.progress;
     }
+    if (l.contains('task') || l.contains('todo') || l.contains('checklist')) {
+      return SketchNavIconType.tasks;
+    }
     if (l.contains('profile') || l.contains('settings') || l.contains('user')) {
       return SketchNavIconType.profile;
     }
@@ -154,6 +157,8 @@ class _LovableNavBarState extends State<LovableNavBar>
         return SketchNavIconType.library;
       case 2:
         return SketchNavIconType.progress;
+      case 3:
+        return SketchNavIconType.tasks;
       default:
         return SketchNavIconType.profile;
     }
@@ -169,23 +174,43 @@ class _LovableNavBarState extends State<LovableNavBar>
         ? const Color(0xFF8E8E93)
         : const Color(0xFF64748B);
 
-    // Map tab currentIndex (0..3) to 5-slot layout:
+    final hasTasksTab = widget.items.length >= 5;
+    final totalSlots = hasTasksTab ? 6 : 5;
+
+    // Map tab currentIndex (0..4) to slot layout:
     // Slot 0: Tab 0 (Home)
     // Slot 1: Tab 1 (Library)
-    // Slot 2: Center Focus (Hourglass)
-    // Slot 3: Tab 2 (Progress)
-    // Slot 4: Tab 3 (Profile)
+    // Slot 2: Tab 2 (Progress)
+    // Slot 3: Center Focus (Hourglass)
+    // Slot 4: Tab 3 (Tasks)
+    // Slot 5: Tab 4 (Profile)
     int? activeSlot;
-    if (widget.currentIndex == 0) {
-      activeSlot = 0;
-    } else if (widget.currentIndex == 1) {
-      activeSlot = 1;
-    } else if (widget.currentIndex == 4) {
-      activeSlot = 2; // Focus tab active
-    } else if (widget.currentIndex == 2) {
-      activeSlot = 3;
-    } else if (widget.currentIndex == 3) {
-      activeSlot = 4;
+    if (hasTasksTab) {
+      if (widget.currentIndex == 0) {
+        activeSlot = 0;
+      } else if (widget.currentIndex == 1) {
+        activeSlot = 1;
+      } else if (widget.currentIndex == 2) {
+        activeSlot = 2;
+      } else if (widget.currentIndex == 5) {
+        activeSlot = 3; // Focus center
+      } else if (widget.currentIndex == 3) {
+        activeSlot = 4; // Tasks
+      } else if (widget.currentIndex == 4) {
+        activeSlot = 5; // Profile
+      }
+    } else {
+      if (widget.currentIndex == 0) {
+        activeSlot = 0;
+      } else if (widget.currentIndex == 1) {
+        activeSlot = 1;
+      } else if (widget.currentIndex == 4) {
+        activeSlot = 2; // Focus tab active
+      } else if (widget.currentIndex == 2) {
+        activeSlot = 3;
+      } else if (widget.currentIndex == 3) {
+        activeSlot = 4;
+      }
     }
 
     return AnimatedBuilder(
@@ -261,12 +286,12 @@ class _LovableNavBarState extends State<LovableNavBar>
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final totalWidth = constraints.maxWidth;
-                  final slotWidth = totalWidth / 5.0;
+                  final slotWidth = totalWidth / totalSlots;
 
                   Rect? pillRect;
                   if (activeSlot != null) {
                     final slotCenter = (activeSlot + 0.5) * slotWidth;
-                    final pillWidth = math.min(slotWidth - 6.0, 54.0);
+                    final pillWidth = math.min(slotWidth - 4.0, 50.0);
                     const pillHeight = 44.0;
                     final pillLeft = slotCenter - (pillWidth / 2);
                     const pillTop = (dockHeight - pillHeight) / 2;
@@ -291,94 +316,181 @@ class _LovableNavBarState extends State<LovableNavBar>
                           ),
                         ),
 
-                      // 5 Integrated Slots
-                      Row(
-                        children: [
-                          // Slot 0: Home
-                          Expanded(
-                            child: _ModernTabItem(
-                              key: const Key('nav_tab_0'),
-                              sketchType: widget.items.isNotEmpty
-                                  ? _resolveSketchType(widget.items[0], 0)
-                                  : SketchNavIconType.home,
-                              label: widget.items.isNotEmpty
-                                  ? widget.items[0].label
-                                  : 'Home',
-                              isSelected: activeSlot == 0,
-                              activeColor: accentColor,
-                              inactiveColor: inactiveColor,
-                              onTap: () => _handleTabTap(0),
+                      if (hasTasksTab)
+                        // 6 Integrated Slots
+                        Row(
+                          children: [
+                            // Slot 0: Home (tab 0)
+                            Expanded(
+                              child: _ModernTabItem(
+                                key: const Key('nav_tab_0'),
+                                sketchType: _resolveSketchType(widget.items[0], 0),
+                                label: widget.items[0].label,
+                                isSelected: activeSlot == 0,
+                                activeColor: accentColor,
+                                inactiveColor: inactiveColor,
+                                onTap: () => _handleTabTap(0),
+                              ),
                             ),
-                          ),
 
-                          // Slot 1: Library
-                          Expanded(
-                            child: _ModernTabItem(
-                              key: const Key('nav_tab_1'),
-                              sketchType: widget.items.length > 1
-                                  ? _resolveSketchType(widget.items[1], 1)
-                                  : SketchNavIconType.library,
-                              label: widget.items.length > 1
-                                  ? widget.items[1].label
-                                  : 'Library',
-                              isSelected: activeSlot == 1,
-                              activeColor: accentColor,
-                              inactiveColor: inactiveColor,
-                              onTap: () => _handleTabTap(1),
+                            // Slot 1: Library (tab 1)
+                            Expanded(
+                              child: _ModernTabItem(
+                                key: const Key('nav_tab_1'),
+                                sketchType: _resolveSketchType(widget.items[1], 1),
+                                label: widget.items[1].label,
+                                isSelected: activeSlot == 1,
+                                activeColor: accentColor,
+                                inactiveColor: inactiveColor,
+                                onTap: () => _handleTabTap(1),
+                              ),
                             ),
-                          ),
 
-                          // Slot 2: Focus (Center Hourglass)
-                          Expanded(
-                            child: _ModernFocusItem(
-                              key: const Key('nav_center_timer_button'),
-                              isSelected: activeSlot == 2,
-                              isSessionActive: widget.isSessionActive,
-                              haloAnimation: _haloController,
-                              activeColor: accentColor,
-                              inactiveColor: inactiveColor,
-                              onTap: () {
-                                HapticFeedback.selectionClick();
-                                widget.onTimerTap();
-                              },
+                            // Slot 2: Progress (tab 2)
+                            Expanded(
+                              child: _ModernTabItem(
+                                key: const Key('nav_tab_2'),
+                                sketchType: _resolveSketchType(widget.items[2], 2),
+                                label: widget.items[2].label,
+                                isSelected: activeSlot == 2,
+                                activeColor: accentColor,
+                                inactiveColor: inactiveColor,
+                                onTap: () => _handleTabTap(2),
+                              ),
                             ),
-                          ),
 
-                          // Slot 3: Progress
-                          Expanded(
-                            child: _ModernTabItem(
-                              key: const Key('nav_tab_2'),
-                              sketchType: widget.items.length > 2
-                                  ? _resolveSketchType(widget.items[2], 2)
-                                  : SketchNavIconType.progress,
-                              label: widget.items.length > 2
-                                  ? widget.items[2].label
-                                  : 'Progress',
-                              isSelected: activeSlot == 3,
-                              activeColor: accentColor,
-                              inactiveColor: inactiveColor,
-                              onTap: () => _handleTabTap(2),
+                            // Slot 3: Focus (Center Hourglass)
+                            Expanded(
+                              child: _ModernFocusItem(
+                                key: const Key('nav_center_timer_button'),
+                                isSelected: activeSlot == 3,
+                                isSessionActive: widget.isSessionActive,
+                                haloAnimation: _haloController,
+                                activeColor: accentColor,
+                                inactiveColor: inactiveColor,
+                                onTap: () {
+                                  HapticFeedback.selectionClick();
+                                  widget.onTimerTap();
+                                },
+                              ),
                             ),
-                          ),
 
-                          // Slot 4: Profile
-                          Expanded(
-                            child: _ModernTabItem(
-                              key: const Key('nav_tab_3'),
-                              sketchType: widget.items.length > 3
-                                  ? _resolveSketchType(widget.items[3], 3)
-                                  : SketchNavIconType.profile,
-                              label: widget.items.length > 3
-                                  ? widget.items[3].label
-                                  : 'Profile',
-                              isSelected: activeSlot == 4,
-                              activeColor: accentColor,
-                              inactiveColor: inactiveColor,
-                              onTap: () => _handleTabTap(3),
+                            // Slot 4: Tasks (tab 3)
+                            Expanded(
+                              child: _ModernTabItem(
+                                key: const Key('nav_tab_3'),
+                                sketchType: _resolveSketchType(widget.items[3], 3),
+                                label: widget.items[3].label,
+                                isSelected: activeSlot == 4,
+                                activeColor: accentColor,
+                                inactiveColor: inactiveColor,
+                                onTap: () => _handleTabTap(3),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+
+                            // Slot 5: Profile (tab 4)
+                            Expanded(
+                              child: _ModernTabItem(
+                                key: const Key('nav_tab_4'),
+                                sketchType: _resolveSketchType(widget.items[4], 4),
+                                label: widget.items[4].label,
+                                isSelected: activeSlot == 5,
+                                activeColor: accentColor,
+                                inactiveColor: inactiveColor,
+                                onTap: () => _handleTabTap(4),
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        // 5 Integrated Slots (legacy)
+                        Row(
+                          children: [
+                            // Slot 0: Home
+                            Expanded(
+                              child: _ModernTabItem(
+                                key: const Key('nav_tab_0'),
+                                sketchType: widget.items.isNotEmpty
+                                    ? _resolveSketchType(widget.items[0], 0)
+                                    : SketchNavIconType.home,
+                                label: widget.items.isNotEmpty
+                                    ? widget.items[0].label
+                                    : 'Home',
+                                isSelected: activeSlot == 0,
+                                activeColor: accentColor,
+                                inactiveColor: inactiveColor,
+                                onTap: () => _handleTabTap(0),
+                              ),
+                            ),
+
+                            // Slot 1: Library
+                            Expanded(
+                              child: _ModernTabItem(
+                                key: const Key('nav_tab_1'),
+                                sketchType: widget.items.length > 1
+                                    ? _resolveSketchType(widget.items[1], 1)
+                                    : SketchNavIconType.library,
+                                label: widget.items.length > 1
+                                    ? widget.items[1].label
+                                    : 'Library',
+                                isSelected: activeSlot == 1,
+                                activeColor: accentColor,
+                                inactiveColor: inactiveColor,
+                                onTap: () => _handleTabTap(1),
+                              ),
+                            ),
+
+                            // Slot 2: Focus (Center Hourglass)
+                            Expanded(
+                              child: _ModernFocusItem(
+                                key: const Key('nav_center_timer_button'),
+                                isSelected: activeSlot == 2,
+                                isSessionActive: widget.isSessionActive,
+                                haloAnimation: _haloController,
+                                activeColor: accentColor,
+                                inactiveColor: inactiveColor,
+                                onTap: () {
+                                  HapticFeedback.selectionClick();
+                                  widget.onTimerTap();
+                                },
+                              ),
+                            ),
+
+                            // Slot 3: Progress
+                            Expanded(
+                              child: _ModernTabItem(
+                                key: const Key('nav_tab_2'),
+                                sketchType: widget.items.length > 2
+                                    ? _resolveSketchType(widget.items[2], 2)
+                                    : SketchNavIconType.progress,
+                                label: widget.items.length > 2
+                                    ? widget.items[2].label
+                                    : 'Progress',
+                                isSelected: activeSlot == 3,
+                                activeColor: accentColor,
+                                inactiveColor: inactiveColor,
+                                onTap: () => _handleTabTap(2),
+                              ),
+                            ),
+
+                            // Slot 4: Profile
+                            Expanded(
+                              child: _ModernTabItem(
+                                key: const Key('nav_tab_3'),
+                                sketchType: widget.items.length > 3
+                                    ? _resolveSketchType(widget.items[3], 3)
+                                    : SketchNavIconType.profile,
+                                label: widget.items.length > 3
+                                    ? widget.items[3].label
+                                    : 'Profile',
+                                isSelected: activeSlot == 4,
+                                activeColor: accentColor,
+                                inactiveColor: inactiveColor,
+                                onTap: () => _handleTabTap(3),
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
                   );
                 },

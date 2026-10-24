@@ -7,6 +7,7 @@ enum SketchNavIconType {
   library,
   analytics,
   progress,
+  tasks,
   profile,
   stopwatch,
   focus,
@@ -14,7 +15,7 @@ enum SketchNavIconType {
 }
 
 /// A modern minimalist line-art vector icon faithfully reproducing the
-/// reference design (House, Books, Hourglass, Trophy, Profile).
+/// reference design (House, Books, Hourglass, Trophy, Profile, Checklist).
 class SketchNavIcon extends StatelessWidget {
   final SketchNavIconType type;
   final Color color;
@@ -33,12 +34,25 @@ class SketchNavIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (type == SketchNavIconType.tasks) {
+      return CustomPaint(
+        size: Size(size, size),
+        painter: _ModernNavIconPainter(
+          type: type,
+          color: color,
+          isSelected: isSelected,
+          strokeWidth: strokeWidth,
+        ),
+      );
+    }
+
     final assetPath = switch (type) {
       SketchNavIconType.home => 'assets/icons/navbar/nav_home.png',
       SketchNavIconType.library || SketchNavIconType.curriculum => 'assets/icons/navbar/nav_library.png',
       SketchNavIconType.focus || SketchNavIconType.stopwatch || SketchNavIconType.pomodoro => 'assets/icons/navbar/nav_timer.png',
       SketchNavIconType.progress || SketchNavIconType.analytics => 'assets/icons/navbar/nav_progress.png',
       SketchNavIconType.profile => 'assets/icons/navbar/nav_profile.png',
+      SketchNavIconType.tasks => '',
     };
 
     return SizedBox(
@@ -110,7 +124,47 @@ class _ModernNavIconPainter extends CustomPainter {
       case SketchNavIconType.profile:
         _paintProfile(canvas, w, h, p);
         break;
+      case SketchNavIconType.tasks:
+        _paintTasks(canvas, w, h, p);
+        break;
     }
+  }
+
+  // ── 0. Tasks / Checklist (Clipboard/Checklist with checks) ───────────────────
+  void _paintTasks(Canvas canvas, double w, double h, Paint p) {
+    // Outer card/clipboard frame with rounded corners
+    final rect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(w * 0.18, h * 0.14, w * 0.64, h * 0.74),
+      const Radius.circular(3.5),
+    );
+    canvas.drawRRect(rect, p);
+
+    // Top clip
+    canvas.drawLine(
+      Offset(w * 0.36, h * 0.14),
+      Offset(w * 0.64, h * 0.14),
+      p..strokeWidth = strokeWidth * 1.4,
+    );
+    p.strokeWidth = strokeWidth;
+
+    // Check item 1
+    final check1 = Path()
+      ..moveTo(w * 0.28, h * 0.38)
+      ..lineTo(w * 0.35, h * 0.44)
+      ..lineTo(w * 0.48, h * 0.32);
+    canvas.drawPath(check1, p);
+    canvas.drawLine(Offset(w * 0.54, h * 0.38), Offset(w * 0.72, h * 0.38), p);
+
+    // Check item 2
+    final check2 = Path()
+      ..moveTo(w * 0.28, h * 0.58)
+      ..lineTo(w * 0.35, h * 0.64)
+      ..lineTo(w * 0.48, h * 0.52);
+    canvas.drawPath(check2, p);
+    canvas.drawLine(Offset(w * 0.54, h * 0.58), Offset(w * 0.72, h * 0.58), p);
+
+    // Line 3
+    canvas.drawLine(Offset(w * 0.28, h * 0.75), Offset(w * 0.72, h * 0.75), p);
   }
 
   // ── 1. Home (House with pitched roof, eaves, and doorway) ───────────────────

@@ -310,35 +310,6 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
               children: [
                 ApplePressable(
                   pressedScale: 0.94,
-                  onTap: () => context.push('/planner'),
-                  child: Container(
-                    decoration: AppTheme.sketchDecoration(
-                      backgroundColor: AppTheme.parchmentSurface,
-                      borderRadius: 10,
-                      borderWidth: 1.2,
-                      shadowOffset: 1.5,
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.calendar_month_rounded, size: 13, color: AppTheme.inkForeground),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Planner',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.inkForeground,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ApplePressable(
-                  pressedScale: 0.94,
                   onPressed: () => _openTaskSheet(context, ref, deskTasks),
                   child: Container(
                     decoration: AppTheme.sketchDecoration(
