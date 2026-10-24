@@ -55,7 +55,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Verification:**
   - `flutter analyze`: **0 issues found (100% clean)**
   - `flutter test test/medical_planner_test.dart test/study_desk_test.dart test/focus_timer_idempotency_test.dart test/domain2_home_tasks_test.dart test/domain5_focus_timer_sqlite_test.dart`: **All 24 tests passed (100%)**
-- **Build Status:** Pending APK Build
+- **Build Status:** ✅ Included in Build (Commit 0adb647, app-debug.apk installed & verified on OnePlus 13R)
 
 ### [CKPT-048] Medical Study Task Planner, Actionable Priority Velocity & Progress Analytics Overhaul
 - **Timestamp:** 2026-10-24 04:15 UTC
