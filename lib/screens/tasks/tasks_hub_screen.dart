@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../data/subjects_metadata.dart';
 import '../../providers/tasks_hub_provider.dart';
 import '../../theme/tasks_theme.dart';
 import '../../widgets/tasks/project_setup_catalogue_sheet.dart';
 import '../../widgets/tasks/tasks_bucket_row.dart';
-import '../../widgets/tasks/tasks_quick_add_sheet.dart';
 import '../../widgets/tasks/tasks_theme_wrapper.dart';
 
 class TasksHubScreen extends ConsumerWidget {
@@ -27,31 +27,16 @@ class TasksHubScreen extends ConsumerWidget {
             ),
             error: (err, _) => Center(child: Text('Error: $err')),
             data: (state) {
-              return Stack(
-                children: [
-                  CustomScrollView(
-                    physics: const BouncingScrollPhysics(),
+              return CustomScrollView(
+                physics: const BouncingScrollPhysics(),
                     slivers: [
                       // Header
-                      SliverToBoxAdapter(
+                      const SliverToBoxAdapter(
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Tasks',
-                                style: TasksTheme.headlineLarge,
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.swap_vert_rounded,
-                                  color: TasksTheme.textSecondary,
-                                  size: 24,
-                                ),
-                                onPressed: () {},
-                              ),
-                            ],
+                          padding: EdgeInsets.fromLTRB(20, 20, 20, 16),
+                          child: Text(
+                            'Tasks',
+                            style: TasksTheme.headlineLarge,
                           ),
                         ),
                       ),
@@ -149,15 +134,20 @@ class TasksHubScreen extends ConsumerWidget {
                           delegate: SliverChildBuilderDelegate(
                             (context, index) {
                               final proj = state.activeProjects[index];
-                              final pColor = _hexToColor(proj.colorHex);
+                              final meta = proj.subjectId != null
+                                  ? subjectMeta(proj.subjectId!)
+                                  : null;
+                              final pColor = meta?.accent ?? _hexToColor(proj.colorHex);
+                              final pIcon = meta?.icon ??
+                                  (proj.isModuleBased
+                                      ? Icons.view_timeline_outlined
+                                      : Icons.menu_book_rounded);
                               final pTasks = state.activeTasksForProject(proj.id);
                               final pHours = state.projectEstimatedHours(proj.id);
 
                               return TasksBucketRow(
                                 icon: Icon(
-                                  proj.isModuleBased
-                                      ? Icons.view_timeline_outlined
-                                      : Icons.auto_stories_outlined,
+                                  pIcon,
                                   color: pColor,
                                   size: 24,
                                 ),
@@ -242,38 +232,12 @@ class TasksHubScreen extends ConsumerWidget {
                         ),
                       ],
 
-                      // Bottom spacing for FAB and Nav Bar
+                      // Bottom spacing for Nav Bar
                       const SliverToBoxAdapter(
-                        child: SizedBox(height: 120),
+                        child: SizedBox(height: 36),
                       ),
                     ],
-                  ),
-
-                  // Floating Quick Add Pill / Circle at bottom
-                  Positioned(
-                    right: 20,
-                    bottom: 90,
-                    child: FloatingActionButton(
-                      backgroundColor: TasksTheme.accent,
-                      elevation: 4,
-                      onPressed: () {
-                        HapticFeedback.selectionClick();
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (_) => const TasksQuickAddSheet(),
-                        );
-                      },
-                      child: const Icon(
-                        Icons.add_rounded,
-                        color: Colors.white,
-                        size: 28,
-                      ),
-                    ),
-                  ),
-                ],
-              );
+                  );
             },
           ),
         ),

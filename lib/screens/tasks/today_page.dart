@@ -42,12 +42,6 @@ class _TodayPageState extends ConsumerState<TodayPage> {
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
             onPressed: () => Navigator.of(context).maybePop(),
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.swap_vert_rounded, size: 22),
-              onPressed: () {},
-            ),
-          ],
         ),
         floatingActionButton: FloatingActionButton(
           backgroundColor: TasksTheme.accent,
@@ -73,6 +67,7 @@ class _TodayPageState extends ConsumerState<TodayPage> {
           data: (state) {
             final activeTasks = state.todayTasks;
             final completedTasks = state.todayCompletedTasks;
+            final projectMap = {for (final p in state.projects) p.id: p.name};
 
             if (activeTasks.isEmpty && completedTasks.isEmpty) {
               return const Center(
@@ -135,6 +130,9 @@ class _TodayPageState extends ConsumerState<TodayPage> {
                                 task: isAnimating
                                     ? task.copyWith(isCompleted: true)
                                     : task,
+                                projectTitle: task.projectId != null
+                                    ? projectMap[task.projectId]
+                                    : null,
                                 onToggle: () => _handleToggle(task.id),
                                 onPlay: () {
                                   ref
@@ -187,6 +185,9 @@ class _TodayPageState extends ConsumerState<TodayPage> {
                           children: [
                             TaskRow(
                               task: task,
+                              projectTitle: task.projectId != null
+                                  ? projectMap[task.projectId]
+                                  : null,
                               onToggle: () => ref
                                   .read(tasksHubProvider.notifier)
                                   .toggleComplete(task.id),

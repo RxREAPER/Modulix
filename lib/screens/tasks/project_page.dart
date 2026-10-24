@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../data/subjects_metadata.dart';
 import '../../models/task_project.dart';
 import '../../models/time_log.dart';
 import '../../providers/focus_timer_provider.dart';
@@ -232,6 +233,15 @@ class _ProjectPageState extends ConsumerState<ProjectPage> {
         data: (state) {
           final project = state.projects.where((p) => p.id == widget.projectId).firstOrNull;
           final title = project?.name ?? 'Project';
+          final meta = project?.subjectId != null
+              ? subjectMeta(project!.subjectId!)
+              : const SubjectMeta(
+                  accent: Color(0xFF10B981),
+                  bgLight: Color(0xFFECFDF5),
+                  bgDark: Color(0xFF064E3B),
+                  icon: Icons.menu_book_rounded,
+                  displayName: 'General Study',
+                );
           final activeTasks = state.activeTasksForProject(widget.projectId);
           final completedTasks = state.completedTasksForProject(widget.projectId);
           final totalTasks = activeTasks.length + completedTasks.length;
@@ -289,140 +299,106 @@ class _ProjectPageState extends ConsumerState<ProjectPage> {
             body: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
-                // Project Overview Card
+                // Editorial Project Header (Airy, Borderless, Modern)
                 if (project != null)
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: TasksTheme.surface,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: TasksTheme.border),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  project.isModuleBased
-                                      ? 'MODULE BASED'
-                                      : 'SELF STUDY',
-                                  style: TasksTheme.sectionLabel,
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Category / Subject Indicator Row with Borderless Subject Icon
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Icon(meta.icon, size: 22, color: meta.accent),
+                              const SizedBox(width: 8),
+                              Text(
+                                project.isModuleBased
+                                    ? 'MODULE BASED'
+                                    : 'SELF STUDY',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.8,
+                                  color: meta.accent,
                                 ),
-                                if (project.perDayModules != null)
-                                  Text(
-                                    '${project.perDayModules} modules/day',
+                              ),
+                              if (project.unitName != null && project.unitName!.isNotEmpty) ...[
+                                const Text(
+                                  '  ·  ',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: TasksTheme.textTertiary,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    project.unitName!,
                                     style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
                                       color: TasksTheme.textSecondary,
                                     ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                              ],
-                            ),
-                            if (project.unitName != null && project.unitName!.isNotEmpty) ...[
-                              const SizedBox(height: 6),
-                              Text(
-                                project.unitName!,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: TasksTheme.textPrimary,
                                 ),
-                              ),
+                              ],
                             ],
-                            if (project.deadline != null) ...[
-                              const SizedBox(height: 4),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Project Title
+                          Text(
+                            project.name,
+                            style: const TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.6,
+                              color: TasksTheme.textPrimary,
+                              height: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Fluid Progress Row
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
                               Text(
-                                'Deadline: ${DateFormat('dd MMM yyyy').format(project.deadline!)}',
+                                '$totalTasks tasks · ${completedTasks.length} done',
                                 style: const TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
                                   color: TasksTheme.textSecondary,
                                 ),
                               ),
+                              Text(
+                                '${(progressRatio * 100).round()}%',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: meta.accent,
+                                ),
+                              ),
                             ],
-                            const SizedBox(height: 14),
-
-                            // Progress bar
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  '$totalTasks tasks · ${completedTasks.length} done',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: TasksTheme.textSecondary,
-                                  ),
-                                ),
-                                Text(
-                                  '${(progressRatio * 100).round()}%',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: TasksTheme.textPrimary,
-                                  ),
-                                ),
-                              ],
+                          ),
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(3),
+                            child: LinearProgressIndicator(
+                              value: progressRatio,
+                              minHeight: 5,
+                              backgroundColor: TasksTheme.surface,
+                              color: meta.accent,
                             ),
-                            const SizedBox(height: 6),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(3),
-                              child: LinearProgressIndicator(
-                                value: progressRatio,
-                                minHeight: 5,
-                                backgroundColor: TasksTheme.border,
-                                color: TasksTheme.accent,
-                              ),
-                            ),
+                          ),
+                          const SizedBox(height: 16),
 
-                            // User Sessions telemetry
-                            if (_sessionsFuture != null)
-                              FutureBuilder<List<TimeLog>>(
-                                future: _sessionsFuture,
-                                builder: (context, snapshot) {
-                                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                                    return const SizedBox.shrink();
-                                  }
-                                  final logs = snapshot.data!;
-                                  int totalSecs = 0;
-                                  for (final log in logs) {
-                                    if (project.unitName != null && project.unitName!.isNotEmpty) {
-                                      if (log.chapterName.toLowerCase().contains(project.unitName!.toLowerCase())) {
-                                        totalSecs += log.durationSecs;
-                                      }
-                                    } else {
-                                      totalSecs += log.durationSecs;
-                                    }
-                                  }
-                                  if (totalSecs == 0) return const SizedBox.shrink();
-                                  final hours = totalSecs ~/ 3600;
-                                  final mins = (totalSecs % 3600) ~/ 60;
-                                  final timeStr = hours > 0 ? '${hours}h ${mins}m' : '${mins}m';
-
-                                  return Padding(
-                                    padding: const EdgeInsets.only(top: 12),
-                                    child: Row(
-                                      children: [
-                                        const Icon(Icons.timer_outlined, size: 14, color: TasksTheme.textSecondary),
-                                        const SizedBox(width: 5),
-                                        Text(
-                                          '$timeStr study sessions logged',
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            color: TasksTheme.textSecondary,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
-                          ],
-                        ),
+                          // Unboxed Horizontal Metrics Strip
+                          _buildMetricsStrip(project, meta),
+                        ],
                       ),
                     ),
                   ),
@@ -477,6 +453,7 @@ class _ProjectPageState extends ConsumerState<ProjectPage> {
                             children: [
                               TaskRow(
                                 task: task,
+                                projectTitle: project?.name,
                                 onToggle: () => ref
                                     .read(tasksHubProvider.notifier)
                                     .toggleComplete(task.id),
@@ -519,6 +496,7 @@ class _ProjectPageState extends ConsumerState<ProjectPage> {
                             children: [
                               TaskRow(
                                 task: task,
+                                projectTitle: project?.name,
                                 onToggle: () => ref
                                     .read(tasksHubProvider.notifier)
                                     .toggleComplete(task.id),
@@ -544,6 +522,122 @@ class _ProjectPageState extends ConsumerState<ProjectPage> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildMetricsStrip(TaskProject project, SubjectMeta meta) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: const BoxDecoration(
+        border: Border(
+          top: BorderSide(color: TasksTheme.divider),
+          bottom: BorderSide(color: TasksTheme.divider),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildMetricItem(
+              label: project.isModuleBased ? 'DAILY PACE' : 'STUDY MODE',
+              value: project.isModuleBased
+                  ? '${project.perDayModules ?? 2} modules/day'
+                  : 'Self Study',
+              icon: Icons.speed_rounded,
+              accent: meta.accent,
+            ),
+          ),
+          Container(width: 1, height: 28, color: TasksTheme.divider),
+          Expanded(
+            child: _buildMetricItem(
+              label: 'DEADLINE',
+              value: project.deadline != null
+                  ? DateFormat('dd MMM yyyy').format(project.deadline!)
+                  : 'Open-ended',
+              icon: Icons.event_rounded,
+              accent: meta.accent,
+            ),
+          ),
+          if (_sessionsFuture != null) ...[
+            Container(width: 1, height: 28, color: TasksTheme.divider),
+            Expanded(
+              child: FutureBuilder<List<TimeLog>>(
+                future: _sessionsFuture,
+                builder: (context, snapshot) {
+                  int totalSecs = 0;
+                  if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                    for (final log in snapshot.data!) {
+                      if (project.unitName != null && project.unitName!.isNotEmpty) {
+                        if (log.chapterName.toLowerCase().contains(project.unitName!.toLowerCase())) {
+                          totalSecs += log.durationSecs;
+                        }
+                      } else {
+                        totalSecs += log.durationSecs;
+                      }
+                    }
+                  }
+                  final hours = totalSecs ~/ 3600;
+                  final mins = (totalSecs % 3600) ~/ 60;
+                  final timeStr = hours > 0
+                      ? '${hours}h ${mins}m'
+                      : (mins > 0 ? '${mins}m' : '0m');
+
+                  return _buildMetricItem(
+                    label: 'STUDY LOGS',
+                    value: timeStr,
+                    icon: Icons.timer_outlined,
+                    accent: meta.accent,
+                  );
+                },
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricItem({
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color accent,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 12, color: TasksTheme.textTertiary),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                    color: TasksTheme.textTertiary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: TasksTheme.textPrimary,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }

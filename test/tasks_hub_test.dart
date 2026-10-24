@@ -246,5 +246,53 @@ void main() {
       // Day 2 (Day after tomorrow): task 4 (isThisWeek should include all 5)
       expect(state.thisWeekTasks.length, equals(5));
     });
+
+    test('verifies tomorrowCompletedTasks and thisWeekCompletedTasks getters', () {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final tomorrow = today.add(const Duration(days: 1));
+      final threeDaysLater = today.add(const Duration(days: 3));
+
+      final tomorrowCompleted = TaskItem(
+        id: 'tc1',
+        title: 'Completed Tomorrow Task',
+        dueDate: tomorrow,
+        isCompleted: true,
+        completedAt: now,
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final weekCompleted = TaskItem(
+        id: 'wc1',
+        title: 'Completed Week Task',
+        dueDate: threeDaysLater,
+        isCompleted: true,
+        completedAt: now,
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final activeTomorrow = TaskItem(
+        id: 'ta1',
+        title: 'Active Tomorrow Task',
+        dueDate: tomorrow,
+        isCompleted: false,
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final state = TasksHubState(tasks: [tomorrowCompleted, weekCompleted, activeTomorrow]);
+
+      expect(state.tomorrowTasks.length, equals(1));
+      expect(state.tomorrowTasks.first.id, equals('ta1'));
+      expect(state.tomorrowCompletedTasks.length, equals(1));
+      expect(state.tomorrowCompletedTasks.first.id, equals('tc1'));
+
+      expect(state.thisWeekTasks.length, equals(1));
+      expect(state.thisWeekTasks.first.id, equals('ta1'));
+      expect(state.thisWeekCompletedTasks.length, equals(2));
+      expect(state.thisWeekCompletedTasks.map((t) => t.id).toSet(), equals({'tc1', 'wc1'}));
+    });
   });
 }

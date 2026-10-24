@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../data/subjects_metadata.dart';
 import '../../models/syllabus.dart';
 import '../../providers/syllabus_provider.dart';
 import '../../providers/tasks_hub_provider.dart';
@@ -38,6 +39,10 @@ class _ProjectSetupCatalogueSheetState
   Chapter? _selectedUnit;
   DateTime? _selectedDeadline;
   int _perDayModules = 2;
+
+  // Progressive collapsing states
+  bool _isSubjectCollapsed = false;
+  bool _isUnitCollapsed = false;
 
   // Self study specific
   bool _isGeneralStudy = false;
@@ -200,11 +205,7 @@ class _ProjectSetupCatalogueSheetState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Mode Selection
-                    const Text(
-                      'PROJECT MODE',
-                      style: TasksTheme.sectionLabel,
-                    ),
-                    const SizedBox(height: 10),
+                    _buildSectionHeader('1', 'PROJECT MODE'),
                     Row(
                       children: [
                         Expanded(
@@ -230,46 +231,59 @@ class _ProjectSetupCatalogueSheetState
                     if (_selectedMode != null) ...[
                       const SizedBox(height: 24),
 
-                      // Step 1: Subject Selection
-                      const Text(
-                        'SUBJECT',
-                        style: TasksTheme.sectionLabel,
-                      ),
-                      const SizedBox(height: 10),
-                      _buildSubjectSelector(subjects),
+                      // Step 2: Subject Selection
+                      _buildSectionHeader('2', 'SUBJECT'),
+                      if (_isSubjectCollapsed && (_selectedSubject != null || _isGeneralStudy))
+                        _buildCollapsedSummary(
+                          icon: _isGeneralStudy
+                              ? Icons.menu_book_rounded
+                              : subjectMeta(_selectedSubject!.id).icon,
+                          iconColor: _isGeneralStudy
+                              ? const Color(0xFF10B981)
+                              : subjectMeta(_selectedSubject!.id).accent,
+                          title: _isGeneralStudy
+                              ? 'General Study'
+                              : _selectedSubject!.displayName,
+                          onChange: () {
+                            HapticFeedback.selectionClick();
+                            setState(() => _isSubjectCollapsed = false);
+                          },
+                        )
+                      else
+                        _buildSubjectSelector(subjects),
 
-                      // Step 2: Unit Selection
+                      // Step 3: Unit Selection
                       if (_selectedSubject != null || _isGeneralStudy) ...[
                         const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'UNIT',
-                              style: TasksTheme.sectionLabel,
-                            ),
-                            if (_selectedMode == 'self_study')
-                              const Text(
-                                'Optional',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: TasksTheme.textTertiary,
-                                ),
-                              ),
-                          ],
+                        _buildSectionHeader(
+                          '3',
+                          'UNIT',
+                          optionalBadge: _selectedMode == 'self_study' ? 'Optional' : null,
                         ),
-                        const SizedBox(height: 10),
-                        _buildUnitSelector(),
+                        if (_isUnitCollapsed &&
+                            (_selectedUnit != null ||
+                                (_selectedMode == 'self_study' && _selectedUnit == null)))
+                          _buildCollapsedSummary(
+                            icon: Icons.bookmark_outline_rounded,
+                            iconColor: TasksTheme.accent,
+                            title: _selectedUnit != null
+                                ? '${_selectedUnit!.name} · ${_selectedUnit!.videos.length} videos'
+                                : (_isGeneralStudy
+                                    ? 'General Study Curriculum'
+                                    : 'Entire Subject'),
+                            onChange: () {
+                              HapticFeedback.selectionClick();
+                              setState(() => _isUnitCollapsed = false);
+                            },
+                          )
+                        else
+                          _buildUnitSelector(),
                       ],
 
-                      // Step 3 & 4: Deadline & Pace for Module Based
+                      // Step 4: Deadline & Pace for Module Based
                       if (_selectedMode == 'module' && _selectedUnit != null) ...[
                         const SizedBox(height: 24),
-                        const Text(
-                          'DEADLINE & PACE',
-                          style: TasksTheme.sectionLabel,
-                        ),
-                        const SizedBox(height: 10),
+                        _buildSectionHeader('4', 'SCHEDULE & PACING'),
                         _buildModulePaceControls(),
 
                         // Dynamic Guide Text
@@ -297,11 +311,7 @@ class _ProjectSetupCatalogueSheetState
                       if (_selectedMode == 'self_study' &&
                           (_selectedSubject != null || _isGeneralStudy)) ...[
                         const SizedBox(height: 24),
-                        const Text(
-                          'PROJECT TITLE',
-                          style: TasksTheme.sectionLabel,
-                        ),
-                        const SizedBox(height: 8),
+                        _buildSectionHeader('4', 'DETAILS & SCHEDULE'),
                         TextField(
                           controller: _customTitleController,
                           style: const TextStyle(
@@ -325,6 +335,70 @@ class _ProjectSetupCatalogueSheetState
                               borderSide: const BorderSide(color: TasksTheme.accent),
                             ),
                           ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Row(
+                              children: [
+                                Icon(Icons.event_outlined, size: 18, color: TasksTheme.textSecondary),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Target completion',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: TasksTheme.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            GestureDetector(
+                              onTap: () async {
+                                final picked = await showDatePicker(
+                                  context: context,
+                                  initialDate: _selectedDeadline ?? DateTime.now().add(const Duration(days: 7)),
+                                  firstDate: DateTime.now(),
+                                  lastDate: DateTime.now().add(const Duration(days: 365)),
+                                );
+                                if (picked != null) {
+                                  setState(() => _selectedDeadline = picked);
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: TasksTheme.surface,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: TasksTheme.border),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      _selectedDeadline != null
+                                          ? DateFormat('dd MMM yyyy').format(_selectedDeadline!)
+                                          : 'Add deadline',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: _selectedDeadline != null ? FontWeight.w600 : FontWeight.w400,
+                                        color: _selectedDeadline != null
+                                            ? TasksTheme.textPrimary
+                                            : TasksTheme.accent,
+                                      ),
+                                    ),
+                                    if (_selectedDeadline != null) ...[
+                                      const SizedBox(width: 4),
+                                      GestureDetector(
+                                        onTap: () => setState(() => _selectedDeadline = null),
+                                        child: const Icon(Icons.close_rounded, size: 14, color: TasksTheme.textTertiary),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
 
@@ -384,6 +458,127 @@ class _ProjectSetupCatalogueSheetState
     return false;
   }
 
+  Widget _buildSectionHeader(String stepNumber, String title, {String? optionalBadge}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Container(
+            width: 20,
+            height: 20,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: TasksTheme.textPrimary,
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: Text(
+              stepNumber,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+              color: TasksTheme.textPrimary,
+            ),
+          ),
+          if (optionalBadge != null) ...[
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: TasksTheme.surface,
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: TasksTheme.border),
+              ),
+              child: Text(
+                optionalBadge,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: TasksTheme.textTertiary,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCollapsedSummary({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    String? subtitle,
+    required VoidCallback onChange,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: TasksTheme.surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: TasksTheme.border),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: iconColor, size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: TasksTheme.textPrimary,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: TasksTheme.textTertiary,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: onChange,
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text(
+              'Change',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: TasksTheme.accent,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildModeCard({
     required String mode,
     required String title,
@@ -400,6 +595,8 @@ class _ProjectSetupCatalogueSheetState
           _selectedSubject = null;
           _selectedUnit = null;
           _isGeneralStudy = false;
+          _isSubjectCollapsed = false;
+          _isUnitCollapsed = false;
         });
       },
       child: AnimatedContainer(
@@ -452,6 +649,8 @@ class _ProjectSetupCatalogueSheetState
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: _buildChoiceChip(
+              icon: Icons.menu_book_rounded,
+              iconColor: const Color(0xFF10B981),
               label: 'General Study',
               isSelected: _isGeneralStudy,
               onTap: () {
@@ -460,6 +659,8 @@ class _ProjectSetupCatalogueSheetState
                   _isGeneralStudy = true;
                   _selectedSubject = null;
                   _selectedUnit = null;
+                  _isSubjectCollapsed = true;
+                  _isUnitCollapsed = false;
                 });
               },
             ),
@@ -469,7 +670,10 @@ class _ProjectSetupCatalogueSheetState
           runSpacing: 8,
           children: subjects.map((sub) {
             final isSelected = !_isGeneralStudy && _selectedSubject?.id == sub.id;
+            final meta = subjectMeta(sub.id);
             return _buildChoiceChip(
+              icon: meta.icon,
+              iconColor: meta.accent,
               label: sub.displayName,
               isSelected: isSelected,
               onTap: () {
@@ -478,6 +682,8 @@ class _ProjectSetupCatalogueSheetState
                   _isGeneralStudy = false;
                   _selectedSubject = sub;
                   _selectedUnit = null;
+                  _isSubjectCollapsed = true;
+                  _isUnitCollapsed = false;
                 });
               },
             );
@@ -522,7 +728,10 @@ class _ProjectSetupCatalogueSheetState
               isSelected: _selectedUnit == null,
               onTap: () {
                 HapticFeedback.selectionClick();
-                setState(() => _selectedUnit = null);
+                setState(() {
+                  _selectedUnit = null;
+                  _isUnitCollapsed = true;
+                });
               },
             ),
           ),
@@ -532,11 +741,14 @@ class _ProjectSetupCatalogueSheetState
           children: chapters.map((ch) {
             final isSelected = _selectedUnit?.name == ch.name;
             return _buildChoiceChip(
-              label: ch.name,
+              label: '${ch.name} · ${ch.videos.length}',
               isSelected: isSelected,
               onTap: () {
                 HapticFeedback.selectionClick();
-                setState(() => _selectedUnit = ch);
+                setState(() {
+                  _selectedUnit = ch;
+                  _isUnitCollapsed = true;
+                });
               },
             );
           }).toList(),
@@ -546,6 +758,8 @@ class _ProjectSetupCatalogueSheetState
   }
 
   Widget _buildChoiceChip({
+    IconData? icon,
+    Color? iconColor,
     required String label,
     required bool isSelected,
     required VoidCallback onTap,
@@ -554,7 +768,7 @@ class _ProjectSetupCatalogueSheetState
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 140),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? TasksTheme.textPrimary : TasksTheme.surface,
           borderRadius: BorderRadius.circular(8),
@@ -562,13 +776,26 @@ class _ProjectSetupCatalogueSheetState
             color: isSelected ? TasksTheme.textPrimary : TasksTheme.border,
           ),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-            color: isSelected ? Colors.white : TasksTheme.textPrimary,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                size: 16,
+                color: isSelected ? Colors.white : (iconColor ?? TasksTheme.textSecondary),
+              ),
+              const SizedBox(width: 6),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                color: isSelected ? Colors.white : TasksTheme.textPrimary,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -617,18 +844,24 @@ class _ProjectSetupCatalogueSheetState
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
 
-        // Deadline Picker
+        // Inline completion target (no "Target deadline" heading)
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Target deadline',
-              style: TextStyle(
-                fontSize: 14,
-                color: TasksTheme.textPrimary,
-              ),
+            const Row(
+              children: [
+                Icon(Icons.event_outlined, size: 18, color: TasksTheme.textSecondary),
+                SizedBox(width: 8),
+                Text(
+                  'Target completion',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: TasksTheme.textPrimary,
+                  ),
+                ),
+              ],
             ),
             GestureDetector(
               onTap: () async {
@@ -655,12 +888,13 @@ class _ProjectSetupCatalogueSheetState
                     Text(
                       _selectedDeadline != null
                           ? DateFormat('dd MMM yyyy').format(_selectedDeadline!)
-                          : 'Optional',
+                          : 'Add deadline',
                       style: TextStyle(
                         fontSize: 13,
+                        fontWeight: _selectedDeadline != null ? FontWeight.w600 : FontWeight.w400,
                         color: _selectedDeadline != null
                             ? TasksTheme.textPrimary
-                            : TasksTheme.textTertiary,
+                            : TasksTheme.accent,
                       ),
                     ),
                     if (_selectedDeadline != null) ...[

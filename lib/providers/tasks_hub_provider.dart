@@ -48,6 +48,10 @@ class TasksHubState {
       tasks.where((t) => !t.isCompleted && t.isTomorrow).toList()
         ..sort(_byPriority);
 
+  List<TaskItem> get tomorrowCompletedTasks =>
+      tasks.where((t) => t.isCompleted && t.isTomorrow).toList()
+        ..sort((a, b) => (b.completedAt ?? b.updatedAt).compareTo(a.completedAt ?? a.updatedAt));
+
   List<TaskItem> get thisWeekTasks =>
       tasks.where((t) => !t.isCompleted && t.isThisWeek).toList()
         ..sort((a, b) {
@@ -57,6 +61,10 @@ class TasksHubState {
           }
           return _byPriority(a, b);
         });
+
+  List<TaskItem> get thisWeekCompletedTasks =>
+      tasks.where((t) => t.isCompleted && t.isThisWeek).toList()
+        ..sort((a, b) => (b.completedAt ?? b.updatedAt).compareTo(a.completedAt ?? a.updatedAt));
 
   List<TaskItem> tasksForProject(String projectId) =>
       tasks.where((t) => t.projectId == projectId).toList()
@@ -310,6 +318,7 @@ class TasksHubNotifier extends AsyncNotifier<TasksHubState> {
     String? projectId,
     TaskItemPriority priority = TaskItemPriority.p4low,
     int? estimatedMinutes,
+    List<String> tags = const [],
   }) {
     final now = DateTime.now();
     return TaskItem(
@@ -320,6 +329,7 @@ class TasksHubNotifier extends AsyncNotifier<TasksHubState> {
       projectId: projectId,
       priority: priority,
       estimatedMinutes: estimatedMinutes,
+      tags: tags,
       createdAt: now,
       updatedAt: now,
     );

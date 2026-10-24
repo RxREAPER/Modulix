@@ -6,6 +6,23 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ---
 
+## 🚀 Build Manifest v1.8.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk`
+- **Device Tested:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
+- **Compilation Time:** 168.0s | **Test Suite:** 9/9 Tasks Tests Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-052]`
+
+### Key Highlights & Releases in v1.8.0:
+1. **Tomorrow & This Week Completed Sections (`lib/screens/tasks/tomorrow_page.dart`, `lib/screens/tasks/this_week_page.dart`):** Converted both pages to `ConsumerStatefulWidget` with swipe-down animated transitions and dedicated `COMPLETED (N)` sections mirroring `TodayPage`.
+2. **Project Setup Progressive Accordion Collapse (`lib/widgets/tasks/project_setup_catalogue_sheet.dart`):** Selected Subject and Unit collapse into compact editorial summaries (`[Icon] [Name] · Change`) dynamically revealing the next step; added unit module counts (`${ch.name} · ${ch.videos.length}`), distinct numbered header badges (`01`, `02`, `03`), and embedded inline date picker without standalone "Target deadline" text.
+3. **Borderless Editorial Project Header UX (`lib/screens/tasks/project_page.dart`):** Eliminated card containers in favor of an airy, borderless header featuring authentic library subject icons (`meta.icon`, `meta.accent`), bold typography, fluid accent progress bar, and unboxed metrics strip (Pace, Deadline, Study Logs).
+4. **Library Subject Icons & Colors Integration (`lib/screens/tasks/tasks_hub_screen.dart`, `lib/screens/tasks/project_page.dart`):** Replaced generic colored background squares with pure borderless icons and exact accent colors from `lib/data/subjects_metadata.dart`.
+5. **Tactile Quick Add Task Type Selector (`lib/widgets/tasks/tasks_quick_add_sheet.dart`):** Redesigned task creation sheet with haptic pill selectors: **Video** (35m, `#3B82F6`), **Q-Bank** (40m, `#10B981`), **Notes** (25m, `#F59E0B`), and **Revision** (20m, `#8B5CF6`) with automatic duration presets and tag binding.
+6. **Tasks Hub FAB & Swap Arrow Cleanup (`lib/screens/tasks/tasks_hub_screen.dart`):** Removed redundant FAB and top-right swap arrows across AppBars for clean, uncluttered clinical aesthetics.
+7. **Task Subtitle Metadata (`lib/widgets/tasks/task_row.dart`):** Every task row in Today, Tomorrow, and This Week now displays a clean, compact subtitle with project title and duration (e.g. `Ophthalmology · CORNEA · 32m`).
+
+---
+
 ## 🚀 Build Manifest v1.7.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk`
 - **Device Tested:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
@@ -47,8 +64,35 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-052] Tasks Hub Progressive Catalogue Collapse, Borderless Editorial Project UX, Tactile Type Pickers & Bucket Completion
+- **Timestamp:** 2026-10-24 11:15 UTC
+- **Category:** UI/UX Refinement / Tasks Hub / Editorial Visuals & Buckets
+- **Files Modified (11 files):**
+  - `lib/providers/tasks_hub_provider.dart`: Added `tomorrowCompletedTasks` and `thisWeekCompletedTasks` getters; updated `buildNewTask` with `tags` and `estimatedMinutes`.
+  - `lib/widgets/tasks/task_row.dart`: Added `projectTitle` property; rendered composite subtitle `"$projectTitle · ${task.estimatedMinutes}m"`; migrated `.withOpacity()` to `.withValues()`.
+  - `lib/screens/tasks/today_page.dart`: Removed top-right swap arrows; wired `projectTitle` to active and completed `TaskRow`s.
+  - `lib/screens/tasks/tomorrow_page.dart`: Converted to `ConsumerStatefulWidget` with swipe-down animation support; removed swap arrows; added dedicated `COMPLETED (N)` section.
+  - `lib/screens/tasks/this_week_page.dart`: Converted to `ConsumerStatefulWidget` with swipe-down animation support; removed swap arrows; added dedicated `COMPLETED (N)` section.
+  - `lib/screens/tasks/tasks_hub_screen.dart`: Removed swap arrows; removed FAB button and Stack; integrated authentic borderless subject icons and accent colors from `lib/data/subjects_metadata.dart`.
+  - `lib/widgets/tasks/project_setup_catalogue_sheet.dart`: Added progressive accordion collapsing (`_isSubjectCollapsed`, `_isUnitCollapsed`); added distinct numbered headers (`01`, `02`, `03`); module count beside units (`${ch.name} · ${ch.videos.length}`); embedded inline date picker removing standalone "Target deadline" heading.
+  - `lib/screens/tasks/project_page.dart`: Replaced boxed container with an airy borderless editorial header with library subject icon, bold typography, fluid accent progress bar, and unboxed metrics strip (`_buildMetricsStrip`).
+  - `lib/widgets/tasks/tasks_quick_add_sheet.dart`: Added tactile Task Type selector row with 4 pills (Video, Q-Bank, Notes, Revision) with haptic feedback, auto-populated durations, and tag assignment.
+  - `test/tasks_hub_test.dart`: Added unit tests for `tomorrowCompletedTasks` and `thisWeekCompletedTasks`.
+  - `android/gradle.properties`: Optimized JVM memory constraints (`-Xmx1024m`) for stability.
+- **Summary:**
+  - Completed dedicated `COMPLETED (N)` sections across Tomorrow and This Week pages.
+  - Implemented progressive accordion collapsing for Project Setup Catalogue sheet.
+  - Overhauled Project Page into an airy, borderless editorial design with prominent subject icon and unboxed metrics.
+  - Integrated authentic borderless subject icons & accent colors from Library metadata.
+  - Added tactile Task Type selector row with Video, Q-Bank, Notes, and Revision pills to Quick Add Sheet.
+  - Removed top-right swap arrows across AppBars and removed the FAB from Tasks Hub.
+  - Added project title and duration metadata subtitles to all task items.
+- **Verification:** 9/9 automated unit tests passed (`flutter test test/tasks_hub_test.dart`). `flutter analyze` 100% clean (0 issues). Built and installed `app-debug.apk` onto OnePlus 13R (`ba009d81`) and visually verified via ADB screenshots.
+- **Status:** ✅ Included in Build (Manifest v1.8.0)
+
 ### [CKPT-051] Tasks Hub Project Modes (Module & Self Study), Automated Pipeline & Focus Play Integration
 - **Timestamp:** 2026-10-24 08:58 UTC
+- **Status:** ✅ Included in Build (Manifest v1.7.0)
 - **Category:** Architecture / Tasks Hub / Project Modes (Module & Self Study) & Pipeline
 - **Files Modified & Added (13 files):**
   - `lib/models/task_project.dart`: Extended with `mode` ('module' | 'self_study'), `subjectId`, `subjectName`, `unitName`, `deadline`, `perDayModules`, `isArchived`, and helpers `isModuleBased`, `isSelfStudy`.

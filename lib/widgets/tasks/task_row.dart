@@ -7,6 +7,7 @@ import '../../theme/tasks_theme.dart';
 /// No tags, no under-text annotations. Clean and flat.
 class TaskRow extends StatelessWidget {
   final TaskItem task;
+  final String? projectTitle;
   final VoidCallback? onToggle;
   final VoidCallback? onTap;
   final VoidCallback? onPlay;
@@ -14,6 +15,7 @@ class TaskRow extends StatelessWidget {
   const TaskRow({
     super.key,
     required this.task,
+    this.projectTitle,
     this.onToggle,
     this.onTap,
     this.onPlay,
@@ -21,6 +23,16 @@ class TaskRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasProject = projectTitle != null && projectTitle!.trim().isNotEmpty;
+    final hasDuration = task.estimatedMinutes != null && task.estimatedMinutes! > 0;
+    final subtitle = hasProject && hasDuration
+        ? '$projectTitle · ${task.estimatedMinutes}m'
+        : hasProject
+            ? projectTitle!
+            : hasDuration
+                ? '${task.estimatedMinutes}m'
+                : null;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -87,6 +99,22 @@ class TaskRow extends StatelessWidget {
                         height: 1.4,
                       ),
                     ),
+                    if (subtitle != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            color: task.isCompleted
+                                ? TasksTheme.textTertiary.withValues(alpha: 0.6)
+                                : TasksTheme.textTertiary,
+                          ),
+                        ),
+                      ),
                     if (task.subTasks.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 2),

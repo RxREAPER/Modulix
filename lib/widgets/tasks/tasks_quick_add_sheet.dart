@@ -30,6 +30,15 @@ class _TasksQuickAddSheetState extends ConsumerState<TasksQuickAddSheet> {
   DateTime? _dueDate;
   String? _projectId;
   TaskItemPriority _priority = TaskItemPriority.p4low;
+  String? _selectedType;
+  int? _estimatedMinutes;
+
+  static const _taskTypes = [
+    (name: 'Video', icon: Icons.play_circle_outline_rounded, duration: 35, color: Color(0xFF3B82F6)),
+    (name: 'Q-Bank', icon: Icons.quiz_outlined, duration: 40, color: Color(0xFF10B981)),
+    (name: 'Notes', icon: Icons.description_outlined, duration: 25, color: Color(0xFFF59E0B)),
+    (name: 'Revision', icon: Icons.replay_rounded, duration: 20, color: Color(0xFF8B5CF6)),
+  ];
 
   @override
   void initState() {
@@ -57,6 +66,8 @@ class _TasksQuickAddSheetState extends ConsumerState<TasksQuickAddSheet> {
       dueDate: _dueDate,
       projectId: _projectId,
       priority: _priority,
+      estimatedMinutes: _estimatedMinutes,
+      tags: _selectedType != null ? [_selectedType!] : const [],
     );
     await notifier.addTask(task);
     if (mounted) Navigator.of(context).pop();
@@ -78,15 +89,18 @@ class _TasksQuickAddSheetState extends ConsumerState<TasksQuickAddSheet> {
         top: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Handle
-            Container(
-              margin: const EdgeInsets.only(top: 10, bottom: 8),
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: TasksTheme.border,
-                borderRadius: BorderRadius.circular(2),
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 10, bottom: 8),
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: TasksTheme.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
 
@@ -134,6 +148,72 @@ class _TasksQuickAddSheetState extends ConsumerState<TasksQuickAddSheet> {
                     ),
                   ),
                 ],
+              ),
+            ),
+
+            // Tactile Task Type Selector Pills (Video, Q-Bank, Notes, Revision)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: _taskTypes.map((type) {
+                    final isSelected = _selectedType == type.name;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: GestureDetector(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() {
+                            if (_selectedType == type.name) {
+                              _selectedType = null;
+                              _estimatedMinutes = null;
+                            } else {
+                              _selectedType = type.name;
+                              _estimatedMinutes = type.duration;
+                            }
+                          });
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 160),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? type.color.withValues(alpha: 0.12)
+                                : TasksTheme.surface,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isSelected
+                                  ? type.color.withValues(alpha: 0.5)
+                                  : TasksTheme.border,
+                              width: isSelected ? 1.5 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                type.icon,
+                                size: 15,
+                                color: isSelected ? type.color : TasksTheme.textSecondary,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                '${type.name} · ${type.duration}m',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                  color: isSelected ? type.color : TasksTheme.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
               ),
             ),
 
