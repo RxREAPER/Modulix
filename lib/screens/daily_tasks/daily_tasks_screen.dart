@@ -89,6 +89,7 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
         backgroundColor: AppTheme.paperBackground,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
+        titleSpacing: 0,
         leading: ApplePressable(
           onTap: () {
             if (context.canPop()) {
@@ -102,22 +103,23 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
             child: Icon(Icons.arrow_back_rounded, color: AppTheme.inkForeground, size: 22),
           ),
         ),
-        title: Text(
-          'Daily tasks',
-          style: AppTheme.headingStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.w700,
-            color: AppTheme.inkForeground,
+        title: Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: Row(
+            children: [
+              Text(
+                'Daily tasks',
+                style: AppTheme.headingStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.inkForeground,
+                ),
+              ),
+              const Spacer(),
+              _buildTactileSwitcher(),
+            ],
           ),
         ),
-        centerTitle: false,
-        actions: [
-          // Tactile Sliding Pill Switcher: Tasks | Projects
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: _buildTactileSwitcher(),
-          ),
-        ],
       ),
       body: tasksStateAsync.when(
         loading: () => const Center(
@@ -139,8 +141,8 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
 
   Widget _buildTactileSwitcher() {
     return Container(
-      width: 176,
-      height: 35,
+      width: 164,
+      height: 34,
       padding: const EdgeInsets.all(2.5),
       decoration: BoxDecoration(
         color: AppTheme.parchmentSurface,
@@ -287,6 +289,11 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                         color: AppTheme.mutedText.withValues(alpha: 0.6),
                       ),
                       border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      errorBorder: InputBorder.none,
+                      disabledBorder: InputBorder.none,
+                      filled: false,
                       isDense: true,
                       contentPadding: EdgeInsets.zero,
                     ),
@@ -727,6 +734,11 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                           color: AppTheme.mutedText.withValues(alpha: 0.6),
                         ),
                         border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        errorBorder: InputBorder.none,
+                        disabledBorder: InputBorder.none,
+                        filled: false,
                         isDense: true,
                         contentPadding: EdgeInsets.zero,
                       ),
