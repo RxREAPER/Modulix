@@ -76,6 +76,7 @@ class TaskItem {
   final List<SubTask> subTasks;
   final List<String> tags;
   final int? estimatedMinutes;
+  final String? moduleId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -93,6 +94,7 @@ class TaskItem {
     this.subTasks = const [],
     this.tags = const [],
     this.estimatedMinutes,
+    this.moduleId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -111,6 +113,7 @@ class TaskItem {
     List<SubTask>? subTasks,
     List<String>? tags,
     Object? estimatedMinutes = _sentinel,
+    Object? moduleId = _sentinel,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) =>
@@ -130,6 +133,7 @@ class TaskItem {
         estimatedMinutes: estimatedMinutes == _sentinel
             ? this.estimatedMinutes
             : estimatedMinutes as int?,
+        moduleId: moduleId == _sentinel ? this.moduleId : moduleId as String?,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
       );
@@ -177,6 +181,7 @@ class TaskItem {
         'sub_tasks': jsonEncode(subTasks.map((s) => s.toMap()).toList()),
         'tags': jsonEncode(tags),
         'estimated_minutes': estimatedMinutes,
+        'module_id': moduleId,
         'created_at': createdAt.toIso8601String(),
         'updated_at': updatedAt.toIso8601String(),
       };
@@ -220,6 +225,7 @@ class TaskItem {
       subTasks: subTasks,
       tags: tags,
       estimatedMinutes: (map['estimated_minutes'] as num?)?.toInt(),
+      moduleId: map['module_id']?.toString(),
       createdAt: DateTime.tryParse(map['created_at']?.toString() ?? '') ??
           DateTime.now(),
       updatedAt: DateTime.tryParse(map['updated_at']?.toString() ?? '') ??

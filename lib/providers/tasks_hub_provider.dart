@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../models/syllabus.dart' show Video;
 import '../models/task_item.dart';
 import '../models/task_project.dart';
 import '../services/database_service.dart';
@@ -27,10 +28,21 @@ class TasksHubState {
         projects: projects ?? this.projects,
       );
 
+  // ─── Project buckets ───────────────────────────────────────────
+  List<TaskProject> get activeProjects =>
+      projects.where((p) => !p.isArchived).toList();
+
+  List<TaskProject> get archivedProjects =>
+      projects.where((p) => p.isArchived).toList();
+
   // ─── Computed task buckets ─────────────────────────────────────
   List<TaskItem> get todayTasks =>
       tasks.where((t) => !t.isCompleted && t.isToday).toList()
         ..sort(_byPriority);
+
+  List<TaskItem> get todayCompletedTasks =>
+      tasks.where((t) => t.isCompleted && t.isToday).toList()
+        ..sort((a, b) => (b.completedAt ?? b.updatedAt).compareTo(a.completedAt ?? a.updatedAt));
 
   List<TaskItem> get tomorrowTasks =>
       tasks.where((t) => !t.isCompleted && t.isTomorrow).toList()
@@ -38,11 +50,25 @@ class TasksHubState {
 
   List<TaskItem> get thisWeekTasks =>
       tasks.where((t) => !t.isCompleted && t.isThisWeek).toList()
-        ..sort(_byPriority);
+        ..sort((a, b) {
+          if (a.dueDate != null && b.dueDate != null) {
+            final cmp = a.dueDate!.compareTo(b.dueDate!);
+            if (cmp != 0) return cmp;
+          }
+          return _byPriority(a, b);
+        });
 
   List<TaskItem> tasksForProject(String projectId) =>
       tasks.where((t) => t.projectId == projectId).toList()
         ..sort(_byPriority);
+
+  List<TaskItem> activeTasksForProject(String projectId) =>
+      tasks.where((t) => t.projectId == projectId && !t.isCompleted).toList()
+        ..sort(_byPriority);
+
+  List<TaskItem> completedTasksForProject(String projectId) =>
+      tasks.where((t) => t.projectId == projectId && t.isCompleted).toList()
+        ..sort((a, b) => (b.completedAt ?? b.updatedAt).compareTo(a.completedAt ?? a.updatedAt));
 
   // ─── Estimated hours per bucket ───────────────────────────────
   double get todayEstimatedHours =>
@@ -55,7 +81,7 @@ class TasksHubState {
       _toHours(thisWeekTasks.fold(0, (s, t) => s + (t.estimatedMinutes ?? 25)));
 
   double projectEstimatedHours(String projectId) => _toHours(
-      tasksForProject(projectId)
+      activeTasksForProject(projectId)
           .fold(0, (s, t) => s + (t.estimatedMinutes ?? 25)));
 
   static double _toHours(int mins) =>
@@ -80,6 +106,18 @@ class TasksHubNotifier extends AsyncNotifier<TasksHubState> {
     final db = await DatabaseService.instance.database;
     await db.insert('task_items', task.toMap());
     final tasks = <TaskItem>[...(state.value?.tasks ?? []), task];
+    state = AsyncData(state.value!.copyWith(tasks: tasks));
+  }
+
+  Future<void> addTasksBatch(List<TaskItem> newTasks) async {
+    if (newTasks.isEmpty) return;
+    final db = await DatabaseService.instance.database;
+    final batch = db.batch();
+    for (final task in newTasks) {
+      batch.insert('task_items', task.toMap());
+    }
+    await batch.commit(noResult: true);
+    final tasks = <TaskItem>[...(state.value?.tasks ?? []), ...newTasks];
     state = AsyncData(state.value!.copyWith(tasks: tasks));
   }
 
@@ -118,7 +156,111 @@ class TasksHubNotifier extends AsyncNotifier<TasksHubState> {
     state = AsyncData(state.value!.copyWith(tasks: tasks));
   }
 
-  // ─── Project CRUD ─────────────────────────────────────────────
+  // ─── Project Creation Pipelines ──────────────────────────────
+
+  /// Creates a Module-based project with auto-scheduled video module tasks.
+  Future<TaskProject> createModuleProject({
+    required String name,
+    required String subjectId,
+    required String subjectName,
+    required String unitName,
+    required List<Video> videos,
+    DateTime? deadline,
+    int perDayModules = 2,
+  }) async {
+    final projId = _generateId('proj');
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final pace = perDayModules > 0 ? perDayModules : 1;
+
+    final project = TaskProject(
+      id: projId,
+      name: name,
+      mode: 'module',
+      subjectId: subjectId,
+      subjectName: subjectName,
+      unitName: unitName,
+      deadline: deadline,
+      perDayModules: pace,
+      sortOrder: state.value?.projects.length ?? 0,
+      createdAt: now,
+    );
+
+    // Build tasks scheduled across days
+    final newTasks = <TaskItem>[];
+    for (int i = 0; i < videos.length; i++) {
+      final v = videos[i];
+      final dayOffset = i ~/ pace;
+      final taskDueDate = today.add(Duration(days: dayOffset));
+      final int estMins = v.totalMinutes.round() > 0 ? v.totalMinutes.round() : 25;
+
+      newTasks.add(
+        TaskItem(
+          id: _generateId('task'),
+          title: v.title.trim().isNotEmpty ? v.title.trim() : 'Module ${v.serialNumber}',
+          note: '$subjectName · $unitName',
+          dueDate: taskDueDate,
+          projectId: projId,
+          priority: TaskItemPriority.p3medium,
+          estimatedMinutes: estMins,
+          moduleId: v.id,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+    }
+
+    final db = await DatabaseService.instance.database;
+    await db.insert('task_projects', project.toMap());
+
+    if (newTasks.isNotEmpty) {
+      final batch = db.batch();
+      for (final t in newTasks) {
+        batch.insert('task_items', t.toMap());
+      }
+      await batch.commit(noResult: true);
+    }
+
+    final updatedProjects = <TaskProject>[...(state.value?.projects ?? []), project];
+    final updatedTasks = <TaskItem>[...(state.value?.tasks ?? []), ...newTasks];
+    state = AsyncData(state.value!.copyWith(projects: updatedProjects, tasks: updatedTasks));
+
+    return project;
+  }
+
+  /// Creates a Self-Study project with an initially empty task queue.
+  Future<TaskProject> createSelfStudyProject({
+    required String name,
+    required String subjectId,
+    required String subjectName,
+    String? unitName,
+    DateTime? deadline,
+  }) async {
+    final projId = _generateId('proj');
+    final now = DateTime.now();
+
+    final project = TaskProject(
+      id: projId,
+      name: name,
+      mode: 'self_study',
+      subjectId: subjectId,
+      subjectName: subjectName,
+      unitName: unitName,
+      deadline: deadline,
+      sortOrder: state.value?.projects.length ?? 0,
+      createdAt: now,
+    );
+
+    final db = await DatabaseService.instance.database;
+    await db.insert('task_projects', project.toMap());
+
+    final updatedProjects = <TaskProject>[...(state.value?.projects ?? []), project];
+    state = AsyncData(state.value!.copyWith(projects: updatedProjects));
+
+    return project;
+  }
+
+  // ─── Project Management ───────────────────────────────────────
 
   Future<void> addProject(TaskProject project) async {
     final db = await DatabaseService.instance.database;
@@ -142,12 +284,21 @@ class TasksHubNotifier extends AsyncNotifier<TasksHubState> {
     state = AsyncData(state.value!.copyWith(projects: projects));
   }
 
+  Future<void> toggleArchiveProject(String projectId) async {
+    final proj = state.value?.projects.where((p) => p.id == projectId).firstOrNull;
+    if (proj == null) return;
+    final updated = proj.copyWith(isArchived: !proj.isArchived);
+    await updateProject(updated);
+  }
+
   Future<void> deleteProject(String projectId) async {
     final db = await DatabaseService.instance.database;
+    await db.delete('task_items', where: 'project_id = ?', whereArgs: [projectId]);
     await db.delete('task_projects', where: 'id = ?', whereArgs: [projectId]);
-    final projects =
-        state.value!.projects.where((p) => p.id != projectId).toList();
-    state = AsyncData(state.value!.copyWith(projects: projects));
+
+    final projects = state.value!.projects.where((p) => p.id != projectId).toList();
+    final tasks = state.value!.tasks.where((t) => t.projectId != projectId).toList();
+    state = AsyncData(state.value!.copyWith(projects: projects, tasks: tasks));
   }
 
   // ─── Factory helpers ──────────────────────────────────────────

@@ -31,6 +31,34 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-051] Tasks Hub Project Modes (Module & Self Study), Automated Pipeline & Focus Play Integration
+- **Timestamp:** 2026-10-24 08:58 UTC
+- **Category:** Architecture / Tasks Hub / Project Modes (Module & Self Study) & Pipeline
+- **Files Modified & Added (13 files):**
+  - `lib/models/task_project.dart`: Extended with `mode` ('module' | 'self_study'), `subjectId`, `subjectName`, `unitName`, `deadline`, `perDayModules`, `isArchived`, and helpers `isModuleBased`, `isSelfStudy`.
+  - `lib/models/task_item.dart`: Added `moduleId` for linking syllabus video modules.
+  - `lib/services/database_service.dart`: Bumped SQLite version to 4; added v3→v4 migration and updated table definitions for `task_projects` and `task_items`.
+  - `lib/providers/focus_timer_provider.dart`: Added `startTaskItemFocus` linking tasks to the focus timer session; updated in-situ completion toggle.
+  - `lib/providers/tasks_hub_provider.dart`: Added `createModuleProject` (auto-schedules video modules into Today, Tomorrow, and This Week by daily pace) and `createSelfStudyProject` (custom user tasks); added `toggleArchiveProject`, cascade delete, and active/archived getters.
+  - `lib/widgets/tasks/project_setup_catalogue_sheet.dart` (NEW): Full-sheet progressive disclosure catalogue with 2 modes ("Module based" and "Self Study"), dynamic pace guidance text, and instant project generation.
+  - `lib/widgets/tasks/task_row.dart`: Added tactile Play button beside tasks that immediately launches the Focus Timer session.
+  - `lib/screens/tasks/today_page.dart`: Added marked module swipe-down completion animation transitioning active tasks smoothly into the completed section; added Play button on each task.
+  - `lib/screens/tasks/tomorrow_page.dart`: Wired project-derived tomorrow tasks with Play button Focus Timer linking.
+  - `lib/screens/tasks/this_week_page.dart`: Chronological weekly task view with Play button Focus Timer linking.
+  - `lib/screens/tasks/project_page.dart`: Rich project overview with mode, unit, pace/deadline, completion percentage progress bar, study session telemetry from `time_logs`, active & completed task queues, and Edit / Archive / Delete options.
+  - `lib/screens/tasks/tasks_hub_screen.dart`: Wired "+ Add Project" to `ProjectSetupCatalogueSheet`; updated projects list with active filter, mode icons, and archived projects section.
+  - `test/tasks_hub_test.dart`: Added unit tests for project mode serialization, archive separation, and module scheduling distribution.
+- **Summary:**
+  - Implemented Module-based project setup with progressive disclosure (Subject -> Unit -> Deadline & Modules/day -> dynamic guide text) that schedules video modules across Today, Tomorrow, and This Week.
+  - Implemented Self Study project setup with exclusive "General Study" option, optional unit, and empty user-driven task queue.
+  - Integrated Play button beside each task linking directly to the Focus Timer.
+  - Added marked module swipe-down completion animation on Today page.
+  - Added project management (Edit, Archive, Delete) and session telemetry on Project Page.
+- **Verification:** 8/8 automated unit tests passed (`flutter test test/tasks_hub_test.dart`). `flutter analyze` 100% clean (0 issues).
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### [CKPT-050] Standalone White-Mode Tasks Hub, 6th Nav Tab, Time Buckets & Projects Engine
 - **Timestamp:** 2026-10-24 07:20 UTC
 - **Category:** Architecture / Tasks Hub / Dedicated White-Mode Design System & 6th Nav Tab

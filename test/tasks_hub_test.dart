@@ -100,6 +100,13 @@ void main() {
         colorHex: '#EF4444',
         iconName: 'book',
         sortOrder: 1,
+        mode: 'module',
+        subjectId: 'internal-medicine',
+        subjectName: 'Medicine',
+        unitName: 'Cardiology',
+        deadline: DateTime(2026, 11, 1),
+        perDayModules: 3,
+        isArchived: false,
         createdAt: now,
       );
 
@@ -110,6 +117,33 @@ void main() {
       expect(fromMap.name, equals('Internal Medicine'));
       expect(fromMap.colorHex, equals('#EF4444'));
       expect(fromMap.sortOrder, equals(1));
+      expect(fromMap.isModuleBased, isTrue);
+      expect(fromMap.isSelfStudy, isFalse);
+      expect(fromMap.subjectId, equals('internal-medicine'));
+      expect(fromMap.subjectName, equals('Medicine'));
+      expect(fromMap.unitName, equals('Cardiology'));
+      expect(fromMap.perDayModules, equals(3));
+      expect(fromMap.isArchived, isFalse);
+    });
+
+    test('serializes self-study project correctly', () {
+      final now = DateTime.now();
+      final proj = TaskProject(
+        id: 'proj-self-1',
+        name: 'General Study',
+        mode: 'self_study',
+        subjectId: 'general',
+        subjectName: 'General Study',
+        isArchived: true,
+        createdAt: now,
+      );
+
+      final map = proj.toMap();
+      final fromMap = TaskProject.fromMap(map);
+
+      expect(fromMap.isSelfStudy, isTrue);
+      expect(fromMap.isModuleBased, isFalse);
+      expect(fromMap.isArchived, isTrue);
     });
   });
 
@@ -139,6 +173,78 @@ void main() {
 
       expect(state.todayTasks.length, equals(2));
       expect(state.todayEstimatedHours, equals(2.5));
+    });
+
+    test('separates active and archived projects', () {
+      final now = DateTime.now();
+      final p1 = TaskProject(id: '1', name: 'Active', isArchived: false, createdAt: now);
+      final p2 = TaskProject(id: '2', name: 'Archived', isArchived: true, createdAt: now);
+
+      final state = TasksHubState(projects: [p1, p2]);
+
+      expect(state.activeProjects.length, equals(1));
+      expect(state.activeProjects.first.name, equals('Active'));
+      expect(state.archivedProjects.length, equals(1));
+      expect(state.archivedProjects.first.name, equals('Archived'));
+    });
+
+    test('separates active and completed today tasks', () {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+
+      final active = TaskItem(
+        id: 'a1',
+        title: 'Active Task',
+        dueDate: today,
+        isCompleted: false,
+        createdAt: now,
+        updatedAt: now,
+      );
+      final completed = TaskItem(
+        id: 'c1',
+        title: 'Completed Task',
+        dueDate: today,
+        isCompleted: true,
+        completedAt: now,
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final state = TasksHubState(tasks: [active, completed]);
+
+      expect(state.todayTasks.length, equals(1));
+      expect(state.todayTasks.first.id, equals('a1'));
+      expect(state.todayCompletedTasks.length, equals(1));
+      expect(state.todayCompletedTasks.first.id, equals('c1'));
+    });
+
+    test('verifies module-based scheduling distribution across Today, Tomorrow, and Week', () {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      const pace = 2;
+
+      // 5 modules
+      final moduleTasks = List.generate(5, (i) {
+        final dayOffset = i ~/ pace;
+        return TaskItem(
+          id: 'task_$i',
+          title: 'Module ${i + 1}',
+          dueDate: today.add(Duration(days: dayOffset)),
+          createdAt: now,
+          updatedAt: now,
+        );
+      });
+
+      final state = TasksHubState(tasks: moduleTasks);
+
+      // Day 0 (Today): tasks 0 and 1
+      expect(state.todayTasks.map((t) => t.id).toList(), equals(['task_0', 'task_1']));
+
+      // Day 1 (Tomorrow): tasks 2 and 3
+      expect(state.tomorrowTasks.map((t) => t.id).toList(), equals(['task_2', 'task_3']));
+
+      // Day 2 (Day after tomorrow): task 4 (isThisWeek should include all 5)
+      expect(state.thisWeekTasks.length, equals(5));
     });
   });
 }

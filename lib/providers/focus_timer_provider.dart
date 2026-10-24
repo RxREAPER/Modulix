@@ -5,9 +5,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/timer_theme.dart';
 import '../models/time_log.dart';
 import '../models/daily_desk_task.dart';
+import '../models/task_item.dart';
 import 'time_log_provider.dart';
 import 'app_state_provider.dart';
 import 'daily_tasks_provider.dart';
+import 'tasks_hub_provider.dart';
 import '../services/notification_service.dart';
 import '../services/analytics_service.dart';
 import '../services/sync_service.dart';
@@ -228,6 +230,37 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     startOrPause();
   }
 
+  /// Binds the timer directly to a TasksHub [TaskItem] and immediately starts focus session
+  void startTaskItemFocus(TaskItem task) {
+    final int presetMins = (task.estimatedMinutes != null && task.estimatedMinutes! > 0)
+        ? task.estimatedMinutes!
+        : 25;
+
+    _ticker?.cancel();
+
+    state = state.copyWith(
+      boundTaskId: task.id,
+      hasTarget: true,
+      subjectId: 'tasks',
+      subjectName: task.note ?? 'Tasks Hub',
+      topicId: task.moduleId ?? task.id,
+      topicTitle: task.title,
+      chapterName: task.note ?? '',
+      topicType: task.moduleId != null ? 'video' : 'task',
+      mode: TimerMode.pomodoro,
+      pomodoroPresetMins: presetMins,
+      remainingSeconds: presetMins * 60,
+      focusSecondsElapsed: 0,
+      breakSecondsElapsed: 0,
+      phase: TimerPhase.focusing,
+      sessionActive: true,
+      isRunning: false,
+    );
+
+    // Immediately begin ticking
+    startOrPause();
+  }
+
   /// Unbinds current task from the timer, reverting to general session
   void unbindTask() {
     state = state.copyWith(
@@ -243,7 +276,11 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
   Future<void> toggleBoundTaskCompleted() async {
     final taskId = state.boundTaskId;
     if (taskId == null || taskId.isEmpty) return;
-    await _ref.read(dailyTasksProvider.notifier).toggleTask(taskId);
+    if (taskId.startsWith('task_')) {
+      await _ref.read(tasksHubProvider.notifier).toggleComplete(taskId);
+    } else {
+      await _ref.read(dailyTasksProvider.notifier).toggleTask(taskId);
+    }
   }
 
   void changeMode(TimerMode newMode) {

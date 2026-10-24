@@ -9,12 +9,14 @@ class TaskRow extends StatelessWidget {
   final TaskItem task;
   final VoidCallback? onToggle;
   final VoidCallback? onTap;
+  final VoidCallback? onPlay;
 
   const TaskRow({
     super.key,
     required this.task,
     this.onToggle,
     this.onTap,
+    this.onPlay,
   });
 
   @override
@@ -99,11 +101,38 @@ class TaskRow extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                size: 16,
-                color: TasksTheme.textTertiary,
-              ),
+              if (onPlay != null && !task.isCompleted)
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    onPlay?.call();
+                  },
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    margin: const EdgeInsets.only(left: 8),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: TasksTheme.surface,
+                      border: Border.all(color: TasksTheme.border),
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow_rounded,
+                      size: 18,
+                      color: TasksTheme.accent,
+                    ),
+                  ),
+                ),
+              if (onTap != null)
+                const Padding(
+                  padding: EdgeInsets.only(left: 6),
+                  child: Icon(
+                    Icons.chevron_right_rounded,
+                    size: 16,
+                    color: TasksTheme.textTertiary,
+                  ),
+                ),
             ],
           ),
         ),

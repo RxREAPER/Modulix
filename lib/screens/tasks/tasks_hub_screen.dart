@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/tasks_hub_provider.dart';
 import '../../theme/tasks_theme.dart';
-import '../../widgets/tasks/add_project_sheet.dart';
+import '../../widgets/tasks/project_setup_catalogue_sheet.dart';
 import '../../widgets/tasks/tasks_bucket_row.dart';
 import '../../widgets/tasks/tasks_quick_add_sheet.dart';
 import '../../widgets/tasks/tasks_theme_wrapper.dart';
@@ -114,7 +114,7 @@ class TasksHubScreen extends ConsumerWidget {
                                 style: TasksTheme.sectionLabel,
                               ),
                               Text(
-                                '${state.projects.length}',
+                                '${state.activeProjects.length}',
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
@@ -131,7 +131,7 @@ class TasksHubScreen extends ConsumerWidget {
                       ),
 
                       // Projects List
-                      if (state.projects.isEmpty)
+                      if (state.activeProjects.isEmpty)
                         const SliverToBoxAdapter(
                           child: Padding(
                             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -148,14 +148,16 @@ class TasksHubScreen extends ConsumerWidget {
                         SliverList(
                           delegate: SliverChildBuilderDelegate(
                             (context, index) {
-                              final proj = state.projects[index];
+                              final proj = state.activeProjects[index];
                               final pColor = _hexToColor(proj.colorHex);
-                              final pTasks = state.tasksForProject(proj.id);
+                              final pTasks = state.activeTasksForProject(proj.id);
                               final pHours = state.projectEstimatedHours(proj.id);
 
                               return TasksBucketRow(
                                 icon: Icon(
-                                  Icons.menu_rounded,
+                                  proj.isModuleBased
+                                      ? Icons.view_timeline_outlined
+                                      : Icons.auto_stories_outlined,
                                   color: pColor,
                                   size: 24,
                                 ),
@@ -165,7 +167,7 @@ class TasksHubScreen extends ConsumerWidget {
                                 onTap: () => context.push('/tasks/project/${proj.id}'),
                               );
                             },
-                            childCount: state.projects.length,
+                            childCount: state.activeProjects.length,
                           ),
                         ),
 
@@ -176,12 +178,7 @@ class TasksHubScreen extends ConsumerWidget {
                           child: InkWell(
                             onTap: () {
                               HapticFeedback.selectionClick();
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                backgroundColor: Colors.transparent,
-                                builder: (_) => const AddProjectSheet(),
-                              );
+                              ProjectSetupCatalogueSheet.show(context);
                             },
                             splashColor: TasksTheme.accent.withValues(alpha: 0.08),
                             child: const Padding(
@@ -211,6 +208,39 @@ class TasksHubScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
+
+                      // Archived Projects Section if any
+                      if (state.archivedProjects.isNotEmpty) ...[
+                        const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Text(
+                              'ARCHIVED PROJECTS (${state.archivedProjects.length})',
+                              style: TasksTheme.sectionLabel,
+                            ),
+                          ),
+                        ),
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final proj = state.archivedProjects[index];
+                              return TasksBucketRow(
+                                icon: const Icon(
+                                  Icons.archive_outlined,
+                                  color: TasksTheme.textTertiary,
+                                  size: 22,
+                                ),
+                                label: proj.name,
+                                estimatedHours: 0.0,
+                                taskCount: 0,
+                                onTap: () => context.push('/tasks/project/${proj.id}'),
+                              );
+                            },
+                            childCount: state.archivedProjects.length,
+                          ),
+                        ),
+                      ],
 
                       // Bottom spacing for FAB and Nav Bar
                       const SliverToBoxAdapter(

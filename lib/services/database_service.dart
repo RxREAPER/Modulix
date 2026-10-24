@@ -9,7 +9,7 @@ import '../models/time_log.dart';
 
 const String _kDbName = 'modulix.db';
 const String _kLegacyDbName = 'flowmd.db';
-const int _kDbVersion = 3;
+const int _kDbVersion = 4;
 const String _kLegacyTimeLogsKey = 'flowmd_time_logs_v1';
 const String _kMetaLegacyMigrated = 'migrated_legacy_time_logs';
 
@@ -108,6 +108,32 @@ class DatabaseService {
         if (oldVersion < 3) {
           await _createTasksTables(db);
         }
+        if (oldVersion < 4) {
+          try {
+            await db.execute('ALTER TABLE task_projects ADD COLUMN mode TEXT NOT NULL DEFAULT "module"');
+          } catch (_) {}
+          try {
+            await db.execute('ALTER TABLE task_projects ADD COLUMN subject_id TEXT');
+          } catch (_) {}
+          try {
+            await db.execute('ALTER TABLE task_projects ADD COLUMN subject_name TEXT');
+          } catch (_) {}
+          try {
+            await db.execute('ALTER TABLE task_projects ADD COLUMN unit_name TEXT');
+          } catch (_) {}
+          try {
+            await db.execute('ALTER TABLE task_projects ADD COLUMN deadline TEXT');
+          } catch (_) {}
+          try {
+            await db.execute('ALTER TABLE task_projects ADD COLUMN per_day_modules INTEGER');
+          } catch (_) {}
+          try {
+            await db.execute('ALTER TABLE task_projects ADD COLUMN is_archived INTEGER NOT NULL DEFAULT 0');
+          } catch (_) {}
+          try {
+            await db.execute('ALTER TABLE task_items ADD COLUMN module_id TEXT');
+          } catch (_) {}
+        }
       },
     );
 
@@ -127,6 +153,13 @@ class DatabaseService {
         color_hex TEXT NOT NULL DEFAULT '#6B7280',
         icon_name TEXT NOT NULL DEFAULT 'list',
         sort_order INTEGER NOT NULL DEFAULT 0,
+        mode TEXT NOT NULL DEFAULT 'module',
+        subject_id TEXT,
+        subject_name TEXT,
+        unit_name TEXT,
+        deadline TEXT,
+        per_day_modules INTEGER,
+        is_archived INTEGER NOT NULL DEFAULT 0,
         created_at TEXT NOT NULL
       )
     ''');
@@ -146,9 +179,10 @@ class DatabaseService {
         sub_tasks TEXT NOT NULL DEFAULT '[]',
         tags TEXT NOT NULL DEFAULT '[]',
         estimated_minutes INTEGER,
+        module_id TEXT,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
-        FOREIGN KEY (project_id) REFERENCES task_projects(id) ON DELETE SET NULL
+        FOREIGN KEY (project_id) REFERENCES task_projects(id) ON DELETE CASCADE
       )
     ''');
 

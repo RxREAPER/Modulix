@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../providers/focus_timer_provider.dart';
 import '../../providers/tasks_hub_provider.dart';
 import '../../theme/tasks_theme.dart';
 import '../../widgets/tasks/task_row.dart';
@@ -92,6 +94,10 @@ class TomorrowPage extends ConsumerWidget {
                 return TaskRow(
                   task: task,
                   onToggle: () => ref.read(tasksHubProvider.notifier).toggleComplete(task.id),
+                  onPlay: () {
+                    ref.read(focusTimerProvider.notifier).startTaskItemFocus(task);
+                    context.push('/timer');
+                  },
                 );
               },
             );
