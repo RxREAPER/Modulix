@@ -87,39 +87,31 @@ class PersonalStandingDock extends StatelessWidget {
             ),
             const SizedBox(width: 14),
 
-            // Time & Gap to Top 20
+            // Total Focus Time
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
+                    'FOCUS DURATION',
+                    style: TextStyle(
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.8,
+                      color: AppTheme.mutedText,
+                    ),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
                     '${standing.formattedDuration} studied',
                     style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: 'monospace',
                       color: AppTheme.inkForeground,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  if (standing.secondsToTop20 > 0)
-                    Text(
-                      '${standing.formattedGapToTop20} to enter Top 20',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: AppTheme.mutedText,
-                      ),
-                    )
-                  else
-                    Text(
-                      'Inside Top 20',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.accentPrimary,
-                      ),
-                    ),
                 ],
               ),
             ),

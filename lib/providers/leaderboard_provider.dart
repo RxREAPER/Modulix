@@ -12,10 +12,12 @@ class LeaderboardState {
   final LeaderboardScale activeScale;
   final List<LeaderboardEntry> dailyEntries;
   final List<LeaderboardEntry> weeklyEntries;
-  final List<LeaderboardEntry> allTimeEntries;
+  final List<LeaderboardEntry> monthlyEntries;
+  final List<LeaderboardEntry> yearlyEntries;
   final UserStanding userDailyStanding;
   final UserStanding userWeeklyStanding;
-  final UserStanding userAllTimeStanding;
+  final UserStanding userMonthlyStanding;
+  final UserStanding userYearlyStanding;
   final bool isLoading;
   final String? errorMessage;
 
@@ -23,10 +25,12 @@ class LeaderboardState {
     this.activeScale = LeaderboardScale.daily,
     this.dailyEntries = const [],
     this.weeklyEntries = const [],
-    this.allTimeEntries = const [],
+    this.monthlyEntries = const [],
+    this.yearlyEntries = const [],
     required this.userDailyStanding,
     required this.userWeeklyStanding,
-    required this.userAllTimeStanding,
+    required this.userMonthlyStanding,
+    required this.userYearlyStanding,
     this.isLoading = false,
     this.errorMessage,
   });
@@ -37,8 +41,10 @@ class LeaderboardState {
         return dailyEntries;
       case LeaderboardScale.weekly:
         return weeklyEntries;
-      case LeaderboardScale.allTime:
-        return allTimeEntries;
+      case LeaderboardScale.monthly:
+        return monthlyEntries;
+      case LeaderboardScale.yearly:
+        return yearlyEntries;
     }
   }
 
@@ -48,8 +54,10 @@ class LeaderboardState {
         return userDailyStanding;
       case LeaderboardScale.weekly:
         return userWeeklyStanding;
-      case LeaderboardScale.allTime:
-        return userAllTimeStanding;
+      case LeaderboardScale.monthly:
+        return userMonthlyStanding;
+      case LeaderboardScale.yearly:
+        return userYearlyStanding;
     }
   }
 
@@ -57,10 +65,12 @@ class LeaderboardState {
     LeaderboardScale? activeScale,
     List<LeaderboardEntry>? dailyEntries,
     List<LeaderboardEntry>? weeklyEntries,
-    List<LeaderboardEntry>? allTimeEntries,
+    List<LeaderboardEntry>? monthlyEntries,
+    List<LeaderboardEntry>? yearlyEntries,
     UserStanding? userDailyStanding,
     UserStanding? userWeeklyStanding,
-    UserStanding? userAllTimeStanding,
+    UserStanding? userMonthlyStanding,
+    UserStanding? userYearlyStanding,
     bool? isLoading,
     String? errorMessage,
   }) {
@@ -68,10 +78,12 @@ class LeaderboardState {
       activeScale: activeScale ?? this.activeScale,
       dailyEntries: dailyEntries ?? this.dailyEntries,
       weeklyEntries: weeklyEntries ?? this.weeklyEntries,
-      allTimeEntries: allTimeEntries ?? this.allTimeEntries,
+      monthlyEntries: monthlyEntries ?? this.monthlyEntries,
+      yearlyEntries: yearlyEntries ?? this.yearlyEntries,
       userDailyStanding: userDailyStanding ?? this.userDailyStanding,
       userWeeklyStanding: userWeeklyStanding ?? this.userWeeklyStanding,
-      userAllTimeStanding: userAllTimeStanding ?? this.userAllTimeStanding,
+      userMonthlyStanding: userMonthlyStanding ?? this.userMonthlyStanding,
+      userYearlyStanding: userYearlyStanding ?? this.userYearlyStanding,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage ?? this.errorMessage,
     );
@@ -95,10 +107,16 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
             scale: LeaderboardScale.weekly,
             level: UserLevel.intern,
           ),
-          userAllTimeStanding: UserStanding(
+          userMonthlyStanding: UserStanding(
             rank: 1,
             totalSeconds: 0,
-            scale: LeaderboardScale.allTime,
+            scale: LeaderboardScale.monthly,
+            level: UserLevel.intern,
+          ),
+          userYearlyStanding: UserStanding(
+            rank: 1,
+            totalSeconds: 0,
+            scale: LeaderboardScale.yearly,
             level: UserLevel.intern,
           ),
         )) {
@@ -118,7 +136,7 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
     return DateTime(monday.year, monday.month, monday.day, 0, 0, 0);
   }
 
-  /// Refreshes all 3 scales: reads verified SQLite time_logs, queries Supabase if online,
+  /// Refreshes all 4 scales: reads verified SQLite time_logs, queries Supabase if online,
   /// and synthesizes Top 20 lists and user standings.
   Future<void> refreshStandings() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
@@ -127,12 +145,17 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
     final timeLogs = _ref.read(timeLogsProvider);
 
     final startHour = appState?.dayStartHour ?? 5;
+    final now = DateTime.now();
     final todayStart = MetricsService.studyDayStart(startHour);
-    final weekStart = _startOfWeek(DateTime.now());
+    final weekStart = _startOfWeek(now);
+    final monthStart = DateTime(now.year, now.month, 1, 0, 0, 0);
+    final yearStart = DateTime(now.year, 1, 1, 0, 0, 0);
 
     // ── 1. Calculate Authenticated / Local User Genuine Study Times ─────────
     int userTodaySecs = 0;
     int userWeekSecs = 0;
+    int userMonthSecs = 0;
+    int userYearSecs = 0;
     int userAllTimeSecs = 0;
 
     for (final log in timeLogs) {
@@ -142,6 +165,12 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
       }
       if (log.timestamp.isAfter(weekStart)) {
         userWeekSecs += log.durationSecs;
+      }
+      if (log.timestamp.isAfter(monthStart)) {
+        userMonthSecs += log.durationSecs;
+      }
+      if (log.timestamp.isAfter(yearStart)) {
+        userYearSecs += log.durationSecs;
       }
     }
 
@@ -155,7 +184,8 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
     // ── 2. Query Supabase Remote Leaderboard if available ───────────────────
     List<LeaderboardEntry>? remoteDaily;
     List<LeaderboardEntry>? remoteWeekly;
-    List<LeaderboardEntry>? remoteAllTime;
+    List<LeaderboardEntry>? remoteMonthly;
+    List<LeaderboardEntry>? remoteYearly;
 
     final client = AuthService.instance.client;
     if (AuthService.instance.isReady && client != null) {
@@ -195,24 +225,6 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
             return e.copyWith(rank: r++);
           }).toList();
         }
-
-        final allTimeRes = await client
-            .from('profiles')
-            .select('id, doctor_name, display_name, total_study_secs, avatar_color_id, avatar_icon_id')
-            .eq('leaderboard_visible', true)
-            .order('total_study_secs', ascending: false)
-            .limit(20);
-
-        if (allTimeRes.isNotEmpty) {
-          int r = 1;
-          remoteAllTime = allTimeRes.map<LeaderboardEntry>((item) {
-            final e = LeaderboardEntry.fromJson(
-              item,
-              currentUserId: currentUserId,
-            );
-            return e.copyWith(rank: r++);
-          }).toList();
-        }
       } catch (e) {
         debugPrint('[LeaderboardNotifier] Remote query exception: $e');
       }
@@ -240,9 +252,19 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
       userLevel: userLevel,
     );
 
-    final allTimeList = remoteAllTime ?? _buildSyntheticScaleCohort(
-      scale: LeaderboardScale.allTime,
-      userSeconds: userAllTimeSecs,
+    final monthlyList = remoteMonthly ?? _buildSyntheticScaleCohort(
+      scale: LeaderboardScale.monthly,
+      userSeconds: userMonthSecs,
+      userDisplayName: userDisplayName,
+      userId: currentUserId,
+      userColor: avatarColorId,
+      userIcon: avatarIconId,
+      userLevel: userLevel,
+    );
+
+    final yearlyList = remoteYearly ?? _buildSyntheticScaleCohort(
+      scale: LeaderboardScale.yearly,
+      userSeconds: userYearSecs,
       userDisplayName: userDisplayName,
       userId: currentUserId,
       userColor: avatarColorId,
@@ -267,21 +289,31 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
       userId: currentUserId,
     );
 
-    final allTimeStanding = _calculateUserStanding(
-      scale: LeaderboardScale.allTime,
-      userSecs: userAllTimeSecs,
+    final monthlyStanding = _calculateUserStanding(
+      scale: LeaderboardScale.monthly,
+      userSecs: userMonthSecs,
       level: userLevel,
-      entries: allTimeList,
+      entries: monthlyList,
+      userId: currentUserId,
+    );
+
+    final yearlyStanding = _calculateUserStanding(
+      scale: LeaderboardScale.yearly,
+      userSecs: userYearSecs,
+      level: userLevel,
+      entries: yearlyList,
       userId: currentUserId,
     );
 
     state = state.copyWith(
       dailyEntries: dailyList,
       weeklyEntries: weeklyList,
-      allTimeEntries: allTimeList,
+      monthlyEntries: monthlyList,
+      yearlyEntries: yearlyList,
       userDailyStanding: dailyStanding,
       userWeeklyStanding: weeklyStanding,
-      userAllTimeStanding: allTimeStanding,
+      userMonthlyStanding: monthlyStanding,
+      userYearlyStanding: yearlyStanding,
       isLoading: false,
     );
   }
@@ -366,8 +398,11 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
         case LeaderboardScale.weekly:
           secs = p['weekly'] as int;
           break;
-        case LeaderboardScale.allTime:
-          secs = p['allTime'] as int;
+        case LeaderboardScale.monthly:
+          secs = ((p['weekly'] as int) * 4.2).round();
+          break;
+        case LeaderboardScale.yearly:
+          secs = ((p['allTime'] as int) * 0.45).round();
           break;
       }
       candidates.add({

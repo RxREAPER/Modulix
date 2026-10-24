@@ -305,7 +305,7 @@ class _MedicalArenaSection extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'MEDICAL ARENA & LEADERBOARD',
+              'FOCUS LEADERBOARD',
               style: AppTypography.sectionMicroHeader(
                 fontSize: 10.5,
                 letterSpacing: 1.1,
@@ -317,7 +317,7 @@ class _MedicalArenaSection extends ConsumerWidget {
               child: Row(
                 children: [
                   Text(
-                    'Open Arena',
+                    'Open Leaderboard',
                     style: AppTypography.compactAction(
                       fontSize: 11,
                       color: AppTheme.accentPrimary,
@@ -361,7 +361,7 @@ class _MedicalArenaSection extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Arena Participation',
+                          'Leaderboard Participation',
                           style: AppTypography.cardTitle(
                             fontSize: 14,
                             color: AppTheme.inkForeground,
@@ -369,7 +369,7 @@ class _MedicalArenaSection extends ConsumerWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Rank on Daily, Weekly & All-Time boards with verified focus hours.',
+                          'Rank on Daily, Weekly, Monthly & Yearly boards with verified focus hours.',
                           style: AppTypography.cardSubtitle(
                             fontSize: 11.5,
                             color: AppTheme.mutedText,

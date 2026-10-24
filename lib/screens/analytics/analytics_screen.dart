@@ -21,6 +21,8 @@ import '../../widgets/analytics/progress_radial_gauge.dart';
 import '../../widgets/analytics/concentric_donut_indicator.dart';
 import '../../widgets/analytics/segmented_velocity_pill.dart';
 import '../../providers/leaderboard_provider.dart';
+import '../../widgets/analytics/animated_trophy.dart';
+import '../../models/user_rank.dart';
 
 class AnalyticsScreen extends ConsumerWidget {
   const AnalyticsScreen({super.key});
@@ -338,36 +340,13 @@ class AnalyticsScreen extends ConsumerWidget {
               margin: EdgeInsets.only(bottom: 12),
             ),
 
-            // ── Hub Card 0: Medical Arena & Leaderboard ───────────────────────
-            _HubCard(
-              title: 'Medical Arena',
-              subtitle: 'Rank #${dailyStanding.rank} Today · ${dailyStanding.level.title}',
-              badge: dailyStanding.level.shortCode,
-              badgeColor: AppTheme.accentPrimary,
-              icon: Icons.military_tech_outlined,
-              iconColor: AppTheme.accentPrimary,
-              iconBg: AppTheme.accentPrimary.withValues(alpha: 0.12),
-              progress: dailyStanding.level.progressToNext(dailyStanding.totalSeconds),
-              indicatorWidget: ProgressRadialGauge(
-                progress: dailyStanding.level.progressToNext(dailyStanding.totalSeconds),
-                size: 46,
-                strokeWidth: 4.8,
-                progressColor: AppTheme.accentPrimary,
-                percentageStyle: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w900,
-                  fontFamily: 'monospace',
-                  color: AppTheme.inkForeground,
-                ),
-              ),
-              stat1Label: 'Daily Rank',
-              stat1Value: '#${dailyStanding.rank}',
-              stat2Label: 'Career Level',
-              stat2Value: dailyStanding.level.title,
+            // ── Distinct Special Box: Focus Leaderboard Arena ──────────────
+            _FocusLeaderboardSpecialBox(
+              dailyStanding: dailyStanding,
               onTap: () => context.push('/analytics/leaderboard'),
             ),
 
-            const SizedBox(height: 14),
+            const SizedBox(height: 18),
 
             // ── Hub Card 1: Module Plan Progress ─────────────────────────────
             _HubCard(
@@ -1002,6 +981,278 @@ class _HubCard extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Distinct, non-card special edition box for the Focus Leaderboard Arena.
+/// Styled with cyberpunk/clinical deep obsidian vault geometry, radiant glowing accents,
+/// live status indicator, and animated trophy micro-visuals.
+class _FocusLeaderboardSpecialBox extends StatelessWidget {
+  final UserStanding dailyStanding;
+  final VoidCallback onTap;
+
+  const _FocusLeaderboardSpecialBox({
+    required this.dailyStanding,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ApplePressable(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF0F172A), // Deep Slate 900
+              Color(0xFF1E1B4B), // Royal Indigo 950
+              Color(0xFF020617), // Midnight Slate 950
+            ],
+            stops: [0.0, 0.55, 1.0],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: const Color(0xFF6366F1).withValues(alpha: 0.55),
+            width: 1.4,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF6366F1).withValues(alpha: 0.22),
+              blurRadius: 16,
+              offset: const Offset(0, 5),
+            ),
+            BoxShadow(
+              color: const Color(0xFFF59E0B).withValues(alpha: 0.10),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Row: Live Feature Indicator & Trophy
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF10B981), // Emerald pulse
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0xFF10B981),
+                            blurRadius: 6,
+                            spreadRadius: 1.5,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'FOCUS LEADERBOARD',
+                      style: TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 11.0,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.3,
+                        color: Color(0xFF38BDF8), // Electric cyan
+                      ),
+                    ),
+                  ],
+                ),
+                CheerfulAnimatedTrophy(
+                  rank: dailyStanding.rank <= 3 ? dailyStanding.rank : 1,
+                  size: 30,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Middle: Metrics Dashboard (3-Column Vault Grid)
+            Row(
+              children: [
+                // Daily Rank
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(9),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        width: 0.8,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'DAILY RANK',
+                          style: TextStyle(
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                            color: Colors.white.withValues(alpha: 0.5),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '#${dailyStanding.rank}',
+                          style: const TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 19,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFFFBBF24), // Vibrant gold
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Career Level
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(9),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        width: 0.8,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'CAREER TIER',
+                          style: TextStyle(
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                            color: Colors.white.withValues(alpha: 0.5),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          dailyStanding.level.shortCode, // Level 1
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFFE2E8F0),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Studied Time
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(9),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        width: 0.8,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'TODAY',
+                          style: TextStyle(
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                            color: Colors.white.withValues(alpha: 0.5),
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          dailyStanding.formattedDuration,
+                          style: const TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF38BDF8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Bottom Action Bar: Glowing Neon Interactive Button
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                ),
+                borderRadius: BorderRadius.circular(9),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.35),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Daily • Weekly • Monthly • Yearly',
+                    style: TextStyle(
+                      fontSize: 11.0,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'View Arena',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(Icons.arrow_forward_rounded, size: 13, color: Colors.white),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),

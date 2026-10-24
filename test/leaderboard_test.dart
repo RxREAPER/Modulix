@@ -36,6 +36,25 @@ void main() {
       expect(UserLevel.professor.progressToNext(3000 * 3600), 1.0);
       expect(UserLevel.professor.secondsRemainingToNext(3000 * 3600), 0);
     });
+
+    test('Level shortCode formatted as Level X', () {
+      expect(UserLevel.intern.shortCode, 'Level 1');
+      expect(UserLevel.houseOfficer.shortCode, 'Level 2');
+      expect(UserLevel.professor.shortCode, 'Level 10');
+    });
+
+    test('LeaderboardScale contains Daily, Weekly, Monthly, and Yearly', () {
+      expect(LeaderboardScale.values, [
+        LeaderboardScale.daily,
+        LeaderboardScale.weekly,
+        LeaderboardScale.monthly,
+        LeaderboardScale.yearly,
+      ]);
+      expect(LeaderboardScale.daily.label, 'Daily');
+      expect(LeaderboardScale.weekly.label, 'Weekly');
+      expect(LeaderboardScale.monthly.label, 'Monthly');
+      expect(LeaderboardScale.yearly.label, 'Yearly');
+    });
   });
 
   group('LeaderboardEntry deserialization', () {

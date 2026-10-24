@@ -5,70 +5,70 @@ enum UserLevel {
   intern(
     tier: 1,
     title: 'Intern',
-    shortCode: 'L1',
+    shortCode: 'Level 1',
     requiredHours: 0,
     subtitle: 'Clinical Orientation & Ward Foundation',
   ),
   houseOfficer(
     tier: 2,
     title: 'House Officer',
-    shortCode: 'L2',
+    shortCode: 'Level 2',
     requiredHours: 25,
     subtitle: 'Active Ward Work & Clinical Routine',
   ),
   juniorResident(
     tier: 3,
     title: 'Junior Resident',
-    shortCode: 'L3',
+    shortCode: 'Level 3',
     requiredHours: 75,
     subtitle: 'Core Specialty Rotations',
   ),
   seniorResident(
     tier: 4,
     title: 'Senior Resident',
-    shortCode: 'L4',
+    shortCode: 'Level 4',
     requiredHours: 150,
     subtitle: 'ER Command & Case Presentations',
   ),
   registrar(
     tier: 5,
     title: 'Registrar',
-    shortCode: 'L5',
+    shortCode: 'Level 5',
     requiredHours: 300,
     subtitle: 'Clinical Leadership & Decision Making',
   ),
   fellow(
     tier: 6,
     title: 'Fellow',
-    shortCode: 'L6',
+    shortCode: 'Level 6',
     requiredHours: 500,
     subtitle: 'Sub-Specialty Mastery',
   ),
   specialist(
     tier: 7,
     title: 'Specialist',
-    shortCode: 'L7',
+    shortCode: 'Level 7',
     requiredHours: 750,
     subtitle: 'Independent Clinical Practice',
   ),
   consultant(
     tier: 8,
     title: 'Consultant',
-    shortCode: 'L8',
+    shortCode: 'Level 8',
     requiredHours: 1000,
     subtitle: 'Department Lead & Operative Command',
   ),
   assocProfessor(
     tier: 9,
     title: 'Assoc. Professor',
-    shortCode: 'L9',
+    shortCode: 'Level 9',
     requiredHours: 1500,
     subtitle: 'Clinical Education & Research Lead',
   ),
   professor(
     tier: 10,
     title: 'Professor',
-    shortCode: 'L10',
+    shortCode: 'Level 10',
     requiredHours: 2500,
     subtitle: 'Department Chair & Emeritus Scholar',
   );
@@ -132,7 +132,8 @@ enum UserLevel {
 enum LeaderboardScale {
   daily,
   weekly,
-  allTime;
+  monthly,
+  yearly;
 
   String get label {
     switch (this) {
@@ -140,8 +141,10 @@ enum LeaderboardScale {
         return 'Daily';
       case LeaderboardScale.weekly:
         return 'Weekly';
-      case LeaderboardScale.allTime:
-        return 'All Time';
+      case LeaderboardScale.monthly:
+        return 'Monthly';
+      case LeaderboardScale.yearly:
+        return 'Yearly';
     }
   }
 }

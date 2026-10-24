@@ -3,9 +3,10 @@ import '../../models/user_rank.dart';
 import '../../theme/app_theme.dart';
 import '../animations/apple_pressable.dart';
 import '../profile/profile_customization.dart';
+import 'animated_trophy.dart';
 
 /// Modern sleek, minimalist clinical podium for Top 3 doctors.
-/// Features staggered heights, subtle ink borders, and pure typography with zero tags.
+/// Features staggered heights, subtle ink borders, and cheerful animated trophies for Top 3.
 class EditorialPodium extends StatelessWidget {
   final LeaderboardEntry? first;
   final LeaderboardEntry? second;
@@ -37,8 +38,8 @@ class EditorialPodium extends StatelessWidget {
             child: second != null
                 ? _PodiumColumn(
                     entry: second!,
-                    height: 110.0,
-                    rankNumeral: '02',
+                    height: 124.0,
+                    rank: 2,
                     isPeak: false,
                     accentColor: AppTheme.inkForeground.withValues(alpha: 0.65),
                     onTap: () => onEntryTap?.call(second!),
@@ -52,8 +53,8 @@ class EditorialPodium extends StatelessWidget {
             child: first != null
                 ? _PodiumColumn(
                     entry: first!,
-                    height: 142.0,
-                    rankNumeral: '01',
+                    height: 154.0,
+                    rank: 1,
                     isPeak: true,
                     accentColor: AppTheme.accentPrimary,
                     onTap: () => onEntryTap?.call(first!),
@@ -67,8 +68,8 @@ class EditorialPodium extends StatelessWidget {
             child: third != null
                 ? _PodiumColumn(
                     entry: third!,
-                    height: 94.0,
-                    rankNumeral: '03',
+                    height: 112.0,
+                    rank: 3,
                     isPeak: false,
                     accentColor: AppTheme.inkForeground.withValues(alpha: 0.45),
                     onTap: () => onEntryTap?.call(third!),
@@ -84,7 +85,7 @@ class EditorialPodium extends StatelessWidget {
 class _PodiumColumn extends StatelessWidget {
   final LeaderboardEntry entry;
   final double height;
-  final String rankNumeral;
+  final int rank;
   final bool isPeak;
   final Color accentColor;
   final VoidCallback? onTap;
@@ -92,7 +93,7 @@ class _PodiumColumn extends StatelessWidget {
   const _PodiumColumn({
     required this.entry,
     required this.height,
-    required this.rankNumeral,
+    required this.rank,
     required this.isPeak,
     required this.accentColor,
     this.onTap,
@@ -143,7 +144,7 @@ class _PodiumColumn extends StatelessWidget {
           ),
           const SizedBox(height: 8),
 
-          // Minimalist Paper Pedestal
+          // Minimalist Paper Pedestal with Cheerful Animated Trophy
           Container(
             height: height,
             width: double.infinity,
@@ -177,15 +178,25 @@ class _PodiumColumn extends StatelessWidget {
                     ),
                   ),
                 Center(
-                  child: Text(
-                    rankNumeral,
-                    style: TextStyle(
-                      fontFamily: 'EBGaramond',
-                      fontSize: isPeak ? 38 : 28,
-                      fontWeight: FontWeight.w700,
-                      fontStyle: FontStyle.italic,
-                      color: accentColor.withValues(alpha: 0.8),
-                    ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CheerfulAnimatedTrophy(
+                        rank: rank,
+                        size: isPeak ? 54.0 : 44.0,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        rank == 1 ? '1ST' : (rank == 2 ? '2ND' : '3RD'),
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: isPeak ? 11.0 : 9.5,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.8,
+                          color: accentColor,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

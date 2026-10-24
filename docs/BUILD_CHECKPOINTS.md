@@ -115,6 +115,32 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - `flutter test test/focus_timer_idempotency_test.dart`: **All 5 tests passed! (100%)**
 - **Status:** ✅ Included in Build v1.10.0
 
+### [CKPT-058] Focus Leaderboard Refinements, Animated Trophies & Special-Feature Progress Box
+- **Timestamp:** 2026-10-25 03:45 UTC
+- **Category:** Refinement / Focus Leaderboard & Progress Special Box
+- **Files Modified/Created (9 files):**
+  - `lib/models/user_rank.dart` (Updated `UserLevel` shortCode to `Level 1`..`Level 10`, updated `LeaderboardScale` to `daily`, `weekly`, `monthly`, `yearly` removing `allTime`)
+  - `lib/providers/leaderboard_provider.dart` (Updated state and notifier to aggregate daily, weekly, monthly, and yearly focus hours and cohorts)
+  - `lib/widgets/analytics/animated_trophy.dart` (New: `CheerfulAnimatedTrophy` with gleaming metallic shimmer, floating bobbing animation, and celebratory stars for 1st, 2nd, 3rd)
+  - `lib/widgets/analytics/editorial_podium.dart` (Integrated `CheerfulAnimatedTrophy` into podium pedestals replacing plain alphabets/numerals)
+  - `lib/widgets/analytics/personal_standing_dock.dart` (Removed Top 20 gap suggestions, displaying clean rank, Level, and focus duration)
+  - `lib/screens/analytics/leaderboard_screen.dart` (Renamed to "Focus Leaderboard", removed edit identity modal, removed user standing card, added dynamic reset countdown banner)
+  - `lib/screens/analytics/analytics_screen.dart` (Replaced generic Hub Card 0 with distinct `_FocusLeaderboardSpecialBox`: deep obsidian vault styling, luminous glow, live pulse indicator, animated trophy, 3-column metrics grid)
+  - `lib/screens/settings/settings_screen.dart` (Renamed section to Focus Leaderboard with dedicated handle and incognito preferences)
+  - `test/leaderboard_test.dart` (Added unit tests for Level 1..10 strings and daily/weekly/monthly/yearly scales - All 6 tests PASSED)
+- **Summary:**
+  - Modernized the Medical Arena into "Focus Leaderboard" per user requirements.
+  - Replaced "L1".."L10" badges with clean "Level 1".."Level 10" typography across all surfaces.
+  - Updated competitive scales to Daily, Weekly, Monthly, and Yearly (removing All-Time).
+  - Designed celebratory, highly animated and colorful trophies (`CheerfulAnimatedTrophy`) for 1st (Gold), 2nd (Silver), and 3rd (Bronze) places with light sweep reflections, floating sparkles, and gentle bobbing physics.
+  - Added a dynamic reset countdown banner (`_ResetReminderBanner`) displaying remaining cycle time and start date for the next leaderboard edition.
+  - Removed top user card and suggestions of time required to enter Top 20 from personal standing dock.
+  - Converted the leaderboard entry point on the Progress screen from a generic Hub Card into a standout special-feature box with deep obsidian gradient styling, neon borders, and live metrics.
+- **Verification:**
+  - `flutter analyze`: **No issues found! (0 errors, 0 warnings)**
+  - `flutter test test/leaderboard_test.dart`: **All 6 tests passed! (100%)**
+- **Status:** Pending APK Build
+
 ### [CKPT-057] Medical Arena Universal Competitive Leaderboard & 10-Tier Career Progression
 - **Timestamp:** 2026-10-25 02:20 UTC
 - **Category:** Feature / Medical Arena Leaderboard & Progression System

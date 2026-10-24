@@ -24,7 +24,7 @@ class RankBadge extends StatelessWidget {
 
     if (!showTitle) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 1.5),
+        padding: const EdgeInsets.symmetric(horizontal: 6.5, vertical: 2.0),
         decoration: BoxDecoration(
           border: Border.all(
             color: effectiveColor.withValues(alpha: 0.35),
@@ -38,7 +38,7 @@ class RankBadge extends StatelessWidget {
             fontSize: fontSize,
             fontWeight: FontWeight.w700,
             fontFamily: 'monospace',
-            letterSpacing: 0.4,
+            letterSpacing: 0.3,
             color: effectiveColor,
           ),
         ),
@@ -50,7 +50,7 @@ class RankBadge extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 1.2),
+          padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
           decoration: BoxDecoration(
             border: Border.all(
               color: effectiveColor.withValues(alpha: 0.35),
