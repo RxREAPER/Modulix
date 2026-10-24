@@ -78,7 +78,9 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - Introduced the new Daily Tasks page supporting both direct tasks and curriculum Projects with Project Analytics.
   - Enforced a strictly minimalist aesthetic: zero tags, zero extra rainbow colors, zero walls of text, no native/clunky Flutter card widgets.
 - **Verification:** `flutter test test/tasks_hub_test.dart` (9/9 passed). `flutter analyze` 100% clean (0 issues).
-- **Status:** Pending APK Build
+- **Status:** ✅ Included in Build
+
+### [CKPT-053] Revert Standalone Tasks Tab & Elevate Core Today's Tasks Experience
 - **Timestamp:** 2026-10-24 13:20 UTC
 - **Category:** Architecture / Navigation / Home Desk Today's Tasks
 - **Files Modified (4 files):**
