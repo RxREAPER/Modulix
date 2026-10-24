@@ -6,6 +6,22 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ---
 
+## 🚀 Build Manifest v1.10.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk`
+- **Device Tested:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
+- **Compilation Time:** 187.0s | **Test Suite:** Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-057]`, `[CKPT-058]`
+
+### Key Highlights & Releases in v1.10.0:
+1. **Focus Topic Selector Streamlining (`lib/widgets/timer/task_picker_sheet.dart`):** Replaced legacy free-text forms and the 20-subject MBBS syllabus browser tree with a dedicated, focused two-tab selector: **Daily Tasks** (live from `tasksHubProvider`) and **Module Based Tasks** (today's quota batch and upcoming units from `activeSyllabusProvider`).
+2. **Pomodoro Multi-Cycle Architecture (`lib/providers/focus_timer_provider.dart`, `lib/screens/timer/focus_timer_screen.dart`):** Configurable Pomodoro cycles (e.g. 4 total cycles), dynamic `CYCLE X OF Y` indicator row on the focus centerpiece with tactile cycle status dots and long break boundary markers, and long break interval/duration configuration steppers.
+3. **Count-Up Rest Break Mode (`lib/providers/focus_timer_provider.dart`, `lib/screens/timer/focus_timer_screen.dart`):** Replaced static 5-minute countdowns with a flexible count-up rest stopwatch (`breakSecondsElapsed`) that safely preserves remaining focus seconds and resumes focus seamlessly.
+4. **Authentic Charcoal Flip Clock Refinements (`lib/screens/timer/fullscreen_timer_screen.dart`):** 100% preservation of the authentic split-flap card geometry, charcoal texture (`#222326`), and 90° Desk Mode. Added subtle, non-distracting topic header (`Colors.white.withValues(alpha: 0.45)`), removed body tap-to-pause collision, added a 3.5s inactivity auto-sleep timer that smoothly dims controls with tap-to-wake, and implemented dynamic flip card digits (Card 1 = MM, Card 2 = SS for sessions < 1h; Card 1 = HH, Card 2 = MM with corner SS for >= 1h).
+5. **Medical Arena Universal Competitive Leaderboard (`lib/screens/analytics/leaderboard_screen.dart`, `lib/providers/leaderboard_provider.dart`, `lib/models/user_rank.dart`):** Comprehensive competitive arena with 3 scales (Daily, Weekly, All-Time), Top 20 editorial rankings, Top 3 staggered podium, 10-tier clinical career progression (Intern to Professor), and sticky user standing dock with exact distance to Top 20.
+6. **Keep Screen Awake Global Preference (`lib/screens/settings/notifications_preferences_screen.dart`):** Defaulted to enabled (`true`) and relocated from the session setup sheet into settings preferences.
+
+---
+
 ## 🚀 Build Manifest v1.9.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk`
 - **Device Targeted:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
@@ -97,7 +113,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Verification:**
   - `flutter analyze`: **No issues found! (0 errors, 0 warnings)**
   - `flutter test test/focus_timer_idempotency_test.dart`: **All 5 tests passed! (100%)**
-- **Status:** ⏳ Pending APK Build / Verified via Static Analysis & Unit Tests
+- **Status:** ✅ Included in Build v1.10.0
 
 ### [CKPT-057] Medical Arena Universal Competitive Leaderboard & 10-Tier Career Progression
 - **Timestamp:** 2026-10-25 02:20 UTC
@@ -127,7 +143,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - `flutter analyze`: **No issues found! (0 errors, 0 warnings)**
   - `flutter test test/leaderboard_test.dart`: **All 4 tests passed! (100%)**
   - `flutter test test/notification_service_test.dart`: **All 7 tests passed! (100%)**
-- **Status:** ⏳ Pending APK Build / Verified via Static Analysis & Unit Tests
+- **Status:** ✅ Included in Build v1.10.0
 
 ### [CKPT-056] Daily Tasks AppBar Optimization, Chronotype Header Overflow Fix & Timer Verification
 - **Timestamp:** 2026-10-24 19:45 UTC
