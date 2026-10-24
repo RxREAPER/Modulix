@@ -3,18 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../models/daily_desk_task.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/syllabus_provider.dart';
-import '../../providers/daily_tasks_provider.dart';
+import '../../providers/tasks_hub_provider.dart';
 import '../../providers/focus_timer_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/automated_module_tracker.dart';
 import '../../widgets/study_desk_clock.dart';
-import '../../widgets/study_task_card.dart';
-import '../../widgets/planner/keyboard_docked_task_input.dart';
 import '../../widgets/profile/profile_customization.dart';
 import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/animations/apple_pressable.dart';
@@ -196,90 +192,26 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-class _HomeTasksSection extends ConsumerStatefulWidget {
+class _HomeTasksSection extends ConsumerWidget {
   const _HomeTasksSection();
 
   @override
-  ConsumerState<_HomeTasksSection> createState() => _HomeTasksSectionState();
-}
-
-class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
-  bool _seenFirstDeskIntro = false;
-  bool _completedSectionExpanded = true;
-  final Set<String> _animatingTaskIds = {};
-
-  @override
-  void initState() {
-    super.initState();
-    _checkFirstIntroPreference();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        ref.read(dailyTasksProvider.notifier).checkDayRollover();
-      }
-    });
-  }
-
-  Future<void> _checkFirstIntroPreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    final seen = prefs.getBool('seen_first_desk_intro') ?? false;
-    final dailyTasksState = ref.read(dailyTasksProvider);
-    final hasHistory = dailyTasksState.dateHistory.isNotEmpty || dailyTasksState.tasks.isNotEmpty;
-
-    if (!mounted) return;
-    setState(() {
-      _seenFirstDeskIntro = seen || hasHistory;
-    });
-  }
-
-  Future<void> _markFirstDeskIntroSeen() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('seen_first_desk_intro', true);
-    if (mounted) {
-      setState(() => _seenFirstDeskIntro = true);
-    }
-  }
-
-  Future<void> _handleToggleActiveTask(DailyDeskTask task) async {
-    if (_animatingTaskIds.contains(task.id)) return;
-    setState(() {
-      _animatingTaskIds.add(task.id);
-    });
-    HapticFeedback.mediumImpact();
-    await Future.delayed(const Duration(milliseconds: 220));
-    if (!mounted) return;
-    _animatingTaskIds.remove(task.id);
-    final finishedAll = await ref.read(dailyTasksProvider.notifier).toggleTask(task.id);
-    if (finishedAll) {
-      HapticFeedback.heavyImpact();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final dailyTasksState = ref.watch(dailyTasksProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tasksState = ref.watch(tasksHubProvider).valueOrNull;
     final timerState = ref.watch(focusTimerProvider);
-    final deskTasks = dailyTasksState.tasks;
-    final completedTaskIds = dailyTasksState.completedIds;
 
-    final activeTasks = deskTasks.where((t) => !completedTaskIds.contains(t.id)).toList();
-    final completedTasks = deskTasks.where((t) => completedTaskIds.contains(t.id)).toList();
+    final todayTasks = tasksState?.todayTasks ?? const [];
+    final completedTasks = tasksState?.todayCompletedTasks ?? const [];
+    final allTasks = [...todayTasks, ...completedTasks];
 
-    final totalCount = deskTasks.length;
+    final totalCount = allTasks.length;
     final completedCount = completedTasks.length;
     final isAllDone = totalCount > 0 && completedCount == totalCount;
-
-    final remainingFocusMinutes = activeTasks.fold<int>(
-      0,
-      (sum, t) {
-        final est = t.estimatedMinutes;
-        final minutes = (est != null && est > 0) ? est : (t.effectiveEstimatedBlocks * 25);
-        return sum + minutes;
-      },
-    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Header: "Daily tasks" with clean counter and navigation
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -291,9 +223,9 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
                   Row(
                     children: [
                       Text(
-                        "Today's tasks",
+                        'Daily tasks',
                         style: AppTheme.headingStyle(
-                          fontSize: 23,
+                          fontSize: 22,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.inkForeground,
                         ),
@@ -301,7 +233,7 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
                       const SizedBox(width: 6),
                       ApplePressable(
                         pressedScale: 0.90,
-                        onTap: () => context.push('/planner'),
+                        onTap: () => context.push('/daily-tasks'),
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
@@ -320,13 +252,11 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    deskTasks.isEmpty
-                        ? 'Plan a focused study day'
+                    totalCount == 0
+                        ? 'Plan your daily targets'
                         : isAllDone
-                            ? 'All goals completed · Great focus today, Doctor'
-                            : remainingFocusMinutes > 0
-                                ? '$completedCount of $totalCount completed · ~${remainingFocusMinutes}m remaining focus'
-                                : '$completedCount of $totalCount completed',
+                            ? 'All goals completed today'
+                            : '$completedCount of $totalCount completed',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: isAllDone ? FontWeight.w700 : FontWeight.w500,
@@ -336,522 +266,163 @@ class _HomeTasksSectionState extends ConsumerState<_HomeTasksSection> {
                 ],
               ),
             ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ApplePressable(
-                  pressedScale: 0.94,
-                  onPressed: () => _openTaskSheet(context, ref, deskTasks),
-                  child: Container(
-                    decoration: AppTheme.sketchDecoration(
-                      backgroundColor: AppTheme.cardWhite,
-                      borderRadius: 10,
-                      borderWidth: 1.4,
-                      shadowOffset: 1.5,
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.add_rounded, size: 15, color: AppTheme.inkForeground),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Add',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.inkForeground,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+            ApplePressable(
+              pressedScale: 0.94,
+              onTap: () => context.push('/daily-tasks'),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.inkForeground,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ],
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        if (deskTasks.isEmpty)
-          _buildEmptyTasksState(context, ref, deskTasks)
-        else ...[
-          if (activeTasks.isNotEmpty)
-            ReorderableListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: activeTasks.length,
-              onReorderItem: (oldIndex, newIndex) {
-                HapticFeedback.lightImpact();
-                final reorderedActive = List<DailyDeskTask>.from(activeTasks);
-                final item = reorderedActive.removeAt(oldIndex);
-                reorderedActive.insert(newIndex, item);
-                final allTasks = [...reorderedActive, ...completedTasks];
-                ref.read(dailyTasksProvider.notifier).setTasks(allTasks);
-              },
-              itemBuilder: (context, index) {
-                final task = activeTasks[index];
-                final isAnimatingOut = _animatingTaskIds.contains(task.id);
-                final isFocusActive = timerState.isRunning && timerState.boundTaskId == task.id;
-
-                final taskCard = StudyTaskCard(
-                  id: task.id,
-                  title: task.title,
-                  category: task.category,
-                  subject: task.subject,
-                  priority: task.priority,
-                  estimatedMinutes: task.estimatedMinutes,
-                  actualMinutesSpent: task.actualMinutesSpent,
-                  estimatedBlocks: task.effectiveEstimatedBlocks,
-                  completedBlocks: task.effectiveCompletedBlocks,
-                  isRecurring: task.isRecurring,
-                  customSubtitle: null,
-                  isCompleted: false,
-                  isFocusActive: isFocusActive,
-                  onToggle: () => _handleToggleActiveTask(task),
-                  onStartFocus: () {
-                    HapticFeedback.mediumImpact();
-                    ref.read(focusTimerProvider.notifier).startTaskFocus(task);
-                    context.push('/timer');
-                  },
-                  onDismissed: () {
-                    final taskIndex = deskTasks.indexWhere((t) => t.id == task.id);
-                    if (taskIndex != -1) {
-                      final removedTask = task;
-                      ref.read(dailyTasksProvider.notifier).removeTaskAt(taskIndex);
-
-                      ScaffoldMessenger.of(context).clearSnackBars();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          duration: const Duration(seconds: 4),
-                          content: Text('Removed "${removedTask.title}"'),
-                          action: SnackBarAction(
-                            label: 'Undo',
-                            textColor: AppTheme.highlightStrong,
-                            onPressed: () {
-                              ref.read(dailyTasksProvider.notifier).insertTaskAt(taskIndex, removedTask, false);
-                            },
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                  dragHandle: ReorderableDragStartListener(
-                    index: index,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      child: Icon(
-                        Icons.drag_indicator_rounded,
-                        size: 20,
-                        color: Colors.grey.shade400,
-                      ),
-                    ),
-                  ),
-                );
-
-                final animatedCard = AnimatedSlide(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeInCubic,
-                  offset: isAnimatingOut ? const Offset(0, 0.22) : Offset.zero,
-                  child: AnimatedOpacity(
-                    duration: const Duration(milliseconds: 180),
-                    opacity: isAnimatingOut ? 0.0 : 1.0,
-                    child: taskCard,
-                  ),
-                );
-
-                if (index == 0) {
-                  return KeyedSubtree(
-                    key: ValueKey(task.id),
-                    child: Container(
-                      key: TourTargetRegistry.keyFor(TourTargetId.todaysTasksTarget),
-                      child: animatedCard,
-                    ),
-                  );
-                }
-
-                return KeyedSubtree(
-                  key: ValueKey(task.id),
-                  child: animatedCard,
-                );
-              },
-            )
-          else if (completedTasks.isNotEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                  width: 1.2,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF10B981),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.check_rounded, size: 16, color: Colors.white),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "All today's tasks completed!",
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.inkForeground,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Add another task or take a well-deserved break.',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w500,
-                            color: AppTheme.mutedText,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          if (completedTasks.isNotEmpty) ...[
-            const SizedBox(height: 14),
-            InkWell(
-              onTap: () {
-                HapticFeedback.selectionClick();
-                setState(() => _completedSectionExpanded = !_completedSectionExpanded);
-              },
-              borderRadius: BorderRadius.circular(8),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      _completedSectionExpanded
-                          ? Icons.keyboard_arrow_down_rounded
-                          : Icons.keyboard_arrow_right_rounded,
-                      size: 18,
-                      color: AppTheme.mutedText,
-                    ),
-                    const SizedBox(width: 4),
+                    Icon(Icons.add_rounded, size: 14, color: AppTheme.paperBackground),
+                    const SizedBox(width: 3),
                     Text(
-                      'COMPLETED (${completedTasks.length})',
+                      'Add',
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        letterSpacing: 0.8,
-                        color: AppTheme.mutedText,
+                        color: AppTheme.paperBackground,
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            if (_completedSectionExpanded) ...[
-              const SizedBox(height: 6),
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: completedTasks.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 6),
-                itemBuilder: (context, index) {
-                  final task = completedTasks[index];
-                  return StudyTaskCard(
-                    key: ValueKey('completed_${task.id}'),
-                    id: task.id,
-                    title: task.title,
-                    category: task.category,
-                    subject: task.subject,
-                    priority: task.priority,
-                    estimatedMinutes: task.estimatedMinutes,
-                    actualMinutesSpent: task.actualMinutesSpent,
-                    estimatedBlocks: task.effectiveEstimatedBlocks,
-                    completedBlocks: task.effectiveCompletedBlocks,
-                    isRecurring: task.isRecurring,
-                    customSubtitle: null,
-                    isCompleted: true,
-                    isFocusActive: false,
-                    onToggle: () async {
-                      HapticFeedback.selectionClick();
-                      await ref.read(dailyTasksProvider.notifier).toggleTask(task.id);
-                    },
-                    onStartFocus: () {
-                      HapticFeedback.mediumImpact();
-                      ref.read(focusTimerProvider.notifier).startTaskFocus(task);
-                      context.push('/timer');
-                    },
-                    onDismissed: () {
-                      final taskIndex = deskTasks.indexWhere((t) => t.id == task.id);
-                      if (taskIndex != -1) {
-                        final removedTask = task;
-                        ref.read(dailyTasksProvider.notifier).removeTaskAt(taskIndex);
+          ],
+        ),
+        const SizedBox(height: 12),
 
-                        ScaffoldMessenger.of(context).clearSnackBars();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            duration: const Duration(seconds: 4),
-                            content: Text('Removed "${removedTask.title}"'),
-                            action: SnackBarAction(
-                              label: 'Undo',
-                              textColor: AppTheme.highlightStrong,
-                              onPressed: () {
-                                ref.read(dailyTasksProvider.notifier).insertTaskAt(taskIndex, removedTask, true);
-                              },
+        // Unboxed Vertical Text Continuations (NO CARDS)
+        if (allTasks.isEmpty)
+          ApplePressable(
+            onTap: () => context.push('/daily-tasks'),
+            child: Padding(
+              key: TourTargetRegistry.keyFor(TourTargetId.todaysTasksTarget),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Text(
+                '+ Add your first daily task or project...',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.mutedText,
+                ),
+              ),
+            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: allTasks.length,
+            separatorBuilder: (_, __) => Divider(
+              height: 1,
+              thickness: 0.5,
+              color: AppTheme.borderLight.withValues(alpha: 0.4),
+            ),
+            itemBuilder: (context, index) {
+              final task = allTasks[index];
+              final isDone = task.isCompleted;
+              final isFocusActive = timerState.isRunning && timerState.boundTaskId == task.id;
+
+              final row = Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Check-off circle on left
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        ref.read(tasksHubProvider.notifier).toggleTaskComplete(task.id);
+                      },
+                      behavior: HitTestBehavior.opaque,
+                      child: Padding(
+                        padding: const EdgeInsets.all(3),
+                        child: Container(
+                          width: 18,
+                          height: 18,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isDone ? AppTheme.inkForeground : Colors.transparent,
+                            border: Border.all(
+                              color: isDone
+                                  ? AppTheme.inkForeground
+                                  : AppTheme.mutedText.withValues(alpha: 0.4),
+                              width: 1.5,
                             ),
                           ),
-                        );
-                      }
-                    },
-                  );
-                },
-              ),
-            ],
-          ],
-        ],
+                          child: isDone
+                              ? Icon(
+                                  Icons.check_rounded,
+                                  size: 12,
+                                  color: AppTheme.paperBackground,
+                                )
+                              : null,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 11),
+
+                    // Continuous text in middle
+                    Expanded(
+                      child: Text(
+                        task.title,
+                        style: TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: isDone ? FontWeight.w400 : FontWeight.w500,
+                          color: isDone ? AppTheme.mutedText : AppTheme.inkForeground,
+                          decoration: isDone ? TextDecoration.lineThrough : null,
+                          decorationColor: AppTheme.mutedText,
+                          height: 1.25,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // Play button on right
+                    ApplePressable(
+                      onTap: () {
+                        HapticFeedback.mediumImpact();
+                        ref.read(focusTimerProvider.notifier).startTaskItemFocus(task);
+                        context.push('/timer');
+                      },
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Icons.play_arrow_rounded,
+                          size: 21,
+                          color: isFocusActive ? AppTheme.accentPrimary : AppTheme.inkForeground,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+
+              if (index == 0) {
+                return KeyedSubtree(
+                  key: ValueKey(task.id),
+                  child: Container(
+                    key: TourTargetRegistry.keyFor(TourTargetId.todaysTasksTarget),
+                    child: row,
+                  ),
+                );
+              }
+
+              return KeyedSubtree(
+                key: ValueKey(task.id),
+                child: row,
+              );
+            },
+          ),
       ],
     );
-  }
-
-  Widget _buildEmptyTasksState(
-    BuildContext context,
-    WidgetRef ref,
-    List<DailyDeskTask> currentTasks,
-  ) {
-    if (!_seenFirstDeskIntro) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildFirstTimeBubblePrompt(context, ref, currentTasks),
-          const SizedBox(height: 12),
-          _buildQuietDeskCard(context, ref, currentTasks),
-        ],
-      );
-    }
-    return _buildQuietDeskCard(context, ref, currentTasks);
-  }
-
-  Widget _buildFirstTimeBubblePrompt(
-    BuildContext context,
-    WidgetRef ref,
-    List<DailyDeskTask> currentTasks,
-  ) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppTheme.cardWhite,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: AppTheme.borderLight,
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Clinical tip icon
-          Container(
-            padding: const EdgeInsets.all(7),
-            decoration: BoxDecoration(
-              color: AppTheme.primaryBlue.withValues(alpha: 0.10),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.tips_and_updates_outlined,
-              size: 16,
-              color: AppTheme.primaryBlue,
-            ),
-          ),
-          const SizedBox(width: 11),
-          // 2-line clinical copy
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Isolate 3–4 high-yield objectives for today.',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.inkForeground,
-                    letterSpacing: -0.1,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Streaks hold until 5:00 AM post-duty.',
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w500,
-                    color: AppTheme.mutedText,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          // Inline [+ Plan] action
-          ApplePressable(
-            pressedScale: 0.94,
-            onPressed: () {
-              _markFirstDeskIntroSeen();
-              _openTaskSheet(context, ref, currentTasks);
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppTheme.inkForeground,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.add_rounded, size: 14, color: AppTheme.paperBackground),
-                  const SizedBox(width: 2),
-                  Text(
-                    'Plan',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.paperBackground,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 4),
-          // One-tap dismissal (X)
-          ApplePressable(
-            pressedScale: 0.90,
-            onPressed: _markFirstDeskIntroSeen,
-            child: Padding(
-              padding: const EdgeInsets.all(4),
-              child: Icon(
-                Icons.close_rounded,
-                size: 16,
-                color: AppTheme.mutedText,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuietDeskCard(
-    BuildContext context,
-    WidgetRef ref,
-    List<DailyDeskTask> currentTasks,
-  ) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Soft circular medallion with clean task icon & floating breath
-          _FloatingBreath(
-            child: Container(
-              width: 88,
-              height: 88,
-              decoration: BoxDecoration(
-                color: AppTheme.accentSubtle,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppTheme.accentPrimary.withValues(alpha: 0.35),
-                  width: 1.5,
-                ),
-              ),
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.checklist_rounded,
-                size: 42,
-                color: AppTheme.accentPrimary,
-              ),
-            ),
-          ),
-          const SizedBox(height: 18),
-          Text(
-            "Today's desk is quiet",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: AppTheme.inkForeground,
-              letterSpacing: -0.3,
-            ),
-          ),
-          const SizedBox(height: 14),
-          ApplePressable(
-            pressedScale: 0.94,
-            onPressed: () => _openTaskSheet(context, ref, currentTasks),
-            child: Container(
-              key: TourTargetRegistry.keyFor(TourTargetId.todaysTasksTarget),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9.5),
-              decoration: BoxDecoration(
-                color: AppTheme.accentPrimary,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.accentPrimary.withValues(alpha: 0.25),
-                    offset: const Offset(0, 2),
-                    blurRadius: 6,
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.playlist_add_check_rounded,
-                    size: 17,
-                    color: AppTheme.onAccent,
-                  ),
-                  const SizedBox(width: 7),
-                  Text(
-                    "Set up today's tasks",
-                    style: AppTypography.buttonLabel(
-                      fontSize: 13.0,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.onAccent,
-                      letterSpacing: 0.15,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _openTaskSheet(
-    BuildContext context,
-    WidgetRef ref,
-    List<DailyDeskTask> currentTasks,
-  ) {
-    KeyboardDockedTaskInput.show(context);
   }
 }
 
@@ -873,14 +444,6 @@ class _HomeModuleTrackerSection extends ConsumerWidget {
       ),
     );
   }
-}
-
-class _FloatingBreath extends StatelessWidget {
-  final Widget child;
-  const _FloatingBreath({required this.child});
-
-  @override
-  Widget build(BuildContext context) => child;
 }
 
 

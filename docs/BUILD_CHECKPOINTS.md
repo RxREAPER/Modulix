@@ -64,7 +64,21 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
-### [CKPT-053] Revert Standalone Tasks Tab & Elevate Core Today's Tasks Experience
+### [CKPT-054] Daily Tasks Complete Minimalist Redesign, Unboxed Vertical Text Continuations & Projects Engine
+- **Timestamp:** 2026-10-24 13:35 UTC
+- **Category:** Complete UI/UX Redesign / Daily Tasks & Projects
+- **Files Modified & Added (4 files):**
+  - `lib/screens/daily_tasks/daily_tasks_screen.dart` [NEW]: Created dedicated page for Daily Tasks with sleek segmented switcher (Tasks | Projects). Method 1: inline text input for normal daily tasks with check-off circle on left, typography in middle, play button on right. Method 2: Projects workflow with Subject selection -> Unit selection -> Project analytics (progress ratio, remaining modules, focus hours) and project module tasks.
+  - `lib/screens/home/home_screen.dart`: Renamed section from "Today's tasks" to "Daily tasks"; removed all cards, drop shadows, category badges, and container boxes in favor of pure, continuous vertical text rows (check-off circle left, typography middle, play button right); wired navigation arrow to `/daily-tasks`.
+  - `lib/app.dart`: Registered `/daily-tasks` route mapping to `DailyTasksScreen`.
+  - `lib/providers/tasks_hub_provider.dart`: Added `toggleTaskComplete` alias to streamline interactive toggling.
+- **Summary:**
+  - Fully renamed feature to "Daily tasks" across Home desk and navigation.
+  - Replaced bulky cards on the Home desk with clean, unboxed vertical text continuations.
+  - Introduced the new Daily Tasks page supporting both direct tasks and curriculum Projects with Project Analytics.
+  - Enforced a strictly minimalist aesthetic: zero tags, zero extra rainbow colors, zero walls of text, no native/clunky Flutter card widgets.
+- **Verification:** `flutter test test/tasks_hub_test.dart` (9/9 passed). `flutter analyze` 100% clean (0 issues).
+- **Status:** Pending APK Build
 - **Timestamp:** 2026-10-24 13:20 UTC
 - **Category:** Architecture / Navigation / Home Desk Today's Tasks
 - **Files Modified (4 files):**

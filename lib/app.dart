@@ -19,6 +19,7 @@ import 'screens/analytics/subject_mastery_analytics_page.dart';
 import 'screens/plan/plan_screen.dart';
 import 'screens/auth/auth_screen.dart';
 import 'screens/planner/planner_screen.dart';
+import 'screens/daily_tasks/daily_tasks_screen.dart';
 import 'screens/settings/syllabus_edition_screen.dart';
 import 'screens/settings/notifications_preferences_screen.dart';
 import 'screens/settings/settings_screen.dart';
@@ -116,6 +117,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                     pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
                       state: state,
                       child: const PlannerScreen(),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'daily-tasks',
+                    pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+                      state: state,
+                      child: const DailyTasksScreen(),
                     ),
                   ),
                 ],

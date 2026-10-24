@@ -157,6 +157,8 @@ class TasksHubNotifier extends AsyncNotifier<TasksHubState> {
     await updateTask(updated);
   }
 
+  Future<void> toggleTaskComplete(String taskId) => toggleComplete(taskId);
+
   Future<void> deleteTask(String taskId) async {
     final db = await DatabaseService.instance.database;
     await db.delete('task_items', where: 'id = ?', whereArgs: [taskId]);
