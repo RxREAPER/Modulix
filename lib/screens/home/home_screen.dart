@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../../providers/app_state_provider.dart';
 import '../../providers/syllabus_provider.dart';
+import '../../models/task_item.dart';
 import '../../providers/tasks_hub_provider.dart';
 import '../../providers/focus_timer_provider.dart';
 import '../../theme/app_theme.dart';
@@ -313,115 +314,243 @@ class _HomeTasksSection extends ConsumerWidget {
               ),
             ),
           )
-        else
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: allTasks.length,
-            separatorBuilder: (_, __) => Divider(
-              height: 1,
-              thickness: 0.5,
-              color: AppTheme.borderLight.withValues(alpha: 0.4),
-            ),
-            itemBuilder: (context, index) {
-              final task = allTasks[index];
-              final isDone = task.isCompleted;
-              final isFocusActive = timerState.isRunning && timerState.boundTaskId == task.id;
-
-              final row = Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Check-off circle on left
-                    GestureDetector(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        ref.read(tasksHubProvider.notifier).toggleTaskComplete(task.id);
-                      },
-                      behavior: HitTestBehavior.opaque,
-                      child: Padding(
-                        padding: const EdgeInsets.all(3),
-                        child: Container(
-                          width: 18,
-                          height: 18,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isDone ? AppTheme.inkForeground : Colors.transparent,
-                            border: Border.all(
-                              color: isDone
-                                  ? AppTheme.inkForeground
-                                  : AppTheme.mutedText.withValues(alpha: 0.4),
-                              width: 1.5,
-                            ),
-                          ),
-                          child: isDone
-                              ? Icon(
-                                  Icons.check_rounded,
-                                  size: 12,
-                                  color: AppTheme.paperBackground,
-                                )
-                              : null,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 11),
-
-                    // Continuous text in middle
-                    Expanded(
-                      child: Text(
-                        task.title,
-                        style: TextStyle(
-                          fontSize: 14.5,
-                          fontWeight: isDone ? FontWeight.w400 : FontWeight.w500,
-                          color: isDone ? AppTheme.mutedText : AppTheme.inkForeground,
-                          decoration: isDone ? TextDecoration.lineThrough : null,
-                          decorationColor: AppTheme.mutedText,
-                          height: 1.25,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-
-                    // Play button on right
-                    ApplePressable(
-                      onTap: () {
-                        HapticFeedback.mediumImpact();
-                        ref.read(focusTimerProvider.notifier).startTaskItemFocus(task);
-                        context.push('/timer');
-                      },
-                      child: Container(
-                        width: 30,
-                        height: 30,
-                        alignment: Alignment.center,
-                        child: Icon(
-                          Icons.play_arrow_rounded,
-                          size: 21,
-                          color: isFocusActive ? AppTheme.accentPrimary : AppTheme.inkForeground,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-
-              if (index == 0) {
-                return KeyedSubtree(
-                  key: ValueKey(task.id),
-                  child: Container(
-                    key: TourTargetRegistry.keyFor(TourTargetId.todaysTasksTarget),
-                    child: row,
-                  ),
-                );
+        else ...[
+          // Grouping: Standalone Normal Tasks vs Project-Specific Tasks
+          Builder(
+            builder: (context) {
+              final standaloneTasks = allTasks.where((t) => t.projectId == null || t.projectId!.isEmpty).toList();
+              final Map<String, List<TaskItem>> projectGroups = {};
+              for (final t in allTasks) {
+                if (t.projectId != null && t.projectId!.isNotEmpty) {
+                  projectGroups.putIfAbsent(t.projectId!, () => []).add(t);
+                }
               }
 
-              return KeyedSubtree(
-                key: ValueKey(task.id),
-                child: row,
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 1. Standalone Normal Tasks
+                  if (standaloneTasks.isNotEmpty) ...[
+                    if (projectGroups.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4, bottom: 4),
+                        child: Row(
+                          children: [
+                            Text(
+                              'STANDALONE',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.9,
+                                color: AppTheme.mutedText,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Divider(
+                                height: 1,
+                                thickness: 0.5,
+                                color: AppTheme.borderLight.withValues(alpha: 0.6),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    for (int i = 0; i < standaloneTasks.length; i++)
+                      _buildHomeTaskRow(
+                        context: context,
+                        ref: ref,
+                        task: standaloneTasks[i],
+                        timerState: timerState,
+                        isFirst: i == 0 && projectGroups.isEmpty,
+                        isProjectTask: false,
+                      ),
+                  ],
+
+                  // 2. Project Task Groups (Subtle Intra-Project Differentiation)
+                  for (final entry in projectGroups.entries) ...[
+                    Builder(
+                      builder: (ctx) {
+                        final project = tasksState?.projectById(entry.key);
+                        final label = (project?.unitName ?? project?.name ?? entry.value.first.note ?? 'Project').toUpperCase();
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10, bottom: 4),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 4,
+                                    height: 4,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: AppTheme.mutedText,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    label,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.9,
+                                      color: AppTheme.mutedText,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Divider(
+                                      height: 1,
+                                      thickness: 0.5,
+                                      color: AppTheme.borderLight.withValues(alpha: 0.6),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            for (final task in entry.value)
+                              _buildHomeTaskRow(
+                                context: context,
+                                ref: ref,
+                                task: task,
+                                timerState: timerState,
+                                isFirst: false,
+                                isProjectTask: true,
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ],
               );
             },
           ),
+        ],
       ],
+    );
+  }
+
+  Widget _buildHomeTaskRow({
+    required BuildContext context,
+    required WidgetRef ref,
+    required TaskItem task,
+    required FocusTimerState timerState,
+    required bool isFirst,
+    required bool isProjectTask,
+  }) {
+    final isDone = task.isCompleted;
+    final isFocusActive = timerState.isRunning && timerState.boundTaskId == task.id;
+
+    final row = Padding(
+      padding: EdgeInsets.only(
+        top: 9,
+        bottom: 9,
+        left: isProjectTask ? 6 : 0,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Subtle vertical notch for project tasks
+          if (isProjectTask) ...[
+            Container(
+              width: 1.5,
+              height: 16,
+              decoration: BoxDecoration(
+                color: AppTheme.borderLight,
+                borderRadius: BorderRadius.circular(1),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+
+          // Check-off circle on left
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              ref.read(tasksHubProvider.notifier).toggleTaskComplete(task.id);
+            },
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.all(3),
+              child: Container(
+                width: 18,
+                height: 18,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isDone ? AppTheme.inkForeground : Colors.transparent,
+                  border: Border.all(
+                    color: isDone
+                        ? AppTheme.inkForeground
+                        : AppTheme.mutedText.withValues(alpha: 0.4),
+                    width: 1.5,
+                  ),
+                ),
+                child: isDone
+                    ? Icon(
+                        Icons.check_rounded,
+                        size: 12,
+                        color: AppTheme.paperBackground,
+                      )
+                    : null,
+              ),
+            ),
+          ),
+          const SizedBox(width: 11),
+
+          // Continuous text in middle
+          Expanded(
+            child: Text(
+              task.title,
+              style: TextStyle(
+                fontSize: 14.5,
+                fontWeight: isDone ? FontWeight.w400 : FontWeight.w500,
+                color: isDone ? AppTheme.mutedText : AppTheme.inkForeground,
+                decoration: isDone ? TextDecoration.lineThrough : null,
+                decorationColor: AppTheme.mutedText,
+                height: 1.25,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          // Play button on right
+          ApplePressable(
+            onTap: () {
+              HapticFeedback.mediumImpact();
+              ref.read(focusTimerProvider.notifier).startTaskItemFocus(task);
+              context.push('/timer');
+            },
+            child: Container(
+              width: 30,
+              height: 30,
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.play_arrow_rounded,
+                size: 21,
+                color: isFocusActive ? AppTheme.accentPrimary : AppTheme.inkForeground,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (isFirst) {
+      return KeyedSubtree(
+        key: ValueKey(task.id),
+        child: Container(
+          key: TourTargetRegistry.keyFor(TourTargetId.todaysTasksTarget),
+          child: row,
+        ),
+      );
+    }
+
+    return KeyedSubtree(
+      key: ValueKey(task.id),
+      child: row,
     );
   }
 }

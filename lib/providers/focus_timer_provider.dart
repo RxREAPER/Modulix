@@ -489,6 +489,10 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
 
     // Auto-mark linked daily task or curriculum module as completed
     try {
+      if (state.boundTaskId != null && state.boundTaskId!.isNotEmpty) {
+        await _ref.read(tasksHubProvider.notifier).markTaskComplete(state.boundTaskId!);
+        await _ref.read(dailyTasksProvider.notifier).markTaskComplete(state.boundTaskId!);
+      }
       if (state.topicId != null && state.topicId!.isNotEmpty) {
         final tId = state.topicId!;
         final type = state.topicType;
@@ -707,6 +711,11 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
       );
 
       // Auto-complete module/daily tasks
+      if (s.boundTaskId != null && s.boundTaskId!.isNotEmpty) {
+        _ref.read(tasksHubProvider.notifier).markTaskComplete(s.boundTaskId!);
+        _ref.read(dailyTasksProvider.notifier).markTaskComplete(s.boundTaskId!);
+      }
+
       if (s.topicId != null && s.topicId!.isNotEmpty) {
         final tId = s.topicId!;
         final type = s.topicType;

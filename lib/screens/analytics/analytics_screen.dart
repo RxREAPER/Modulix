@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../models/daily_desk_task.dart';
 import '../../providers/app_state_provider.dart';
-import '../../providers/daily_tasks_provider.dart';
+import '../../providers/tasks_hub_provider.dart';
 import '../../providers/syllabus_provider.dart';
 import '../../providers/time_log_provider.dart';
 import '../../services/metrics_service.dart';
@@ -59,7 +58,7 @@ class AnalyticsScreen extends ConsumerWidget {
     final appStateAsync = ref.watch(appStateProvider);
     final syllabusAsync = ref.watch(activeSyllabusProvider);
     final timeLogs = ref.watch(timeLogsProvider);
-    final dailyTasksState = ref.watch(dailyTasksProvider);
+    final tasksHubState = ref.watch(tasksHubProvider).valueOrNull;
 
     final appState = appStateAsync.value;
     final subjects = syllabusAsync.value ?? [];
@@ -152,44 +151,32 @@ class AnalyticsScreen extends ConsumerWidget {
     }
 
     // ── 3. Daily Tasks Summary & Velocity Insights ───────────────────────
-    final totalTasks = dailyTasksState.tasks.length;
-    final doneTasks = dailyTasksState.completedIds.length;
-    final pendingTasks = totalTasks - doneTasks;
+    final todayTasks = tasksHubState?.todayTasks ?? const [];
+    final todayCompleted = tasksHubState?.todayCompletedTasks ?? const [];
+    final allTodayTasks = [...todayTasks, ...todayCompleted];
+    final totalTasks = allTodayTasks.length;
+    final doneTasks = todayCompleted.length;
+    final pendingTasks = todayTasks.length;
     final double tasksProgress =
         totalTasks > 0 ? (doneTasks / totalTasks) : 0.0;
 
-    int p1Pending = 0;
+    final activeProjects = tasksHubState?.activeProjects ?? const [];
     int estRemainingMins = 0;
-    final Map<MedicalSubject, int> subjectPendingCounts = {};
-    for (final t in dailyTasksState.tasks) {
-      if (!dailyTasksState.completedIds.contains(t.id)) {
-        if (t.priority == TaskPriority.p1urgent) p1Pending++;
-        estRemainingMins += (t.estimatedMinutes ?? 30);
-        if (t.subject != MedicalSubject.general) {
-          subjectPendingCounts[t.subject] =
-              (subjectPendingCounts[t.subject] ?? 0) + 1;
-        }
-      }
-    }
-
-    String? topPendingSubjectName;
-    if (subjectPendingCounts.isNotEmpty) {
-      final sorted = subjectPendingCounts.entries.toList()
-        ..sort((a, b) => b.value.compareTo(a.value));
-      topPendingSubjectName = sorted.first.key.label;
+    for (final t in todayTasks) {
+      estRemainingMins += (t.estimatedMinutes ?? 25);
     }
 
     String tasksSubtitle;
-    if (p1Pending > 0) {
+    if (activeProjects.isNotEmpty && pendingTasks > 0) {
       tasksSubtitle =
-          '$p1Pending Urgent (P1) pending · ~${estRemainingMins}m remaining';
+          '${activeProjects.length} ${activeProjects.length == 1 ? "project" : "projects"} · $pendingTasks pending · ~${estRemainingMins}m';
     } else if (pendingTasks > 0) {
       tasksSubtitle =
-          '$pendingTasks pending${topPendingSubjectName != null ? ' in $topPendingSubjectName' : ''} · ~${estRemainingMins}m focus';
+          '$pendingTasks pending targets · ~${estRemainingMins}m focus';
     } else if (totalTasks > 0 && doneTasks == totalTasks) {
       tasksSubtitle = 'All $totalTasks goals completed today · Target met';
     } else {
-      tasksSubtitle = 'No tasks scheduled · Tap to open task planner';
+      tasksSubtitle = 'No tasks scheduled · Tap to open daily tasks';
     }
 
     // ── 4. Overall 19 MBBS Subjects Mastery ────────────────────────────────
@@ -466,8 +453,8 @@ class AnalyticsScreen extends ConsumerWidget {
                   : null,
               stat1Label: 'Pending',
               stat1Value: '$pendingTasks targets',
-              stat2Label: 'Est. Remaining',
-              stat2Value: '~${estRemainingMins}m',
+              stat2Label: 'Projects',
+              stat2Value: '${activeProjects.length} active',
               onTap: () => context.push('/analytics/tasks-analytics'),
             ),
 

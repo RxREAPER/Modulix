@@ -66,6 +66,14 @@ class TasksHubState {
       tasks.where((t) => t.isCompleted && t.isThisWeek).toList()
         ..sort((a, b) => (b.completedAt ?? b.updatedAt).compareTo(a.completedAt ?? a.updatedAt));
 
+  TaskProject? projectById(String id) {
+    try {
+      return projects.firstWhere((p) => p.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
   List<TaskItem> tasksForProject(String projectId) =>
       tasks.where((t) => t.projectId == projectId).toList()
         ..sort(_byPriority);
@@ -158,6 +166,18 @@ class TasksHubNotifier extends AsyncNotifier<TasksHubState> {
   }
 
   Future<void> toggleTaskComplete(String taskId) => toggleComplete(taskId);
+
+  Future<void> markTaskComplete(String taskId) async {
+    final existing = state.value?.tasks.where((t) => t.id == taskId).firstOrNull;
+    if (existing == null || existing.isCompleted) return;
+    final now = DateTime.now();
+    final updated = existing.copyWith(
+      isCompleted: true,
+      completedAt: now,
+      updatedAt: now,
+    );
+    await updateTask(updated);
+  }
 
   Future<void> deleteTask(String taskId) async {
     final db = await DatabaseService.instance.database;

@@ -24,10 +24,16 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
   final TextEditingController _taskTextController = TextEditingController();
   final FocusNode _taskFocusNode = FocusNode();
 
+  String? _activeAddingProjectId;
+  final TextEditingController _projectTaskController = TextEditingController();
+  final FocusNode _projectTaskFocusNode = FocusNode();
+
   @override
   void dispose() {
     _taskTextController.dispose();
     _taskFocusNode.dispose();
+    _projectTaskController.dispose();
+    _projectTaskFocusNode.dispose();
     super.dispose();
   }
 
@@ -48,6 +54,28 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
     HapticFeedback.lightImpact();
     ref.read(tasksHubProvider.notifier).addTask(task);
     _taskTextController.clear();
+  }
+
+  void _submitProjectTask(TaskProject project) {
+    final text = _projectTaskController.text.trim();
+    if (text.isEmpty) return;
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final task = TaskItem(
+      id: 'task_${DateTime.now().microsecondsSinceEpoch}',
+      title: text,
+      projectId: project.id,
+      note: '${project.subjectName ?? ""} · ${project.unitName ?? ""}',
+      dueDate: today,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    HapticFeedback.lightImpact();
+    ref.read(tasksHubProvider.notifier).addTask(task);
+    _projectTaskController.clear();
+    setState(() => _activeAddingProjectId = null);
   }
 
   @override
@@ -84,24 +112,10 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
         ),
         centerTitle: false,
         actions: [
-          // Sleek minimalist switcher: Tasks | Projects
+          // Tactile Sliding Pill Switcher: Tasks | Projects
           Padding(
             padding: const EdgeInsets.only(right: 16),
-            child: Container(
-              padding: const EdgeInsets.all(2.5),
-              decoration: BoxDecoration(
-                color: AppTheme.parchmentSurface,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppTheme.borderLight, width: 1),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildSegmentButton(title: 'Tasks', index: 0),
-                  _buildSegmentButton(title: 'Projects', index: 1),
-                ],
-              ),
-            ),
+            child: _buildTactileSwitcher(),
           ),
         ],
       ),
@@ -123,28 +137,105 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
     );
   }
 
-  Widget _buildSegmentButton({required String title, required int index}) {
-    final isSelected = _selectedTabIndex == index;
-    return ApplePressable(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        setState(() => _selectedTabIndex = index);
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 140),
-        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
-        decoration: BoxDecoration(
-          color: isSelected ? AppTheme.inkForeground : Colors.transparent,
-          borderRadius: BorderRadius.circular(7),
-        ),
-        child: Text(
-          title,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            color: isSelected ? AppTheme.paperBackground : AppTheme.mutedText,
+  Widget _buildTactileSwitcher() {
+    return Container(
+      width: 176,
+      height: 35,
+      padding: const EdgeInsets.all(2.5),
+      decoration: BoxDecoration(
+        color: AppTheme.parchmentSurface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppTheme.borderLight, width: 1),
+      ),
+      child: Stack(
+        children: [
+          // Smooth Animated Sliding Indicator
+          AnimatedAlign(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            alignment: _selectedTabIndex == 0 ? Alignment.centerLeft : Alignment.centerRight,
+            child: FractionallySizedBox(
+              widthFactor: 0.5,
+              heightFactor: 1.0,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.inkForeground,
+                  borderRadius: BorderRadius.circular(7.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.inkForeground.withValues(alpha: 0.15),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1.5),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
+          // Interactive Segment Touch Targets with Icons
+          Row(
+            children: [
+              Expanded(
+                child: ApplePressable(
+                  onTap: () {
+                    if (_selectedTabIndex != 0) {
+                      HapticFeedback.selectionClick();
+                      setState(() => _selectedTabIndex = 0);
+                    }
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.check_circle_outline_rounded,
+                        size: 13,
+                        color: _selectedTabIndex == 0 ? AppTheme.paperBackground : AppTheme.mutedText,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Tasks',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: _selectedTabIndex == 0 ? FontWeight.w700 : FontWeight.w500,
+                          color: _selectedTabIndex == 0 ? AppTheme.paperBackground : AppTheme.mutedText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: ApplePressable(
+                  onTap: () {
+                    if (_selectedTabIndex != 1) {
+                      HapticFeedback.selectionClick();
+                      setState(() => _selectedTabIndex = 1);
+                    }
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.folder_outlined,
+                        size: 13,
+                        color: _selectedTabIndex == 1 ? AppTheme.paperBackground : AppTheme.mutedText,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Projects',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: _selectedTabIndex == 1 ? FontWeight.w700 : FontWeight.w500,
+                          color: _selectedTabIndex == 1 ? AppTheme.paperBackground : AppTheme.mutedText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -159,18 +250,27 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
 
     return Column(
       children: [
-        // Sleek Minimalist Inline Input
+        // Sleek Minimalist Unboxed Input (Organic on Paper)
         Padding(
-          padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
+          padding: const EdgeInsets.fromLTRB(18, 12, 18, 8),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
             decoration: BoxDecoration(
-              color: AppTheme.cardWhite,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.borderLight, width: 1.2),
+              border: Border(
+                bottom: BorderSide(
+                  color: AppTheme.borderLight.withValues(alpha: 0.8),
+                  width: 1.0,
+                ),
+              ),
             ),
             child: Row(
               children: [
+                Icon(
+                  Icons.add_rounded,
+                  size: 19,
+                  color: AppTheme.mutedText.withValues(alpha: 0.8),
+                ),
+                const SizedBox(width: 8),
                 Expanded(
                   child: TextField(
                     controller: _taskTextController,
@@ -184,10 +284,11 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                       hintText: 'Add a daily task...',
                       hintStyle: TextStyle(
                         fontSize: 14.5,
-                        color: AppTheme.mutedText.withValues(alpha: 0.7),
+                        color: AppTheme.mutedText.withValues(alpha: 0.6),
                       ),
                       border: InputBorder.none,
                       isDense: true,
+                      contentPadding: EdgeInsets.zero,
                     ),
                     onSubmitted: (_) => _submitTask(),
                   ),
@@ -195,14 +296,14 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                 ApplePressable(
                   onTap: _submitTask,
                   child: Container(
-                    padding: const EdgeInsets.all(6),
+                    padding: const EdgeInsets.all(5),
                     decoration: BoxDecoration(
                       color: AppTheme.inkForeground,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.arrow_upward_rounded,
-                      size: 14,
+                      size: 13,
                       color: AppTheme.paperBackground,
                     ),
                   ),
@@ -464,7 +565,6 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
   }) {
     final totalCount = tasks.length;
     final completedCount = tasks.where((t) => t.isCompleted).length;
-    final remainingCount = totalCount - completedCount;
     final progressRatio = totalCount == 0 ? 0.0 : (completedCount / totalCount);
     final progressPercent = (progressRatio * 100).toInt();
 
@@ -536,11 +636,11 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
           ),
           const SizedBox(height: 8),
 
-          // Analytics metrics text
+          // Analytics metrics text & + Add task action
           Row(
             children: [
               Text(
-                '$completedCount / $totalCount modules · $progressPercent%',
+                '$completedCount / $totalCount tasks · $progressPercent%',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -548,17 +648,125 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                 ),
               ),
               const Spacer(),
-              Text(
-                remainingCount > 0 ? '$remainingCount remaining' : 'Complete',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: AppTheme.mutedText,
+              ApplePressable(
+                onTap: () {
+                  setState(() {
+                    if (_activeAddingProjectId == project.id) {
+                      _activeAddingProjectId = null;
+                    } else {
+                      _activeAddingProjectId = project.id;
+                      _projectTaskController.clear();
+                      Future.delayed(
+                        const Duration(milliseconds: 100),
+                        () => _projectTaskFocusNode.requestFocus(),
+                      );
+                    }
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                  decoration: BoxDecoration(
+                    color: AppTheme.parchmentSurface,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: AppTheme.borderLight, width: 0.8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _activeAddingProjectId == project.id ? Icons.close_rounded : Icons.add_rounded,
+                        size: 13,
+                        color: AppTheme.inkForeground,
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        _activeAddingProjectId == project.id ? 'Cancel' : 'Add task',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.inkForeground,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
+
+          // Organic Inline Input for Project
+          if (_activeAddingProjectId == project.id) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: AppTheme.inkForeground.withValues(alpha: 0.6),
+                    width: 1.0,
+                  ),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.edit_note_rounded, size: 18, color: AppTheme.mutedText),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _projectTaskController,
+                      focusNode: _projectTaskFocusNode,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.inkForeground,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Add task to ${project.unitName ?? project.name}...',
+                        hintStyle: TextStyle(
+                          fontSize: 13.5,
+                          color: AppTheme.mutedText.withValues(alpha: 0.6),
+                        ),
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      onSubmitted: (_) => _submitProjectTask(project),
+                    ),
+                  ),
+                  ApplePressable(
+                    onTap: () => _submitProjectTask(project),
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: AppTheme.inkForeground,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.arrow_upward_rounded,
+                        size: 12,
+                        color: AppTheme.paperBackground,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
+
+          // Empty state for project without tasks
+          if (tasks.isEmpty && _activeAddingProjectId != project.id)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Text(
+                'No custom tasks yet · Tap Add task above to start',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: AppTheme.mutedText,
+                ),
+              ),
+            ),
 
           // List of Project Tasks (Text, Check-off Left, Play Right)
           for (final task in tasks)
@@ -796,13 +1004,11 @@ class _NewProjectModalState extends ConsumerState<_NewProjectModal> {
     HapticFeedback.mediumImpact();
     Navigator.pop(context);
 
-    await ref.read(tasksHubProvider.notifier).createModuleProject(
+    await ref.read(tasksHubProvider.notifier).createSelfStudyProject(
       name: '${_selectedSubject!.displayName} · ${chapter.name}',
       subjectId: _selectedSubject!.id,
       subjectName: _selectedSubject!.displayName,
       unitName: chapter.name,
-      videos: chapter.videos,
-      perDayModules: 2,
     );
   }
 }

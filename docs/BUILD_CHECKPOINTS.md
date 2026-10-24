@@ -64,6 +64,26 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-055] Custom Study Projects, Organic Desk Input, Tactile Sliding Switcher, Home Desk Intra-Project Hierarchy & Analytics Integration
+- **Timestamp:** 2026-10-24 18:50 UTC
+- **Category:** Core Redesign / Daily Tasks, Projects & Analytics
+- **Files Modified (6 files):**
+  - `lib/providers/tasks_hub_provider.dart`: Added `markTaskComplete(String taskId)` and `projectById(String id)` for timer-triggered task completion and project lookup.
+  - `lib/providers/focus_timer_provider.dart`: Connected auto-completion on timer countdown completion (`_onCountdownComplete`) and session finish (`finishSession`) using `boundTaskId`.
+  - `lib/screens/daily_tasks/daily_tasks_screen.dart`: Implemented tactile spring sliding pill switcher (`_buildTactileSwitcher`) with haptic feedback; replaced boxed input with seamless unboxed hairline paper input; refined project creation to custom study (Subject -> Unit) without auto-populating module tasks; added project-specific custom task creation via interactive "+ Add task" queue.
+  - `lib/screens/home/home_screen.dart`: Applied subtle spatial and typographical differentiation between normal standalone tasks and project tasks; integrated micro-subtle intra-project headers (`SUBJECT · UNIT` in 10px uppercase with fine hair rules and guide notches) without boxes, cards, or colored tags.
+  - `lib/screens/analytics/analytics_screen.dart`: Updated Daily Tasks Analytics hub card to read live state from `tasksHubProvider` and show active project and pending task counts; removed legacy unused providers.
+  - `lib/screens/analytics/daily_tasks_analytics_page.dart`: Complete redesign connected to `tasksHubProvider` and `focusTimerProvider`; built Project Specific Details section with real-time 2.5px progress bars, completion metrics, and interactive rows, alongside Standalone Rituals.
+- **Summary:**
+  - Modernized Daily Tasks to cater specifically to self-study / custom study workflows without bloated auto-generated modules.
+  - Replaced boxed inputs with pure organic paper desk text inputs.
+  - Created a tactile animated sliding pill switcher with subtle depth and haptics.
+  - Implemented intra-project spatial separation on the Home desk with zero tags and zero extra colors.
+  - Unified Daily Tasks analytics under Progress screen with project-specific breakdowns.
+  - Automated task completion when focus timer sessions finish.
+- **Verification:** `flutter test test/tasks_hub_test.dart` (9/9 passed). `flutter analyze` 100% clean (0 issues).
+- **Status:** Pending APK Build
+
 ### [CKPT-054] Daily Tasks Complete Minimalist Redesign, Unboxed Vertical Text Continuations & Projects Engine
 - **Timestamp:** 2026-10-24 13:35 UTC
 - **Category:** Complete UI/UX Redesign / Daily Tasks & Projects
