@@ -37,7 +37,7 @@ class SketchNavIcon extends StatelessWidget {
     final assetPath = switch (type) {
       SketchNavIconType.home => 'assets/icons/navbar/nav_home.png',
       SketchNavIconType.library || SketchNavIconType.curriculum => 'assets/icons/navbar/nav_library.png',
-      SketchNavIconType.focus || SketchNavIconType.stopwatch || SketchNavIconType.pomodoro => 'assets/icons/navbar/nav_timer.png',
+      SketchNavIconType.focus || SketchNavIconType.stopwatch || SketchNavIconType.pomodoro => 'assets/icons/navbar/pomodoro-technique.png',
       SketchNavIconType.progress || SketchNavIconType.analytics => 'assets/icons/navbar/nav_progress.png',
       SketchNavIconType.profile => 'assets/icons/navbar/nav_profile.png',
       SketchNavIconType.tasks => '',
@@ -55,6 +55,10 @@ class SketchNavIcon extends StatelessWidget {
       );
     }
 
+    final isColorAsset = type == SketchNavIconType.focus ||
+        type == SketchNavIconType.stopwatch ||
+        type == SketchNavIconType.pomodoro;
+
     return SizedBox(
       width: size,
       height: size,
@@ -62,7 +66,7 @@ class SketchNavIcon extends StatelessWidget {
         assetPath,
         width: size,
         height: size,
-        color: color,
+        color: isColorAsset ? null : color,
         filterQuality: FilterQuality.high,
         errorBuilder: (context, error, stackTrace) {
           return CustomPaint(

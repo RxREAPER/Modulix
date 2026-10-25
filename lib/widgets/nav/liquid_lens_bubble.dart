@@ -1,17 +1,20 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
-/// Renders the authentic Liquid Glass Magnifying Lens Bubble from the reference video.
+/// Authentic Apple Glass Pill indicator for the navigation dock.
 /// Features:
-/// 1. Optical Clip-Mask: Clips the active row so icons/labels inside turn active color and magnify.
-/// 2. Rainbow Caustic Crescent: Spectral dispersion along the bottom curved rim dipping 3px below dock.
-/// 3. Glass Specular Highlights: Top-rim reflection and soft translucent frosted wash.
+/// 1. Frosted translucent glass base with theme-adaptive translucency.
+/// 2. Crisp, subtle perimeter glass border.
+/// 3. Top-edge glass specular reflection highlight arc.
+/// 4. Material Design active indicator dot in accent color.
+/// 5. Smooth ambient elevation drop shadow.
 class LiquidLensBubble extends StatelessWidget {
   final Rect rect;
   final double totalWidth;
   final double dockHeight;
   final Color accentColor;
   final bool isDark;
-  final Widget activeContent;
+  final Widget? activeContent;
 
   const LiquidLensBubble({
     super.key,
@@ -20,7 +23,7 @@ class LiquidLensBubble extends StatelessWidget {
     required this.dockHeight,
     required this.accentColor,
     required this.isDark,
-    required this.activeContent,
+    this.activeContent,
   });
 
   @override
@@ -35,94 +38,31 @@ class LiquidLensBubble extends StatelessWidget {
       left: rect.left,
       top: rect.top,
       width: rect.width,
-      height: rect.height + 4.0, // extra 4px for bottom droplet caustic bulge
+      height: rect.height,
       child: IgnorePointer(
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-          // 1. Frosted Translucent Glass Pill Base
-          Positioned(
-            left: 0,
-            top: 0,
-            width: rect.width,
-            height: rect.height,
-            child: Container(
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.09)
-                    : Colors.white.withValues(alpha: 0.55),
-                borderRadius: BorderRadius.circular(borderRadius),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
-                    blurRadius: 8.0,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-            ),
+        child: CustomPaint(
+          size: Size(rect.width, rect.height),
+          painter: _AppleGlassPillPainter(
+            rect: Rect.fromLTWH(0, 0, rect.width, rect.height),
+            accentColor: accentColor,
+            borderRadius: borderRadius,
+            isDark: isDark,
           ),
-
-          // 2. Optical Magnifying Lens Clip (Dual-Layer Alignment)
-          Positioned(
-            left: 0,
-            top: 0,
-            width: rect.width,
-            height: rect.height,
-            child: IgnorePointer(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(borderRadius),
-              child: OverflowBox(
-                minWidth: totalWidth,
-                maxWidth: totalWidth,
-                minHeight: dockHeight,
-                maxHeight: dockHeight,
-                alignment: Alignment.topLeft,
-                child: Transform.translate(
-                  offset: Offset(-rect.left, -(rect.top)),
-                  child: SizedBox(
-                    width: totalWidth,
-                    height: dockHeight,
-                    child: activeContent,
-                  ),
-                ),
-              ),
-            ),
-          ),
+          child: activeContent,
         ),
-
-          // 3. Glass Specular & Rainbow Caustic Overlays
-          Positioned(
-            left: 0,
-            top: 0,
-            width: rect.width,
-            height: rect.height + 4.0,
-            child: IgnorePointer(
-              child: CustomPaint(
-                size: Size(rect.width, rect.height + 4.0),
-                painter: _LiquidLensShaderPainter(
-                  rect: Rect.fromLTWH(0, 0, rect.width, rect.height),
-                  accentColor: accentColor,
-                  borderRadius: borderRadius,
-                  isDark: isDark,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
       ),
     );
   }
 }
 
-class _LiquidLensShaderPainter extends CustomPainter {
+
+class _AppleGlassPillPainter extends CustomPainter {
   final Rect rect;
   final Color accentColor;
   final double borderRadius;
   final bool isDark;
 
-  const _LiquidLensShaderPainter({
+  const _AppleGlassPillPainter({
     required this.rect,
     required this.accentColor,
     required this.borderRadius,
@@ -136,70 +76,78 @@ class _LiquidLensShaderPainter extends CustomPainter {
       Radius.circular(borderRadius),
     );
 
-    // 1. Subtle Outer Glass Border
+    // 1. Dual-Layer Ambient Drop Shadow
+    final ambientShadow = Paint()
+      ..color = Colors.black.withValues(alpha: isDark ? 0.32 : 0.08)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8.0);
+    canvas.drawRRect(rrect.shift(const Offset(0, 3.0)), ambientShadow);
+
+    final keyShadow = Paint()
+      ..color = Colors.black.withValues(alpha: isDark ? 0.18 : 0.04)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.5);
+    canvas.drawRRect(rrect.shift(const Offset(0, 1.0)), keyShadow);
+
+    // 2. Frosted Apple Glass Fill (Subtle Top-to-Bottom Luminance Gradient)
+    final glassFill = Paint()
+      ..shader = ui.Gradient.linear(
+        Offset(rect.center.dx, rect.top),
+        Offset(rect.center.dx, rect.bottom),
+        isDark
+            ? [
+                Colors.white.withValues(alpha: 0.16),
+                Colors.white.withValues(alpha: 0.09),
+              ]
+            : [
+                Colors.white.withValues(alpha: 0.94),
+                Colors.white.withValues(alpha: 0.82),
+              ],
+      )
+      ..style = PaintingStyle.fill;
+    canvas.drawRRect(rrect, glassFill);
+
+    // 3. Crisp Glass Border with Top-Lit Specular Gradient
     final glassBorder = Paint()
-      ..color = isDark
-          ? Colors.white.withValues(alpha: 0.22)
-          : Colors.white.withValues(alpha: 0.70)
+      ..shader = ui.Gradient.linear(
+        Offset(rect.center.dx, rect.top),
+        Offset(rect.center.dx, rect.bottom),
+        isDark
+            ? [
+                Colors.white.withValues(alpha: 0.28),
+                Colors.white.withValues(alpha: 0.10),
+              ]
+            : [
+                Colors.white.withValues(alpha: 0.85),
+                Colors.black.withValues(alpha: 0.07),
+              ],
+      )
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
     canvas.drawRRect(rrect, glassBorder);
 
-    // 2. Top-Edge Glass Specular Reflection Highlight
+    // 4. Top-Edge Glass Specular Reflection Highlight Arc
     final topHighlightPath = Path()
-      ..moveTo(rect.left + borderRadius * 0.8, rect.top + 0.8)
-      ..lineTo(rect.right - borderRadius * 0.8, rect.top + 0.8);
+      ..moveTo(rect.left + borderRadius * 0.7, rect.top + 0.8)
+      ..lineTo(rect.right - borderRadius * 0.7, rect.top + 0.8);
     final topHighlightPaint = Paint()
-      ..color = Colors.white.withValues(alpha: isDark ? 0.40 : 0.85)
+      ..color = Colors.white.withValues(alpha: isDark ? 0.38 : 0.90)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2
+      ..strokeWidth = 1.0
       ..strokeCap = StrokeCap.round;
     canvas.drawPath(topHighlightPath, topHighlightPaint);
 
-    // 3. Chromatic Rainbow Caustic Crescent along the bottom edge
-    // Dipping ~3px below the dock baseline with iridescent dispersion
-    final causticRect = Rect.fromCenter(
-      center: Offset(rect.center.dx, rect.bottom + 0.5),
-      width: rect.width * 0.82,
-      height: 8.0,
-    );
-
-    const rainbowGradient = LinearGradient(
-      colors: [
-        Color(0xFFFF3B30), // Red
-        Color(0xFFFF9500), // Orange
-        Color(0xFFFFCC00), // Yellow
-        Color(0xFF34C759), // Green
-        Color(0xFF00C7BE), // Teal
-        Color(0xFF007AFF), // Blue
-        Color(0xFFAF52DE), // Violet
-      ],
-      stops: [0.0, 0.16, 0.32, 0.50, 0.68, 0.84, 1.0],
-    );
-
-    final causticPaint = Paint()
-      ..shader = rainbowGradient.createShader(causticRect)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2
-      ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.6);
-
-    final causticPath = Path()
-      ..moveTo(rect.center.dx - (rect.width * 0.36), rect.bottom - 0.5)
-      ..quadraticBezierTo(
-        rect.center.dx,
-        rect.bottom + 3.2, // Caustic liquid droplet bulge dipping downward
-        rect.center.dx + (rect.width * 0.36),
-        rect.bottom - 0.5,
-      );
-
-    canvas.drawPath(causticPath, causticPaint);
+    // 5. Material Design Active Indicator Dot
+    final dotCenter = Offset(rect.center.dx, rect.bottom - 4.0);
+    final dotPaint = Paint()
+      ..color = accentColor
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(dotCenter, 1.8, dotPaint);
   }
 
   @override
-  bool shouldRepaint(covariant _LiquidLensShaderPainter oldDelegate) {
+  bool shouldRepaint(covariant _AppleGlassPillPainter oldDelegate) {
     return oldDelegate.rect != rect ||
         oldDelegate.accentColor != accentColor ||
+        oldDelegate.borderRadius != borderRadius ||
         oldDelegate.isDark != isDark;
   }
 }

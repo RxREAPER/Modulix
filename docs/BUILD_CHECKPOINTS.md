@@ -156,6 +156,21 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-067] Apple Glass Navigation Bar with Pomodoro Icon, Material Dot & Fluid Subpage Transition
+- **Timestamp:** 2026-10-25 20:35 UTC
+- **Category:** UI & Motion / Apple Glass Dock & Pill, Pomodoro Tomato Icon, Material Dot & Fluid Entrance/Exit
+- **Files Modified (4 files):**
+  - `assets/icons/navbar/pomodoro-technique.png` (High-resolution full-color Pomodoro Technique tomato clock icon asset imported from user's Documents)
+  - `lib/widgets/nav/sketch_nav_icons.dart` (Updated icon mapping: mapped `SketchNavIconType.pomodoro`, `.focus`, `.stopwatch` to `pomodoro-technique.png` rendered in full natural color with `color: null`, while preserving accent/inactive tinting for home, library, progress [badge medallion], and profile tabs)
+  - `lib/widgets/nav/liquid_lens_bubble.dart` (Adapted pill background to authentic Apple Glass design: top-to-bottom luminance gradient fill, fine glass stroke with specular gradient, dual-layer ambient elevation drop shadow, top specular reflection highlight arc, and a refined 3.6px Material Design active indicator dot in `accentColor` replacing chromatic rainbow caustics; wrapped in `IgnorePointer` for unimpeded hit-testing)
+  - `lib/widgets/lovable_nav_bar.dart` (Single-layer professional Apple HIG tab row eliminating dual-imaging and sliced icon artifacts; elevated center Focus Timer hero button housing `SketchNavIconType.pomodoro` in full color with status dots completely removed; butter-smooth Apple 96px vertical slide and 0.96->1.0 scale transition with cubic easing when entering or exiting subpages; retained continuous 1:1 horizontal thumb drag tracking with momentum glide and haptic slot snapping)
+- **Summary:**
+  - Fully implemented user's refined directives: eliminated chromatic rainbow caustics in favor of a subtle Material Design active indicator dot; eliminated dual-layer slicing artifacts for a professional single-layer Apple HIG icon suite; removed the status dot on the Focus Timer hero button and replaced its icon with `pomodoro-technique.png`; adapted the sliding pill background to the Apple Glass design with gradient luminance and fine specular rims; refined the appearing/disappearing subpage transition motion.
+- **Verification:**
+  - `flutter analyze lib/widgets/lovable_nav_bar.dart lib/widgets/nav/liquid_lens_bubble.dart lib/widgets/nav/sketch_nav_icons.dart`: **No issues found! (0 errors, 0 warnings)**
+  - `flutter test test/lovable_nav_bar_test.dart test/tab_persistence_test.dart`: **All 5 tests passed! (100%)**
+- **Status:** ⏳ Pending APK Build
+
 ### [CKPT-066] Authentic Liquid Glass Magnifying Lens Nav Bar with 1:1 Horizontal Drag & Rainbow Caustic Shaders
 - **Timestamp:** 2026-10-25 15:35 UTC
 - **Category:** UI & Motion / Liquid Glass Magnifying Lens, Continuous 1:1 Drag Tracking & Caustic Shaders

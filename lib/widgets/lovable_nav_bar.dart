@@ -27,19 +27,20 @@ class LovableNavItem {
   });
 }
 
-/// Authentic Liquid Glass Magnifying Lens Bottom Navigation Dock.
+/// Authentic Apple Glass Floating Navigation Dock.
 /// Features:
-/// 1. Real-time continuous 1:1 horizontal drag tracking across the dock.
-/// 2. Dual-Layer Clipped Magnifying Lens: Whatever is under the bubble turns
-///    bright active accent color and magnifies (1.14x), while portions outside
-///    remain subtle slate.
-/// 3. Rainbow Caustic Crescent: Spectral dispersion rim dipping along the bottom
-///    curved edge of the bubble.
-/// 4. Top Glass Specular Highlight Arc and Frosted Translucent Glass Base.
-/// 5. Smooth ease-out cubic glide snapping on release or tap without rubbery wobbles.
-/// 6. Center Focus Timer Hero Button with custom elevated disk, radiant core glow,
-///    breathing halo ring during active sessions, and live status jewel.
-/// 7. Custom vector and PNG icons preserved across all slots.
+/// 1. Frosted Translucent Glass Dock: Stadium capsule with high-sigma backdrop blur,
+///    crisp perimeter glass stroke, and dual-layer ambient elevation drop shadows.
+/// 2. Apple Frosted Glass Pill Indicator: Glides smoothly behind the active tab slot
+///    with real-time continuous 1:1 horizontal thumb drag tracking, top specular highlight arc,
+///    and a subtle Material Design active indicator dot in accent color.
+/// 3. Single-Layer Professional Icon Suite: Clean, professional Apple HIG icon rendering
+///    without dual-imaging or sliced pixel artifacts. Smooth color and weight transitions.
+/// 4. Elevated Focus Timer Hero Button: Circular elevated hero disk featuring the
+///    vibrant Pomodoro Technique tomato clock icon (`pomodoro-technique.png`), breathing
+///    holographic aura ring during active sessions, with status dots removed for clean minimalism.
+/// 5. Apple Fluid Transition Motion: Smooth vertical glide (80px) and scale transition (0.95 -> 1.0)
+///    with cubic easing when appearing or disappearing across subpage navigations.
 class LovableNavBar extends StatefulWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -84,11 +85,11 @@ class _LovableNavBarState extends State<LovableNavBar>
   @override
   void initState() {
     super.initState();
-    // Drop & Expand entrance animation
+    // Apple-style smooth slide & fade transition when appearing/disappearing
     _motionController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 440),
-      reverseDuration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 380),
+      reverseDuration: const Duration(milliseconds: 260),
     );
 
     // Ambient pulse controller for active focus sessions
@@ -100,7 +101,7 @@ class _LovableNavBarState extends State<LovableNavBar>
     // Smooth ease-out cubic glide controller for bubble slot snapping
     _glideController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 240),
+      duration: const Duration(milliseconds: 220),
     );
     _glideAnimation = CurvedAnimation(
       parent: _glideController,
@@ -267,7 +268,7 @@ class _LovableNavBarState extends State<LovableNavBar>
     }
     _glideStartX = _bubbleCenterX;
     _glideEndX = targetCenter;
-    _glideController.duration = const Duration(milliseconds: 240);
+    _glideController.duration = const Duration(milliseconds: 220);
     _glideController.forward(from: 0.0);
   }
 
@@ -311,11 +312,11 @@ class _LovableNavBarState extends State<LovableNavBar>
 
     double stretch = 0.0;
     if (_isDragging) {
-      stretch = (_dragDeltaX.abs() * 0.4).clamp(0.0, 6.0);
+      stretch = (_dragDeltaX.abs() * 0.3).clamp(0.0, 5.0);
     } else if (_glideController.isAnimating) {
       final t = _glideController.value;
       final distance = (_glideEndX - _glideStartX).abs();
-      stretch = math.sin(t * math.pi) * math.min(distance * 0.08, 6.0);
+      stretch = math.sin(t * math.pi) * math.min(distance * 0.06, 5.0);
     }
 
     final width = baseWidth + stretch;
@@ -348,21 +349,20 @@ class _LovableNavBarState extends State<LovableNavBar>
 
         final isReverse = _motionController.status == AnimationStatus.reverse;
         final double curve = isReverse
-            ? Curves.easeInOutCubic.transform(t)
-            : const Cubic(0.20, 1.28, 0.36, 1.0).transform(t);
+            ? Curves.easeInCubic.transform(t)
+            : Curves.easeOutCubic.transform(t);
 
-        // Vertical drop/rise glide: rises from 92px below edge
-        final double yOffset = (1.0 - curve) * 92.0;
+        // Apple fluid vertical glide: smoothly drops 80px on exit, rises on entrance
+        final double yOffset = (1.0 - curve) * 80.0;
 
-        // Droplet horizontal & vertical morph
-        final double scaleX = (0.40 + (0.60 * curve)).clamp(0.0, 1.05);
-        final double scaleY = (0.62 + (0.38 * curve)).clamp(0.0, 1.02);
-        final double opacity = Curves.easeIn.transform(t.clamp(0.0, 1.0));
+        // Apple subtle scale transition (0.95 -> 1.0) without distortion
+        final double scale = 0.95 + (0.05 * curve);
+        final double opacity = Curves.easeInOut.transform(t.clamp(0.0, 1.0));
 
         return Transform.translate(
           offset: Offset(0, yOffset),
-          child: Transform(
-            transform: Matrix4.diagonal3Values(scaleX, scaleY, 1.0),
+          child: Transform.scale(
+            scale: scale,
             alignment: Alignment.bottomCenter,
             child: Opacity(
               opacity: opacity,
@@ -381,24 +381,24 @@ class _LovableNavBarState extends State<LovableNavBar>
               height: dockHeight,
               decoration: BoxDecoration(
                 color: isDark
-                    ? const Color(0xFF1B1D24).withValues(alpha: 0.85)
-                    : Colors.white.withValues(alpha: 0.85),
+                    ? const Color(0xFF1B1D24).withValues(alpha: 0.82)
+                    : Colors.white.withValues(alpha: 0.82),
                 borderRadius: BorderRadius.circular(29.0),
                 border: Border.all(
                   color: isDark
-                      ? Colors.white.withValues(alpha: 0.14)
+                      ? Colors.white.withValues(alpha: 0.12)
                       : Colors.black.withValues(alpha: 0.08),
                   width: 1.0,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.40 : 0.08),
+                    color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
                     offset: const Offset(0, 8),
                     blurRadius: 24,
                     spreadRadius: -2,
                   ),
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.03),
+                    color: Colors.black.withValues(alpha: isDark ? 0.16 : 0.03),
                     offset: const Offset(0, 2),
                     blurRadius: 6,
                     spreadRadius: 0,
@@ -408,7 +408,7 @@ class _LovableNavBarState extends State<LovableNavBar>
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(29.0),
                 child: BackdropFilter(
-                  filter: ui.ImageFilter.blur(sigmaX: 18.0, sigmaY: 18.0),
+                  filter: ui.ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final totalWidth = constraints.maxWidth;
@@ -428,6 +428,10 @@ class _LovableNavBarState extends State<LovableNavBar>
 
                       final pillRect =
                           _calculateBubbleRect(totalWidth, slotWidth);
+
+                      // Calculate which slot the bubble center is currently closest to
+                      final activeSlotIndex =
+                          (_bubbleCenterX / slotWidth).floor().clamp(0, slotCount - 1);
 
                       return GestureDetector(
                         behavior: HitTestBehavior.translucent,
@@ -484,38 +488,16 @@ class _LovableNavBarState extends State<LovableNavBar>
                         child: Stack(
                           clipBehavior: Clip.none,
                           children: [
-                            // 1. Base Inactive Slots Row (with tests & interaction keys)
-                            _buildSlotsRow(
-                              isMagnified: false,
-                              color: inactiveColor,
-                              isDark: isDark,
-                              accentColor: accentColor,
-                              hasTasksTab: hasTasksTab,
-                              interactive: true,
-                              slotWidth: slotWidth,
-                              totalWidth: totalWidth,
-                            ),
-
-                            // 2. Liquid Glass Magnifying Lens Bubble
+                            // 1. Sliding Frosted Glass Pill (Positioned behind items)
                             LiquidLensBubble(
                               rect: pillRect,
                               totalWidth: totalWidth,
                               dockHeight: dockHeight,
                               accentColor: accentColor,
                               isDark: isDark,
-                              activeContent: _buildSlotsRow(
-                                isMagnified: true,
-                                color: accentColor,
-                                isDark: isDark,
-                                accentColor: accentColor,
-                                hasTasksTab: hasTasksTab,
-                                interactive: false,
-                                slotWidth: slotWidth,
-                                totalWidth: totalWidth,
-                              ),
                             ),
 
-                            // 3. Unit Test Compatibility: SketchHatchIndicator presence
+                            // 2. Unit Test Compatibility: SketchHatchIndicator presence
                             Positioned.fill(
                               child: IgnorePointer(
                                 child: Opacity(
@@ -526,6 +508,17 @@ class _LovableNavBarState extends State<LovableNavBar>
                                   ),
                                 ),
                               ),
+                            ),
+
+                            // 3. Single-Layer Clean Navigation Items Row (Professional Apple Design)
+                            _buildSlotsRow(
+                              activeSlotIndex: activeSlotIndex,
+                              color: inactiveColor,
+                              isDark: isDark,
+                              accentColor: accentColor,
+                              hasTasksTab: hasTasksTab,
+                              slotWidth: slotWidth,
+                              totalWidth: totalWidth,
                             ),
                           ],
                         ),
@@ -542,263 +535,178 @@ class _LovableNavBarState extends State<LovableNavBar>
   }
 
   Widget _buildSlotsRow({
-    required bool isMagnified,
+    required int activeSlotIndex,
     required Color color,
     required bool isDark,
     required Color accentColor,
     required bool hasTasksTab,
-    required bool interactive,
     required double slotWidth,
     required double totalWidth,
   }) {
     if (hasTasksTab) {
-      if (isMagnified) {
-        return Row(
-          children: [
-            Expanded(
-              child: _ActiveMagnifiedTabItem(
-                sketchType: _resolveSketchType(widget.items[0], 0),
-                label: widget.items[0].label,
-                color: color,
-              ),
+      return Row(
+        children: [
+          Expanded(
+            child: _ModernTabItem(
+              key: const Key('nav_tab_0'),
+              sketchType: _resolveSketchType(widget.items[0], 0),
+              label: widget.items[0].label,
+              isSelected: activeSlotIndex == 0,
+              activeColor: accentColor,
+              inactiveColor: color,
+              onTap: () =>
+                  _onSlotTapped(0, slotWidth, totalWidth, hasTasksTab),
             ),
-            Expanded(
-              child: _ActiveMagnifiedTabItem(
-                sketchType: _resolveSketchType(widget.items[1], 1),
-                label: widget.items[1].label,
-                color: color,
-              ),
+          ),
+          Expanded(
+            child: _ModernTabItem(
+              key: const Key('nav_tab_1'),
+              sketchType: _resolveSketchType(widget.items[1], 1),
+              label: widget.items[1].label,
+              isSelected: activeSlotIndex == 1,
+              activeColor: accentColor,
+              inactiveColor: color,
+              onTap: () =>
+                  _onSlotTapped(1, slotWidth, totalWidth, hasTasksTab),
             ),
-            Expanded(
-              child: _ActiveMagnifiedTabItem(
-                sketchType: _resolveSketchType(widget.items[2], 2),
-                label: widget.items[2].label,
-                color: color,
-              ),
+          ),
+          Expanded(
+            child: _ModernTabItem(
+              key: const Key('nav_tab_2'),
+              sketchType: _resolveSketchType(widget.items[2], 2),
+              label: widget.items[2].label,
+              isSelected: activeSlotIndex == 2,
+              activeColor: accentColor,
+              inactiveColor: color,
+              onTap: () =>
+                  _onSlotTapped(2, slotWidth, totalWidth, hasTasksTab),
             ),
-            Expanded(
-              child: _ActiveMagnifiedHeroFocusTimerItem(
-                isSessionActive: widget.isSessionActive,
-                activeColor: accentColor,
-              ),
+          ),
+          Expanded(
+            child: _HeroFocusTimerItem(
+              key: const Key('nav_center_timer_button'),
+              isSessionActive: widget.isSessionActive,
+              haloAnimation: _haloController,
+              activeColor: accentColor,
+              onTap: () =>
+                  _onSlotTapped(3, slotWidth, totalWidth, hasTasksTab),
             ),
-            Expanded(
-              child: _ActiveMagnifiedTabItem(
-                sketchType: _resolveSketchType(widget.items[3], 3),
-                label: widget.items[3].label,
-                color: color,
-              ),
+          ),
+          Expanded(
+            child: _ModernTabItem(
+              key: const Key('nav_tab_3'),
+              sketchType: _resolveSketchType(widget.items[3], 3),
+              label: widget.items[3].label,
+              isSelected: activeSlotIndex == 4,
+              activeColor: accentColor,
+              inactiveColor: color,
+              onTap: () =>
+                  _onSlotTapped(4, slotWidth, totalWidth, hasTasksTab),
             ),
-            Expanded(
-              child: _ActiveMagnifiedTabItem(
-                sketchType: _resolveSketchType(widget.items[4], 4),
-                label: widget.items[4].label,
-                color: color,
-              ),
+          ),
+          Expanded(
+            child: _ModernTabItem(
+              key: const Key('nav_tab_4'),
+              sketchType: _resolveSketchType(widget.items[4], 4),
+              label: widget.items[4].label,
+              isSelected: activeSlotIndex == 5,
+              activeColor: accentColor,
+              inactiveColor: color,
+              onTap: () =>
+                  _onSlotTapped(5, slotWidth, totalWidth, hasTasksTab),
             ),
-          ],
-        );
-      } else {
-        return Row(
-          children: [
-            Expanded(
-              child: _ModernTabItem(
-                key: const Key('nav_tab_0'),
-                sketchType: _resolveSketchType(widget.items[0], 0),
-                label: widget.items[0].label,
-                inactiveColor: color,
-                onTap: () =>
-                    _onSlotTapped(0, slotWidth, totalWidth, hasTasksTab),
-              ),
-            ),
-            Expanded(
-              child: _ModernTabItem(
-                key: const Key('nav_tab_1'),
-                sketchType: _resolveSketchType(widget.items[1], 1),
-                label: widget.items[1].label,
-                inactiveColor: color,
-                onTap: () =>
-                    _onSlotTapped(1, slotWidth, totalWidth, hasTasksTab),
-              ),
-            ),
-            Expanded(
-              child: _ModernTabItem(
-                key: const Key('nav_tab_2'),
-                sketchType: _resolveSketchType(widget.items[2], 2),
-                label: widget.items[2].label,
-                inactiveColor: color,
-                onTap: () =>
-                    _onSlotTapped(2, slotWidth, totalWidth, hasTasksTab),
-              ),
-            ),
-            Expanded(
-              child: _HeroFocusTimerItem(
-                key: const Key('nav_center_timer_button'),
-                isSessionActive: widget.isSessionActive,
-                haloAnimation: _haloController,
-                activeColor: accentColor,
-                inactiveColor: color,
-                onTap: () =>
-                    _onSlotTapped(3, slotWidth, totalWidth, hasTasksTab),
-              ),
-            ),
-            Expanded(
-              child: _ModernTabItem(
-                key: const Key('nav_tab_3'),
-                sketchType: _resolveSketchType(widget.items[3], 3),
-                label: widget.items[3].label,
-                inactiveColor: color,
-                onTap: () =>
-                    _onSlotTapped(4, slotWidth, totalWidth, hasTasksTab),
-              ),
-            ),
-            Expanded(
-              child: _ModernTabItem(
-                key: const Key('nav_tab_4'),
-                sketchType: _resolveSketchType(widget.items[4], 4),
-                label: widget.items[4].label,
-                inactiveColor: color,
-                onTap: () =>
-                    _onSlotTapped(5, slotWidth, totalWidth, hasTasksTab),
-              ),
-            ),
-          ],
-        );
-      }
+          ),
+        ],
+      );
     } else {
       // Standard 5 Slots Layout
-      if (isMagnified) {
-        return Row(
-          children: [
-            Expanded(
-              child: _ActiveMagnifiedTabItem(
-                sketchType: widget.items.isNotEmpty
-                    ? _resolveSketchType(widget.items[0], 0)
-                    : SketchNavIconType.home,
-                label: widget.items.isNotEmpty ? widget.items[0].label : 'Home',
-                color: color,
-              ),
+      return Row(
+        children: [
+          Expanded(
+            child: _ModernTabItem(
+              key: const Key('nav_tab_0'),
+              sketchType: widget.items.isNotEmpty
+                  ? _resolveSketchType(widget.items[0], 0)
+                  : SketchNavIconType.home,
+              label: widget.items.isNotEmpty ? widget.items[0].label : 'Home',
+              isSelected: activeSlotIndex == 0,
+              activeColor: accentColor,
+              inactiveColor: color,
+              onTap: () =>
+                  _onSlotTapped(0, slotWidth, totalWidth, hasTasksTab),
             ),
-            Expanded(
-              child: _ActiveMagnifiedTabItem(
-                sketchType: widget.items.length > 1
-                    ? _resolveSketchType(widget.items[1], 1)
-                    : SketchNavIconType.library,
-                label: widget.items.length > 1
-                    ? widget.items[1].label
-                    : 'Library',
-                color: color,
-              ),
+          ),
+          Expanded(
+            child: _ModernTabItem(
+              key: const Key('nav_tab_1'),
+              sketchType: widget.items.length > 1
+                  ? _resolveSketchType(widget.items[1], 1)
+                  : SketchNavIconType.library,
+              label: widget.items.length > 1
+                  ? widget.items[1].label
+                  : 'Library',
+              isSelected: activeSlotIndex == 1,
+              activeColor: accentColor,
+              inactiveColor: color,
+              onTap: () =>
+                  _onSlotTapped(1, slotWidth, totalWidth, hasTasksTab),
             ),
-            Expanded(
-              child: _ActiveMagnifiedHeroFocusTimerItem(
-                isSessionActive: widget.isSessionActive,
-                activeColor: accentColor,
-              ),
+          ),
+          Expanded(
+            child: _HeroFocusTimerItem(
+              key: const Key('nav_center_timer_button'),
+              isSessionActive: widget.isSessionActive,
+              haloAnimation: _haloController,
+              activeColor: accentColor,
+              onTap: () =>
+                  _onSlotTapped(2, slotWidth, totalWidth, hasTasksTab),
             ),
-            Expanded(
-              child: _ActiveMagnifiedTabItem(
-                sketchType: widget.items.length > 2
-                    ? _resolveSketchType(widget.items[2], 2)
-                    : SketchNavIconType.progress,
-                label: widget.items.length > 2
-                    ? widget.items[2].label
-                    : 'Progress',
-                color: color,
-              ),
+          ),
+          Expanded(
+            child: _ModernTabItem(
+              key: const Key('nav_tab_2'),
+              sketchType: widget.items.length > 2
+                  ? _resolveSketchType(widget.items[2], 2)
+                  : SketchNavIconType.progress,
+              label: widget.items.length > 2
+                  ? widget.items[2].label
+                  : 'Progress',
+              isSelected: activeSlotIndex == 3,
+              activeColor: accentColor,
+              inactiveColor: color,
+              onTap: () =>
+                  _onSlotTapped(3, slotWidth, totalWidth, hasTasksTab),
             ),
-            Expanded(
-              child: _ActiveMagnifiedTabItem(
-                sketchType: widget.items.length > 3
-                    ? _resolveSketchType(widget.items[3], 3)
-                    : SketchNavIconType.profile,
-                label: widget.items.length > 3
-                    ? widget.items[3].label
-                    : 'Profile',
-                color: color,
-              ),
+          ),
+          Expanded(
+            child: _ModernTabItem(
+              key: const Key('nav_tab_3'),
+              sketchType: widget.items.length > 3
+                  ? _resolveSketchType(widget.items[3], 3)
+                  : SketchNavIconType.profile,
+              label: widget.items.length > 3
+                  ? widget.items[3].label
+                  : 'Profile',
+              isSelected: activeSlotIndex == 4,
+              activeColor: accentColor,
+              inactiveColor: color,
+              onTap: () =>
+                  _onSlotTapped(4, slotWidth, totalWidth, hasTasksTab),
             ),
-          ],
-        );
-      } else {
-        return Row(
-          children: [
-            Expanded(
-              child: _ModernTabItem(
-                key: const Key('nav_tab_0'),
-                sketchType: widget.items.isNotEmpty
-                    ? _resolveSketchType(widget.items[0], 0)
-                    : SketchNavIconType.home,
-                label: widget.items.isNotEmpty ? widget.items[0].label : 'Home',
-                inactiveColor: color,
-                onTap: () =>
-                    _onSlotTapped(0, slotWidth, totalWidth, hasTasksTab),
-              ),
-            ),
-            Expanded(
-              child: _ModernTabItem(
-                key: const Key('nav_tab_1'),
-                sketchType: widget.items.length > 1
-                    ? _resolveSketchType(widget.items[1], 1)
-                    : SketchNavIconType.library,
-                label: widget.items.length > 1
-                    ? widget.items[1].label
-                    : 'Library',
-                inactiveColor: color,
-                onTap: () =>
-                    _onSlotTapped(1, slotWidth, totalWidth, hasTasksTab),
-              ),
-            ),
-            Expanded(
-              child: _HeroFocusTimerItem(
-                key: const Key('nav_center_timer_button'),
-                isSessionActive: widget.isSessionActive,
-                haloAnimation: _haloController,
-                activeColor: accentColor,
-                inactiveColor: color,
-                onTap: () =>
-                    _onSlotTapped(2, slotWidth, totalWidth, hasTasksTab),
-              ),
-            ),
-            Expanded(
-              child: _ModernTabItem(
-                key: const Key('nav_tab_2'),
-                sketchType: widget.items.length > 2
-                    ? _resolveSketchType(widget.items[2], 2)
-                    : SketchNavIconType.progress,
-                label: widget.items.length > 2
-                    ? widget.items[2].label
-                    : 'Progress',
-                inactiveColor: color,
-                onTap: () =>
-                    _onSlotTapped(3, slotWidth, totalWidth, hasTasksTab),
-              ),
-            ),
-            Expanded(
-              child: _ModernTabItem(
-                key: const Key('nav_tab_3'),
-                sketchType: widget.items.length > 3
-                    ? _resolveSketchType(widget.items[3], 3)
-                    : SketchNavIconType.profile,
-                label: widget.items.length > 3
-                    ? widget.items[3].label
-                    : 'Profile',
-                inactiveColor: color,
-                onTap: () =>
-                    _onSlotTapped(4, slotWidth, totalWidth, hasTasksTab),
-              ),
-            ),
-          ],
-        );
-      }
+          ),
+        ],
+      );
     }
   }
 }
 
-/// Base inactive tab item: Clean minimalist icon and label in neutral tone
+/// Clean, professional Apple-style navigation tab item.
+/// Renders crisp vector/PNG icon with smooth color and scale transition.
 class _ModernTabItem extends StatelessWidget {
   final SketchNavIconType sketchType;
   final String label;
+  final bool isSelected;
+  final Color activeColor;
   final Color inactiveColor;
   final VoidCallback onTap;
 
@@ -806,14 +714,19 @@ class _ModernTabItem extends StatelessWidget {
     super.key,
     required this.sketchType,
     required this.label,
+    required this.isSelected,
+    required this.activeColor,
     required this.inactiveColor,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final effectiveColor = isSelected ? activeColor : inactiveColor;
+
     return Semantics(
       label: label,
+      selected: isSelected,
       button: true,
       child: ApplePressable(
         pressedScale: 0.95,
@@ -822,30 +735,39 @@ class _ModernTabItem extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(22.0),
         child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SketchNavIcon(
-                type: sketchType,
-                color: inactiveColor,
-                size: 21.0,
-                isSelected: false,
-                strokeWidth: 1.7,
-              ),
-              const SizedBox(height: 3.0),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 10.0,
-                  fontWeight: FontWeight.w500,
-                  color: inactiveColor,
-                  letterSpacing: 0.1,
+          child: AnimatedScale(
+            scale: isSelected ? 1.05 : 1.0,
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SketchNavIcon(
+                  type: sketchType,
+                  color: effectiveColor,
+                  size: 21.0,
+                  isSelected: isSelected,
+                  strokeWidth: isSelected ? 2.0 : 1.7,
                 ),
-              ),
-            ],
+                const SizedBox(height: 3.0),
+                AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutCubic,
+                  style: TextStyle(
+                    fontSize: 10.0,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: effectiveColor,
+                    letterSpacing: 0.1,
+                  ),
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -853,65 +775,15 @@ class _ModernTabItem extends StatelessWidget {
   }
 }
 
-/// Active Magnified Tab Item: Rendered inside the optical lens clip
-/// with vibrant accent color, 1.14x magnification scale, and bold weight.
-class _ActiveMagnifiedTabItem extends StatelessWidget {
-  final SketchNavIconType sketchType;
-  final String label;
-  final Color color;
-
-  const _ActiveMagnifiedTabItem({
-    required this.sketchType,
-    required this.label,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Transform.scale(
-      scale: 1.14,
-      alignment: Alignment.center,
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SketchNavIcon(
-              type: sketchType,
-              color: color,
-              size: 21.0,
-              isSelected: true,
-              strokeWidth: 2.0,
-            ),
-            const SizedBox(height: 3.0),
-            RichText(
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              text: TextSpan(
-                text: label,
-                style: TextStyle(
-                  fontSize: 10.0,
-                  fontWeight: FontWeight.w700,
-                  color: color,
-                  letterSpacing: 0.1,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Center Focus Timer Hero Button (Base Inactive Row):
-/// Elevated circular hero disk with subtle border, breathing aura halo during
-/// active sessions, and status jewel indicator.
+/// Center Focus Timer Hero Button:
+/// - Elevated circular hero disk with distinct glass styling.
+/// - Houses the Pomodoro Technique tomato clock icon (`pomodoro-technique.png`).
+/// - Clean design with status dots removed per user instructions.
+/// - Breathing holographic aura ring pulsing outward during active sessions.
 class _HeroFocusTimerItem extends StatelessWidget {
   final bool isSessionActive;
   final Animation<double> haloAnimation;
   final Color activeColor;
-  final Color inactiveColor;
   final VoidCallback onTap;
 
   const _HeroFocusTimerItem({
@@ -919,14 +791,13 @@ class _HeroFocusTimerItem extends StatelessWidget {
     required this.isSessionActive,
     required this.haloAnimation,
     required this.activeColor,
-    required this.inactiveColor,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark = AppTheme.current.isDark;
-    const heroSize = 44.0;
+    const heroSize = 46.0;
 
     return Semantics(
       label: 'Focus Timer',
@@ -936,7 +807,7 @@ class _HeroFocusTimerItem extends StatelessWidget {
         pressedOpacity: 0.90,
         hapticStyle: HapticStyle.none,
         onTap: onTap,
-        borderRadius: BorderRadius.circular(22.0),
+        borderRadius: BorderRadius.circular(23.0),
         child: Center(
           child: Stack(
             clipBehavior: Clip.none,
@@ -982,7 +853,9 @@ class _HeroFocusTimerItem extends StatelessWidget {
                   border: Border.all(
                     color: isSessionActive
                         ? activeColor
-                        : activeColor.withValues(alpha: isDark ? 0.35 : 0.25),
+                        : (isDark
+                            ? Colors.white.withValues(alpha: 0.22)
+                            : Colors.black.withValues(alpha: 0.10)),
                     width: isSessionActive ? 1.8 : 1.2,
                   ),
                   boxShadow: [
@@ -1014,143 +887,14 @@ class _HeroFocusTimerItem extends StatelessWidget {
                         ),
                       ),
 
-                    // Center Hourglass Vector Icon
+                    // Center Pomodoro Technique Tomato Clock Icon (Full Color)
                     SketchNavIcon(
-                      type: SketchNavIconType.focus,
-                      color: isSessionActive
-                          ? activeColor
-                          : (isDark ? Colors.white : AppTheme.inkForeground),
-                      size: 21.0,
-                      isSelected: isSessionActive,
-                      strokeWidth: 1.85,
-                    ),
-
-                    // Live Status Jewel at top-right
-                    Positioned(
-                      top: 2,
-                      right: 2,
-                      child: Container(
-                        width: 7.0,
-                        height: 7.0,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isSessionActive
-                              ? const Color(0xFF10B981)
-                              : activeColor.withValues(alpha: 0.85),
-                          boxShadow: [
-                            BoxShadow(
-                              color: (isSessionActive
-                                      ? const Color(0xFF10B981)
-                                      : activeColor)
-                                  .withValues(alpha: 0.6),
-                              blurRadius: 4.0,
-                            ),
-                          ],
-                        ),
-                      ),
+                      type: SketchNavIconType.pomodoro,
+                      color: activeColor,
+                      size: 27.0,
+                      isSelected: true,
                     ),
                   ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Active Magnified Hero Focus Timer Item: Rendered inside the optical lens
-/// with radiant core glow, 1.12x magnification, and vibrant accent borders.
-class _ActiveMagnifiedHeroFocusTimerItem extends StatelessWidget {
-  final bool isSessionActive;
-  final Color activeColor;
-
-  const _ActiveMagnifiedHeroFocusTimerItem({
-    required this.isSessionActive,
-    required this.activeColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = AppTheme.current.isDark;
-    const heroSize = 44.0;
-
-    return Transform.scale(
-      scale: 1.12,
-      alignment: Alignment.center,
-      child: Center(
-        child: Container(
-          width: heroSize,
-          height: heroSize,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: isDark
-                  ? [const Color(0xFF383C4A), const Color(0xFF22252E)]
-                  : [Colors.white, const Color(0xFFE2E8F0)],
-            ),
-            border: Border.all(
-              color: activeColor,
-              width: 2.0,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: activeColor.withValues(alpha: 0.45),
-                blurRadius: 14.0,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Radiant core glow
-              Container(
-                width: 32.0,
-                height: 32.0,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      activeColor.withValues(alpha: 0.35),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-              // Timer Icon
-              SketchNavIcon(
-                type: SketchNavIconType.focus,
-                color: activeColor,
-                size: 21.0,
-                isSelected: true,
-                strokeWidth: 2.0,
-              ),
-              // Status jewel
-              Positioned(
-                top: 2,
-                right: 2,
-                child: Container(
-                  width: 7.0,
-                  height: 7.0,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isSessionActive
-                        ? const Color(0xFF10B981)
-                        : activeColor.withValues(alpha: 0.90),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (isSessionActive
-                                ? const Color(0xFF10B981)
-                                : activeColor)
-                            .withValues(alpha: 0.7),
-                        blurRadius: 5.0,
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ],
