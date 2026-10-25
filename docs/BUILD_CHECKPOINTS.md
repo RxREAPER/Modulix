@@ -112,6 +112,27 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-062] Supabase Realtime Study Lounge Presence (Zero-DB Peer Companionship)
+- **Timestamp:** 2026-10-25 11:05 UTC
+- **Category:** Backend & Realtime / Live Peer Presence & Study Lounge WebSocket Sync
+- **Files Modified/Created (5 files):**
+  - `lib/services/study_presence_service.dart` (Created Realtime presence service managing `modulix_study_lounge` channel, tracking active study sessions in-memory with zero database load or storage cost, calculating unique active doctor count)
+  - `lib/providers/focus_timer_provider.dart` (Connected timer lifecycle: automatically broadcasts presence on timer start/resume, and untracks presence on pause, break, or completion)
+  - `lib/screens/analytics/leaderboard_screen.dart` (Integrated subtle live peer pill `[ 🟢 X in focus ]` into AppBar actions, only visible when colleagues are actively in focus)
+  - `lib/screens/timer/focus_timer_screen.dart` (Integrated matching subtle live peer pill in top-left dock, giving a warm digital library feeling without distracting the student)
+  - `test/realtime_presence_test.dart` (Integration test suite verifying live WebSocket subscription, peer tracking, presence synchronization, and service lifecycle against Supabase)
+- **Summary:**
+  - Solved study isolation for medical students studying late at night or during grueling exam blocks with zero database write load or storage costs.
+  - Implemented in-memory WebSocket presence via Supabase Realtime (`modulix_study_lounge` channel).
+  - Automatically activates when timer starts and cleanly untracks on pause, break, or completion.
+  - Zero UI layout shifts: subtle pill appears gracefully only when 1+ doctors are active.
+- **Verification:**
+  - `flutter analyze`: **No issues found! (0 errors, 0 warnings)**
+  - `flutter test test/realtime_presence_test.dart`: **All 2 tests passed! (100%)**
+  - `flutter test test/server_leaderboard_test.dart`: **All 7 tests passed! (100%)**
+  - `flutter test test/leaderboard_test.dart`: **All 6 tests passed! (100%)**
+- **Status:** ⏳ Pending APK Build / Verified
+
 ### [CKPT-061] Supabase Leaderboard Bundled RPC, Micro-Payload Tuples & Idempotent Session Sync
 - **Timestamp:** 2026-10-25 09:45 UTC
 - **Category:** Backend & Scalability / Supabase Leaderboard Optimization, Covering Indexes & Micro-Payload Architecture

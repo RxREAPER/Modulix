@@ -11,6 +11,7 @@ import '../../widgets/analytics/personal_standing_dock.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/profile/profile_customization.dart';
 import '../../widgets/rank_badge.dart';
+import '../../services/study_presence_service.dart';
 
 /// Modulix Focus Leaderboard Screen.
 /// Displays Top 20 standings across Daily, Weekly, Monthly, and Yearly scales,
@@ -58,6 +59,52 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
             color: AppTheme.inkForeground,
           ),
         ),
+        actions: [
+          Consumer(
+            builder: (context, ref, _) {
+              final presence = ref.watch(studyPresenceProvider);
+              final count = presence.activeDoctorsCount;
+              if (count <= 0) return const SizedBox.shrink();
+              return Center(
+                child: Container(
+                  margin: const EdgeInsets.only(right: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.28),
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFF10B981),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '$count in focus',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF047857),
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Stack(
         children: [

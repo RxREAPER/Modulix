@@ -21,6 +21,7 @@ import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/in_situ_hint_pill.dart';
 import '../../widgets/discovery_pulse.dart';
 import '../../widgets/timer/medical_wave_visualizer.dart';
+import '../../services/study_presence_service.dart';
 
 class FocusTimerScreen extends ConsumerStatefulWidget {
   final String? initialSubjectId;
@@ -614,6 +615,58 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                     alignment: Alignment.topCenter,
                     clipBehavior: Clip.none,
                     children: [
+                      // ── TOP-LEFT: Active Peer Count (Subtle Live Indicator)
+                      Align(
+                        alignment: Alignment.topLeft,
+                        child: Consumer(
+                          builder: (context, ref, _) {
+                            final presence = ref.watch(studyPresenceProvider);
+                            final count = presence.activeDoctorsCount;
+                            if (count <= 0) return const SizedBox.shrink();
+                            return Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                              decoration: BoxDecoration(
+                                color: isLight
+                                    ? Colors.white.withValues(alpha: 0.92)
+                                    : Colors.black.withValues(alpha: 0.38),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: isLight
+                                      ? const Color(0xFFE2E8F0)
+                                      : Colors.white.withValues(alpha: 0.20),
+                                  width: 1.0,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Color(0xFF10B981),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '$count in focus',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: isLight
+                                          ? const Color(0xFF047857)
+                                          : Colors.white.withValues(alpha: 0.9),
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+
                       // ── CENTER-UP: "SET-UP" Config Pill (True Horizontal Center)
                       Align(
                         alignment: Alignment.topCenter,

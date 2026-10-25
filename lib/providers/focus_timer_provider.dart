@@ -14,6 +14,7 @@ import '../services/notification_service.dart';
 import '../services/analytics_service.dart';
 import '../services/sync_service.dart';
 import '../services/ambient_audio_service.dart';
+import '../services/study_presence_service.dart';
 
 enum TimerMode { pomodoro, countUp, moduleLinked }
 enum TimerPhase { idle, focusing, onBreak }
@@ -422,6 +423,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
       NotificationService.instance.cancelFocusTimerEnd();
       NotificationService.instance.cancelFocusTimerRunning();
       AmbientAudioService.instance.onTimerPause();
+      StudyPresenceService.instance.stopFocusSession();
       state = state.copyWith(isRunning: false);
     } else {
       final newPhase = state.phase == TimerPhase.idle ? TimerPhase.focusing : state.phase;
@@ -462,6 +464,12 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
       }
       _ticker = Timer.periodic(const Duration(milliseconds: 200), (_) => _tick());
       AmbientAudioService.instance.onTimerStartOrResume();
+      if (newPhase == TimerPhase.focusing) {
+        StudyPresenceService.instance.startFocusSession(
+          subjectName: state.subjectName,
+          topicTitle: state.topicTitle,
+        );
+      }
     }
   }
 
@@ -471,6 +479,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     final willBeBreak = state.phase != TimerPhase.onBreak;
     if (willBeBreak) {
       // Break is now a count-up timer!
+      StudyPresenceService.instance.stopFocusSession();
       _sessionTargetEndTime = null;
       _lastTickWallTime = DateTime.now();
       state = state.copyWith(
@@ -493,6 +502,12 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
         phase: TimerPhase.focusing,
         remainingSeconds: resumeSeconds,
       );
+      if (state.isRunning) {
+        StudyPresenceService.instance.startFocusSession(
+          subjectName: state.subjectName,
+          topicTitle: state.topicTitle,
+        );
+      }
     }
 
     if (alertsEnabled) {
@@ -607,6 +622,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     }
 
     SyncService.instance.schedulePush(_ref);
+    StudyPresenceService.instance.stopFocusSession();
     return log;
   }
 
@@ -617,6 +633,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     NotificationService.instance.cancelFocusTimerEnd();
     NotificationService.instance.cancelFocusTimerRunning();
     AmbientAudioService.instance.onTimerPause();
+    StudyPresenceService.instance.stopFocusSession();
     state = FocusTimerState(
       theme: state.theme,
       activeSoundId: state.activeSoundId,
@@ -633,6 +650,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     NotificationService.instance.cancelFocusTimerEnd();
     NotificationService.instance.cancelFocusTimerRunning();
     AmbientAudioService.instance.onTimerPause();
+    StudyPresenceService.instance.stopFocusSession();
     final rem = state.mode == TimerMode.pomodoro
         ? state.pomodoroPresetMins * 60
         : (state.mode == TimerMode.moduleLinked ? state.modulePresetMins * 60 : 0);
