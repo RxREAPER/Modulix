@@ -4,6 +4,20 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.14.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (237MB)
+- **Compilation Time:** 333.4s | **Test Suite:** 5/5 Navigation Tests Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-066]`
+
+### Key Highlights & Releases in v1.14.0:
+1. **Interactive Liquid Glass Magnifying Lens Navigation Bar (`lib/widgets/lovable_nav_bar.dart`, `lib/widgets/nav/liquid_lens_bubble.dart`):** Faithfully reproduced the interactive optical magnifying glass bubble navigation bar from the reference video (`https://youtube.com/shorts/aqzq1X_EuFY`). Real-time continuous 1:1 horizontal drag tracking allows the user to slide the lens bubble smoothly across all slots with their thumb.
+2. **Optical Dual-Layer Magnification Masking (`lib/widgets/nav/liquid_lens_bubble.dart`):** Engineered a subpixel-aligned dual-layer optical lens clip with `ClipRRect` and `OverflowBox`. As the glass bubble passes over navigation items, whatever is inside the lens dynamically turns vibrant active blue/accent (`#007AFF` / `AppTheme.accentPrimary`) and magnifies by 1.14x, while icons and text outside remain clean, neutral slate.
+3. **Chromatic Rainbow Caustic Crescent & Specular Shaders (`lib/widgets/nav/liquid_lens_bubble.dart`):** Handcrafted custom shader painting a 7-color spectral rainbow dispersion crescent dipping 3.2px along the bottom curved edge of the pill (creating the authentic liquid droplet meniscus from the video), topped with a crisp white specular reflection highlight arc.
+4. **Fluid Ease-Out Cubic Deceleration & Velocity Momentum:** Smooth cubic glide (`Curves.easeOutCubic`, 240ms) on finger release and tap without artificial cartoon rubbery wobbling or spring oscillation, adhering strictly to user preferences.
+5. **Full Icon Suite & Focus Timer Hero Preservation:** Retained user's custom navbar PNG icons (`assets/icons/navbar/` - Home, Library, Timer, Progress [Medallion Badge with Star & Ribbons], Profile), with custom elevated Focus Timer hero button featuring radiant core glow, live status jewel, and breathing holographic aura during active focus sessions.
+
+---
+
 ## 🚀 Build Manifest v1.13.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (236MB)
 - **Compilation Time:** 324.8s | **Test Suite:** 16/16 Navigation & Leaderboard Tests Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
@@ -158,7 +172,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Verification:**
   - `flutter analyze lib/widgets/lovable_nav_bar.dart lib/widgets/nav/liquid_lens_bubble.dart`: **No issues found! (0 errors, 0 warnings)**
   - `flutter test test/lovable_nav_bar_test.dart test/tab_persistence_test.dart`: **All 5 tests passed! (100%)**
-- **Status:** ⏳ Pending APK Build
+- **Status:** ✅ Included in Build (Build Manifest v1.14.0)
 
 ### [CKPT-065] Liquid Glass Floating Stadium Dock, Fixed-Slot Layout & Restored Custom Icons (Badge Medallion)
 - **Timestamp:** 2026-10-25 13:58 UTC
