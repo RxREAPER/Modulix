@@ -4,6 +4,19 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.13.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (236MB)
+- **Compilation Time:** 324.8s | **Test Suite:** 16/16 Navigation & Leaderboard Tests Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-065]`
+
+### Key Highlights & Releases in v1.13.0:
+1. **Faithful Liquid Glass Navigation Bar (`lib/widgets/lovable_nav_bar.dart`):** Rebuilt the floating stadium navigation dock to match the Apple App Store / Instagram liquid glass design from the reference YouTube Short (`aqzq1X_EuFY`). Real frosted glass translucency with `BackdropFilter` (sigma 18 blur), specular edge border, and multi-layer soft ambient elevation shadows.
+2. **100% Fixed-Slot Layout Stability (`lib/widgets/lovable_nav_bar.dart`):** Replaced dynamic expanding tab flex (`flex: 100..180`) with strictly fixed equal slots (`totalWidth / 5.0`). All 5 tabs remain firmly anchored at all times without squishing, expanding, or shifting adjacent tabs when switching.
+3. **Rock-Solid Vertical Baseline & Continuous Labels (`lib/widgets/lovable_nav_bar.dart`):** Always renders labels with `AnimatedDefaultTextStyle`, maintaining a consistent vertical baseline across all slots and eliminating any icon jumping or vertical layout shifts when selecting tabs.
+4. **Fluid Liquid Glass Indicator with Momentum Stretch (`lib/widgets/nav/sketch_hatch_indicator.dart`):** High-precision sliding stadium capsule indicator with momentum physics that slightly stretches pill width during transit across slots, topped with a glass specular reflection highlight.
+5. **Restored User's Latest Custom Navbar Icons (`lib/widgets/nav/sketch_nav_icons.dart`):** Reinstated user's custom PNG icons from `assets/icons/navbar/` (`nav_home.png`, `nav_library.png`, `nav_timer.png`, `nav_progress.png` [Badge medallion with star & ribbons], `nav_profile.png`) and updated vector fallback painter `_paintProgress` to match the badge medallion.
+6. **Elevated Center Focus Timer Hero Button (`lib/widgets/lovable_nav_bar.dart`):** Retained circular hero button with distinct gradient fill, radial accent rim, breathing holographic aura pulsing during active sessions, radiant core glow, and live status jewel.
+
 ---
 
 ## 🚀 Build Manifest v1.12.0
@@ -147,7 +160,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - `flutter test test/tab_persistence_test.dart`: **All 1 tests passed! (100%)**
   - `flutter test test/leaderboard_test.dart`: **All 9 tests passed! (100%)**
   - `flutter test test/realtime_presence_test.dart`: **All 2 tests passed! (100%)**
-- **Status:** ⏳ Pending APK Build / Verified
+- **Status:** ✅ Included in Build v1.13.0
 
 ### [CKPT-064] Animated Expanding-Pill Bottom Nav Dock, Hero Focus Timer Button & Harmonized Vector Icons
 - **Timestamp:** 2026-10-25 12:10 UTC
