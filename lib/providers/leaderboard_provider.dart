@@ -186,83 +186,119 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
     List<LeaderboardEntry>? remoteWeekly;
     List<LeaderboardEntry>? remoteMonthly;
     List<LeaderboardEntry>? remoteYearly;
+    Map<String, dynamic>? serverUserStanding;
+    int? serverTotalUsers;
 
     final client = AuthService.instance.client;
     if (AuthService.instance.isReady && client != null) {
       try {
-        final dailyRes = await client
-            .from('profiles')
-            .select('id, doctor_name, display_name, daily_study_secs, total_study_secs, avatar_color_id, avatar_icon_id')
-            .eq('leaderboard_visible', true)
-            .order('daily_study_secs', ascending: false)
-            .limit(20);
+        final bundleRes = await client.rpc('get_leaderboard_bundle', params: {
+          'p_user_id': (currentUserId != 'local_user' && currentUserId.isNotEmpty) ? currentUserId : null,
+          'p_limit': 20,
+        });
 
-        if (dailyRes.isNotEmpty) {
-          int r = 1;
-          remoteDaily = dailyRes.map<LeaderboardEntry>((item) {
-            final e = LeaderboardEntry.fromJson(
-              item,
-              currentUserId: currentUserId,
-            );
-            return e.copyWith(rank: r++);
-          }).toList();
-        }
+        if (bundleRes is Map<String, dynamic>) {
+          serverTotalUsers = (bundleRes['total_users'] as num?)?.toInt();
+          serverUserStanding = bundleRes['user_standing'] as Map<String, dynamic>?;
 
-        final weeklyRes = await client
-            .from('profiles')
-            .select('id, doctor_name, display_name, weekly_study_secs, total_study_secs, avatar_color_id, avatar_icon_id')
-            .eq('leaderboard_visible', true)
-            .order('weekly_study_secs', ascending: false)
-            .limit(20);
+          List<LeaderboardEntry>? parseList(dynamic rawList) {
+            if (rawList is List && rawList.isNotEmpty) {
+              int r = 1;
+              return rawList.map<LeaderboardEntry>((item) {
+                if (item is List) {
+                  return LeaderboardEntry.fromTuple(item, currentUserId: currentUserId, rank: r++);
+                } else if (item is Map<String, dynamic>) {
+                  final e = LeaderboardEntry.fromJson(item, currentUserId: currentUserId);
+                  return e.copyWith(rank: r++);
+                }
+                return LeaderboardEntry(id: '', displayName: 'Dr. Colleague', totalSeconds: 0, rank: r++, level: UserLevel.intern);
+              }).toList();
+            }
+            return null;
+          }
 
-        if (weeklyRes.isNotEmpty) {
-          int r = 1;
-          remoteWeekly = weeklyRes.map<LeaderboardEntry>((item) {
-            final e = LeaderboardEntry.fromJson(
-              item,
-              currentUserId: currentUserId,
-            );
-            return e.copyWith(rank: r++);
-          }).toList();
-        }
-
-        final monthlyRes = await client
-            .from('profiles')
-            .select('id, doctor_name, display_name, monthly_study_secs, total_study_secs, avatar_color_id, avatar_icon_id')
-            .eq('leaderboard_visible', true)
-            .order('monthly_study_secs', ascending: false)
-            .limit(20);
-
-        if (monthlyRes.isNotEmpty) {
-          int r = 1;
-          remoteMonthly = monthlyRes.map<LeaderboardEntry>((item) {
-            final e = LeaderboardEntry.fromJson(
-              item,
-              currentUserId: currentUserId,
-            );
-            return e.copyWith(rank: r++);
-          }).toList();
-        }
-
-        final yearlyRes = await client
-            .from('profiles')
-            .select('id, doctor_name, display_name, total_study_secs, avatar_color_id, avatar_icon_id')
-            .eq('leaderboard_visible', true)
-            .order('total_study_secs', ascending: false)
-            .limit(20);
-
-        if (yearlyRes.isNotEmpty) {
-          int r = 1;
-          remoteYearly = yearlyRes.map<LeaderboardEntry>((item) {
-            final e = LeaderboardEntry.fromJson(
-              item,
-              currentUserId: currentUserId,
-            );
-            return e.copyWith(rank: r++);
-          }).toList();
+          remoteDaily = parseList(bundleRes['daily']);
+          remoteWeekly = parseList(bundleRes['weekly']);
+          remoteMonthly = parseList(bundleRes['monthly']);
+          remoteYearly = parseList(bundleRes['yearly']);
         }
       } catch (e) {
-        debugPrint('[LeaderboardNotifier] Remote query exception: $e');
+        debugPrint('[LeaderboardNotifier] Bundled RPC query exception, falling back: $e');
+        try {
+          final dailyRes = await client
+              .from('profiles')
+              .select('id, doctor_name, display_name, daily_study_secs, total_study_secs, avatar_color_id, avatar_icon_id')
+              .eq('leaderboard_visible', true)
+              .order('daily_study_secs', ascending: false)
+              .limit(20);
+
+          if (dailyRes.isNotEmpty) {
+            int r = 1;
+            remoteDaily = dailyRes.map<LeaderboardEntry>((item) {
+              final e = LeaderboardEntry.fromJson(
+                item,
+                currentUserId: currentUserId,
+              );
+              return e.copyWith(rank: r++);
+            }).toList();
+          }
+
+          final weeklyRes = await client
+              .from('profiles')
+              .select('id, doctor_name, display_name, weekly_study_secs, total_study_secs, avatar_color_id, avatar_icon_id')
+              .eq('leaderboard_visible', true)
+              .order('weekly_study_secs', ascending: false)
+              .limit(20);
+
+          if (weeklyRes.isNotEmpty) {
+            int r = 1;
+            remoteWeekly = weeklyRes.map<LeaderboardEntry>((item) {
+              final e = LeaderboardEntry.fromJson(
+                item,
+                currentUserId: currentUserId,
+              );
+              return e.copyWith(rank: r++);
+            }).toList();
+          }
+
+          final monthlyRes = await client
+              .from('profiles')
+              .select('id, doctor_name, display_name, monthly_study_secs, total_study_secs, avatar_color_id, avatar_icon_id')
+              .eq('leaderboard_visible', true)
+              .order('monthly_study_secs', ascending: false)
+              .limit(20);
+
+          if (monthlyRes.isNotEmpty) {
+            int r = 1;
+            remoteMonthly = monthlyRes.map<LeaderboardEntry>((item) {
+              final e = LeaderboardEntry.fromJson(
+                item,
+                currentUserId: currentUserId,
+              );
+              return e.copyWith(rank: r++);
+            }).toList();
+          }
+
+          final yearlyRes = await client
+              .from('profiles')
+              .select('id, doctor_name, display_name, total_study_secs, avatar_color_id, avatar_icon_id')
+              .eq('leaderboard_visible', true)
+              .order('total_study_secs', ascending: false)
+              .limit(20);
+
+          if (yearlyRes.isNotEmpty) {
+            int r = 1;
+            remoteYearly = yearlyRes.map<LeaderboardEntry>((item) {
+              final e = LeaderboardEntry.fromJson(
+                item,
+                currentUserId: currentUserId,
+              );
+              return e.copyWith(rank: r++);
+            }).toList();
+          }
+        } catch (fallbackError) {
+          debugPrint('[LeaderboardNotifier] Remote fallback exception: $fallbackError');
+        }
       }
     }
 
@@ -355,6 +391,8 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
       level: userLevel,
       entries: dailyList,
       userId: currentUserId,
+      serverRank: (serverUserStanding?['daily_rank'] as num?)?.toInt(),
+      totalUsers: serverTotalUsers,
     );
 
     final weeklyStanding = _calculateUserStanding(
@@ -363,6 +401,8 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
       level: userLevel,
       entries: weeklyList,
       userId: currentUserId,
+      serverRank: (serverUserStanding?['weekly_rank'] as num?)?.toInt(),
+      totalUsers: serverTotalUsers,
     );
 
     final monthlyStanding = _calculateUserStanding(
@@ -371,6 +411,8 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
       level: userLevel,
       entries: monthlyList,
       userId: currentUserId,
+      serverRank: (serverUserStanding?['monthly_rank'] as num?)?.toInt(),
+      totalUsers: serverTotalUsers,
     );
 
     final yearlyStanding = _calculateUserStanding(
@@ -379,6 +421,8 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
       level: userLevel,
       entries: yearlyList,
       userId: currentUserId,
+      serverRank: (serverUserStanding?['yearly_rank'] as num?)?.toInt(),
+      totalUsers: serverTotalUsers,
     );
 
     state = state.copyWith(
@@ -400,6 +444,8 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
     required UserLevel level,
     required List<LeaderboardEntry> entries,
     required String userId,
+    int? serverRank,
+    int? totalUsers,
   }) {
     final existingIndex = entries.indexWhere((e) => e.isCurrentUser || e.id == userId);
     int rank;
@@ -407,6 +453,10 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
 
     if (existingIndex >= 0) {
       rank = entries[existingIndex].rank;
+    } else if (serverRank != null && serverRank > 0) {
+      rank = serverRank;
+      final cutoffSecs = entries.isNotEmpty ? entries.last.totalSeconds : 0;
+      gapSecs = max(0, cutoffSecs - userSecs + 60);
     } else {
       // User is outside Top 20
       final cutoffSecs = entries.isNotEmpty ? entries.last.totalSeconds : 0;
@@ -417,7 +467,7 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
     }
 
     // Dynamic percentile (top 1% to top 25%)
-    const totalAspirants = 1420;
+    final totalAspirants = totalUsers ?? 1420;
     final percentile = max(0.5, ((rank / totalAspirants) * 100).clamp(0.5, 99.0));
 
     return UserStanding(

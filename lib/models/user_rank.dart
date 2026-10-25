@@ -229,6 +229,36 @@ class LeaderboardEntry {
       level: UserLevel.fromSeconds((json['total_study_secs'] as num?)?.toInt() ?? rawSecs),
     );
   }
+
+  /// Parses a compact tuple array [id, displayName, scaleSecs, colorId, iconId, totalSecs]
+  factory LeaderboardEntry.fromTuple(List<dynamic> tuple, {String? currentUserId, int rank = 0}) {
+    if (tuple.isEmpty) {
+      return LeaderboardEntry(
+        id: '',
+        displayName: 'Dr. Colleague',
+        totalSeconds: 0,
+        rank: rank,
+        level: UserLevel.intern,
+      );
+    }
+    final uid = tuple[0]?.toString() ?? '';
+    final name = tuple.length > 1 ? (tuple[1]?.toString() ?? 'Dr. Colleague') : 'Dr. Colleague';
+    final rawSecs = tuple.length > 2 ? ((tuple[2] as num?)?.toInt() ?? 0) : 0;
+    final color = tuple.length > 3 ? (tuple[3]?.toString() ?? 'indigo') : 'indigo';
+    final icon = tuple.length > 4 ? (tuple[4]?.toString() ?? 'letter') : 'letter';
+    final totalSecs = tuple.length > 5 ? ((tuple[5] as num?)?.toInt() ?? rawSecs) : rawSecs;
+
+    return LeaderboardEntry(
+      id: uid,
+      displayName: name,
+      totalSeconds: rawSecs,
+      rank: rank,
+      avatarColorId: color,
+      avatarIconId: icon,
+      isCurrentUser: currentUserId != null && currentUserId.isNotEmpty && uid == currentUserId,
+      level: UserLevel.fromSeconds(totalSecs),
+    );
+  }
 }
 
 /// Personal standing representation for the logged-in doctor.

@@ -274,5 +274,90 @@ void main() {
           .single();
       expect(UserLevel.fromSeconds((restoredRes['total_study_secs'] as num).toInt()), UserLevel.intern);
     });
+
+    test('6. Verify single-roundtrip get_leaderboard_bundle returns compact micro-payload for all 4 scales', () async {
+      const testUserId = '00000000-0000-0000-0000-000000000001';
+
+      final bundleRes = await client.rpc(
+        'get_leaderboard_bundle',
+        params: {
+          'p_user_id': testUserId,
+          'p_limit': 10,
+        },
+      );
+
+      expect(bundleRes, isNotNull);
+      expect(bundleRes, isA<Map<String, dynamic>>());
+
+      final bundle = bundleRes as Map<String, dynamic>;
+      expect(bundle.containsKey('daily'), isTrue);
+      expect(bundle.containsKey('weekly'), isTrue);
+      expect(bundle.containsKey('monthly'), isTrue);
+      expect(bundle.containsKey('yearly'), isTrue);
+      expect(bundle.containsKey('total_users'), isTrue);
+      expect(bundle.containsKey('user_standing'), isTrue);
+
+      // Verify compact tuple format: [id, name, secs, color, icon, total_secs]
+      final dailyList = bundle['daily'] as List<dynamic>;
+      expect(dailyList, isNotEmpty);
+      final firstDailyTuple = dailyList.first as List<dynamic>;
+      expect(firstDailyTuple.length, greaterThanOrEqualTo(6));
+
+      // Test defensive tuple deserialization
+      final leader = LeaderboardEntry.fromTuple(firstDailyTuple, rank: 1);
+      expect(leader.displayName, 'Dr. Gregory House');
+      expect(leader.rank, 1);
+      expect(leader.level, UserLevel.professor);
+
+      // Verify user standing object
+      final standing = bundle['user_standing'] as Map<String, dynamic>;
+      expect(standing['daily_rank'], isNotNull);
+      expect(standing['weekly_rank'], isNotNull);
+      expect(standing['monthly_rank'], isNotNull);
+      expect(standing['yearly_rank'], isNotNull);
+    });
+
+    test('7. Verify idempotent focus session logging prevents duplicate double-counting on network dropouts', () async {
+      const testUserId = '00000000-0000-0000-0000-000000000001';
+      final uniqueSessionId = 'idemp_session_${DateTime.now().millisecondsSinceEpoch}';
+
+      // 1. Initial logging of a 45-minute focus session
+      final firstAttempt = await client.rpc(
+        'record_focus_session',
+        params: {
+          'p_user_id': testUserId,
+          'p_session_secs': 2700,
+          'p_session_id': uniqueSessionId,
+        },
+      );
+
+      expect(firstAttempt['status'], 'recorded');
+      final firstProfile = firstAttempt['profile'] as Map<String, dynamic>;
+      final initialTotal = (firstProfile['total_study_secs'] as num).toInt();
+
+      // 2. Network retransmit with identical session_id (e.g. Wi-Fi reconnection retry)
+      final retryAttempt = await client.rpc(
+        'record_focus_session',
+        params: {
+          'p_user_id': testUserId,
+          'p_session_secs': 2700,
+          'p_session_id': uniqueSessionId,
+        },
+      );
+
+      // Server must detect existing session_id, ignore duplicate, and return current profile unchanged
+      expect(retryAttempt['status'], 'duplicate_ignored');
+      final retryProfile = retryAttempt['profile'] as Map<String, dynamic>;
+      expect((retryProfile['total_study_secs'] as num).toInt(), initialTotal);
+
+      // 3. Rollback the 2700 seconds to keep test state clean
+      await client.rpc(
+        'record_focus_session',
+        params: {
+          'p_user_id': testUserId,
+          'p_session_secs': -2700,
+        },
+      );
+    });
   });
 }

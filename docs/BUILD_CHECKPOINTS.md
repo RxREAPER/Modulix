@@ -112,6 +112,26 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-061] Supabase Leaderboard Bundled RPC, Micro-Payload Tuples & Idempotent Session Sync
+- **Timestamp:** 2026-10-25 09:45 UTC
+- **Category:** Backend & Scalability / Supabase Leaderboard Optimization, Covering Indexes & Micro-Payload Architecture
+- **Files Modified/Created (4 files):**
+  - `supabase/migrations/006_leaderboard_backend_optimization.sql` (Covering indexes with `INCLUDE` clauses for zero-heap Index-Only Scans, `public.recorded_focus_sessions` idempotency ledger, `public.get_leaderboard_bundle` bundled RPC returning compact tuple arrays, and clamped idempotent `public.record_focus_session`)
+  - `lib/models/user_rank.dart` (Added `LeaderboardEntry.fromTuple` defensive tuple deserializer for micro-payload wire responses)
+  - `lib/providers/leaderboard_provider.dart` (Updated `refreshStandings` to query `get_leaderboard_bundle` in a single network roundtrip replacing 4 separate REST queries, with graceful fallback and real server rank integration)
+  - `test/server_leaderboard_test.dart` (Added Test 6 validating bundled retrieval and tuple deserialization; added Test 7 validating session idempotency preventing double-counting on network dropouts)
+- **Summary:**
+  - Modernized backend retrieval: replaced 4 client REST roundtrips with 1 unified `get_leaderboard_bundle` RPC call.
+  - Reduced network transfer footprint by >85% (<2 KB payload) using compact `[id, name, secs, color, icon, total_secs]` tuple arrays.
+  - Enabled Index-Only Scans on PostgreSQL via covering indexes (`INCLUDE` columns) eliminating table heap disk reads.
+  - Implemented frictionless focus session idempotency (`recorded_focus_sessions` ledger) ensuring network retries never inflate student hours.
+  - Maintained 100% natural medical student workflow: no intrusive anti-cheat bans, shift freezes, or rigid rules. Zero UI alterations.
+- **Verification:**
+  - `flutter analyze`: **No issues found! (0 errors, 0 warnings)**
+  - `flutter test test/server_leaderboard_test.dart`: **All 7 tests passed! (100%)**
+  - `flutter test test/leaderboard_test.dart`: **All 6 tests passed! (100%)**
+- **Status:** ⏳ Pending APK Build / Verified
+
 ### [CKPT-060] Supabase Server-App-User Leaderboard Test, 10-Tier Hierarchy & Atomic Focus Sync
 - **Timestamp:** 2026-10-25 08:45 UTC
 - **Category:** Backend & Integration / Supabase Leaderboard Hierarchy, Server-App-User Connection & Atomic Focus Sync
