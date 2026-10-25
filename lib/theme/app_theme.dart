@@ -71,10 +71,10 @@ class AppTheme {
         if (shadowOffset > 0)
           BoxShadow(
             color: current.isDark
-                ? Colors.black.withValues(alpha: 0.45)
-                : current.inkForeground.withValues(alpha: 0.12),
+                ? Colors.black.withValues(alpha: 0.35)
+                : const Color(0x0A000000),
             offset: Offset(shadowOffset, shadowOffset),
-            blurRadius: 0,
+            blurRadius: 2,
           ),
       ],
     );
@@ -119,11 +119,11 @@ class AppTheme {
   }
 
   // Brand colors
-  static const _primaryPurple = Color(0xFF6C3BAA);
+  static const _primaryPurple = Color(0xFF007AFF);
   static const _accentRose = Color(0xFFF43F5E);
-  static const _surfaceDark = Color(0xFF12111A);
-  static const _cardDark = Color(0xFF1E1C2E);
-  static const _surfaceLight = Color(0xFFFCFBF8); // Warm paper background
+  static const _surfaceDark = Color(0xFF0B0F19);
+  static const _cardDark = Color(0xFF161B26);
+  static const _surfaceLight = Color(0xFFF8F9FA); // Clean basic light background
   static const _cardLight = Color(0xFFFFFFFF);
 
   static ThemeData light() {

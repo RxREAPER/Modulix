@@ -172,6 +172,23 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-068] Theme Studio Modernization: Paper & Ink and Midnight Slate Converted to Basic Light and Basic Dark
+- **Timestamp:** 2026-10-25 22:18 UTC
+- **Category:** UI / Theme Studio Modernization & Whole-App Color Scheme
+- **Files Modified (4 files):**
+  - `lib/theme/modulix_theme.dart` (Transformed `paper` preset into `Basic Light` with crisp `#F8F9FA` canvas, pure `#FFFFFF` cards, `#F1F5F9` surfaces, subtle `#E2E8F0` borders, `#0F172A` deep ink text, and `#007AFF` Apple Blue accent; transformed `slate` preset into `Basic Dark` with deep `#0B0F19` canvas, `#161B26` cards, `#2E3846` borders, `#F8FAFC` crisp text, and `#38BDF8` bright accent; added aliases `basic_light`, `basic_dark`, `light`, `dark` in getters and `fromId()`; modernized `AccentPigment.cobalt` and updated default extensions)
+  - `lib/theme/app_theme.dart` (Updated static theme bridge brand colors: `_surfaceLight` to `#F8F9FA`, `_surfaceDark` to `#0B0F19`, `_cardDark` to `#161B26`, and `_primaryPurple` to `#007AFF`; updated `sketchDecoration` shadow to modern subtle elevation blur)
+  - `lib/services/tour/app_tour_controller.dart` (Updated interactive tour step 6 description to reference Basic Light and Basic Dark themes concisely under 4 lines without emojis)
+  - `test/theme_system_test.dart` (Updated theme suite to verify `Basic Light` and `Basic Dark` labels, aliases, and dynamic bridge delegation)
+- **Summary:**
+  - Modernized Theme Studio and the entire app's color palette: converted Paper & Ink (warm parchment, beige surfaces, brown sand borders) into a clean, modern Basic Light theme (neutral off-white background, crisp white cards, slate text, subtle light borders, vibrant blue accent).
+  - Converted Midnight Slate into a clean, modern Basic Dark theme (deep neutral dark background, elevated dark cards, crisp white text, and bright blue accent).
+  - Maintained complete backward compatibility for stored user preferences (`'paper'` and `'slate'`).
+- **Verification:**
+  - `flutter analyze lib/theme/modulix_theme.dart lib/theme/app_theme.dart lib/services/tour/app_tour_controller.dart test/theme_system_test.dart`: **No issues found! (0 errors, 0 warnings)**
+  - `flutter test test/theme_system_test.dart test/lovable_nav_bar_test.dart test/tab_persistence_test.dart`: **All 12 tests passed! (100%)**
+- **Status:** ⏳ Pending APK Build
+
 ### [CKPT-067] Apple Glass Navigation Bar with Pomodoro Icon, Material Dot & Fluid Subpage Transition
 - **Timestamp:** 2026-10-25 20:35 UTC
 - **Category:** UI & Motion / Apple Glass Dock & Pill, Pomodoro Tomato Icon, Material Dot & Fluid Entrance/Exit

@@ -18,6 +18,10 @@ void main() {
       expect(PalettePreset.forest_mint.isDark, isFalse);
       expect(PalettePreset.cosmic_mocha.isDark, isFalse);
 
+      expect(PalettePreset.basic_light, PalettePreset.paper);
+      expect(PalettePreset.basic_dark, PalettePreset.slate);
+      expect(PalettePreset.light, PalettePreset.paper);
+      expect(PalettePreset.dark, PalettePreset.slate);
       expect(PalettePreset.atomic_orange, PalettePreset.atomic_ice);
       expect(PalettePreset.ice_cream_blue, PalettePreset.atomic_ice);
       expect(PalettePreset.forest_code, PalettePreset.forest_mint);
@@ -26,8 +30,12 @@ void main() {
       expect(PalettePreset.mocha_cream, PalettePreset.cosmic_mocha);
 
       expect(PalettePreset.fromId('classic_light'), PalettePreset.paper);
+      expect(PalettePreset.fromId('basic_light'), PalettePreset.paper);
+      expect(PalettePreset.fromId('light'), PalettePreset.paper);
       expect(PalettePreset.fromId('pure_oled'), PalettePreset.slate);
       expect(PalettePreset.fromId('obsidian'), PalettePreset.slate);
+      expect(PalettePreset.fromId('basic_dark'), PalettePreset.slate);
+      expect(PalettePreset.fromId('dark'), PalettePreset.slate);
       expect(PalettePreset.fromId('sepia_parchment'), PalettePreset.cosmic_mocha);
       expect(PalettePreset.fromId('sepia'), PalettePreset.cosmic_mocha);
       expect(PalettePreset.fromId('slate_midnight'), PalettePreset.slate);
@@ -120,8 +128,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Theme Studio'), findsOneWidget);
-      expect(find.text('Paper & Ink'), findsWidgets);
-      expect(find.text('Midnight Slate'), findsOneWidget);
+      expect(find.text('Basic Light'), findsWidgets);
+      expect(find.text('Basic Dark'), findsOneWidget);
       expect(find.text('Atomic Orange + Ice Cream Blue'), findsOneWidget);
       expect(find.text('Forest Code + Mint Fog'), findsOneWidget);
       expect(find.text('Cosmic Latte + Mocha Cream'), findsOneWidget);

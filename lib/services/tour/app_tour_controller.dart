@@ -144,7 +144,7 @@ const List<TourStepData> kTourSteps = [
     title: 'Doctor Profile & Theme Studio',
     category: 'STUDY ENVIRONMENT',
     description:
-        'Personalize your doctor avatar and switch across 5 handcrafted presets including Paper, Obsidian, Slate, Sepia, and Nordic.',
+        'Personalize your doctor avatar and switch across themes including Basic Light, Basic Dark, and custom palettes.',
     bulletPoints: [],
     route: '/settings',
     targetIds: [TourTargetId.settingsProfileCard, TourTargetId.settingsThemeSection],

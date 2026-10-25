@@ -5,39 +5,39 @@ import 'package:flutter/material.dart';
 enum PalettePreset {
   paper(
     id: 'paper',
-    label: 'Paper & Ink',
-    description: 'Warm tactile parchment with deep archival ink accent',
+    label: 'Basic Light',
+    description: 'Clean, modern minimalist light atmosphere',
     isDark: false,
-    scaffoldBackground: Color(0xFFF7F5EE),
+    scaffoldBackground: Color(0xFFF8F9FA),
     cardBackground: Color(0xFFFFFFFF),
-    surfaceSubtle: Color(0xFFEFECE1),
-    borderSubtle: Color(0xFFBDB39E),
-    inkForeground: Color(0xFF1E1E1E),
-    mutedText: Color(0xFF6B6860),
-    accent: Color(0xFF384F66),
-    secondaryAccent: Color(0xFF556F8A),
-    tertiaryAccent: Color(0xFF788D7A),
-    quaternaryAccent: Color(0xFF9E8E78),
-    accentDark: Color(0xFF5B7A98),
-    accentSubtle: Color(0xFFEBF1F6),
+    surfaceSubtle: Color(0xFFF1F5F9),
+    borderSubtle: Color(0xFFE2E8F0),
+    inkForeground: Color(0xFF0F172A),
+    mutedText: Color(0xFF64748B),
+    accent: Color(0xFF007AFF),
+    secondaryAccent: Color(0xFF475569),
+    tertiaryAccent: Color(0xFF0EA5E9),
+    quaternaryAccent: Color(0xFF8B5CF6),
+    accentDark: Color(0xFF3B82F6),
+    accentSubtle: Color(0xFFEFF6FF),
   ),
   slate(
     id: 'slate',
-    label: 'Midnight Slate',
-    description: 'Deep obsidian slate night with cool steel accent',
+    label: 'Basic Dark',
+    description: 'Clean, modern minimalist dark atmosphere',
     isDark: true,
-    scaffoldBackground: Color(0xFF090D14),
-    cardBackground: Color(0xFF111722),
-    surfaceSubtle: Color(0xFF182030),
-    borderSubtle: Color(0xFF243044),
-    inkForeground: Color(0xFFF1F5F9),
+    scaffoldBackground: Color(0xFF0B0F19),
+    cardBackground: Color(0xFF161B26),
+    surfaceSubtle: Color(0xFF222938),
+    borderSubtle: Color(0xFF2E3846),
+    inkForeground: Color(0xFFF8FAFC),
     mutedText: Color(0xFF94A3B8),
-    accent: Color(0xFF5E81A2),
-    secondaryAccent: Color(0xFF3B5773),
-    tertiaryAccent: Color(0xFF4E9F9F),
-    quaternaryAccent: Color(0xFF7E72B5),
-    accentDark: Color(0xFF5E81A2),
-    accentSubtle: Color(0xFF162536),
+    accent: Color(0xFF38BDF8),
+    secondaryAccent: Color(0xFF94A3B8),
+    tertiaryAccent: Color(0xFF2DD4BF),
+    quaternaryAccent: Color(0xFFC084FC),
+    accentDark: Color(0xFF38BDF8),
+    accentSubtle: Color(0xFF1E293B),
   ),
   atomic_ice(
     id: 'atomic_ice',
@@ -131,6 +131,10 @@ enum PalettePreset {
   });
 
   // Backward compatibility getters
+  static PalettePreset get basic_light => paper;
+  static PalettePreset get basic_dark => slate;
+  static PalettePreset get light => paper;
+  static PalettePreset get dark => slate;
   static PalettePreset get paper_ink => paper;
   static PalettePreset get midnight_slate => slate;
   static PalettePreset get atomic_orange => atomic_ice;
@@ -141,14 +145,20 @@ enum PalettePreset {
   static PalettePreset get mocha_cream => cosmic_mocha;
 
   static PalettePreset fromId(String? id) {
-    if (id == 'paper' || id == 'paper_ink' || id == 'classic_light') {
+    if (id == 'paper' ||
+        id == 'paper_ink' ||
+        id == 'classic_light' ||
+        id == 'basic_light' ||
+        id == 'light') {
       return PalettePreset.paper;
     }
     if (id == 'slate' ||
         id == 'midnight_slate' ||
         id == 'pure_oled' ||
         id == 'obsidian' ||
-        id == 'slate_midnight') {
+        id == 'slate_midnight' ||
+        id == 'basic_dark' ||
+        id == 'dark') {
       return PalettePreset.slate;
     }
     if (id == 'atomic_ice' ||
@@ -186,9 +196,9 @@ enum AccentPigment {
   cobalt(
     id: 'cobalt',
     label: 'Cobalt',
-    color: Color(0xFF43658B),
-    colorDark: Color(0xFF6B8FA8),
-    colorMuted: Color(0xFFE8EEF4),
+    color: Color(0xFF007AFF),
+    colorDark: Color(0xFF38BDF8),
+    colorMuted: Color(0xFFEFF6FF),
   ),
   emerald(
     id: 'emerald',
@@ -323,18 +333,37 @@ class ModulixThemeExtension extends ThemeExtension<ModulixThemeExtension> {
   static const defaultPaper = ModulixThemeExtension(
     preset: PalettePreset.paper,
     accentPigment: AccentPigment.cobalt,
-    scaffoldBackground: Color(0xFFF7F5EE),
+    scaffoldBackground: Color(0xFFF8F9FA),
     cardBackground: Color(0xFFFFFFFF),
-    surfaceSubtle: Color(0xFFEFECE1),
-    borderSubtle: Color(0xFFD6CEBC),
-    inkForeground: Color(0xFF1E1E1E),
-    mutedText: Color(0xFF6B6860),
-    accent: Color(0xFF384F66),
-    secondaryAccent: Color(0xFF556F8A),
-    tertiaryAccent: Color(0xFF788D7A),
-    quaternaryAccent: Color(0xFF9E8E78),
-    accentSubtle: Color(0xFFEBF1F6),
+    surfaceSubtle: Color(0xFFF1F5F9),
+    borderSubtle: Color(0xFFE2E8F0),
+    inkForeground: Color(0xFF0F172A),
+    mutedText: Color(0xFF64748B),
+    accent: Color(0xFF007AFF),
+    secondaryAccent: Color(0xFF475569),
+    tertiaryAccent: Color(0xFF0EA5E9),
+    quaternaryAccent: Color(0xFF8B5CF6),
+    accentSubtle: Color(0xFFEFF6FF),
     isDark: false,
+  );
+
+  static const defaultLight = defaultPaper;
+  static const defaultBasicLight = defaultPaper;
+  static const defaultBasicDark = ModulixThemeExtension(
+    preset: PalettePreset.slate,
+    accentPigment: AccentPigment.cobalt,
+    scaffoldBackground: Color(0xFF0B0F19),
+    cardBackground: Color(0xFF161B26),
+    surfaceSubtle: Color(0xFF222938),
+    borderSubtle: Color(0xFF2E3846),
+    inkForeground: Color(0xFFF8FAFC),
+    mutedText: Color(0xFF94A3B8),
+    accent: Color(0xFF38BDF8),
+    secondaryAccent: Color(0xFF94A3B8),
+    tertiaryAccent: Color(0xFF2DD4BF),
+    quaternaryAccent: Color(0xFFC084FC),
+    accentSubtle: Color(0xFF1E293B),
+    isDark: true,
   );
 
   @override
