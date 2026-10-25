@@ -108,10 +108,17 @@ class _LovableNavBarState extends State<LovableNavBar>
       curve: Curves.easeOutCubic,
     );
     _glideController.addListener(() {
-      if (mounted && _glideController.isAnimating) {
+      if (mounted) {
         setState(() {
           _bubbleCenterX = _glideStartX +
               (_glideEndX - _glideStartX) * _glideAnimation.value;
+        });
+      }
+    });
+    _glideController.addStatusListener((status) {
+      if (status == AnimationStatus.completed && mounted) {
+        setState(() {
+          _bubbleCenterX = _glideEndX;
         });
       }
     });
@@ -417,12 +424,12 @@ class _LovableNavBarState extends State<LovableNavBar>
                       final currentSlot =
                           _slotFromTabIndex(widget.currentIndex, hasTasksTab);
 
+                      final targetCenter = (currentSlot + 0.5) * slotWidth;
                       if (_bubbleCenterX < 0 ||
-                          (_lastTotalWidth > 0 &&
-                              (_lastTotalWidth - totalWidth).abs() > 1.0 &&
-                              !_isDragging &&
-                              !_glideController.isAnimating)) {
-                        _bubbleCenterX = (currentSlot + 0.5) * slotWidth;
+                          (!_isDragging &&
+                              !_glideController.isAnimating &&
+                              (_bubbleCenterX - targetCenter).abs() > 0.5)) {
+                        _bubbleCenterX = targetCenter;
                       }
                       _lastTotalWidth = totalWidth;
 
@@ -434,7 +441,7 @@ class _LovableNavBarState extends State<LovableNavBar>
                           (_bubbleCenterX / slotWidth).floor().clamp(0, slotCount - 1);
 
                       return GestureDetector(
-                        behavior: HitTestBehavior.translucent,
+                        behavior: HitTestBehavior.opaque,
                         onHorizontalDragStart: (details) {
                           _glideController.stop();
                           _isDragging = true;

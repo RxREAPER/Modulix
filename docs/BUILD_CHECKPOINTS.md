@@ -4,6 +4,22 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.15.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (237MB)
+- **Device Tested:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
+- **Compilation Time:** 190.0s | **Test Suite:** 5/5 Navigation Tests Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-067]`
+
+### Key Highlights & Releases in v1.15.0:
+1. **Authentic Apple Glass Navigation Dock & Sliding Pill (`lib/widgets/lovable_nav_bar.dart`, `lib/widgets/nav/liquid_lens_bubble.dart`):** Refined the floating stadium dock and sliding indicator pill to true Apple Glass aesthetics. Features a frosted translucent gradient fill with top-to-bottom luminance, crisp 1px top-lit specular perimeter glass rim, dual-layer ambient elevation drop shadows (8px blur), and 20.0 sigma backdrop blur.
+2. **Subtle Material Design Active Indicator Dot (`lib/widgets/nav/liquid_lens_bubble.dart`):** Eliminated chromatic rainbow caustic shaders per user request, replacing them with a crisp, subtle 3.6px Material Design active indicator dot in `accentColor` centered near the bottom edge of the active glass pill.
+3. **Single-Layer Professional Apple HIG Icon Suite (`lib/widgets/lovable_nav_bar.dart`):** Eliminated dual-layer optical magnification masks and sliced icon artifacts in favor of a clean, single-layer Apple HIG icon row. Active tabs smoothly highlight in accent teal with bold typography, while inactive tabs remain in Apple System Gray.
+4. **Pomodoro Technique Tomato Clock Hero Button (`lib/widgets/lovable_nav_bar.dart`, `assets/icons/navbar/pomodoro-technique.png`):** Completely removed status jewel dots on the elevated center Focus Timer hero button. Integrated the vibrant full-color Pomodoro Technique tomato clock icon (`pomodoro-technique.png`) copied from user's Documents, preserving its natural colors with `SketchNavIconType.pomodoro`.
+5. **Fluid Apple Subpage Transition Motion (`lib/widgets/lovable_nav_bar.dart`):** Smooth 96px vertical translation and subtle scale transition (`0.96` to `1.0`) with cubic easing (`Curves.easeOutCubic` on entrance, `Curves.easeInCubic` on exit) when navigating into subpages or returning to root branches.
+6. **Opaque Touch Architecture & Continuous Drag Tracking (`lib/widgets/lovable_nav_bar.dart`):** Enforced `HitTestBehavior.opaque` on the dock to prevent tap pass-through to background list cards; retained continuous 1:1 horizontal thumb drag tracking, haptic slot ticks, and momentum glide snapping.
+
+---
+
 ## 🚀 Build Manifest v1.14.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (237MB)
 - **Compilation Time:** 333.4s | **Test Suite:** 5/5 Navigation Tests Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
@@ -169,7 +185,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Verification:**
   - `flutter analyze lib/widgets/lovable_nav_bar.dart lib/widgets/nav/liquid_lens_bubble.dart lib/widgets/nav/sketch_nav_icons.dart`: **No issues found! (0 errors, 0 warnings)**
   - `flutter test test/lovable_nav_bar_test.dart test/tab_persistence_test.dart`: **All 5 tests passed! (100%)**
-- **Status:** ⏳ Pending APK Build
+- **Status:** ✅ Included in Build (Build Manifest v1.15.0)
 
 ### [CKPT-066] Authentic Liquid Glass Magnifying Lens Nav Bar with 1:1 Horizontal Drag & Rainbow Caustic Shaders
 - **Timestamp:** 2026-10-25 15:35 UTC
