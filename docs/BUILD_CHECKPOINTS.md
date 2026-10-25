@@ -142,6 +142,24 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-066] Authentic Liquid Glass Magnifying Lens Nav Bar with 1:1 Horizontal Drag & Rainbow Caustic Shaders
+- **Timestamp:** 2026-10-25 15:35 UTC
+- **Category:** UI & Motion / Liquid Glass Magnifying Lens, Continuous 1:1 Drag Tracking & Caustic Shaders
+- **Files Modified (2 files):**
+  - `lib/widgets/nav/liquid_lens_bubble.dart` (New: Optical magnifying lens bubble with `ClipRRect` and `OverflowBox` coordinate alignment, frosted translucent pill base, top-rim specular white highlight arc, and chromatic rainbow caustic crescent dipping along the bottom curved edge with 7-color spectral dispersion)
+  - `lib/widgets/lovable_nav_bar.dart` (Dual-layer architecture: base inactive slots row with hit testing and semantic keys, optical active magnified row tinted with vibrant accent color and 1.14x scale; continuous 1:1 horizontal drag tracking with `onHorizontalDragStart`, `onHorizontalDragUpdate`, and `onHorizontalDragEnd`; momentum physics and velocity-assisted snap to nearest slot with smooth `Curves.easeOutCubic` 240ms glide without cartoon rubbery wobble; custom navbar PNG icons preserved including `nav_progress.png` badge medallion; elevated center Focus Timer hero button with radiant core and status jewel)
+- **Summary:**
+  - Implemented the exact interactive liquid glass bubble navigation mechanics from the user's reference video (`https://youtube.com/shorts/aqzq1X_EuFY`).
+  - Added continuous 1:1 horizontal drag tracking allowing the user to smoothly drag the liquid lens across all navigation slots with real-time optical magnification and color shift.
+  - Optical dual-layer masking ensures items passing under the lens dynamically split at the exact pixel boundary (magnified and bright active color inside, neutral slate outside).
+  - Bottom-rim chromatic rainbow caustic crescent and top-rim glass specular highlight provide authentic liquid glass aesthetics.
+  - Smooth ease-out cubic glide snapping on release or tap without rubbery bounce.
+  - Preserved all custom icons and center Focus Timer hero button effects.
+- **Verification:**
+  - `flutter analyze lib/widgets/lovable_nav_bar.dart lib/widgets/nav/liquid_lens_bubble.dart`: **No issues found! (0 errors, 0 warnings)**
+  - `flutter test test/lovable_nav_bar_test.dart test/tab_persistence_test.dart`: **All 5 tests passed! (100%)**
+- **Status:** ⏳ Pending APK Build
+
 ### [CKPT-065] Liquid Glass Floating Stadium Dock, Fixed-Slot Layout & Restored Custom Icons (Badge Medallion)
 - **Timestamp:** 2026-10-25 13:58 UTC
 - **Category:** UI & Liquid Glass Design / Restored User Custom Icons, Liquid Glass Floating Dock & Fixed-Slot Stability
