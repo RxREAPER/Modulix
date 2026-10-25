@@ -4,6 +4,21 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.16.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (237MB)
+- **Device Tested:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
+- **Compilation Time:** 176.6s | **Test Suite:** 12/12 Theme & Navigation Tests Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-068]`
+
+### Key Highlights & Releases in v1.16.0:
+1. **Theme Studio Modernization (`lib/theme/modulix_theme.dart`, `lib/screens/settings/theme_studio_screen.dart`):** Converted Paper & Ink and Midnight Slate into **Basic Light** and **Basic Dark** in Theme Studio, featuring clean swatches, titles, and descriptions.
+2. **Whole-App Basic Light Palette (`lib/theme/modulix_theme.dart`, `lib/theme/app_theme.dart`):** Replaced yellowish parchment canvas (`#F7F5EE`), beige surfaces, and brownish borders with clean neutral off-white canvas (`#F8F9FA`), pure white cards (`#FFFFFF`), subtle gray surfaces (`#F1F5F9`), clean slate text (`#0F172A`), and vibrant Apple Blue accent (`#007AFF`).
+3. **Whole-App Basic Dark Palette (`lib/theme/modulix_theme.dart`, `lib/theme/app_theme.dart`):** Replaced navy-tinted dark background (`#090D14`) with deep neutral black canvas (`#0B0F19`), clean elevated dark cards (`#161B26`), subtle dark borders (`#2E3846`), crisp white text (`#F8FAFC`), and bright electric blue accent (`#38BDF8`).
+4. **Seamless Backward Compatibility:** Maintained 100% backward compatibility with existing saved settings (`'paper'`, `'slate'`) mapping directly to Basic Light and Basic Dark, alongside aliases (`'basic_light'`, `'basic_dark'`, `'light'`, `'dark'`).
+5. **Physical Device Deployment & Verification:** Installed and verified live on OnePlus 13R hardware across both Basic Light and Basic Dark atmospheres.
+
+---
+
 ## 🚀 Build Manifest v1.15.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (237MB)
 - **Device Tested:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
@@ -187,7 +202,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Verification:**
   - `flutter analyze lib/theme/modulix_theme.dart lib/theme/app_theme.dart lib/services/tour/app_tour_controller.dart test/theme_system_test.dart`: **No issues found! (0 errors, 0 warnings)**
   - `flutter test test/theme_system_test.dart test/lovable_nav_bar_test.dart test/tab_persistence_test.dart`: **All 12 tests passed! (100%)**
-- **Status:** ⏳ Pending APK Build
+- **Status:** ✅ Included in Build (Build Manifest v1.16.0)
 
 ### [CKPT-067] Apple Glass Navigation Bar with Pomodoro Icon, Material Dot & Fluid Subpage Transition
 - **Timestamp:** 2026-10-25 20:35 UTC
