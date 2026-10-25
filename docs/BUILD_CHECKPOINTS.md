@@ -6,6 +6,23 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ---
 
+## 🚀 Build Manifest v1.12.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (237MB)
+- **Device Tested:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
+- **Compilation Time:** 185.0s | **Test Suite:** 22/22 Tests Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-060]`, `[CKPT-061]`, `[CKPT-062]`, `[CKPT-063]`, `[CKPT-064]`
+
+### Key Highlights & Releases in v1.12.0:
+1. **Animated Expanding-Pill Floating Nav Dock (`lib/widgets/lovable_nav_bar.dart`):** Elevated stadium capsule dock (`62px` height, `31px` corner radius, multi-layer ambient shadow) with horizontal expanding active tab pill animation (`[ ⌂ Home ]`, `[ 📚 Library ]`, `[ 📊 Progress ]`, `[ 👤 Profile ]`) and cubic easing (`240ms`). Active pill combines accent wash and bold label, while inactive tabs collapse into minimalist outline icons.
+2. **Elevated Center Focus Timer Hero Button (`lib/widgets/lovable_nav_bar.dart`):** Tactile floating circular disk (`46px`) elevated above the dock with radial gradient, accent rim, pulsating holographic breathing halo when a focus session is active, radiant core glow, and live status jewel.
+3. **Harmonized Vector Icon Suite (`lib/widgets/nav/sketch_nav_icons.dart`):** Re-engineered all navigation vector paths (Home, Library, Focus/Timer, Progress, Profile) to strictly share an identical `1.85px` stroke weight, `StrokeCap.round`, `StrokeJoin.round`, and normalized `[0.12..0.88]` × `[0.14..0.86]` optical bounding boxes for 100% visual uniformity across all screen densities.
+4. **Automated 05:00 AM Leaderboard Rollovers & Period Reset (`supabase/migrations/007_leaderboard_automated_rollover.sql`, `lib/services/metrics_service.dart`, `lib/services/sync_service.dart`):** Zero-maintenance automated PostgreSQL `pg_cron` rollover scheduled every morning at 05:00 AM IST (23:30 UTC) clearing daily counters, resetting weekly standings on Monday 5 AM, resetting monthly standings on the 1st of the month 5 AM, and pruning cron logs. Defensive fallbacks embedded in `record_focus_session` and client sync guarantee late-night study sessions stretching past midnight are never fragmented.
+5. **Supabase Realtime Study Lounge Presence (`lib/services/study_presence_service.dart`, `lib/providers/focus_timer_provider.dart`):** In-memory peer companionship via Supabase Realtime channel (`modulix_study_lounge`) tracking active peer study counts with zero database write load or storage costs. Subtle `[ 🟢 X in focus ]` pill appears in Leaderboard and Focus Timer headers.
+6. **Bundled RPC, Micro-Payload Wire Tuples & Session Idempotency (`supabase/migrations/006_leaderboard_backend_optimization.sql`, `lib/providers/leaderboard_provider.dart`):** Collapsed 4 separate leaderboard REST roundtrips into a single `get_leaderboard_bundle` RPC with compact tuple arrays (`<2 KB`, >85% payload reduction) and covering indexes (`INCLUDE` clauses) for zero-heap Index-Only Scans. Frictionless idempotency ledger prevents double-counting on network dropouts.
+7. **10-Tier Clinical Career Hierarchy & Atomic Focus Sync (`lib/models/user_rank.dart`, `supabase/migrations/005_leaderboard_columns_and_visibility.sql`):** End-to-end verified server-app-user leaderboard connection across 10 career tiers (Intern to Professor) with atomic `record_focus_session` RPC function.
+
+---
+
 ## 🚀 Build Manifest v1.11.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (237MB)
 - **Device Tested:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
@@ -130,7 +147,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - `flutter test test/tab_persistence_test.dart`: **All 1 tests passed! (100%)**
   - `flutter test test/leaderboard_test.dart`: **All 9 tests passed! (100%)**
   - `flutter test test/realtime_presence_test.dart`: **All 2 tests passed! (100%)**
-- **Status:** ⏳ Pending APK Build / Verified
+- **Status:** ✅ Included in Build v1.12.0
 
 ### [CKPT-063] Automated 05:00 AM Leaderboard Rollover, pg_cron Scheduling & Defensive Period Reset Engine
 - **Timestamp:** 2026-10-25 11:45 UTC
@@ -154,7 +171,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - `flutter test test/server_leaderboard_test.dart`: **All 10 tests passed! (100%)**
   - `flutter test test/realtime_presence_test.dart`: **All 2 tests passed! (100%)**
   - Live Supabase Server: Verified `cron.job` active entry, `get_cron_job_status`, and `rollover_leaderboards` execution report.
-- **Status:** ⏳ Pending APK Build / Verified
+- **Status:** ✅ Included in Build v1.12.0
 
 ### [CKPT-062] Supabase Realtime Study Lounge Presence (Zero-DB Peer Companionship)
 - **Timestamp:** 2026-10-25 11:05 UTC
@@ -175,7 +192,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - `flutter test test/realtime_presence_test.dart`: **All 2 tests passed! (100%)**
   - `flutter test test/server_leaderboard_test.dart`: **All 7 tests passed! (100%)**
   - `flutter test test/leaderboard_test.dart`: **All 6 tests passed! (100%)**
-- **Status:** ⏳ Pending APK Build / Verified
+- **Status:** ✅ Included in Build v1.12.0
 
 ### [CKPT-061] Supabase Leaderboard Bundled RPC, Micro-Payload Tuples & Idempotent Session Sync
 - **Timestamp:** 2026-10-25 09:45 UTC
@@ -195,7 +212,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - `flutter analyze`: **No issues found! (0 errors, 0 warnings)**
   - `flutter test test/server_leaderboard_test.dart`: **All 7 tests passed! (100%)**
   - `flutter test test/leaderboard_test.dart`: **All 6 tests passed! (100%)**
-- **Status:** ⏳ Pending APK Build / Verified
+- **Status:** ✅ Included in Build v1.12.0
 
 ### [CKPT-060] Supabase Server-App-User Leaderboard Test, 10-Tier Hierarchy & Atomic Focus Sync
 - **Timestamp:** 2026-10-25 08:45 UTC
@@ -218,7 +235,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - `flutter analyze`: **No issues found! (0 errors, 0 warnings)**
   - `flutter test test/server_leaderboard_test.dart`: **All 5 tests passed! (100%)**
   - `flutter test test/leaderboard_test.dart`: **All 6 tests passed! (100%)**
-- **Status:** ⏳ Pending APK Build / Verified
+- **Status:** ✅ Included in Build v1.12.0
 
 ### [CKPT-058] Focus Timer Streamlining, Pomodoro Cycles, Count-Up Rest & Immersive Flip Clock
 - **Timestamp:** 2026-10-25 02:45 UTC
