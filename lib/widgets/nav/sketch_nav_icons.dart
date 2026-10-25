@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 enum SketchNavIconType {
@@ -34,46 +33,13 @@ class SketchNavIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (type == SketchNavIconType.tasks) {
-      return CustomPaint(
-        size: Size(size, size),
-        painter: _ModernNavIconPainter(
-          type: type,
-          color: color,
-          isSelected: isSelected,
-          strokeWidth: strokeWidth,
-        ),
-      );
-    }
-
-    final assetPath = switch (type) {
-      SketchNavIconType.home => 'assets/icons/navbar/nav_home.png',
-      SketchNavIconType.library || SketchNavIconType.curriculum => 'assets/icons/navbar/nav_library.png',
-      SketchNavIconType.focus || SketchNavIconType.stopwatch || SketchNavIconType.pomodoro => 'assets/icons/navbar/nav_timer.png',
-      SketchNavIconType.progress || SketchNavIconType.analytics => 'assets/icons/navbar/nav_progress.png',
-      SketchNavIconType.profile => 'assets/icons/navbar/nav_profile.png',
-      SketchNavIconType.tasks => '',
-    };
-
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Image.asset(
-        assetPath,
-        width: size,
-        height: size,
+    return CustomPaint(
+      size: Size(size, size),
+      painter: _ModernNavIconPainter(
+        type: type,
         color: color,
-        filterQuality: FilterQuality.high,
-        errorBuilder: (context, error, stackTrace) {
-          return CustomPaint(
-            painter: _ModernNavIconPainter(
-              type: type,
-              color: color,
-              isSelected: isSelected,
-              strokeWidth: strokeWidth,
-            ),
-          );
-        },
+        isSelected: isSelected,
+        strokeWidth: strokeWidth,
       ),
     );
   }
@@ -130,44 +96,40 @@ class _ModernNavIconPainter extends CustomPainter {
     }
   }
 
-  // ── 0. Tasks / Checklist (Clipboard/Checklist with checks) ───────────────────
+  // ── 0. Tasks / Checklist (Clipboard frame with clip and checks) ─────────────
   void _paintTasks(Canvas canvas, double w, double h, Paint p) {
-    // Outer card/clipboard frame with rounded corners
+    // Outer clipboard frame
     final rect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(w * 0.18, h * 0.14, w * 0.64, h * 0.74),
-      const Radius.circular(3.5),
+      Rect.fromLTWH(w * 0.20, h * 0.16, w * 0.60, h * 0.70),
+      const Radius.circular(3.0),
     );
     canvas.drawRRect(rect, p);
 
     // Top clip
-    canvas.drawLine(
-      Offset(w * 0.36, h * 0.14),
-      Offset(w * 0.64, h * 0.14),
-      p..strokeWidth = strokeWidth * 1.4,
+    final clip = RRect.fromRectAndRadius(
+      Rect.fromLTWH(w * 0.36, h * 0.10, w * 0.28, h * 0.10),
+      const Radius.circular(2.0),
     );
-    p.strokeWidth = strokeWidth;
+    canvas.drawRRect(clip, p);
 
     // Check item 1
     final check1 = Path()
-      ..moveTo(w * 0.28, h * 0.38)
-      ..lineTo(w * 0.35, h * 0.44)
-      ..lineTo(w * 0.48, h * 0.32);
+      ..moveTo(w * 0.30, h * 0.40)
+      ..lineTo(w * 0.38, h * 0.48)
+      ..lineTo(w * 0.50, h * 0.34);
     canvas.drawPath(check1, p);
-    canvas.drawLine(Offset(w * 0.54, h * 0.38), Offset(w * 0.72, h * 0.38), p);
+    canvas.drawLine(Offset(w * 0.56, h * 0.41), Offset(w * 0.70, h * 0.41), p);
 
     // Check item 2
     final check2 = Path()
-      ..moveTo(w * 0.28, h * 0.58)
-      ..lineTo(w * 0.35, h * 0.64)
-      ..lineTo(w * 0.48, h * 0.52);
+      ..moveTo(w * 0.30, h * 0.62)
+      ..lineTo(w * 0.38, h * 0.70)
+      ..lineTo(w * 0.50, h * 0.56);
     canvas.drawPath(check2, p);
-    canvas.drawLine(Offset(w * 0.54, h * 0.58), Offset(w * 0.72, h * 0.58), p);
-
-    // Line 3
-    canvas.drawLine(Offset(w * 0.28, h * 0.75), Offset(w * 0.72, h * 0.75), p);
+    canvas.drawLine(Offset(w * 0.56, h * 0.63), Offset(w * 0.70, h * 0.63), p);
   }
 
-  // ── 1. Home (House with pitched roof, eaves, and doorway) ───────────────────
+  // ── 1. Home (Pitched roof house with doorway) ───────────────────────────────
   void _paintHome(Canvas canvas, double w, double h, Paint p) {
     // Gable Roof
     final roof = Path()
@@ -189,168 +151,144 @@ class _ModernNavIconPainter extends CustomPainter {
     canvas.drawPath(body, p);
   }
 
-  // ── 2. Library (Books: 2 standing vertical, 1 leaning tilted right) ────────
+  // ── 2. Library (Clean books: 2 upright standing, 1 tilted leaning) ──────────
   void _paintLibrary(Canvas canvas, double w, double h, Paint p) {
     // Book 1 (Left upright book)
     final book1 = RRect.fromRectAndRadius(
-      Rect.fromLTRB(w * 0.14, h * 0.26, w * 0.31, h * 0.84),
+      Rect.fromLTRB(w * 0.15, h * 0.26, w * 0.33, h * 0.85),
       const Radius.circular(2.0),
     );
     canvas.drawRRect(book1, p);
-    // Bookmark rectangle on book 1
-    final marker = RRect.fromRectAndRadius(
-      Rect.fromLTWH(w * 0.18, h * 0.36, w * 0.08, h * 0.08),
-      const Radius.circular(1.0),
+    // Vertical bookmark ribbon hanging down from top of book 1
+    canvas.drawLine(
+      Offset(w * 0.24, h * 0.26),
+      Offset(w * 0.24, h * 0.44),
+      p,
     );
-    canvas.drawRRect(marker, p);
 
-    // Book 2 (Middle upright book, slightly taller)
+    // Book 2 (Middle upright book, taller)
     final book2 = RRect.fromRectAndRadius(
-      Rect.fromLTRB(w * 0.31, h * 0.18, w * 0.49, h * 0.84),
+      Rect.fromLTRB(w * 0.35, h * 0.16, w * 0.53, h * 0.85),
       const Radius.circular(2.0),
     );
     canvas.drawRRect(book2, p);
-    // Spine horizontal stripes on book 2
-    canvas.drawLine(Offset(w * 0.31, h * 0.27), Offset(w * 0.49, h * 0.27), p);
-    canvas.drawLine(Offset(w * 0.31, h * 0.32), Offset(w * 0.49, h * 0.32), p);
-    canvas.drawLine(Offset(w * 0.31, h * 0.70), Offset(w * 0.49, h * 0.70), p);
-    canvas.drawLine(Offset(w * 0.31, h * 0.75), Offset(w * 0.49, h * 0.75), p);
+    // Single clean horizontal spine band on book 2
+    canvas.drawLine(
+      Offset(w * 0.35, h * 0.32),
+      Offset(w * 0.53, h * 0.32),
+      p,
+    );
 
-    // Book 3 (Right book tilted leaning to the right)
+    // Book 3 (Right book tilted leaning to the right ~14 degrees)
     canvas.save();
-    canvas.translate(w * 0.50, h * 0.84);
-    canvas.rotate(0.25); // ~14.5 degrees lean
-    final leaningHeight = h * 0.62;
-    const leaningWidth = 0.17;
+    canvas.translate(w * 0.55, h * 0.85);
+    canvas.rotate(0.24); // lean angle
+    const leaningHeightRatio = 0.62;
+    const leaningWidthRatio = 0.17;
     final book3 = RRect.fromRectAndRadius(
-      Rect.fromLTWH(0, -leaningHeight, w * leaningWidth, leaningHeight),
+      Rect.fromLTWH(0, -h * leaningHeightRatio, w * leaningWidthRatio, h * leaningHeightRatio),
       const Radius.circular(2.0),
     );
     canvas.drawRRect(book3, p);
-    // Stripes on leaning book
+    // Clean spine band on leaning book
     canvas.drawLine(
-      Offset(0, -leaningHeight + (h * 0.09)),
-      Offset(w * leaningWidth, -leaningHeight + (h * 0.09)),
-      p,
-    );
-    canvas.drawLine(
-      Offset(0, -leaningHeight + (h * 0.14)),
-      Offset(w * leaningWidth, -leaningHeight + (h * 0.14)),
-      p,
-    );
-    canvas.drawLine(
-      Offset(0, -(h * 0.14)),
-      Offset(w * leaningWidth, -(h * 0.14)),
-      p,
-    );
-    canvas.drawLine(
-      Offset(0, -(h * 0.09)),
-      Offset(w * leaningWidth, -(h * 0.09)),
+      Offset(0, -h * 0.44),
+      Offset(w * leaningWidthRatio, -h * 0.44),
       p,
     );
     canvas.restore();
   }
 
-  // ── 3. Focus (Hourglass with top/bottom bars and falling sand) ───────────────
+  // ── 3. Focus (Hourglass with top/bottom bars and falling sand stream) ────────
   void _paintFocus(Canvas canvas, double w, double h, Paint p) {
     // Top and Bottom Horizontal Caps
     final topBar = RRect.fromRectAndRadius(
       Rect.fromCenter(
-        center: Offset(w * 0.50, h * 0.17),
-        width: w * 0.60,
-        height: h * 0.065,
+        center: Offset(w * 0.50, h * 0.16),
+        width: w * 0.58,
+        height: h * 0.06,
       ),
-      const Radius.circular(2.0),
+      const Radius.circular(1.5),
     );
     final bottomBar = RRect.fromRectAndRadius(
       Rect.fromCenter(
-        center: Offset(w * 0.50, h * 0.83),
-        width: w * 0.60,
-        height: h * 0.065,
+        center: Offset(w * 0.50, h * 0.84),
+        width: w * 0.58,
+        height: h * 0.06,
       ),
-      const Radius.circular(2.0),
+      const Radius.circular(1.5),
     );
     canvas.drawRRect(topBar, p);
     canvas.drawRRect(bottomBar, p);
 
     // Hourglass Glass Contour
     final glass = Path();
-    // Left profile
-    glass.moveTo(w * 0.28, h * 0.20);
-    glass.cubicTo(w * 0.29, h * 0.36, w * 0.44, h * 0.46, w * 0.45, h * 0.50);
-    glass.cubicTo(w * 0.44, h * 0.54, w * 0.29, h * 0.64, w * 0.28, h * 0.80);
-    // Right profile
-    glass.moveTo(w * 0.72, h * 0.20);
-    glass.cubicTo(w * 0.71, h * 0.36, w * 0.56, h * 0.46, w * 0.55, h * 0.50);
-    glass.cubicTo(w * 0.56, h * 0.54, w * 0.71, h * 0.64, w * 0.72, h * 0.80);
+    glass.moveTo(w * 0.28, h * 0.19);
+    glass.cubicTo(w * 0.29, h * 0.35, w * 0.44, h * 0.46, w * 0.45, h * 0.50);
+    glass.cubicTo(w * 0.44, h * 0.54, w * 0.29, h * 0.65, w * 0.28, h * 0.81);
+    glass.moveTo(w * 0.72, h * 0.19);
+    glass.cubicTo(w * 0.71, h * 0.35, w * 0.56, h * 0.46, w * 0.55, h * 0.50);
+    glass.cubicTo(w * 0.56, h * 0.54, w * 0.71, h * 0.65, w * 0.72, h * 0.81);
     canvas.drawPath(glass, p);
 
     // Upper Sand Reservoir
     final upperSand = Path()
-      ..moveTo(w * 0.33, h * 0.31)
-      ..lineTo(w * 0.67, h * 0.31)
-      ..lineTo(w * 0.50, h * 0.46)
+      ..moveTo(w * 0.34, h * 0.31)
+      ..lineTo(w * 0.66, h * 0.31)
+      ..lineTo(w * 0.50, h * 0.45)
       ..close();
     canvas.drawPath(upperSand, p);
 
     // Falling Sand Stream
     canvas.drawLine(
-      Offset(w * 0.50, h * 0.49),
-      Offset(w * 0.50, h * 0.60),
+      Offset(w * 0.50, h * 0.48),
+      Offset(w * 0.50, h * 0.58),
       p,
     );
 
     // Lower Sand Mound
     final lowerSand = Path()
-      ..moveTo(w * 0.32, h * 0.79)
-      ..cubicTo(w * 0.37, h * 0.68, w * 0.63, h * 0.68, w * 0.68, h * 0.79);
+      ..moveTo(w * 0.33, h * 0.80)
+      ..cubicTo(w * 0.38, h * 0.70, w * 0.62, h * 0.70, w * 0.67, h * 0.80);
     canvas.drawPath(lowerSand, p);
   }
 
-  // ── 4. Progress (Badge Medallion with Star and Ribbon Tails from 004-badge.png)
+  // ── 4. Progress (Ascending 3-Bar Analytics Chart with Trend Curve) ───────────
   void _paintProgress(Canvas canvas, double w, double h, Paint p) {
-    // Left Ribbon Tail
-    final leftRibbon = Path()
-      ..moveTo(w * 0.32, h * 0.52)
-      ..lineTo(w * 0.18, h * 0.86)
-      ..lineTo(w * 0.32, h * 0.76) // V-notch center
-      ..lineTo(w * 0.44, h * 0.86)
-      ..lineTo(w * 0.43, h * 0.60);
-    canvas.drawPath(leftRibbon, p);
+    // Horizontal baseline
+    canvas.drawLine(
+      Offset(w * 0.14, h * 0.85),
+      Offset(w * 0.86, h * 0.85),
+      p,
+    );
 
-    // Right Ribbon Tail
-    final rightRibbon = Path()
-      ..moveTo(w * 0.68, h * 0.52)
-      ..lineTo(w * 0.82, h * 0.86)
-      ..lineTo(w * 0.68, h * 0.76) // V-notch center
-      ..lineTo(w * 0.56, h * 0.86)
-      ..lineTo(w * 0.57, h * 0.60);
-    canvas.drawPath(rightRibbon, p);
+    // Bar 1 (Left - 35% height)
+    final bar1 = RRect.fromRectAndRadius(
+      Rect.fromLTRB(w * 0.18, h * 0.54, w * 0.34, h * 0.85),
+      const Radius.circular(2.5),
+    );
+    canvas.drawRRect(bar1, p);
 
-    // Medallion Circle
-    final center = Offset(w * 0.50, h * 0.38);
-    final radius = w * 0.26;
-    canvas.drawCircle(center, radius, p);
+    // Bar 2 (Middle - 60% height)
+    final bar2 = RRect.fromRectAndRadius(
+      Rect.fromLTRB(w * 0.42, h * 0.36, w * 0.58, h * 0.85),
+      const Radius.circular(2.5),
+    );
+    canvas.drawRRect(bar2, p);
 
-    // 5-Pointed Star in Center of Medallion
-    final star = Path();
-    final cx = center.dx;
-    final cy = center.dy;
-    final rOuter = w * 0.125;
-    final rInner = w * 0.055;
-    for (int i = 0; i < 10; i++) {
-      final r = i.isEven ? rOuter : rInner;
-      final angle = (i * 36 - 90) * math.pi / 180;
-      final x = cx + r * math.cos(angle);
-      final y = cy + r * math.sin(angle);
-      if (i == 0) {
-        star.moveTo(x, y);
-      } else {
-        star.lineTo(x, y);
-      }
-    }
-    star.close();
-    canvas.drawPath(star, p);
+    // Bar 3 (Right - 85% height)
+    final bar3 = RRect.fromRectAndRadius(
+      Rect.fromLTRB(w * 0.66, h * 0.18, w * 0.82, h * 0.85),
+      const Radius.circular(2.5),
+    );
+    canvas.drawRRect(bar3, p);
+
+    // Upward trend spark accent above Bar 3
+    final spark = Path()
+      ..moveTo(w * 0.74, h * 0.12)
+      ..lineTo(w * 0.82, h * 0.06)
+      ..lineTo(w * 0.82, h * 0.14);
+    canvas.drawPath(spark, p);
   }
 
   // ── 5. Profile (Minimalist Head and Shoulder Bust Outline) ───────────────────
@@ -360,9 +298,9 @@ class _ModernNavIconPainter extends CustomPainter {
 
     // Torso / Shoulder Arc with smooth rounded baseline
     final body = Path()
-      ..moveTo(w * 0.16, h * 0.84)
-      ..cubicTo(w * 0.16, h * 0.60, w * 0.34, h * 0.54, w * 0.50, h * 0.54)
-      ..cubicTo(w * 0.66, h * 0.54, w * 0.84, h * 0.60, w * 0.84, h * 0.84)
+      ..moveTo(w * 0.18, h * 0.84)
+      ..cubicTo(w * 0.18, h * 0.62, w * 0.34, h * 0.54, w * 0.50, h * 0.54)
+      ..cubicTo(w * 0.66, h * 0.54, w * 0.82, h * 0.62, w * 0.82, h * 0.84)
       ..close();
     canvas.drawPath(body, p);
   }

@@ -112,6 +112,26 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-064] Animated Expanding-Pill Bottom Nav Dock, Hero Focus Timer Button & Harmonized Vector Icons
+- **Timestamp:** 2026-10-25 12:10 UTC
+- **Category:** UI & Motion Design / Animated Floating Dock, Expanding Active Tab Pill, Hero Focus Timer & Vector Icons
+- **Files Modified (2 files):**
+  - `lib/widgets/lovable_nav_bar.dart` (Revamped into a floating stadium capsule dock with height 62px, borderRadius 31px, multi-layer elevation shadows, horizontally expanding active tab pill revealing `[ Icon + Label ]` with cubic easing, collapsed outline inactive icons centered in slots, elevated center Focus Timer hero button popping out with radial disk gradient, live session holographic breathing halo, radiant core glow, and live emerald/amber status jewel, with animated `Expanded` flex factors eliminating all layout overflow)
+  - `lib/widgets/nav/sketch_nav_icons.dart` (Harmonized all vector icon paths—Home, Library, Focus/Timer, Progress, Profile, Tasks—to strictly share identical `1.85` stroke weight, `StrokeCap.round`, `StrokeJoin.round`, normalized optical bounding boxes `[0.12..0.88]` × `[0.14..0.86]`, and clean line spacing without cluttered micro-stripes or blobbing)
+- **Summary:**
+  - Addressed user design inspiration from reference images: floating stadium capsule dock with horizontal expanding pill animation (`[ ⌂ Home ]`) and elevated center action hero button.
+  - Implemented differentiated focus timer hero button with elevated circular disk, radial gradient, live session breathing holographic aura glow, radiant inner core, and top-right live status jewel.
+  - Harmonized character, thickness, sizes, and optical proportions across all 5 vector navigation icons, ensuring identical visual weight and zero raster pixel dependency.
+  - Engineered animated flex factor distribution (`Expanded(flex: 100..180)`) to mathematically prevent RenderFlex layout overflow during rapid mid-flight multi-tap stress tests.
+  - Preserved all semantic keys (`nav_tab_0`, `nav_tab_1`, `nav_center_timer_button`, `nav_tab_2`, `nav_tab_3`), re-tap pop-to-root, and full router compatibility.
+- **Verification:**
+  - `flutter analyze`: **No issues found! (0 errors, 0 warnings)**
+  - `flutter test test/lovable_nav_bar_test.dart`: **All 4 tests passed! (100%)**
+  - `flutter test test/tab_persistence_test.dart`: **All 1 tests passed! (100%)**
+  - `flutter test test/leaderboard_test.dart`: **All 9 tests passed! (100%)**
+  - `flutter test test/realtime_presence_test.dart`: **All 2 tests passed! (100%)**
+- **Status:** ⏳ Pending APK Build / Verified
+
 ### [CKPT-063] Automated 05:00 AM Leaderboard Rollover, pg_cron Scheduling & Defensive Period Reset Engine
 - **Timestamp:** 2026-10-25 11:45 UTC
 - **Category:** Backend & Scalability / Automated 5 AM Leaderboard Rollovers & Period Reset Engine
