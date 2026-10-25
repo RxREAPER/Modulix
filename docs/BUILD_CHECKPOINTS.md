@@ -129,6 +129,26 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-065] Liquid Glass Floating Stadium Dock, Fixed-Slot Layout & Restored Custom Icons (Badge Medallion)
+- **Timestamp:** 2026-10-25 13:58 UTC
+- **Category:** UI & Liquid Glass Design / Restored User Custom Icons, Liquid Glass Floating Dock & Fixed-Slot Stability
+- **Files Modified (3 files):**
+  - `lib/widgets/nav/sketch_nav_icons.dart` (Reinstated user's latest custom PNG icons from `assets/icons/navbar/` including `nav_home.png`, `nav_library.png`, `nav_timer.png`, `nav_progress.png` badge medallion with star and ribbon tails, and `nav_profile.png`; restored vector badge custom painter in `_paintProgress` to match the badge asset)
+  - `lib/widgets/lovable_nav_bar.dart` (Converted floating dock to real frosted Liquid Glass aesthetic with `BackdropFilter` sigma 18 blur, specular glass border, and translucent fill; eliminated dynamic flex expansion in favor of strictly fixed equal 1/5 slots for zero layout shifting; centered icons with compact active label underneath; elevated center Focus Timer hero button with radial accent rim, breathing holographic aura on active session, radiant core glow, and live emerald jewel)
+  - `lib/widgets/nav/sketch_hatch_indicator.dart` (Enhanced `SketchHatchIndicator` with fluid momentum stretch physics during transit across slots, and added top-edge glass specular reflection highlight to `_ModernPillIndicatorPainter`)
+- **Summary:**
+  - Faithfully matched user reference YouTube Short (`aqzq1X_EuFY` / Instagram & App Store Liquid Glass tab bars).
+  - Restored the user's latest custom navbar icons (`nav_home.png`, `nav_library.png`, `nav_timer.png`, `nav_progress.png` with badge icon, `nav_profile.png`).
+  - Restored 100% fixed-slot layout stability with zero tab pushing or resizing.
+  - Retained center hero timer button with breathing holographic aura during active deep work.
+- **Verification:**
+  - `flutter analyze`: **No issues found! (0 errors, 0 warnings)**
+  - `flutter test test/lovable_nav_bar_test.dart`: **All 4 tests passed! (100%)**
+  - `flutter test test/tab_persistence_test.dart`: **All 1 tests passed! (100%)**
+  - `flutter test test/leaderboard_test.dart`: **All 9 tests passed! (100%)**
+  - `flutter test test/realtime_presence_test.dart`: **All 2 tests passed! (100%)**
+- **Status:** ⏳ Pending APK Build / Verified
+
 ### [CKPT-064] Animated Expanding-Pill Bottom Nav Dock, Hero Focus Timer Button & Harmonized Vector Icons
 - **Timestamp:** 2026-10-25 12:10 UTC
 - **Category:** UI & Motion Design / Animated Floating Dock, Expanding Active Tab Pill, Hero Focus Timer & Vector Icons

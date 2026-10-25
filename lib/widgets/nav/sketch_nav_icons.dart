@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 enum SketchNavIconType {
@@ -33,13 +34,46 @@ class SketchNavIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(size, size),
-      painter: _ModernNavIconPainter(
-        type: type,
+    final assetPath = switch (type) {
+      SketchNavIconType.home => 'assets/icons/navbar/nav_home.png',
+      SketchNavIconType.library || SketchNavIconType.curriculum => 'assets/icons/navbar/nav_library.png',
+      SketchNavIconType.focus || SketchNavIconType.stopwatch || SketchNavIconType.pomodoro => 'assets/icons/navbar/nav_timer.png',
+      SketchNavIconType.progress || SketchNavIconType.analytics => 'assets/icons/navbar/nav_progress.png',
+      SketchNavIconType.profile => 'assets/icons/navbar/nav_profile.png',
+      SketchNavIconType.tasks => '',
+    };
+
+    if (assetPath.isEmpty) {
+      return CustomPaint(
+        size: Size(size, size),
+        painter: _ModernNavIconPainter(
+          type: type,
+          color: color,
+          isSelected: isSelected,
+          strokeWidth: strokeWidth,
+        ),
+      );
+    }
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Image.asset(
+        assetPath,
+        width: size,
+        height: size,
         color: color,
-        isSelected: isSelected,
-        strokeWidth: strokeWidth,
+        filterQuality: FilterQuality.high,
+        errorBuilder: (context, error, stackTrace) {
+          return CustomPaint(
+            painter: _ModernNavIconPainter(
+              type: type,
+              color: color,
+              isSelected: isSelected,
+              strokeWidth: strokeWidth,
+            ),
+          );
+        },
       ),
     );
   }
@@ -253,42 +287,50 @@ class _ModernNavIconPainter extends CustomPainter {
     canvas.drawPath(lowerSand, p);
   }
 
-  // ── 4. Progress (Ascending 3-Bar Analytics Chart with Trend Curve) ───────────
+  // ── 4. Progress (Badge Medallion with Star and Ribbon Tails from 004-badge.png)
   void _paintProgress(Canvas canvas, double w, double h, Paint p) {
-    // Horizontal baseline
-    canvas.drawLine(
-      Offset(w * 0.14, h * 0.85),
-      Offset(w * 0.86, h * 0.85),
-      p,
-    );
+    // Left Ribbon Tail
+    final leftRibbon = Path()
+      ..moveTo(w * 0.32, h * 0.52)
+      ..lineTo(w * 0.18, h * 0.86)
+      ..lineTo(w * 0.32, h * 0.76) // V-notch center
+      ..lineTo(w * 0.44, h * 0.86)
+      ..lineTo(w * 0.43, h * 0.60);
+    canvas.drawPath(leftRibbon, p);
 
-    // Bar 1 (Left - 35% height)
-    final bar1 = RRect.fromRectAndRadius(
-      Rect.fromLTRB(w * 0.18, h * 0.54, w * 0.34, h * 0.85),
-      const Radius.circular(2.5),
-    );
-    canvas.drawRRect(bar1, p);
+    // Right Ribbon Tail
+    final rightRibbon = Path()
+      ..moveTo(w * 0.68, h * 0.52)
+      ..lineTo(w * 0.82, h * 0.86)
+      ..lineTo(w * 0.68, h * 0.76) // V-notch center
+      ..lineTo(w * 0.56, h * 0.86)
+      ..lineTo(w * 0.57, h * 0.60);
+    canvas.drawPath(rightRibbon, p);
 
-    // Bar 2 (Middle - 60% height)
-    final bar2 = RRect.fromRectAndRadius(
-      Rect.fromLTRB(w * 0.42, h * 0.36, w * 0.58, h * 0.85),
-      const Radius.circular(2.5),
-    );
-    canvas.drawRRect(bar2, p);
+    // Medallion Circle
+    final center = Offset(w * 0.50, h * 0.38);
+    final radius = w * 0.26;
+    canvas.drawCircle(center, radius, p);
 
-    // Bar 3 (Right - 85% height)
-    final bar3 = RRect.fromRectAndRadius(
-      Rect.fromLTRB(w * 0.66, h * 0.18, w * 0.82, h * 0.85),
-      const Radius.circular(2.5),
-    );
-    canvas.drawRRect(bar3, p);
-
-    // Upward trend spark accent above Bar 3
-    final spark = Path()
-      ..moveTo(w * 0.74, h * 0.12)
-      ..lineTo(w * 0.82, h * 0.06)
-      ..lineTo(w * 0.82, h * 0.14);
-    canvas.drawPath(spark, p);
+    // 5-Pointed Star in Center of Medallion
+    final star = Path();
+    final cx = center.dx;
+    final cy = center.dy;
+    final rOuter = w * 0.125;
+    final rInner = w * 0.055;
+    for (int i = 0; i < 10; i++) {
+      final r = i.isEven ? rOuter : rInner;
+      final angle = (i * 36 - 90) * math.pi / 180;
+      final x = cx + r * math.cos(angle);
+      final y = cy + r * math.sin(angle);
+      if (i == 0) {
+        star.moveTo(x, y);
+      } else {
+        star.lineTo(x, y);
+      }
+    }
+    star.close();
+    canvas.drawPath(star, p);
   }
 
   // ── 5. Profile (Minimalist Head and Shoulder Bust Outline) ───────────────────

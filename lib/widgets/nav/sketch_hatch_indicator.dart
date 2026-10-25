@@ -78,12 +78,24 @@ class _SketchHatchIndicatorState extends State<SketchHatchIndicator>
       return _toRect;
     }
 
-    final double left = _fromRect.left + (_toRect.left - _fromRect.left) * t;
-    final double right = _fromRect.right + (_toRect.right - _fromRect.right) * t;
-    final double top = _fromRect.top + (_toRect.top - _fromRect.top) * t;
-    final double bottom = _fromRect.bottom + (_toRect.bottom - _fromRect.bottom) * t;
+    final double fromCenterX = _fromRect.center.dx;
+    final double toCenterX = _toRect.center.dx;
+    final double currentCenterX = fromCenterX + (toCenterX - fromCenterX) * t;
 
-    return Rect.fromLTRB(left, top, right, bottom);
+    // Fluid momentum stretch during transit:
+    // Expands pill width by up to 15% at peak velocity, creating organic liquid glass droplet feel
+    final double distance = (toCenterX - fromCenterX).abs();
+    final double stretch = math.sin(t * math.pi) * math.min(distance * 0.12, 8.0);
+
+    final double width = _toRect.width + stretch;
+    final double height = _toRect.height;
+    final double top = _fromRect.top + (_toRect.top - _fromRect.top) * t;
+
+    return Rect.fromCenter(
+      center: Offset(currentCenterX, top + (height / 2)),
+      width: width,
+      height: height,
+    );
   }
 
   @override
@@ -138,18 +150,29 @@ class _ModernPillIndicatorPainter extends CustomPainter {
       Radius.circular(borderRadius),
     );
 
-    // 1. Soft accent wash fill
+    // 1. Soft liquid glass wash fill
     final fillPaint = Paint()
       ..color = color.withValues(alpha: 0.12)
       ..style = PaintingStyle.fill;
     canvas.drawRRect(rrect, fillPaint);
 
-    // 2. Subtle crisp boundary stroke
+    // 2. Subtle crisp boundary stroke with glass specular accent
     final strokePaint = Paint()
       ..color = color.withValues(alpha: 0.22)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
     canvas.drawRRect(rrect, strokePaint);
+
+    // 3. Top-edge glass specular reflection highlight
+    final highlightPath = Path()
+      ..moveTo(rect.left + borderRadius, rect.top + 0.5)
+      ..lineTo(rect.right - borderRadius, rect.top + 0.5);
+    final highlightPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.30)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0
+      ..strokeCap = StrokeCap.round;
+    canvas.drawPath(highlightPath, highlightPaint);
   }
 
   @override
