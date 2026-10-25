@@ -492,7 +492,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                     // 3. Study Time: Heading
                     Text(
                       timer.isBreak
-                          ? (timer.isLongBreak ? 'Long Break:' : 'Recharge Break:')
+                          ? (timer.isLongBreak ? 'Long Break:' : 'Short Break:')
                           : 'Study Time:',
                       style: TextStyle(
                         fontSize: 17,
@@ -1163,6 +1163,7 @@ class _SessionConfigSheet extends ConsumerWidget {
                 children: [
                   Row(
                     children: [
+                      // 1. Focus Duration
                       Expanded(
                         child: _buildStepper(
                           context: context,
@@ -1182,21 +1183,22 @@ class _SessionConfigSheet extends ConsumerWidget {
                         ),
                       ),
                       Container(width: 1, height: 40, margin: const EdgeInsets.symmetric(horizontal: 12), color: border),
+                      // 2. Short Break
                       Expanded(
                         child: _buildStepper(
                           context: context,
-                          label: 'TOTAL CYCLES',
-                          value: timer.pomodoroTotalCycles,
-                          unit: 'x',
-                          onDec: () => notifier.adjustPomodoroTotalCycles(-1),
-                          onInc: () => notifier.adjustPomodoroTotalCycles(1),
+                          label: 'SHORT BREAK',
+                          value: timer.pomodoroBreakMins,
+                          unit: 'm',
+                          onDec: () => notifier.adjustPomodoroBreakMinutes(-1),
+                          onInc: () => notifier.adjustPomodoroBreakMinutes(1),
                           onTap: () => onShowCustomDialog(
                             context: context,
-                            title: 'Total Pomodoro Cycles',
-                            currentMins: timer.pomodoroTotalCycles,
+                            title: 'Short Break Duration',
+                            currentMins: timer.pomodoroBreakMins,
                             minMins: 1,
-                            maxMins: 16,
-                            onSave: notifier.setPomodoroTotalCycles,
+                            maxMins: 30,
+                            onSave: notifier.setPomodoroBreakMinutes,
                           ),
                         ),
                       ),
@@ -1207,6 +1209,7 @@ class _SessionConfigSheet extends ConsumerWidget {
                   const SizedBox(height: 12),
                   Row(
                     children: [
+                      // 3. Long Break
                       Expanded(
                         child: _buildStepper(
                           context: context,
@@ -1226,27 +1229,22 @@ class _SessionConfigSheet extends ConsumerWidget {
                         ),
                       ),
                       Container(width: 1, height: 40, margin: const EdgeInsets.symmetric(horizontal: 12), color: border),
+                      // 4. Sessions
                       Expanded(
                         child: _buildStepper(
                           context: context,
-                          label: 'LONG INTERVAL',
-                          value: timer.pomodoroLongBreakInterval,
+                          label: 'SESSIONS',
+                          value: timer.pomodoroTotalCycles,
                           unit: 'cyc',
-                          onDec: () {
-                            if (timer.pomodoroLongBreakInterval > 2) {
-                              notifier.setPomodoroLongBreakInterval(timer.pomodoroLongBreakInterval - 1);
-                            }
-                          },
-                          onInc: () {
-                            notifier.setPomodoroLongBreakInterval(timer.pomodoroLongBreakInterval + 1);
-                          },
+                          onDec: () => notifier.adjustPomodoroTotalCycles(-1),
+                          onInc: () => notifier.adjustPomodoroTotalCycles(1),
                           onTap: () => onShowCustomDialog(
                             context: context,
-                            title: 'Long Break Interval',
-                            currentMins: timer.pomodoroLongBreakInterval,
-                            minMins: 2,
-                            maxMins: 10,
-                            onSave: notifier.setPomodoroLongBreakInterval,
+                            title: 'Pomodoro Sessions',
+                            currentMins: timer.pomodoroTotalCycles,
+                            minMins: 1,
+                            maxMins: 12,
+                            onSave: notifier.setPomodoroTotalCycles,
                           ),
                         ),
                       ),

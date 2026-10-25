@@ -15,15 +15,17 @@ class AuthService {
   bool _initialized = false;
 
   /// Returns true if Supabase client is initialized and ready
-  bool get isReady => _initialized && _client != null;
+  bool get isReady {
+    if (_client != null) return true;
+    return client != null;
+  }
 
   SupabaseClient? get client {
     if (_client != null) return _client;
-    if (_initialized) {
-      try {
-        _client = Supabase.instance.client;
-      } catch (_) {}
-    }
+    try {
+      _client = Supabase.instance.client;
+      _initialized = true;
+    } catch (_) {}
     return _client;
   }
 

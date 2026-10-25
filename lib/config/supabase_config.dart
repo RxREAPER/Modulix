@@ -10,7 +10,8 @@ class SupabaseConfig {
 
   static const String _defaultAnonKey = String.fromEnvironment(
     'SUPABASE_ANON_KEY',
-    defaultValue: 'sb_publishable_JJvE8O5n_ilc9V35GIFgdg_xDHA1LX6',
+    defaultValue:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZidm16amh6em54Z29meXp4bnFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5ODYyODQsImV4cCI6MjEwNzU2MjI4NH0.Oofi0Fr0b2KmyJZ0MrXNwxVVs1kwcc6OGYVjJg9VZH4',
   );
 
   static const String _defaultGoogleWebClientId = String.fromEnvironment(

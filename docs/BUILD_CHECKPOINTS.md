@@ -112,6 +112,29 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-060] Supabase Server-App-User Leaderboard Test, 10-Tier Hierarchy & Atomic Focus Sync
+- **Timestamp:** 2026-10-25 08:45 UTC
+- **Category:** Backend & Integration / Supabase Leaderboard Hierarchy, Server-App-User Connection & Atomic Focus Sync
+- **Files Modified/Created (7 files):**
+  - `lib/config/supabase_config.dart` (Configured standard JWT anon key compatible with postgrest-dart in Flutter)
+  - `lib/models/user_rank.dart` (Added `monthly_study_secs` parsing in `LeaderboardEntry.fromJson`)
+  - `lib/services/auth_service.dart` (Enhanced `client` and `isReady` getters to detect `Supabase.instance.client` reliably)
+  - `lib/services/sync_service.dart` (Aggregated and synced `monthly_study_secs` alongside daily, weekly, and total study secs)
+  - `lib/providers/leaderboard_provider.dart` (Added remote queries for all 4 scales: daily, weekly, monthly, yearly; added `_mergeUserIntoRemote` to dynamically position user against server cohort)
+  - `supabase/migrations/005_leaderboard_columns_and_visibility.sql` (Added `display_name`, `daily_study_secs`, `weekly_study_secs`, `monthly_study_secs`, `total_study_secs`, `leaderboard_visible` columns, partial sorting indexes, and public RLS visibility policy)
+  - `test/server_leaderboard_test.dart` (Complete end-to-end integration test suite verifying server connectivity, 10-tier career hierarchy, 4-scale sorting, `LeaderboardNotifier` server integration, and atomic focus session hour push & promotion via `record_focus_session` RPC)
+- **Summary:**
+  - Tested full server-app-user leaderboard connection against live Supabase PostgreSQL server without needing a physical device.
+  - Set up 10 hypothetical peer doctors in Supabase spanning all 10 clinical hierarchy tiers (Intern -> House Officer -> Junior Resident -> Senior Resident -> Registrar -> Fellow -> Specialist -> Consultant -> Assoc. Professor -> Professor).
+  - Added atomic `record_focus_session` RPC function in PostgreSQL for reliable study session recording.
+  - Tested pushing study focus hours to the server, verifying real-time status update and hierarchy promotion (Dr. Tara Reid: Intern 10h -> House Officer 30h).
+  - Maintained 100% UI preservation with zero visual modifications.
+- **Verification:**
+  - `flutter analyze`: **No issues found! (0 errors, 0 warnings)**
+  - `flutter test test/server_leaderboard_test.dart`: **All 5 tests passed! (100%)**
+  - `flutter test test/leaderboard_test.dart`: **All 6 tests passed! (100%)**
+- **Status:** ⏳ Pending APK Build / Verified
+
 ### [CKPT-058] Focus Timer Streamlining, Pomodoro Cycles, Count-Up Rest & Immersive Flip Clock
 - **Timestamp:** 2026-10-25 02:45 UTC
 - **Category:** Feature & Polish / Focus Timer Streamlining & Immersive Flip Clock

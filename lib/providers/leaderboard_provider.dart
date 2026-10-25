@@ -225,6 +225,42 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
             return e.copyWith(rank: r++);
           }).toList();
         }
+
+        final monthlyRes = await client
+            .from('profiles')
+            .select('id, doctor_name, display_name, monthly_study_secs, total_study_secs, avatar_color_id, avatar_icon_id')
+            .eq('leaderboard_visible', true)
+            .order('monthly_study_secs', ascending: false)
+            .limit(20);
+
+        if (monthlyRes.isNotEmpty) {
+          int r = 1;
+          remoteMonthly = monthlyRes.map<LeaderboardEntry>((item) {
+            final e = LeaderboardEntry.fromJson(
+              item,
+              currentUserId: currentUserId,
+            );
+            return e.copyWith(rank: r++);
+          }).toList();
+        }
+
+        final yearlyRes = await client
+            .from('profiles')
+            .select('id, doctor_name, display_name, total_study_secs, avatar_color_id, avatar_icon_id')
+            .eq('leaderboard_visible', true)
+            .order('total_study_secs', ascending: false)
+            .limit(20);
+
+        if (yearlyRes.isNotEmpty) {
+          int r = 1;
+          remoteYearly = yearlyRes.map<LeaderboardEntry>((item) {
+            final e = LeaderboardEntry.fromJson(
+              item,
+              currentUserId: currentUserId,
+            );
+            return e.copyWith(rank: r++);
+          }).toList();
+        }
       } catch (e) {
         debugPrint('[LeaderboardNotifier] Remote query exception: $e');
       }
@@ -232,45 +268,85 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
 
     // ── 3. Synthesize Resilient Cohorts & Dynamic Standings ─────────────────
     // Build realistic competitive cohorts if remote database is empty or offline
-    final dailyList = remoteDaily ?? _buildSyntheticScaleCohort(
-      scale: LeaderboardScale.daily,
-      userSeconds: userTodaySecs,
-      userDisplayName: userDisplayName,
-      userId: currentUserId,
-      userColor: avatarColorId,
-      userIcon: avatarIconId,
-      userLevel: userLevel,
-    );
+    final dailyList = remoteDaily != null
+        ? _mergeUserIntoRemote(
+            remoteEntries: remoteDaily,
+            userId: currentUserId,
+            userDisplayName: userDisplayName,
+            userSeconds: userTodaySecs,
+            userColor: avatarColorId,
+            userIcon: avatarIconId,
+            userLevel: userLevel,
+          )
+        : _buildSyntheticScaleCohort(
+            scale: LeaderboardScale.daily,
+            userSeconds: userTodaySecs,
+            userDisplayName: userDisplayName,
+            userId: currentUserId,
+            userColor: avatarColorId,
+            userIcon: avatarIconId,
+            userLevel: userLevel,
+          );
 
-    final weeklyList = remoteWeekly ?? _buildSyntheticScaleCohort(
-      scale: LeaderboardScale.weekly,
-      userSeconds: userWeekSecs,
-      userDisplayName: userDisplayName,
-      userId: currentUserId,
-      userColor: avatarColorId,
-      userIcon: avatarIconId,
-      userLevel: userLevel,
-    );
+    final weeklyList = remoteWeekly != null
+        ? _mergeUserIntoRemote(
+            remoteEntries: remoteWeekly,
+            userId: currentUserId,
+            userDisplayName: userDisplayName,
+            userSeconds: userWeekSecs,
+            userColor: avatarColorId,
+            userIcon: avatarIconId,
+            userLevel: userLevel,
+          )
+        : _buildSyntheticScaleCohort(
+            scale: LeaderboardScale.weekly,
+            userSeconds: userWeekSecs,
+            userDisplayName: userDisplayName,
+            userId: currentUserId,
+            userColor: avatarColorId,
+            userIcon: avatarIconId,
+            userLevel: userLevel,
+          );
 
-    final monthlyList = remoteMonthly ?? _buildSyntheticScaleCohort(
-      scale: LeaderboardScale.monthly,
-      userSeconds: userMonthSecs,
-      userDisplayName: userDisplayName,
-      userId: currentUserId,
-      userColor: avatarColorId,
-      userIcon: avatarIconId,
-      userLevel: userLevel,
-    );
+    final monthlyList = remoteMonthly != null
+        ? _mergeUserIntoRemote(
+            remoteEntries: remoteMonthly,
+            userId: currentUserId,
+            userDisplayName: userDisplayName,
+            userSeconds: userMonthSecs,
+            userColor: avatarColorId,
+            userIcon: avatarIconId,
+            userLevel: userLevel,
+          )
+        : _buildSyntheticScaleCohort(
+            scale: LeaderboardScale.monthly,
+            userSeconds: userMonthSecs,
+            userDisplayName: userDisplayName,
+            userId: currentUserId,
+            userColor: avatarColorId,
+            userIcon: avatarIconId,
+            userLevel: userLevel,
+          );
 
-    final yearlyList = remoteYearly ?? _buildSyntheticScaleCohort(
-      scale: LeaderboardScale.yearly,
-      userSeconds: userYearSecs,
-      userDisplayName: userDisplayName,
-      userId: currentUserId,
-      userColor: avatarColorId,
-      userIcon: avatarIconId,
-      userLevel: userLevel,
-    );
+    final yearlyList = remoteYearly != null
+        ? _mergeUserIntoRemote(
+            remoteEntries: remoteYearly,
+            userId: currentUserId,
+            userDisplayName: userDisplayName,
+            userSeconds: userYearSecs,
+            userColor: avatarColorId,
+            userIcon: avatarIconId,
+            userLevel: userLevel,
+          )
+        : _buildSyntheticScaleCohort(
+            scale: LeaderboardScale.yearly,
+            userSeconds: userYearSecs,
+            userDisplayName: userDisplayName,
+            userId: currentUserId,
+            userColor: avatarColorId,
+            userIcon: avatarIconId,
+            userLevel: userLevel,
+          );
 
     // Compute user standings per scale
     final dailyStanding = _calculateUserStanding(
@@ -352,6 +428,38 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
       percentile: percentile,
       secondsToTop20: gapSecs,
     );
+  }
+
+  /// Merges the local/authenticated user into the remote Top 20 list if not already present
+  static List<LeaderboardEntry> _mergeUserIntoRemote({
+    required List<LeaderboardEntry> remoteEntries,
+    required String userId,
+    required String userDisplayName,
+    required int userSeconds,
+    required String userColor,
+    required String userIcon,
+    required UserLevel userLevel,
+  }) {
+    if (remoteEntries.any((e) => e.isCurrentUser || e.id == userId)) {
+      return remoteEntries;
+    }
+    final combined = List<LeaderboardEntry>.from(remoteEntries);
+    combined.add(LeaderboardEntry(
+      id: userId,
+      displayName: userDisplayName,
+      totalSeconds: userSeconds,
+      rank: 0,
+      avatarColorId: userColor,
+      avatarIconId: userIcon,
+      isCurrentUser: true,
+      level: userLevel,
+    ));
+    combined.sort((a, b) => b.totalSeconds.compareTo(a.totalSeconds));
+    final top20 = combined.take(20).toList();
+    return [
+      for (int i = 0; i < top20.length; i++)
+        top20[i].copyWith(rank: i + 1),
+    ];
   }
 
   /// Builds a deterministic, realistic medical peer cohort across 3 scales

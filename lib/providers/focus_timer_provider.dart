@@ -350,13 +350,19 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
   void setPomodoroTotalCycles(int cycles) {
     if (state.isRunning) return;
     final clamped = cycles.clamp(1, 12);
-    state = state.copyWith(pomodoroTotalCycles: clamped);
+    state = state.copyWith(
+      pomodoroTotalCycles: clamped,
+      pomodoroLongBreakInterval: clamped,
+    );
   }
 
   void adjustPomodoroTotalCycles(int delta) {
     if (state.isRunning) return;
     final clamped = (state.pomodoroTotalCycles + delta).clamp(1, 12);
-    state = state.copyWith(pomodoroTotalCycles: clamped);
+    state = state.copyWith(
+      pomodoroTotalCycles: clamped,
+      pomodoroLongBreakInterval: clamped,
+    );
   }
 
   void setPomodoroLongBreakMinutes(int mins) {

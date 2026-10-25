@@ -208,6 +208,7 @@ class LeaderboardEntry {
     final rawSecs = (json['total_seconds'] as num?)?.toInt() ??
         (json['daily_study_secs'] as num?)?.toInt() ??
         (json['weekly_study_secs'] as num?)?.toInt() ??
+        (json['monthly_study_secs'] as num?)?.toInt() ??
         (json['total_study_secs'] as num?)?.toInt() ??
         (json['secs'] as num?)?.toInt() ??
         0;

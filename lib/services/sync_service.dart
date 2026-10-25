@@ -299,14 +299,19 @@ class SyncService {
         final monday = DateTime.now().subtract(Duration(days: dayOfWeek - 1));
         final weekStart = DateTime(monday.year, monday.month, monday.day);
 
+        final now = DateTime.now();
+        final monthStart = DateTime(now.year, now.month, 1, 0, 0, 0);
+
         int totalSecs = 0;
         int dailySecs = 0;
         int weeklySecs = 0;
+        int monthlySecs = 0;
 
         for (final l in allLogs) {
           totalSecs += l.durationSecs;
           if (l.timestamp.isAfter(todayStart)) dailySecs += l.durationSecs;
           if (l.timestamp.isAfter(weekStart)) weeklySecs += l.durationSecs;
+          if (l.timestamp.isAfter(monthStart)) monthlySecs += l.durationSecs;
         }
 
         await client.from('profiles').update({
@@ -314,6 +319,7 @@ class SyncService {
           'total_study_secs': totalSecs,
           'daily_study_secs': dailySecs,
           'weekly_study_secs': weeklySecs,
+          'monthly_study_secs': monthlySecs,
           'leaderboard_visible': localAppState.leaderboardVisible,
           'updated_at': DateTime.now().toUtc().toIso8601String(),
         }).eq('id', userId);

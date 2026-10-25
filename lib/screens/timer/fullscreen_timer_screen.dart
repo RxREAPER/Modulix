@@ -115,75 +115,83 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
       canPop: true,
       child: Scaffold(
         backgroundColor: const Color(0xFF000000),
-        body: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            // Wakes up / refreshes the controls sleep timer on touch without pausing timer
-            _resetControlsSleepTimer();
-          },
-          onDoubleTap: () => Navigator.pop(context),
-          child: SafeArea(
-            child: Column(
-              children: [
-                // ── Top Bar: Cross sign of exit, subtle topic, & rotation toggle ──
-                AnimatedOpacity(
-                  opacity: _showControls ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 300),
-                  child: IgnorePointer(
-                    ignoring: !_showControls,
-                    child: _buildTopBar(t, isLandscape),
-                  ),
-                ),
+        body: Stack(
+          children: [
+            // Background tap anywhere to wake up controls or double-tap to exit
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: _resetControlsSleepTimer,
+                onDoubleTap: () => Navigator.pop(context),
+              ),
+            ),
 
-                // ── Center: Majestic Flip Cards (Design preserved 100% intact) ──
-                Expanded(
-                  child: Center(
-                    child: isLandscape
-                        ? _buildLandscapeLayout(
-                            card1: card1Str,
-                            card2: card2Str,
-                            cornerSeconds: cornerSeconds,
-                          )
-                        : _forceRotatedPortrait
-                            ? _buildDeskModePortraitLayout(
-                                card1: card1Str,
-                                card2: card2Str,
-                                cornerSeconds: cornerSeconds,
-                              )
-                            : _buildUprightPortraitLayout(
-                                card1: card1Str,
-                                card2: card2Str,
-                                cornerSeconds: cornerSeconds,
-                              ),
-                  ),
-                ),
-
-                // ── Medical Wave Visualizer ──
-                AnimatedOpacity(
-                  opacity: _showControls ? 0.75 : 0.12,
-                  duration: const Duration(milliseconds: 300),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 4),
-                    child: MedicalWaveVisualizer(
-                      height: 18,
-                      color: Colors.white.withValues(alpha: 0.55),
-                      showBaseline: false,
+            SafeArea(
+              child: Column(
+                children: [
+                  // ── Top Bar: Cross sign of exit & rotation toggle ──
+                  AnimatedOpacity(
+                    opacity: _showControls ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 300),
+                    child: IgnorePointer(
+                      ignoring: !_showControls,
+                      child: _buildTopBar(t, isLandscape),
                     ),
                   ),
-                ),
 
-                // ── Bottom: Dedicated Resume / Pause button below ──
-                AnimatedOpacity(
-                  opacity: _showControls ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 300),
-                  child: IgnorePointer(
-                    ignoring: !_showControls,
-                    child: _buildBottomResumePauseButton(t),
+                  // ── Center: Majestic Flip Cards (Design preserved 100% intact) ──
+                  Expanded(
+                    child: Center(
+                      child: isLandscape
+                          ? _buildLandscapeLayout(
+                              t: t,
+                              card1: card1Str,
+                              card2: card2Str,
+                              cornerSeconds: cornerSeconds,
+                            )
+                          : _forceRotatedPortrait
+                              ? _buildDeskModePortraitLayout(
+                                  t: t,
+                                  card1: card1Str,
+                                  card2: card2Str,
+                                  cornerSeconds: cornerSeconds,
+                                )
+                              : _buildUprightPortraitLayout(
+                                  t: t,
+                                  card1: card1Str,
+                                  card2: card2Str,
+                                  cornerSeconds: cornerSeconds,
+                                ),
+                    ),
                   ),
-                ),
-              ],
+
+                  // ── Medical Wave Visualizer ──
+                  AnimatedOpacity(
+                    opacity: _showControls ? 0.75 : 0.12,
+                    duration: const Duration(milliseconds: 300),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 4),
+                      child: MedicalWaveVisualizer(
+                        height: 18,
+                        color: Colors.white.withValues(alpha: 0.55),
+                        showBaseline: false,
+                      ),
+                    ),
+                  ),
+
+                  // ── Bottom: Dedicated Resume / Pause button below ──
+                  AnimatedOpacity(
+                    opacity: _showControls ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 300),
+                    child: IgnorePointer(
+                      ignoring: !_showControls,
+                      child: _buildBottomResumePauseButton(t),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -219,29 +227,7 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
             onPressed: () => Navigator.pop(context),
           ),
 
-          // Subtle Topic Title (Non-distracting, clean)
-          if (t.hasTarget)
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                child: Text(
-                  t.chapterName.isNotEmpty
-                      ? '${t.subjectName} · ${t.topicTitle}'
-                      : (t.topicTitle.isNotEmpty ? t.topicTitle : t.subjectName),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.6,
-                    color: Colors.white.withValues(alpha: 0.45),
-                  ),
-                ),
-              ),
-            )
-          else
-            const Spacer(),
+          const Spacer(),
 
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -374,7 +360,81 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
     );
   }
 
+  Widget _buildTopicHeader(FocusTimerState t, {required double maxWidth}) {
+    final hasSubject =
+        t.subjectName.isNotEmpty && t.subjectName != 'No Target Selected';
+    final hasChapter = t.chapterName.isNotEmpty;
+    final hasTopic = t.topicTitle.isNotEmpty &&
+        t.topicTitle != 'Select a task or mode to start';
+
+    String categoryText = '';
+    final sub = t.subjectName.trim().toUpperCase();
+    final chap = t.chapterName.trim().toUpperCase();
+
+    if (hasSubject && hasChapter) {
+      if (chap == sub || chap.startsWith(sub)) {
+        categoryText = chap;
+      } else if (sub.startsWith(chap)) {
+        categoryText = sub;
+      } else {
+        categoryText = '$sub · $chap';
+      }
+    } else if (hasSubject) {
+      categoryText = sub;
+    } else if (hasChapter) {
+      categoryText = chap;
+    }
+
+    final String titleText = hasTopic
+        ? t.topicTitle
+        : (hasSubject ? t.subjectName : 'Focus Session');
+
+    return AnimatedOpacity(
+      opacity: _showControls ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 300),
+      child: Container(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            if (categoryText.isNotEmpty) ...[
+              Text(
+                categoryText,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                  color: const Color(0xFFFBBF24).withValues(alpha: 0.85),
+                ),
+              ),
+              const SizedBox(height: 3),
+            ],
+            Text(
+              titleText,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              softWrap: true,
+              style: const TextStyle(
+                fontSize: 15.5,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
+                color: Color(0xFFF3F4F6),
+                height: 1.25,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildDeskModePortraitLayout({
+    required FocusTimerState t,
     required String card1,
     required String card2,
     String? cornerSeconds,
@@ -386,8 +446,10 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
         final maxRowWidth = (constraints.maxHeight - 20.0).clamp(120.0, 900.0);
         final maxRowHeight = (constraints.maxWidth - 20.0).clamp(100.0, 420.0);
 
+        final double headerHeight = t.hasTarget ? 48.0 : 0.0;
+        final availableCardHeight = maxRowHeight - headerHeight;
         final cardW = ((maxRowWidth - 14.0) / 2).clamp(100.0, 340.0);
-        final cardH = math.min(maxRowHeight, cardW * 1.05);
+        final cardH = math.min(availableCardHeight, cardW * 1.02);
 
         final fontSize = (cardH * 0.68).clamp(60.0, 220.0);
         final textStyle = TextStyle(
@@ -437,17 +499,24 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
           fit: BoxFit.scaleDown,
           child: RotatedBox(
             quarterTurns: 1,
-            child: Row(
+            child: Column(
               mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Under quarterTurns: 1:
-                // Left child (x=0) maps to TOP of screen (Card 1)
-                card1Widget,
-                const SizedBox(width: 14),
-                // Right child (x=W) maps to BOTTOM of screen (Card 2)
-                card2Widget,
+                if (t.hasTarget) ...[
+                  _buildTopicHeader(t, maxWidth: cardW * 2 + 14),
+                  const SizedBox(height: 14),
+                ],
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    card1Widget,
+                    const SizedBox(width: 14),
+                    card2Widget,
+                  ],
+                ),
               ],
             ),
           ),
@@ -457,6 +526,7 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
   }
 
   Widget _buildUprightPortraitLayout({
+    required FocusTimerState t,
     required String card1,
     required String card2,
     String? cornerSeconds,
@@ -466,7 +536,9 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
         final maxColHeight = (constraints.maxHeight - 20.0).clamp(120.0, 900.0);
         final maxColWidth = (constraints.maxWidth - 20.0).clamp(100.0, 500.0);
 
-        final cardH = ((maxColHeight - 14.0) / 2).clamp(100.0, 300.0);
+        final double headerHeight = t.hasTarget ? 50.0 : 0.0;
+        final availableCardColHeight = maxColHeight - headerHeight;
+        final cardH = ((availableCardColHeight - 14.0) / 2).clamp(100.0, 290.0);
         final cardW = math.min(maxColWidth, cardH * 1.15);
 
         final fontSize = (cardH * 0.68).clamp(60.0, 190.0);
@@ -520,6 +592,10 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              if (t.hasTarget) ...[
+                _buildTopicHeader(t, maxWidth: cardW * 1.1),
+                const SizedBox(height: 14),
+              ],
               card1Widget,
               const SizedBox(height: 14),
               card2Widget,
@@ -531,6 +607,7 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
   }
 
   Widget _buildLandscapeLayout({
+    required FocusTimerState t,
     required String card1,
     required String card2,
     String? cornerSeconds,
@@ -540,8 +617,10 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
         final maxRowWidth = (constraints.maxWidth - 32.0).clamp(120.0, 1200.0);
         final maxRowHeight = (constraints.maxHeight - 20.0).clamp(100.0, 500.0);
 
+        final double headerHeight = t.hasTarget ? 48.0 : 0.0;
+        final availableCardHeight = maxRowHeight - headerHeight;
         final cardW = ((maxRowWidth - 16.0) / 2).clamp(100.0, 440.0);
-        final cardH = math.min(maxRowHeight, cardW * 0.95);
+        final cardH = math.min(availableCardHeight, cardW * 0.95);
 
         final fontSize = (cardH * 0.68).clamp(60.0, 240.0);
         final textStyle = TextStyle(
@@ -589,14 +668,25 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
 
         return FittedBox(
           fit: BoxFit.scaleDown,
-          child: Row(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              card1Widget,
-              const SizedBox(width: 14),
-              card2Widget,
+              if (t.hasTarget) ...[
+                _buildTopicHeader(t, maxWidth: cardW * 2 + 16),
+                const SizedBox(height: 14),
+              ],
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  card1Widget,
+                  const SizedBox(width: 14),
+                  card2Widget,
+                ],
+              ),
             ],
           ),
         );
