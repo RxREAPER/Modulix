@@ -359,5 +359,84 @@ void main() {
         },
       );
     });
+
+    test('8. Automated Leaderboard Rollover RPC executes with structured report', () async {
+      final rolloverRes = await client.rpc(
+        'rollover_leaderboards',
+        params: {
+          'p_timezone': 'Asia/Kolkata',
+          'p_day_start_hour': 5,
+          'p_force_daily': false,
+          'p_force_weekly': false,
+          'p_force_monthly': false,
+        },
+      );
+
+      final report = rolloverRes as Map<String, dynamic>;
+      expect(report['status'], 'success');
+      expect(report['timezone'], 'Asia/Kolkata');
+      expect(report['day_start_hour'], 5);
+      expect(report.containsKey('daily_reset_count'), isTrue);
+      expect(report.containsKey('weekly_reset_triggered'), isTrue);
+      expect(report.containsKey('monthly_reset_triggered'), isTrue);
+    });
+
+    test('9. Defensive 5 AM period rollover resets daily counter when last session was yesterday', () async {
+      const testUserId = '00000000-0000-0000-0000-000000000001';
+      // 1. Force last_study_day to yesterday to simulate overnight day boundary crossing
+      await client.from('profiles').update({
+        'last_study_day': '2020-01-01',
+        'daily_study_secs': 18000, // 5 hours logged yesterday
+      }).eq('id', testUserId);
+
+      // 2. Student records 1800 seconds (30 mins) this morning
+      final res = await client.rpc(
+        'record_focus_session',
+        params: {
+          'p_user_id': testUserId,
+          'p_session_secs': 1800,
+        },
+      );
+
+      expect(res['status'], 'recorded');
+      final updatedProfile = res['profile'] as Map<String, dynamic>;
+
+      // Daily study seconds MUST reset to 1800 (not 18000 + 1800 = 19800)
+      expect((updatedProfile['daily_study_secs'] as num).toInt(), 1800);
+
+      // Verify last_study_day was updated on the server to today
+      final profileFetch = await client
+          .from('profiles')
+          .select('last_study_day, last_study_week, last_study_month')
+          .eq('id', testUserId)
+          .single();
+
+      expect(profileFetch['last_study_day'], isNotNull);
+      expect(profileFetch['last_study_day'], isNot('2020-01-01'));
+
+      // 3. Rollback the 1800 seconds to keep test state clean
+      await client.rpc(
+        'record_focus_session',
+        params: {
+          'p_user_id': testUserId,
+          'p_session_secs': -1800,
+        },
+      );
+    });
+
+    test('10. pg_cron schedule is registered and active for 05:00 AM IST daily rollover', () async {
+      final res = await client.rpc(
+        'get_cron_job_status',
+        params: {
+          'p_jobname': 'modulix-daily-leaderboard-reset',
+        },
+      );
+
+      final status = res as Map<String, dynamic>;
+      expect(status['exists'], isTrue);
+      expect(status['schedule'], '30 23 * * *');
+      expect(status['active'], isTrue);
+      expect(status['jobname'], 'modulix-daily-leaderboard-reset');
+    });
   });
 }

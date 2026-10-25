@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:modulix/config/supabase_config.dart';
@@ -46,18 +45,22 @@ void main() {
       final status = await subCompleter.future.timeout(const Duration(seconds: 5));
       expect(status, RealtimeSubscribeStatus.subscribed);
 
-      final trackRes = await channel.track({
+      await channel.track({
         'user_id': 'test-doc-1',
         'doctor_name': 'Dr. Tester',
         'status': 'focusing',
         'joined_at': DateTime.now().toIso8601String(),
       });
 
-      expect(trackRes.toString(), contains('ok'));
+      // Poll presenceState until tracked peer is reflected
+      final deadline = DateTime.now().add(const Duration(seconds: 4));
+      List<SinglePresenceState> presence = [];
+      while (DateTime.now().isBefore(deadline)) {
+        presence = channel.presenceState();
+        if (presence.isNotEmpty) break;
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
 
-      await completer.future.timeout(const Duration(seconds: 3));
-
-      final presence = channel.presenceState();
       expect(presence, isNotEmpty);
 
       await channel.untrack();

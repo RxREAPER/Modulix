@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:modulix/models/user_rank.dart';
+import 'package:modulix/services/metrics_service.dart';
 
 void main() {
   group('UserLevel Progression Hierarchy', () {
@@ -76,6 +77,40 @@ void main() {
       expect(entry.isCurrentUser, isTrue);
       expect(entry.formattedDuration, '5h 0m');
       expect(entry.level, UserLevel.intern);
+    });
+  });
+
+  group('MetricsService 5 AM Study Period Rollovers', () {
+    test('Day boundary: 03:00 AM belongs to previous day, 05:01 AM belongs to today', () {
+      // 2026-10-26 is Monday
+      final earlyMorning = DateTime(2026, 10, 26, 3, 0); // 3:00 AM Monday
+      final pastCutoff = DateTime(2026, 10, 26, 5, 1); // 5:01 AM Monday
+
+      expect(MetricsService.todayKey(5, earlyMorning), '2026-10-25');
+      expect(MetricsService.todayKey(5, pastCutoff), '2026-10-26');
+
+      expect(MetricsService.studyDayStart(5, earlyMorning), DateTime(2026, 10, 25, 5, 0));
+      expect(MetricsService.studyDayStart(5, pastCutoff), DateTime(2026, 10, 26, 5, 0));
+    });
+
+    test('Week boundary: Monday 03:00 AM belongs to previous week, 05:01 AM starts new week', () {
+      final earlyMonday = DateTime(2026, 10, 26, 3, 0); // 3:00 AM Monday
+      final newWeekMonday = DateTime(2026, 10, 26, 5, 1); // 5:01 AM Monday
+
+      // At 3 AM Monday, the week start is Monday of the PREVIOUS week (Oct 19) at 5 AM
+      expect(MetricsService.studyWeekStart(5, earlyMonday), DateTime(2026, 10, 19, 5, 0));
+      // At 5:01 AM Monday, the week start is TODAY Monday (Oct 26) at 5 AM
+      expect(MetricsService.studyWeekStart(5, newWeekMonday), DateTime(2026, 10, 26, 5, 0));
+    });
+
+    test('Month boundary: 1st of month 03:00 AM belongs to previous month, 05:01 AM starts new month', () {
+      final earlyFirstOfMonth = DateTime(2026, 11, 1, 3, 0); // 3:00 AM Nov 1
+      final newMonthPastCutoff = DateTime(2026, 11, 1, 5, 1); // 5:01 AM Nov 1
+
+      // At 3 AM on Nov 1, the study month start is Oct 1 at 5 AM
+      expect(MetricsService.studyMonthStart(5, earlyFirstOfMonth), DateTime(2026, 10, 1, 5, 0));
+      // At 5:01 AM on Nov 1, the study month start is Nov 1 at 5 AM
+      expect(MetricsService.studyMonthStart(5, newMonthPastCutoff), DateTime(2026, 11, 1, 5, 0));
     });
   });
 }

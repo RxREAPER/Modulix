@@ -112,6 +112,30 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-063] Automated 05:00 AM Leaderboard Rollover, pg_cron Scheduling & Defensive Period Reset Engine
+- **Timestamp:** 2026-10-25 11:45 UTC
+- **Category:** Backend & Scalability / Automated 5 AM Leaderboard Rollovers & Period Reset Engine
+- **Files Modified/Created (6 files):**
+  - `supabase/migrations/007_leaderboard_automated_rollover.sql` (Added `last_study_day`, `last_study_week`, `last_study_month` to `public.profiles`, created `public.rollover_leaderboards` RPC with daily/weekly/monthly reset logic and 7-day cron log pruning, enhanced `public.record_focus_session` with defensive 5 AM period reset, scheduled `modulix-daily-leaderboard-reset` in `pg_cron` for 05:00 AM IST / 23:30 UTC daily, and added `public.get_cron_job_status` inspection helper)
+  - `lib/services/metrics_service.dart` (Added `studyWeekStart` and `studyMonthStart` helper methods strictly anchored to the clinical 05:00 AM day boundary)
+  - `lib/services/sync_service.dart` (Updated leaderboard sync aggregation to compute weekly and monthly totals using `studyWeekStart` and `studyMonthStart`, and stamped `last_study_day` and `last_study_month`)
+  - `test/leaderboard_test.dart` (Added unit tests verifying 5 AM day, week, and month edge cases e.g. 03:00 AM vs 05:01 AM on Monday and 1st of month)
+  - `test/server_leaderboard_test.dart` (Added Tests 8, 9, 10 verifying live `rollover_leaderboards` RPC execution, defensive overnight reset on `record_focus_session`, and active `pg_cron` schedule status)
+  - `test/realtime_presence_test.dart` (Streamlined presence polling and cleaned unused imports)
+- **Summary:**
+  - Preserved natural medical student study patterns where late-night study marathons stretch past midnight into 1–4 AM without artificially fragmenting daily/weekly standings.
+  - Implemented 100% zero-maintenance automated server-side rollovers via PostgreSQL `pg_cron` running every morning at 05:00 AM IST (23:30 UTC).
+  - Rollover clears daily counters, resets weekly standings on Monday at 05:00 AM, resets monthly standings on the 1st of the month at 05:00 AM, and prunes stale cron logs older than 7 days.
+  - Added dual defensive layer in `record_focus_session` and `SyncService` so returning students crossing the 5 AM boundary automatically reset outdated period accumulators even if offline or if cron was delayed.
+  - 100% UI preservation with zero visual layout changes or intrusive banners.
+- **Verification:**
+  - `flutter analyze`: **No issues found! (0 errors, 0 warnings)**
+  - `flutter test test/leaderboard_test.dart`: **All 9 tests passed! (100%)**
+  - `flutter test test/server_leaderboard_test.dart`: **All 10 tests passed! (100%)**
+  - `flutter test test/realtime_presence_test.dart`: **All 2 tests passed! (100%)**
+  - Live Supabase Server: Verified `cron.job` active entry, `get_cron_job_status`, and `rollover_leaderboards` execution report.
+- **Status:** ⏳ Pending APK Build / Verified
+
 ### [CKPT-062] Supabase Realtime Study Lounge Presence (Zero-DB Peer Companionship)
 - **Timestamp:** 2026-10-25 11:05 UTC
 - **Category:** Backend & Realtime / Live Peer Presence & Study Lounge WebSocket Sync

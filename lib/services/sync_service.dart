@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/app_state.dart';
 import '../models/daily_desk_task.dart';
@@ -295,12 +296,12 @@ class SyncService {
         final allLogs = await DatabaseService.instance.getAllTimeLogs();
         final startHour = localAppState.dayStartHour;
         final todayStart = MetricsService.studyDayStart(startHour);
-        final dayOfWeek = DateTime.now().weekday;
-        final monday = DateTime.now().subtract(Duration(days: dayOfWeek - 1));
-        final weekStart = DateTime(monday.year, monday.month, monday.day);
-
+        final weekStart = MetricsService.studyWeekStart(startHour);
+        final monthStart = MetricsService.studyMonthStart(startHour);
         final now = DateTime.now();
-        final monthStart = DateTime(now.year, now.month, 1, 0, 0, 0);
+        final adjusted = now.subtract(Duration(hours: startHour));
+        final dayKey = DateFormat('yyyy-MM-dd').format(adjusted);
+        final monthKey = DateFormat('yyyy-MM').format(adjusted);
 
         int totalSecs = 0;
         int dailySecs = 0;
@@ -320,6 +321,8 @@ class SyncService {
           'daily_study_secs': dailySecs,
           'weekly_study_secs': weeklySecs,
           'monthly_study_secs': monthlySecs,
+          'last_study_day': dayKey,
+          'last_study_month': monthKey,
           'leaderboard_visible': localAppState.leaderboardVisible,
           'updated_at': DateTime.now().toUtc().toIso8601String(),
         }).eq('id', userId);

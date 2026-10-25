@@ -19,6 +19,26 @@ class MetricsService {
         : DateTime(adjusted.year, adjusted.month, adjusted.day, dayStartHour);
   }
 
+  /// Timestamp representing the start of the study week (defaults to Monday 5 AM)
+  static DateTime studyWeekStart([int dayStartHour = 5, DateTime? now]) {
+    final current = now ?? DateTime.now();
+    final adjusted = current.subtract(Duration(hours: dayStartHour));
+    final dayOfWeek = adjusted.weekday; // 1 = Monday, 7 = Sunday
+    final monday = adjusted.subtract(Duration(days: dayOfWeek - 1));
+    return current.isUtc
+        ? DateTime.utc(monday.year, monday.month, monday.day, dayStartHour)
+        : DateTime(monday.year, monday.month, monday.day, dayStartHour);
+  }
+
+  /// Timestamp representing the start of the study month (defaults to 1st of month 5 AM)
+  static DateTime studyMonthStart([int dayStartHour = 5, DateTime? now]) {
+    final current = now ?? DateTime.now();
+    final adjusted = current.subtract(Duration(hours: dayStartHour));
+    return current.isUtc
+        ? DateTime.utc(adjusted.year, adjusted.month, 1, dayStartHour)
+        : DateTime(adjusted.year, adjusted.month, 1, dayStartHour);
+  }
+
   /// Syllabus-wide stats for a given edition state + subjects
   static SyllabusMetrics computeSyllabusMetrics(
     EditionState edState,
