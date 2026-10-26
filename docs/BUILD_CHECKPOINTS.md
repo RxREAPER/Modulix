@@ -4,6 +4,40 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.22.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (248MB)
+- **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
+- **Compilation Time:** 192.4s | **Test Suite:** 43/43 Targeted Tests Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-074]`, `[CKPT-075]`
+
+### Key Highlights & Releases in v1.22.0:
+1. **Filmic Metal Mesh Background & Directional Specular Sheen (`lib/widgets/animations/filmic_metal_mesh_background.dart`):**
+   - 60 FPS organic Lissajous harmonic orb drift (4 chromatic orbs over 20-second non-linear loop).
+   - Apple-style directional metallic specular sheen sweep.
+   - Hardware-accelerated procedural micro-grain noise texture pre-baked into a 128×128 image descriptor and tiled with `ImageShader` and `BlendMode.overlay` / `BlendMode.softLight` (whisper-soft 1.5%–3.5% alpha for silky brushed titanium texture).
+   - Enclosed in an isolated `RepaintBoundary` behind scrollable content for 120Hz smooth scrolling.
+2. **Ambient Modern Aesthetic Timepiece (`lib/widgets/study_desk_clock.dart`):**
+   - Purged legacy sketchy hand-drawn ornate frame asset and `CabinSketch` font.
+   - 24px frosted squircle container with 18.0 sigma backdrop blur, 0.75px specular border gradient, and top specular highlight line.
+   - Large sculpted 58px numerals with `RollingDigitText` transitions.
+   - Breathing blue micro-dot with `LIVE` pill badge, uppercase date stamp (`TUESDAY · 27 OCTOBER`), and 2.5px gradient seconds progress track (0–59s).
+3. **Unboxed Modern Home Desk (`lib/screens/home/home_screen.dart`):**
+   - Sleek 36×36 squircle 'M' pod with subtle cyan glow, bold tracked `Modulix` title (`20px`, `w800`), integrated `SyncStatusBadge` + `ProfileAvatar` (40px) with `ApplePressable` haptics.
+   - Purged uppercase `DAILY COMPANION` tag and tilted coral highlighter line.
+   - Modernized Daily Tasks: 16px frosted squircle rows (`BackdropFilter` blur 12, 0.75px border), 22px animated circular emerald checkmarks, circular play launchers, and swipe-to-delete with `ModulixToast.showUndo`.
+4. **Remodeled Module Based Tasks Card (`lib/widgets/automated_module_tracker.dart`):**
+   - Purged `sketchDecoration` offset shadows, nested boxes inside boxes, and uppercase tags (`STEP 1 OF 3`, `Target Met`).
+   - Upgraded to 22px frosted glass squircle card with glowing subject icon pod, high-hierarchy modern sans-serif typography, continuous 5px gradient progress track, and seamless bottom launcher strip with `OpenContainer` transition into `ModuleTasksScreen`.
+5. **Task Analytics & Sub-Pages Pastel Pills (`lib/screens/analytics/analytics_screen.dart`, `lib/screens/daily_tasks/daily_tasks_screen.dart`):**
+   - Revamped Daily Tasks section into rich Task Analytics: Pacing & Velocity card, radial gauge, 6px gradient track, 3-metric ribbon, workload distribution pills, and actionable pacing insight strip.
+   - Converted task rows across Daily Tasks screen and sub-pages into 16px soft pastel pill rows with 22px animated circular emerald checkmarks.
+6. **Study Matrix Heatmap & Leaderboard Adaptations (`lib/widgets/analytics/neet_consistency_matrix.dart`, `lib/screens/analytics/leaderboard_screen.dart`):**
+   - 3-metric analytical ribbon (`STREAK`, `CONSISTENCY`, `TOTAL VOLUME`), metric-adaptive palettes, 16×16 squircle cells with 2.5px micro-spacing, subpixel alignment, and frosted squircle day details sheet.
+   - Modernized Leaderboard sliding segmented capsule switcher, converted Ranks 4-20 into soft pastel pill rows with circular rank pods, level badges, and verified duration capsules.
+7. **Physical Device Verification:** Built and deployed to connected OnePlus 13R hardware (`ba009d81`), visually verified silky brushed titanium mesh, ambient clock, and unboxed frosted glass surfaces in both Basic Light and Basic Dark atmospheres.
+
+---
+
 ## 🚀 Build Manifest v1.21.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (237MB)
 - **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
@@ -283,7 +317,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Verification:**
   - `flutter analyze lib/`: **No issues found! (0 errors, 0 warnings across entire codebase)**
   - `flutter test`: **43/43 tests passed across 6 test suites! (100% green)**
-- **Status:** ⏳ Pending APK Build / Verified
+- **Status:** ✅ Included in Build (v1.22.0)
 
 ---
 
@@ -303,7 +337,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Verification:**
   - `flutter analyze lib/`: **No issues found! (0 errors, 0 warnings across entire codebase)**
   - `flutter test`: **43/43 tests passed across 6 test suites! (100% green)**
-- **Status:** ⏳ Pending APK Build / Verified
+- **Status:** ✅ Included in Build (v1.22.0)
 
 ---
 
