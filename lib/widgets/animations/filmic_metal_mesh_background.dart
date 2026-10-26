@@ -49,9 +49,9 @@ class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
 
     for (int i = 0; i < size * size; i++) {
       final int offset = i * 4;
-      // High-frequency subtle film grain
-      final int value = random.nextInt(256);
-      final int alpha = 18 + random.nextInt(28); // 7-18% opacity grain
+      // High-frequency whisper-soft brushed metal film grain
+      final int value = 120 + random.nextInt(32);
+      final int alpha = 4 + random.nextInt(6); // 1.5% - 3.5% opacity for silky texture
       pixels[offset] = value;
       pixels[offset + 1] = value;
       pixels[offset + 2] = value;

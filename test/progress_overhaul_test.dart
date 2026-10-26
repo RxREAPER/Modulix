@@ -321,7 +321,7 @@ void main() {
             activeSyllabusProvider.overrideWithValue(const AsyncValue.data(testSubjects)),
             timeLogsProvider.overrideWith((ref) => _MockTimeLogsNotifier([])),
             dailyTasksProvider.overrideWith((ref) => _MockDailyTasksNotifier(const DailyTasksState())),
-            tasksHubProvider.overrideWith(() => _MockTasksHubNotifier(TasksHubState())),
+            tasksHubProvider.overrideWith(() => _MockTasksHubNotifier(const TasksHubState())),
           ],
           child: MaterialApp.router(
             routerConfig: router,
