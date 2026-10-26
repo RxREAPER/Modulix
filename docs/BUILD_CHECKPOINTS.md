@@ -4,6 +4,29 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.25.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (248MB)
+- **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)
+- **Compilation Time:** 196.2s | **Test Suite:** 46/46 Targeted Tests Passed (100% Green) | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-078]`
+
+### Key Highlights & Releases in v1.25.0:
+1. **Infinite Monotonic Continuation & Zero-Seam Wave Dynamics (`lib/widgets/animations/filmic_metal_mesh_background.dart`):**
+   - Eliminated the repeating 24-second animation controller loop reset which caused periodic jumps/seams.
+   - Replaced with continuous monotonic `Ticker` elapsed time, yielding infinitely smooth, seamless $C^\infty$ wave continuation with zero breaks, zero pops, and zero loop resets.
+2. **Soft Velvety Atmospheric Motion (Less Liquidy, Less Metal):**
+   - Purged sharp specular caustics and aggressive liquid chrome ripples in favor of gentle, soft atmospheric domain warping ($p \leftarrow p + 0.22\sin(1.5 \cdot p.y)$) and velvety matte surface rolls.
+3. **Enhanced Multi-Scale 35mm Analog Film Grain Texture:**
+   - Multi-scale noise algorithm (`multiScaleGrain`) combining ultra-fine 35mm film grain with subtle paper micro-fibers.
+   - Distinctly richer, tactile, and prominent grain presence across the entire screen with dimmed, soft luminance contrast that avoids clipping or visual fatigue.
+4. **Strict Top 35% Horizon Dissolve:**
+   - Atmospheric wash is strictly confined to the upper 35% of the viewport directly framing the greeting and hero clock card.
+   - Below 35%, it dissolves completely into the clean base canvas (`AppTheme.paperBackground`), ensuring all task cards and curriculum modules retain 100% clinical contrast and readability.
+5. **Physical Device Verification:**
+   - Live verified on physical OnePlus 13R (`ba009d81`) in both Basic Light and Basic Dark atmospheres.
+
+---
+
 ## 🚀 Build Manifest v1.24.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (248MB)
 - **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)
@@ -354,6 +377,22 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 11. **App Store GDPR Sovereignty & Lifecycle Auto-Sync:** 1-tap data purge and automatic background sync on `AppLifecycleState.resumed`.
 12. **Cloud Snapshot Vault & Tombstone Sync:** Compressed `.json.gz` snapshot archiving into Supabase Storage, and `deleted_ids` tombstone tracking.
 13. **Clean Architecture, Zero Emojis & Zero Nori Mascot:** Complete purge of legacy mascot, 1,276 lines of dead code pruned, and 100% adherence to zero-emoji clinical UI standards.
+
+### [CKPT-078] Seamless Monotonic Continuation, Soft Atmospheric Flow, 35% Horizon & Dimmed Grain
+- **Timestamp:** 2026-10-27 02:53 IST
+- **Category:** ui_modernization / Seamless Monotonic Continuation, Soft Atmospheric Flow, 35% Horizon & Dimmed Grain
+- **Files Modified (2 files):**
+  - `shaders/liquid_metal.frag` (Softened domain warping equations; removed harsh liquid chrome caustics; tuned atmospheric elevation to velvety matte rolls; implemented multi-scale analog film grain with dimmed contrast; set strict horizon dissolve to 35% viewport height)
+  - `lib/widgets/animations/filmic_metal_mesh_background.dart` (Replaced looping AnimationController with continuous monotonic Ticker elapsed time, eliminating all loop seam resets and pops for infinite seamless continuation; updated procedural fallback to match 35% top horizon and dimmed grain)
+- **Summary:**
+  - Refined motion background addressing user feedback: seamless infinite flow without continuation breaks, less liquidy/metal aesthetic, richer dimmed 35mm film grain, and strict 35% top fade leaving lower tasks in pristine clean canvas.
+- **Verification:**
+  - `flutter analyze`: **No issues found! (0 errors, 0 warnings across entire codebase)**
+  - `flutter test`: **46/46 tests passed across 7 test suites! (100% green)**
+  - `flutter build apk --debug`: **Built and installed on OnePlus 13R (ba009d81)**
+- **Status:** ✅ Included in Build (v1.25.0)
+
+---
 
 ### [CKPT-077] Apple Metal Liquid Water Moving Shader & 35mm Analog Film Grain
 - **Timestamp:** 2026-10-27 02:44 IST

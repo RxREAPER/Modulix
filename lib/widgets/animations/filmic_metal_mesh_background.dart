@@ -2,19 +2,20 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import '../../theme/app_theme.dart';
 
-/// Animated Apple Metal / Liquid Chromatic Motion Background.
+/// Animated Atmospheric Filmic Motion Background.
 ///
 /// Features:
-/// 1. True GPU Fragment Shader executing Apple Metal-style fluid wave deformation,
-///    directional specular crests, liquid water caustics, and domain warping.
-/// 2. Active 24 FPS 35mm cinematic film grain jitter across the entire screen.
-/// 3. Seamless theme-accent integration adapting between Dark (obsidian/titanium chrome)
-///    and Light (brushed silver/pearl caustics).
-/// 4. Mid-to-lower horizon fade preserving high readability for lower tasks while
-///    extending the fluid graphic motion deeper past the hero cards.
-/// 5. Lifecycle-aware execution: automatically pauses ticker when app is backgrounded.
+/// 1. True GPU Fragment Shader executing continuous, seamless atmospheric wave flow
+///    with zero breaks, zero pops, and zero loop seams.
+/// 2. Soft, velvety, atmospheric aesthetic (less liquidy, less metallic).
+/// 3. Rich, tactile, multi-scale 35mm analog film grain running at 24 FPS cinema cadence,
+///    with dimmed, gentle contrast across the entire viewport.
+/// 4. Top 35% Horizon Dissolve: atmospheric color wash smoothly dissolves into the clean
+///    canvas color strictly by 35% viewport height, keeping lower tasks pristine and readable.
+/// 5. Lifecycle-aware monotonic execution: automatically pauses ticker when app is backgrounded.
 /// 6. Headless test fallback: falls back gracefully to procedural bezier wave painter
 ///    if FragmentProgram is unavailable in headless CI test runners.
 class FilmicMetalMeshBackground extends StatefulWidget {
@@ -31,7 +32,9 @@ class FilmicMetalMeshBackground extends StatefulWidget {
 
 class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
-  late final AnimationController _controller;
+  late final Ticker _ticker;
+  double _elapsedSeconds = 0.0;
+  Duration _lastElapsed = Duration.zero;
   ui.FragmentProgram? _program;
   ui.Image? _fallbackNoiseImage;
 
@@ -40,10 +43,19 @@ class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 24),
-    )..repeat();
+    // Continuous monotonic ticker: flows smoothly forever without resetting back to 0
+    _ticker = createTicker((elapsed) {
+      if (_lastElapsed != Duration.zero) {
+        final dt = (elapsed - _lastElapsed).inMicroseconds / 1000000.0;
+        if (dt > 0.0 && dt < 0.2) {
+          _elapsedSeconds += dt;
+        }
+      }
+      _lastElapsed = elapsed;
+      if (mounted) {
+        setState(() {});
+      }
+    })..start();
 
     _loadShader();
     _generateFallbackNoiseImage();
@@ -52,12 +64,13 @@ class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      if (!_controller.isAnimating) {
-        _controller.repeat();
+      _lastElapsed = Duration.zero;
+      if (!_ticker.isActive) {
+        _ticker.start();
       }
     } else {
-      if (_controller.isAnimating) {
-        _controller.stop();
+      if (_ticker.isActive) {
+        _ticker.stop();
       }
     }
   }
@@ -72,7 +85,7 @@ class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
         });
       }
     } catch (e, stack) {
-      debugPrint('[FilmicMetalMeshBackground] Shader failed to load: $e\n$stack');
+      debugPrint('[FilmicMetalMeshBackground] Shader fallback active: $e\n$stack');
     }
   }
 
@@ -85,7 +98,7 @@ class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
     for (int i = 0; i < size * size; i++) {
       final int offset = i * 4;
       final int value = 120 + random.nextInt(32);
-      final int alpha = 4 + random.nextInt(6);
+      final int alpha = 7 + random.nextInt(9); // Richer, dimmed analog film grain
       pixels[offset] = value;
       pixels[offset + 1] = value;
       pixels[offset + 2] = value;
@@ -113,7 +126,7 @@ class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _controller.dispose();
+    _ticker.dispose();
     _fallbackNoiseImage?.dispose();
     super.dispose();
   }
@@ -125,31 +138,29 @@ class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
     final canvasColor = AppTheme.paperBackground;
 
     final Color highlightColor = isDark
-        ? const Color(0xFF38BDF8) // Electric cyan / platinum specular sheen
-        : const Color(0xFFFFFFFF); // Pure crystalline white specular reflection
+        ? const Color(0xFF38BDF8) // Celestial cyan / platinum mist
+        : const Color(0xFFFFFFFF); // Soft crystalline white highlight
+
+    // 24 FPS cinema cadence for film grain jitter
+    final double grainSeed = (_elapsedSeconds * 24.0).floor() % 1000.0;
 
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Background liquid metal motion canvas in isolated RepaintBoundary
+        // Background atmospheric motion canvas in isolated RepaintBoundary
         RepaintBoundary(
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (context, _) {
-              return CustomPaint(
-                painter: _FilmicMetalMeshPainter(
-                  progress: _controller.value,
-                  grainSeed: ((_controller.value * 480).floor() % 1000).toDouble(),
-                  isDark: isDark,
-                  baseColor: canvasColor,
-                  accentColor: themeAccent,
-                  highlightColor: highlightColor,
-                  program: _program,
-                  fallbackNoiseImage: _fallbackNoiseImage,
-                ),
-                size: Size.infinite,
-              );
-            },
+          child: CustomPaint(
+            painter: _FilmicMetalMeshPainter(
+              elapsedSeconds: _elapsedSeconds,
+              grainSeed: grainSeed,
+              isDark: isDark,
+              baseColor: canvasColor,
+              accentColor: themeAccent,
+              highlightColor: highlightColor,
+              program: _program,
+              fallbackNoiseImage: _fallbackNoiseImage,
+            ),
+            size: Size.infinite,
           ),
         ),
 
@@ -161,7 +172,7 @@ class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
 }
 
 class _FilmicMetalMeshPainter extends CustomPainter {
-  final double progress;
+  final double elapsedSeconds;
   final double grainSeed;
   final bool isDark;
   final Color baseColor;
@@ -171,7 +182,7 @@ class _FilmicMetalMeshPainter extends CustomPainter {
   final ui.Image? fallbackNoiseImage;
 
   _FilmicMetalMeshPainter({
-    required this.progress,
+    required this.elapsedSeconds,
     required this.grainSeed,
     required this.isDark,
     required this.baseColor,
@@ -191,7 +202,7 @@ class _FilmicMetalMeshPainter extends CustomPainter {
       final ui.FragmentShader shader = program!.fragmentShader();
       shader.setFloat(0, size.width);
       shader.setFloat(1, size.height);
-      shader.setFloat(2, progress * 24.0); // Elapsed wave time
+      shader.setFloat(2, elapsedSeconds); // Continuous monotonic elapsed wave time (no seams!)
       shader.setFloat(3, grainSeed);
 
       // uBaseColor (normalized 0.0 - 1.0)
@@ -221,9 +232,9 @@ class _FilmicMetalMeshPainter extends CustomPainter {
     }
 
     // 2. Procedural Fallback (for headless test environments)
-    final double t = progress * 2.0 * math.pi;
+    final double t = elapsedSeconds * 0.8;
 
-    // Base background gradient
+    // Base background canvas
     final Paint basePaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topLeft,
@@ -242,42 +253,42 @@ class _FilmicMetalMeshPainter extends CustomPainter {
       ).createShader(rect);
     canvas.drawRect(rect, basePaint);
 
-    // Multi-octave wave ribbons
-    final double waveY1 = size.height * (0.22 + 0.08 * math.sin(t));
-    final double waveY2 = size.height * (0.38 + 0.09 * math.cos(t * 0.8));
+    // Soft atmospheric orbs concentrated in upper 25%
+    final double waveY1 = size.height * (0.12 + 0.05 * math.sin(t));
+    final double waveY2 = size.height * (0.18 + 0.06 * math.cos(t * 0.7));
 
     final Paint wave1Paint = Paint()
       ..shader = ui.Gradient.radial(
-        Offset(size.width * 0.45, waveY1),
-        size.width * 0.85,
+        Offset(size.width * 0.40, waveY1),
+        size.width * 0.75,
         [
-          accentColor.withValues(alpha: isDark ? 0.45 : 0.28),
+          accentColor.withValues(alpha: isDark ? 0.32 : 0.20),
           Colors.transparent,
         ],
         [0.0, 1.0],
       );
-    canvas.drawCircle(Offset(size.width * 0.45, waveY1), size.width * 0.85, wave1Paint);
+    canvas.drawCircle(Offset(size.width * 0.40, waveY1), size.width * 0.75, wave1Paint);
 
     final Paint wave2Paint = Paint()
       ..shader = ui.Gradient.radial(
-        Offset(size.width * 0.75, waveY2),
-        size.width * 0.90,
+        Offset(size.width * 0.70, waveY2),
+        size.width * 0.80,
         [
           isDark
-              ? const Color(0xFF0C4A6E).withValues(alpha: 0.40)
-              : const Color(0xFFBAE6FD).withValues(alpha: 0.35),
+              ? const Color(0xFF0C4A6E).withValues(alpha: 0.28)
+              : const Color(0xFFBAE6FD).withValues(alpha: 0.25),
           Colors.transparent,
         ],
         [0.0, 1.0],
       );
-    canvas.drawCircle(Offset(size.width * 0.75, waveY2), size.width * 0.90, wave2Paint);
+    canvas.drawCircle(Offset(size.width * 0.70, waveY2), size.width * 0.80, wave2Paint);
 
-    // Horizon fade into base color
+    // Strict 35% Horizon fade into clean base color
     final Paint horizonFadePaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        stops: const [0.0, 0.52, 0.78, 1.0],
+        stops: const [0.0, 0.14, 0.35, 1.0],
         colors: [
           Colors.transparent,
           Colors.transparent,
@@ -289,7 +300,7 @@ class _FilmicMetalMeshPainter extends CustomPainter {
 
     // Film grain overlay
     if (fallbackNoiseImage != null) {
-      final int frame = (progress * 480).floor();
+      final int frame = (elapsedSeconds * 24).floor();
       final double grainDx = ((frame * 37 + 17) % 128).toDouble();
       final double grainDy = ((frame * 59 + 29) % 128).toDouble();
       final Matrix4 grainMatrix = Matrix4.translationValues(grainDx, grainDy, 0.0);
@@ -308,7 +319,7 @@ class _FilmicMetalMeshPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _FilmicMetalMeshPainter oldDelegate) {
-    return oldDelegate.progress != progress ||
+    return oldDelegate.elapsedSeconds != elapsedSeconds ||
         oldDelegate.grainSeed != grainSeed ||
         oldDelegate.isDark != isDark ||
         oldDelegate.baseColor != baseColor ||
