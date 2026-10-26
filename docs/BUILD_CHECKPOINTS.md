@@ -4,6 +4,19 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+### 🔖 `[CKPT-081]` — Revert Heavy Grain Addition & Calibrate Balanced Fluid Atmospheres
+- **Category:** `theme` / `shaders`
+- **Files Modified:**
+  - `shaders/liquid_metal.frag`
+  - `lib/widgets/animations/filmic_metal_mesh_background.dart`
+- **Summary:**
+  - Reverted the 2.2px clustered film grain and blue chromatic tinting back to subtle, dimmed 35mm film noise (`grainIntensity = 0.045` dark / `0.032` light) with no heavy textures or digital artifacts.
+  - Reduced excessive color toning down: restored rich sapphire navy rolls and radiant silver-cyan caustic light ribbons in Dark Mode (`darkDeep = mix(uBaseColor, uAccentColor, 0.28 + 0.22 * height)`), and crystalline watercolor refractions in Light Mode (`0.32` accent mix, `0.40` caustic glints).
+  - Preserved continuous monotonic wave motion and 50% viewport horizon dissolve.
+- **Verification:** Verified via `flutter analyze` (0 errors, 0 warnings), built debug APK, installed on physical OnePlus 13R (`ba009d81`), and visually confirmed on device.
+
+---
+
 ## 🚀 Build Manifest v1.27.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (248MB)
 - **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)

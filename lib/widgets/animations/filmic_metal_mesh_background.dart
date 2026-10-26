@@ -138,33 +138,20 @@ class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
     final isAtomicOrange = AppTheme.current.preset == PalettePreset.atomic_ice;
     final canvasColor = AppTheme.paperBackground;
 
-    // 1st User requirement: "when in dark mode its too blue lets tone down it"
-    // 3rd User requirement: "in light mode its also too blue"
+    // Balanced theme accent & highlights (toned down moderately, preserving vibrant liquid motion)
     final Color themeAccent;
     final Color highlightColor;
     if (isDark) {
-      // Toned-down deep slate-blue accent and soft platinum highlight (no loud neon cyan)
-      themeAccent = const Color(0xFF1E3A5F); // Muted midnight navy/slate
-      highlightColor = const Color(0xFF64748B); // Soft slate/silver highlight
+      // Balanced Dark Mode: Deep sapphire navy with luminous cyan crests
+      themeAccent = const Color(0xFF1E40AF); // Sapphire navy
+      highlightColor = const Color(0xFF38BDF8); // Celestial cyan/silver highlight
     } else if (isAtomicOrange) {
       themeAccent = AppTheme.accentPrimary; // Vibrant atomic orange wave
       highlightColor = const Color(0xFFFFFFFF);
     } else {
-      // Light Mode: Toned-down airy slate-blue mist (no saturated pool blue)
-      themeAccent = const Color(0xFF94A3B8); // Soft silver-slate mist
+      // Balanced Light Mode: Crisp sky-slate mist with radiant white refraction
+      themeAccent = const Color(0xFF60A5FA); // Radiant soft cerulean/slate
       highlightColor = const Color(0xFFFFFFFF);
-    }
-
-    // 2nd User requirement: "when in atomic orange theme lets make the grain blue shaded not orange"
-    // And visible tactile grain:
-    final Color grainColor;
-    if (isAtomicOrange) {
-      // Blue shaded grain for atomic orange theme!
-      grainColor = const Color(0xFF0288A6); // Deep ice-cream cyan/blue
-    } else if (isDark) {
-      grainColor = const Color(0xFFE2E8F0); // Crisp silver-white grain for AMOLED
-    } else {
-      grainColor = const Color(0xFF0F172A); // Deep slate-black grain for light canvas
     }
 
     // 24 FPS cinema cadence for film grain jitter
@@ -183,7 +170,6 @@ class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
               baseColor: canvasColor,
               accentColor: themeAccent,
               highlightColor: highlightColor,
-              grainColor: grainColor,
               program: _program,
               fallbackNoiseImage: _fallbackNoiseImage,
             ),
@@ -205,7 +191,6 @@ class _FilmicMetalMeshPainter extends CustomPainter {
   final Color baseColor;
   final Color accentColor;
   final Color highlightColor;
-  final Color grainColor;
   final ui.FragmentProgram? program;
   final ui.Image? fallbackNoiseImage;
 
@@ -216,7 +201,6 @@ class _FilmicMetalMeshPainter extends CustomPainter {
     required this.baseColor,
     required this.accentColor,
     required this.highlightColor,
-    required this.grainColor,
     required this.program,
     required this.fallbackNoiseImage,
   });
@@ -252,14 +236,8 @@ class _FilmicMetalMeshPainter extends CustomPainter {
       shader.setFloat(14, highlightColor.b);
       shader.setFloat(15, highlightColor.a);
 
-      // uGrainColor (normalized 0.0 - 1.0)
-      shader.setFloat(16, grainColor.r);
-      shader.setFloat(17, grainColor.g);
-      shader.setFloat(18, grainColor.b);
-      shader.setFloat(19, grainColor.a);
-
       // uIsDark
-      shader.setFloat(20, isDark ? 1.0 : 0.0);
+      shader.setFloat(16, isDark ? 1.0 : 0.0);
 
       final Paint shaderPaint = Paint()..shader = shader;
       canvas.drawRect(rect, shaderPaint);
@@ -360,7 +338,6 @@ class _FilmicMetalMeshPainter extends CustomPainter {
         oldDelegate.baseColor != baseColor ||
         oldDelegate.accentColor != accentColor ||
         oldDelegate.highlightColor != highlightColor ||
-        oldDelegate.grainColor != grainColor ||
         oldDelegate.program != program ||
         oldDelegate.fallbackNoiseImage != fallbackNoiseImage;
   }

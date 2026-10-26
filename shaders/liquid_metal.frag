@@ -8,7 +8,6 @@ uniform float uGrainSeed;
 uniform vec4 uBaseColor;
 uniform vec4 uAccentColor;
 uniform vec4 uHighlightColor;
-uniform vec4 uGrainColor;
 uniform float uIsDark;
 
 out vec4 fragColor;
@@ -59,41 +58,28 @@ void main() {
     float caustic = pow(clamp(1.0 - ripple, 0.0, 1.0), 4.8);
     float crestGleam = pow(clamp(height * 0.5 + 0.5, 0.0, 1.0), 2.5);
 
-    // Color mixing:
+    // Color mixing: Balanced, beautiful liquid depth (less toning down)
     vec4 liquidCol;
     if (uIsDark > 0.5) {
-        // 1st User Requirement: "when in dark mode its too blue lets tone down it"
-        // Toned-down deep metallic obsidian with subtle muted slate-blue rolls & soft silver crests
-        vec4 darkDeep = mix(uBaseColor, uAccentColor, 0.18 + 0.14 * height);
-        liquidCol = darkDeep + uHighlightColor * (caustic * 0.32 + crestGleam * 0.18);
+        // Balanced Dark Mode: Deep obsidian base with rich slate-navy liquid waves and radiant silver-cyan caustics
+        vec4 darkDeep = mix(uBaseColor, uAccentColor, 0.28 + 0.22 * height);
+        liquidCol = darkDeep + uHighlightColor * (caustic * 0.52 + crestGleam * 0.28);
     } else {
-        // 3rd User Requirement: "in light mode its also too blue"
-        // Toned-down clean light paper canvas with delicate airy refraction ribbons (no heavy pool blue)
-        vec4 troughColor = mix(uBaseColor, uAccentColor, 0.22);
-        vec4 crestColor = mix(uBaseColor, vec4(1.0, 1.0, 1.0, 1.0), 0.80);
+        // Balanced Light Mode: Translucent watercolor refraction with sparkling caustic ribbons
+        vec4 troughColor = mix(uAccentColor, uBaseColor, 0.32);
+        vec4 crestColor = mix(uBaseColor, vec4(1.0, 1.0, 1.0, 1.0), 0.70);
         vec4 lightDeep = mix(troughColor, crestColor, height * 0.5 + 0.5);
-        liquidCol = mix(lightDeep, vec4(1.0, 1.0, 1.0, 1.0), caustic * 0.22 + crestGleam * 0.10);
+        liquidCol = mix(lightDeep, vec4(1.0, 1.0, 1.0, 1.0), caustic * 0.40 + crestGleam * 0.16);
     }
 
     // 50% Viewport Height Horizon Dissolve
     float horizonFade = smoothstep(0.25, 0.50, uv.y);
     vec4 finalColor = mix(liquidCol, uBaseColor, horizonFade);
 
-    // User requirements:
-    // 1. "i see no grains lets add that component too"
-    // 2. "when in atomic orange theme lets make the grain blue shaded not orange"
-    // Scaled to 2.2 physical pixels so silver halide grain particles are distinctly visible on 450+ PPI displays
-    vec2 grainCoord = floor(fragCoord / 2.2);
-    float grain = organicFilmGrain(grainCoord, uGrainSeed); // -0.5 to 0.5
-
-    // Visibly tactile grain amplitude
-    float grainIntensity = uIsDark > 0.5 ? 0.095 : 0.075;
-
-    // Chromatic grain shading:
-    // When uGrainColor is blue (e.g. in atomic orange), the grain crystals are distinctly BLUE-SHADED!
-    vec3 grainTint = uGrainColor.rgb;
-    vec3 grainDelta = mix(vec3(grain), (grainTint - vec3(0.5)) * 1.6 + vec3(grain), 0.60);
-    finalColor.rgb = clamp(finalColor.rgb + grainDelta * grainIntensity, 0.0, 1.0);
+    // Subtle, dimmed, non-intrusive 35mm film grain (reverted heavy/tinted grain addition)
+    float grain = organicFilmGrain(fragCoord, uGrainSeed);
+    float grainIntensity = uIsDark > 0.5 ? 0.045 : 0.032;
+    finalColor.rgb += grain * grainIntensity;
 
     fragColor = finalColor;
 }
