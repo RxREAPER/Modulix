@@ -6,6 +6,7 @@ import '../../providers/focus_timer_provider.dart';
 import '../../services/notification_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
+import '../../widgets/feedback/modulix_toast.dart';
 
 class NotificationsPreferencesScreen extends ConsumerWidget {
   const NotificationsPreferencesScreen({super.key});
@@ -284,11 +285,9 @@ class NotificationsPreferencesScreen extends ConsumerWidget {
                               doctorName: appState.doctorName,
                             );
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Test notification dispatched'),
-                                  duration: Duration(seconds: 2),
-                                ),
+                              ModulixToast.showSuccess(
+                                context,
+                                message: 'Test notification dispatched',
                               );
                             }
                           },

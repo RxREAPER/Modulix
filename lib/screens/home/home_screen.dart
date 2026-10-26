@@ -54,7 +54,10 @@ class HomeScreen extends ConsumerWidget {
             bottom: false,
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-              padding: const EdgeInsets.only(top: 16, bottom: 120),
+              padding: EdgeInsets.only(
+                top: 16,
+                bottom: MediaQuery.paddingOf(context).bottom + 100.0,
+              ),
               child: PageEntrance(
                 staggerMs: 35,
                 durationMs: 220,
@@ -181,7 +184,7 @@ class HomeScreen extends ConsumerWidget {
                   // ④ Module Based Tasks Section
                   const Padding(
                     padding: EdgeInsets.fromLTRB(20, 28, 20, 0),
-                    child: _HomeModuleTrackerSection(),
+                    child: RepaintBoundary(child: _HomeModuleTrackerSection()),
                   ),
                 ],
               ),
@@ -198,8 +201,10 @@ class _HomeTasksSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(appThemeDataProvider);
     final tasksState = ref.watch(tasksHubProvider).valueOrNull;
     final timerState = ref.watch(focusTimerProvider);
+    final isDark = AppTheme.current.isDark;
 
     final todayTasks = tasksState?.todayTasks ?? const [];
     final completedTasks = tasksState?.todayCompletedTasks ?? const [];
@@ -261,7 +266,9 @@ class _HomeTasksSection extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: isAllDone ? FontWeight.w700 : FontWeight.w500,
-                      color: isAllDone ? const Color(0xFF059669) : Colors.grey.shade600,
+                      color: isAllDone
+                          ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669))
+                          : AppTheme.mutedText,
                     ),
                   ),
                 ],
@@ -272,21 +279,28 @@ class _HomeTasksSection extends ConsumerWidget {
               onTap: () => context.push('/daily-tasks'),
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppTheme.inkForeground,
+                  color: isDark ? const Color(0xFF1C1C1E) : AppTheme.inkForeground,
                   borderRadius: BorderRadius.circular(8),
+                  border: isDark
+                      ? Border.all(color: const Color(0xFF2C2C2E), width: 1)
+                      : null,
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.add_rounded, size: 14, color: AppTheme.paperBackground),
+                    Icon(
+                      Icons.add_rounded,
+                      size: 14,
+                      color: isDark ? Colors.white : AppTheme.paperBackground,
+                    ),
                     const SizedBox(width: 3),
                     Text(
                       'Add',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: AppTheme.paperBackground,
+                        color: isDark ? Colors.white : AppTheme.paperBackground,
                       ),
                     ),
                   ],
@@ -560,6 +574,7 @@ class _HomeModuleTrackerSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(appThemeDataProvider);
     final appState = ref.watch(appStateProvider).valueOrNull;
     final subjects = ref.watch(activeSyllabusProvider).valueOrNull ?? const [];
 

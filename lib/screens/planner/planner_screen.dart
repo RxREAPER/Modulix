@@ -12,6 +12,7 @@ import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/study_task_card.dart';
 import '../../widgets/planner/keyboard_docked_task_input.dart';
+import '../../widgets/feedback/modulix_toast.dart';
 import 'plan_tomorrow_sheet.dart';
 
 class PlannerScreen extends ConsumerStatefulWidget {
@@ -477,18 +478,12 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                 final index = ref.read(dailyTasksProvider).tasks.indexWhere((t) => t.id == task.id);
                 if (index != -1) {
                   ref.read(dailyTasksProvider.notifier).removeTaskAt(index);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      duration: const Duration(seconds: 4),
-                      content: Text('Removed "${task.title}"'),
-                      action: SnackBarAction(
-                        label: 'Undo',
-                        textColor: AppTheme.highlightStrong,
-                        onPressed: () {
-                          ref.read(dailyTasksProvider.notifier).insertTaskAt(index, task, isDone);
-                        },
-                      ),
-                    ),
+                  ModulixToast.showUndo(
+                    context,
+                    message: 'Removed "${task.title}"',
+                    onUndo: () {
+                      ref.read(dailyTasksProvider.notifier).insertTaskAt(index, task, isDone);
+                    },
                   );
                 }
               },

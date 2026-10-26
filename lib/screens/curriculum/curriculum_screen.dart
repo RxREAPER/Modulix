@@ -276,14 +276,15 @@ class CurriculumScreen extends ConsumerWidget {
             }
 
             slivers.add(
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 80),
+              SliverToBoxAdapter(
+                child: SizedBox(height: MediaQuery.paddingOf(context).bottom + 100.0),
               ),
             );
           } else {
             slivers.add(
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(18, 0, 18, 100),
+                padding: EdgeInsets.fromLTRB(
+                    18, 0, 18, MediaQuery.paddingOf(context).bottom + 100.0),
                 sliver: SliverGrid(
                   gridDelegate:
                       const SliverGridDelegateWithFixedCrossAxisCount(

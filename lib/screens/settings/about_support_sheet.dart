@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../providers/app_state_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/feedback/modulix_toast.dart';
 
 class AboutSupportSheet extends ConsumerWidget {
   const AboutSupportSheet({super.key});
@@ -195,12 +196,9 @@ class AboutSupportSheet extends ConsumerWidget {
                           trailing: Icon(Icons.copy_rounded,
                               size: 18, color: AppTheme.mutedText),
                           onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content:
-                                    Text('Support contact: $feedbackEmail'),
-                                duration: Duration(seconds: 3),
-                              ),
+                            ModulixToast.showInfo(
+                              context,
+                              message: 'Support contact: $feedbackEmail',
                             );
                           },
                         ),
@@ -482,11 +480,9 @@ class AboutSupportSheet extends ConsumerWidget {
                             .resetAllProgress();
                         if (context.mounted) {
                           Navigator.pop(ctx);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content:
-                                  Text('All progress records have been reset'),
-                            ),
+                          ModulixToast.showSuccess(
+                            context,
+                            message: 'All progress records have been reset',
                           );
                         }
                       }

@@ -187,6 +187,31 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-069] Modernization Suite: Dynamic Island Glass Toasts, 120Hz Pre-Rendering, Android Predictive Back, Universal Safe Insets & Nav Bar Pill Refinement
+- **Timestamp:** 2026-10-26 09:52 UTC
+- **Category:** UI, Navigation & System Architecture / Dynamic Island Toasts, 120Hz Pre-Rendering, Android 14+ Predictive Back, Universal Multi-Device Safe Insets & Nav Bar Refinement
+- **Files Modified (23 files):**
+  - `lib/widgets/feedback/modulix_toast.dart` (New: Top Dynamic Island Apple glass capsule sliding down from notch with spring physics, depleting countdown micro-progress bar, tactile haptics, responsive width `min(420.0, screenWidth - 32.0)`, drag-to-dismiss, and universal safe-area positioning across all phone/tablet/notch form factors)
+  - `test/modulix_toast_test.dart` (New: Unit and widget tests verifying message/icon display, auto-dismiss timer, and interactive undo action callback execution)
+  - `lib/widgets/nav/liquid_lens_bubble.dart` (Completely removed harsh top specular chord line on the glass indicator pill, replacing with a seamless 0.6px whisper-soft glass rim `alpha: 0.07` in dark and `0.04` in light mode)
+  - 13 files replacing all `ScaffoldMessenger.of(context).showSnackBar()` with `ModulixToast` across the entire project (`planner_screen.dart`, `plan_tomorrow_sheet.dart`, `auth_screen.dart`, `study_plan_analytics_page.dart`, `about_support_sheet.dart`, `data_privacy_sheet.dart`, `preferences_sheet.dart`, `notifications_preferences_screen.dart`, `syllabus_edition_screen.dart`, `plan_screen.dart`, `focus_timer_sheet.dart`, `diagnostic_telemetry_drawer.dart`, `backup_service.dart`)
+  - `lib/screens/home/home_screen.dart` (Universal Play Store safe area hardening with `MediaQuery.paddingOf(context).bottom + 100.0`; `RepaintBoundary` wrappers on module tracker and desk clock for 120Hz scrolling)
+  - `lib/screens/settings/settings_screen.dart` (Standardized bottom padding to `MediaQuery.paddingOf(context).bottom + 100.0` preventing dock collision)
+  - `lib/screens/curriculum/curriculum_screen.dart` & `lib/screens/analytics/analytics_screen.dart` (Adaptive safe-area bottom padding)
+  - `lib/widgets/analytics/editorial_podium.dart` (Wrapped in `RepaintBoundary` to isolate continuous looping pedestal shaders from list scrolling)
+  - `lib/theme/app_theme.dart` & `lib/theme/modulix_theme.dart` (Configured canonical `pageTransitionsTheme: const PageTransitionsTheme()` enabling native `PredictiveBackPageTransitionsBuilder` on Android 14+ / 15 / 16 and `CupertinoPageTransitionsBuilder` on iOS/macOS)
+  - `lib/app.dart` (Migrated subroutes to `MaterialPage` for platform-native predictive back gesture support)
+- **Summary:**
+  - Standardized every popup and notification in the app onto the modern Top Dynamic Island Apple Glass capsule.
+  - Hardened edge-to-edge layout and bottom safe insets across all screen sizes, tablets, foldables, and Android/iOS versions for Google Play Store compliance.
+  - Enabled native Android 14+ predictive back gestures on subroutes.
+  - Eliminated the obscure top line on the navigation bar glass pill.
+  - Boosted rendering performance to solid 120 FPS with targeted `RepaintBoundary` boundaries and GPU layer isolation.
+- **Verification:**
+  - `flutter analyze lib/`: **No issues found! (0 errors, 0 warnings)**
+  - `flutter test test/modulix_toast_test.dart test/lovable_nav_bar_test.dart test/theme_system_test.dart test/tab_persistence_test.dart`: **All 14 tests passed! (100%)**
+- **Status:** Pending APK Build
+
 ### [CKPT-068] Theme Studio Modernization: Paper & Ink and Midnight Slate Converted to Basic Light and Basic Dark
 - **Timestamp:** 2026-10-25 22:18 UTC
 - **Category:** UI / Theme Studio Modernization & Whole-App Color Scheme

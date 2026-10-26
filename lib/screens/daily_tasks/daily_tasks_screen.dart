@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../models/syllabus.dart' show Subject, Chapter;
 import '../../models/task_item.dart';
 import '../../models/task_project.dart';
+import '../../providers/app_state_provider.dart';
 import '../../providers/focus_timer_provider.dart';
 import '../../providers/syllabus_provider.dart';
 import '../../providers/tasks_hub_provider.dart';
@@ -80,6 +81,7 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(appThemeDataProvider);
     final tasksStateAsync = ref.watch(tasksHubProvider);
     final timerState = ref.watch(focusTimerProvider);
 
@@ -140,6 +142,8 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
   }
 
   Widget _buildTactileSwitcher() {
+    final isDark = AppTheme.current.isDark;
+
     return Container(
       width: 164,
       height: 34,
@@ -161,11 +165,19 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
               heightFactor: 1.0,
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppTheme.inkForeground,
+                  color: isDark ? const Color(0xFF2C2C2E) : AppTheme.inkForeground,
                   borderRadius: BorderRadius.circular(7.5),
+                  border: isDark
+                      ? Border.all(
+                          color: Colors.white.withValues(alpha: 0.12),
+                          width: 0.8,
+                        )
+                      : null,
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.inkForeground.withValues(alpha: 0.15),
+                      color: isDark
+                          ? Colors.black.withValues(alpha: 0.35)
+                          : AppTheme.inkForeground.withValues(alpha: 0.15),
                       blurRadius: 4,
                       offset: const Offset(0, 1.5),
                     ),
@@ -191,7 +203,9 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                       Icon(
                         Icons.check_circle_outline_rounded,
                         size: 13,
-                        color: _selectedTabIndex == 0 ? AppTheme.paperBackground : AppTheme.mutedText,
+                        color: _selectedTabIndex == 0
+                            ? (isDark ? Colors.white : AppTheme.paperBackground)
+                            : AppTheme.mutedText,
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -199,7 +213,9 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: _selectedTabIndex == 0 ? FontWeight.w700 : FontWeight.w500,
-                          color: _selectedTabIndex == 0 ? AppTheme.paperBackground : AppTheme.mutedText,
+                          color: _selectedTabIndex == 0
+                              ? (isDark ? Colors.white : AppTheme.paperBackground)
+                              : AppTheme.mutedText,
                         ),
                       ),
                     ],
@@ -220,7 +236,9 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                       Icon(
                         Icons.folder_outlined,
                         size: 13,
-                        color: _selectedTabIndex == 1 ? AppTheme.paperBackground : AppTheme.mutedText,
+                        color: _selectedTabIndex == 1
+                            ? (isDark ? Colors.white : AppTheme.paperBackground)
+                            : AppTheme.mutedText,
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -228,7 +246,9 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: _selectedTabIndex == 1 ? FontWeight.w700 : FontWeight.w500,
-                          color: _selectedTabIndex == 1 ? AppTheme.paperBackground : AppTheme.mutedText,
+                          color: _selectedTabIndex == 1
+                              ? (isDark ? Colors.white : AppTheme.paperBackground)
+                              : AppTheme.mutedText,
                         ),
                       ),
                     ],
@@ -305,13 +325,20 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(5),
                     decoration: BoxDecoration(
-                      color: AppTheme.inkForeground,
+                      color: AppTheme.current.isDark
+                          ? const Color(0xFF2C2C2E)
+                          : AppTheme.inkForeground,
                       shape: BoxShape.circle,
+                      border: AppTheme.current.isDark
+                          ? Border.all(color: AppTheme.borderLight, width: 0.8)
+                          : null,
                     ),
                     child: Icon(
                       Icons.arrow_upward_rounded,
                       size: 13,
-                      color: AppTheme.paperBackground,
+                      color: AppTheme.current.isDark
+                          ? Colors.white
+                          : AppTheme.paperBackground,
                     ),
                   ),
                 ),
@@ -516,20 +543,33 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppTheme.inkForeground,
+                  color: AppTheme.current.isDark
+                      ? const Color(0xFF1C1C1E)
+                      : AppTheme.inkForeground,
                   borderRadius: BorderRadius.circular(8),
+                  border: AppTheme.current.isDark
+                      ? Border.all(color: const Color(0xFF2C2C2E), width: 1)
+                      : null,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.add_rounded, size: 14, color: AppTheme.paperBackground),
+                    Icon(
+                      Icons.add_rounded,
+                      size: 14,
+                      color: AppTheme.current.isDark
+                          ? Colors.white
+                          : AppTheme.paperBackground,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       'New project',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: AppTheme.paperBackground,
+                        color: AppTheme.current.isDark
+                            ? Colors.white
+                            : AppTheme.paperBackground,
                       ),
                     ),
                   ],
@@ -851,6 +891,7 @@ class _NewProjectModalState extends ConsumerState<_NewProjectModal> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(appThemeDataProvider);
     final syllabusAsync = ref.watch(activeSyllabusProvider);
 
     return Container(

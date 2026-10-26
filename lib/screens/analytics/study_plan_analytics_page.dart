@@ -11,6 +11,7 @@ import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/analytics/progress_radial_gauge.dart';
 import '../../widgets/analytics/pacing_velocity_chart.dart';
+import '../../widgets/feedback/modulix_toast.dart';
 
 class StudyPlanAnalyticsPage extends ConsumerStatefulWidget {
   const StudyPlanAnalyticsPage({super.key});
@@ -385,11 +386,9 @@ class _StudyPlanAnalyticsPageState
                                    videosPerDay: _simulatorPace.round(),
                                  ),
                                );
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Target pace set to ${_simulatorPace.round()} vids/day'),
-                              duration: const Duration(seconds: 2),
-                            ),
+                          ModulixToast.showSuccess(
+                            context,
+                            message: 'Target pace set to ${_simulatorPace.round()} vids/day',
                           );
                         },
                         child: Container(

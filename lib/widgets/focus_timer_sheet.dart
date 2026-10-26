@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/time_log.dart';
 import '../providers/time_log_provider.dart';
 import '../theme/app_theme.dart';
+import 'feedback/modulix_toast.dart';
 
 class FocusTimerSheet extends ConsumerStatefulWidget {
   final String subjectId;
@@ -111,14 +112,9 @@ class _FocusTimerSheetState extends ConsumerState<FocusTimerSheet> {
     }
     if (mounted) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Logged ${_formatTime(_secondsElapsed)} study time to ${widget.subjectName}!',
-          ),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
+      ModulixToast.showSuccess(
+        context,
+        message: 'Logged ${_formatTime(_secondsElapsed)} study time to ${widget.subjectName}!',
       );
     }
   }

@@ -121,8 +121,8 @@ class AppTheme {
   // Brand colors
   static const _primaryPurple = Color(0xFF007AFF);
   static const _accentRose = Color(0xFFF43F5E);
-  static const _surfaceDark = Color(0xFF0B0F19);
-  static const _cardDark = Color(0xFF161B26);
+  static const _surfaceDark = Color(0xFF000000); // True pitch black AMOLED
+  static const _cardDark = Color(0xFF121212);
   static const _surfaceLight = Color(0xFFF8F9FA); // Clean basic light background
   static const _cardLight = Color(0xFFFFFFFF);
 
@@ -211,6 +211,7 @@ class AppTheme {
           borderSide: const BorderSide(color: _primaryPurple, width: 2),
         ),
       ),
+      pageTransitionsTheme: const PageTransitionsTheme(),
     );
   }
 
@@ -292,6 +293,7 @@ class AppTheme {
           borderSide: const BorderSide(color: Color(0xFF9D71DF), width: 2),
         ),
       ),
+      pageTransitionsTheme: const PageTransitionsTheme(),
     );
   }
 }

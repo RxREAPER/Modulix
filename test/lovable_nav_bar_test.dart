@@ -67,6 +67,7 @@ void main() {
     await tester.tap(find.byKey(const Key('nav_center_timer_button')));
     await tester.pump();
     expect(timerTapped, isTrue);
+    await tester.pump(const Duration(milliseconds: 100));
 
     // Re-tap current active tab (Tab 0: Home)
     await tester.tap(find.byKey(const Key('nav_tab_0')));

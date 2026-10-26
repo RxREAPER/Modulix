@@ -56,7 +56,8 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         physics: const BouncingScrollPhysics(
             parent: AlwaysScrollableScrollPhysics()),
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
+        padding: EdgeInsets.fromLTRB(
+            20, 8, 20, MediaQuery.paddingOf(context).bottom + 100.0),
         children: const [
           _DoctorProfileCard(),
           SizedBox(height: 16),

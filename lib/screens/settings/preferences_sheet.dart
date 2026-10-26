@@ -8,6 +8,7 @@ import '../../theme/modulix_theme.dart';
 import '../../services/notification_service.dart';
 import 'appearance_theme_sheet.dart';
 import '../../widgets/animations/apple_pressable.dart';
+import '../../widgets/feedback/modulix_toast.dart';
 
 class PreferencesSheet extends ConsumerWidget {
   const PreferencesSheet({super.key});
@@ -496,13 +497,9 @@ class PreferencesSheet extends ConsumerWidget {
                                           .sendTestNotification(
                                               doctorName: appState.doctorName);
                                       if (context.mounted) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                            content:
-                                                Text('Test notification sent!'),
-                                            duration: Duration(seconds: 2),
-                                          ),
+                                        ModulixToast.showSuccess(
+                                          context,
+                                          message: 'Test notification sent!',
                                         );
                                       }
                                     },
@@ -526,14 +523,17 @@ class PreferencesSheet extends ConsumerWidget {
                               final granted = await NotificationService.instance
                                   .requestPermissions();
                               if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(granted
-                                        ? 'Notification permissions granted!'
-                                        : 'Notification permission requested.'),
-                                    duration: const Duration(seconds: 2),
-                                  ),
-                                );
+                                if (granted) {
+                                  ModulixToast.showSuccess(
+                                    context,
+                                    message: 'Notification permissions granted!',
+                                  );
+                                } else {
+                                  ModulixToast.showInfo(
+                                    context,
+                                    message: 'Notification permission requested.',
+                                  );
+                                }
                               }
                             },
                             child: Container(

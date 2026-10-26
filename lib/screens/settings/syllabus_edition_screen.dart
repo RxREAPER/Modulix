@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../providers/app_state_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
+import '../../widgets/feedback/modulix_toast.dart';
 
 class SyllabusEditionScreen extends ConsumerWidget {
   const SyllabusEditionScreen({super.key});
@@ -61,11 +62,9 @@ class SyllabusEditionScreen extends ConsumerWidget {
             onSelect: () {
               if (activeEdition != 'marrow_8') {
                 notifier.switchEdition('marrow_8');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Switched active syllabus to Marrow Edition 8'),
-                    duration: Duration(seconds: 2),
-                  ),
+                ModulixToast.showSuccess(
+                  context,
+                  message: 'Switched active syllabus to Marrow Edition 8',
                 );
               }
             },
@@ -85,12 +84,9 @@ class SyllabusEditionScreen extends ConsumerWidget {
             onSelect: () {
               if (activeEdition != 'marrow_6_5') {
                 notifier.switchEdition('marrow_6_5');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content:
-                        Text('Switched active syllabus to Marrow Edition 6.5'),
-                    duration: Duration(seconds: 2),
-                  ),
+                ModulixToast.showSuccess(
+                  context,
+                  message: 'Switched active syllabus to Marrow Edition 6.5',
                 );
               }
             },

@@ -69,9 +69,10 @@ class _EditorialPodiumState extends State<EditorialPodium>
       return const SizedBox.shrink();
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
-      child: AnimatedBuilder(
+    return RepaintBoundary(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+        child: AnimatedBuilder(
         animation: Listenable.merge([_riseController, _motionController]),
         builder: (context, child) {
           // Staggered rise curves
@@ -151,6 +152,7 @@ class _EditorialPodiumState extends State<EditorialPodium>
             ],
           );
         },
+      ),
       ),
     );
   }

@@ -61,20 +61,33 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: AppTheme.inkForeground,
+                color: AppTheme.current.isDark
+                    ? const Color(0xFF1C1C1E)
+                    : AppTheme.inkForeground,
                 borderRadius: BorderRadius.circular(8),
+                border: AppTheme.current.isDark
+                    ? Border.all(color: const Color(0xFF2C2C2E), width: 1)
+                    : null,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.edit_outlined, size: 12, color: AppTheme.paperBackground),
+                  Icon(
+                    Icons.edit_outlined,
+                    size: 12,
+                    color: AppTheme.current.isDark
+                        ? Colors.white
+                        : AppTheme.paperBackground,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     'Daily tasks',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.paperBackground,
+                      color: AppTheme.current.isDark
+                          ? Colors.white
+                          : AppTheme.paperBackground,
                     ),
                   ),
                 ],

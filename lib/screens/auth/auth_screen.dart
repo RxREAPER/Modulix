@@ -11,6 +11,7 @@ import '../../services/error_translator_service.dart';
 import '../../widgets/errors/diagnostic_telemetry_drawer.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
+import '../../widgets/feedback/modulix_toast.dart';
 
 enum AuthMode {
   signIn,
@@ -206,13 +207,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     } else {
       context.go('/settings');
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-            'Signed in as ${AuthService.instance.currentUserEmail ?? "Doctor"}. Syncing study records...'),
-        backgroundColor: AppTheme.accentPrimary,
-        behavior: SnackBarBehavior.floating,
-      ),
+    ModulixToast.showSuccess(
+      context,
+      message: 'Signed in as ${AuthService.instance.currentUserEmail ?? "Doctor"}. Syncing study records...',
     );
     SyncService.instance.syncFull(ref);
   }

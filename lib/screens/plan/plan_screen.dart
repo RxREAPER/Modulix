@@ -17,6 +17,7 @@ import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/curriculum/subject_sketch_icon.dart';
 import '../../widgets/errors/app_error_state_view.dart';
 import '../../widgets/loading/app_shimmer.dart';
+import '../../widgets/feedback/modulix_toast.dart';
 
 class PlanScreen extends ConsumerStatefulWidget {
   const PlanScreen({super.key});
@@ -1089,14 +1090,9 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
     setState(() => _saving = false);
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              'Module-Based Study Plan locked in for ${_selectedSubject!.toUpperCase()}!'),
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
+      ModulixToast.showSuccess(
+        context,
+        message: 'Module-Based Study Plan locked in for ${_selectedSubject!.toUpperCase()}!',
       );
     }
   }

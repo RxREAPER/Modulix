@@ -385,32 +385,13 @@ CustomTransitionPage<void> _buildSlideUpTransitionPage({
   );
 }
 
-CustomTransitionPage<void> _buildSlideHorizontalTransitionPage({
+Page<void> _buildSlideHorizontalTransitionPage({
   required GoRouterState state,
   required Widget child,
 }) {
-  return CustomTransitionPage<void>(
+  return MaterialPage<void>(
     key: state.pageKey,
     child: RepaintBoundary(child: child),
-    transitionDuration: const Duration(milliseconds: 190),
-    reverseTransitionDuration: const Duration(milliseconds: 150),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      final curved = CurvedAnimation(
-        parent: animation,
-        curve: Curves.easeOutCubic,
-        reverseCurve: Curves.easeInCubic,
-      );
-      return SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0.06, 0),
-          end: Offset.zero,
-        ).animate(curved),
-        child: FadeTransition(
-          opacity: curved,
-          child: child,
-        ),
-      );
-    },
   );
 }
 

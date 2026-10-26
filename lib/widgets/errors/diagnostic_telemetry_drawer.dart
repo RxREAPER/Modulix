@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../theme/app_theme.dart';
 import '../animations/apple_pressable.dart';
+import '../feedback/modulix_toast.dart';
 
 /// Collapsible diagnostic drawer strictly concealing technical stack traces
 /// and error codes from the user-facing body copy.
@@ -23,24 +24,9 @@ class _DiagnosticTelemetryDrawerState extends State<DiagnosticTelemetryDrawer> {
   void _copyDiagnostics(BuildContext context) {
     HapticFeedback.lightImpact();
     Clipboard.setData(ClipboardData(text: widget.technicalDetails));
-
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
-            SizedBox(width: 8),
-            Text(
-              'Diagnostic telemetry copied to clipboard',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-        duration: const Duration(seconds: 3),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
+    ModulixToast.showSuccess(
+      context,
+      message: 'Diagnostic telemetry copied to clipboard',
     );
   }
 

@@ -293,7 +293,7 @@ class AutomatedModuleTracker extends ConsumerWidget {
                 ),
               ],
             ),
-            const Divider(height: 22, thickness: 1, color: Color(0xFFF4F4F5)),
+            Divider(height: 22, thickness: 1, color: AppTheme.borderLight),
             Text(
               'Set your target exam date to activate automated daily video pacing and queue progression.',
               style: TextStyle(

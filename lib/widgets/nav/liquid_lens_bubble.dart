@@ -105,37 +105,16 @@ class _AppleGlassPillPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
     canvas.drawRRect(rrect, glassFill);
 
-    // 3. Crisp Glass Border with Top-Lit Specular Gradient
+    // 3. Whisper-Soft Seamless Glass Border (Zero harsh specular line artifacts)
     final glassBorder = Paint()
-      ..shader = ui.Gradient.linear(
-        Offset(rect.center.dx, rect.top),
-        Offset(rect.center.dx, rect.bottom),
-        isDark
-            ? [
-                Colors.white.withValues(alpha: 0.28),
-                Colors.white.withValues(alpha: 0.10),
-              ]
-            : [
-                Colors.white.withValues(alpha: 0.85),
-                Colors.black.withValues(alpha: 0.07),
-              ],
-      )
+      ..color = isDark
+          ? Colors.white.withValues(alpha: 0.07)
+          : Colors.black.withValues(alpha: 0.04)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
+      ..strokeWidth = 0.6;
     canvas.drawRRect(rrect, glassBorder);
 
-    // 4. Top-Edge Glass Specular Reflection Highlight Arc
-    final topHighlightPath = Path()
-      ..moveTo(rect.left + borderRadius * 0.7, rect.top + 0.8)
-      ..lineTo(rect.right - borderRadius * 0.7, rect.top + 0.8);
-    final topHighlightPaint = Paint()
-      ..color = Colors.white.withValues(alpha: isDark ? 0.38 : 0.90)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0
-      ..strokeCap = StrokeCap.round;
-    canvas.drawPath(topHighlightPath, topHighlightPaint);
-
-    // 5. Material Design Active Indicator Dot
+    // 4. Material Design Active Indicator Dot
     final dotCenter = Offset(rect.center.dx, rect.bottom - 4.0);
     final dotPaint = Paint()
       ..color = accentColor

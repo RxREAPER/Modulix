@@ -6,6 +6,7 @@ import '../../models/daily_desk_task.dart';
 import '../../providers/daily_tasks_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
+import '../../widgets/feedback/modulix_toast.dart';
 
 class PlanTomorrowSheet extends ConsumerStatefulWidget {
   const PlanTomorrowSheet({super.key});
@@ -332,8 +333,7 @@ class _PlanTomorrowSheetState extends ConsumerState<PlanTomorrowSheet> {
                 final tomorrowKey = DateFormat('yyyy-MM-dd').format(tomorrow);
                 final notifier = ref.read(dailyTasksProvider.notifier);
 
-                final messenger = ScaffoldMessenger.of(context);
-                final navigator = Navigator.of(context);
+                final parentContext = Navigator.of(context).context;
 
                 // Add newly typed task for tomorrow if present
                 final newText = _newTitleController.text.trim();
@@ -351,14 +351,13 @@ class _PlanTomorrowSheetState extends ConsumerState<PlanTomorrowSheet> {
                   );
                 }
 
-                if (mounted) {
-                  navigator.pop();
-                  messenger.showSnackBar(
-                    SnackBar(
-                      duration: const Duration(seconds: 3),
-                      content: const Text("Tomorrow's study desk targets prepared"),
-                      backgroundColor: AppTheme.inkForeground,
-                    ),
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                }
+                if (parentContext.mounted) {
+                  ModulixToast.showSuccess(
+                    parentContext,
+                    message: "Tomorrow's study desk targets prepared",
                   );
                 }
               },

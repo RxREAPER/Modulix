@@ -388,7 +388,7 @@ class _LovableNavBarState extends State<LovableNavBar>
               height: dockHeight,
               decoration: BoxDecoration(
                 color: isDark
-                    ? const Color(0xFF1B1D24).withValues(alpha: 0.82)
+                    ? const Color(0xFF141414).withValues(alpha: 0.82)
                     : Colors.white.withValues(alpha: 0.82),
                 borderRadius: BorderRadius.circular(29.0),
                 border: Border.all(

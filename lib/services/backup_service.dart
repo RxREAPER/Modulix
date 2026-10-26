@@ -18,6 +18,7 @@ import 'database_service.dart';
 import 'storage_service.dart';
 import 'analytics_service.dart';
 import 'metrics_service.dart';
+import '../widgets/feedback/modulix_toast.dart';
 
 class BackupService {
   static const int currentSchemaVersion = 1;
@@ -201,17 +202,17 @@ class BackupService {
 
       final success = await restoreFromPayload(ref, content);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              success
-                  ? 'Study backup successfully restored!'
-                  : 'Failed to restore backup file. Please verify format.',
-            ),
-            backgroundColor:
-                success ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-          ),
-        );
+        if (success) {
+          ModulixToast.showSuccess(
+            context,
+            message: 'Study backup successfully restored!',
+          );
+        } else {
+          ModulixToast.showError(
+            context,
+            message: 'Failed to restore backup file. Please verify format.',
+          );
+        }
       }
       return success;
     } catch (e) {

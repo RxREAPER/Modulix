@@ -6,6 +6,7 @@ import '../../providers/time_log_provider.dart';
 import '../../services/auth_service.dart';
 import '../../services/backup_service.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/feedback/modulix_toast.dart';
 
 class DataPrivacySheet extends ConsumerWidget {
   const DataPrivacySheet({super.key});
@@ -519,45 +520,40 @@ class DataPrivacySheet extends ConsumerWidget {
 
   static Future<void> _backupToCloud(BuildContext context, WidgetRef ref) async {
     if (!AuthService.instance.isAuthenticated) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Sign in with a Cloud Account to backup to Cloud Vault.'),
-          backgroundColor: Colors.orange,
-        ),
+      ModulixToast.showInfo(
+        context,
+        message: 'Sign in with a Cloud Account to backup to Cloud Vault.',
       );
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Compressing and uploading snapshot to Cloud Vault...'),
-        duration: Duration(seconds: 2),
-      ),
+    ModulixToast.showInfo(
+      context,
+      message: 'Compressing and uploading snapshot to Cloud Vault...',
+      duration: const Duration(seconds: 2),
     );
 
     final success = await BackupService.uploadSnapshotToCloud(ref);
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            success
-                ? 'Compressed snapshot saved to Cloud Vault!'
-                : 'Failed to upload snapshot. Check internet connection.',
-          ),
-          backgroundColor:
-              success ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-        ),
-      );
+      if (success) {
+        ModulixToast.showSuccess(
+          context,
+          message: 'Compressed snapshot saved to Cloud Vault!',
+        );
+      } else {
+        ModulixToast.showError(
+          context,
+          message: 'Failed to upload snapshot. Check internet connection.',
+        );
+      }
     }
   }
 
   static void _showCloudSnapshotsDialog(BuildContext context, WidgetRef ref) {
     if (!AuthService.instance.isAuthenticated) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Sign in with a Cloud Account to view and restore cloud snapshots.'),
-          backgroundColor: Colors.orange,
-        ),
+      ModulixToast.showInfo(
+        context,
+        message: 'Sign in with a Cloud Account to view and restore cloud snapshots.',
       );
       return;
     }
@@ -692,18 +688,17 @@ class DataPrivacySheet extends ConsumerWidget {
                                   final ok = await BackupService.restoreCloudSnapshot(
                                       item.path, ref);
                                   if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          ok
-                                              ? 'Cloud snapshot successfully restored!'
-                                              : 'Failed to restore cloud snapshot.',
-                                        ),
-                                        backgroundColor: ok
-                                            ? const Color(0xFF10B981)
-                                            : const Color(0xFFEF4444),
-                                      ),
-                                    );
+                                    if (ok) {
+                                      ModulixToast.showSuccess(
+                                        context,
+                                        message: 'Cloud snapshot successfully restored!',
+                                      );
+                                    } else {
+                                      ModulixToast.showError(
+                                        context,
+                                        message: 'Failed to restore cloud snapshot.',
+                                      );
+                                    }
                                   }
                                 }
                               },
@@ -791,8 +786,9 @@ class DataPrivacySheet extends ConsumerWidget {
               Navigator.pop(ctx);
               await ref.read(timeLogsProvider.notifier).clearAll();
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Focus timer history cleared')),
+                ModulixToast.showSuccess(
+                  context,
+                  message: 'Focus timer history cleared',
                 );
               }
             },
@@ -832,8 +828,9 @@ class DataPrivacySheet extends ConsumerWidget {
             onPressed: () {
               ref.read(dailyTasksProvider.notifier).setTasks([]);
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Desk pad tasks cleared')),
+              ModulixToast.showSuccess(
+                context,
+                message: 'Desk pad tasks cleared',
               );
             },
             child: const Text('Clear Tasks'),
@@ -876,11 +873,10 @@ class DataPrivacySheet extends ConsumerWidget {
             ),
             onPressed: () async {
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Purging cloud data and deleting account...'),
-                  duration: Duration(seconds: 2),
-                ),
+              ModulixToast.showInfo(
+                context,
+                message: 'Purging cloud data and deleting account...',
+                duration: const Duration(seconds: 2),
               );
 
               final success = await AuthService.instance.purgeRemoteDataAndAccount();
@@ -888,17 +884,17 @@ class DataPrivacySheet extends ConsumerWidget {
                 if (Navigator.canPop(context)) {
                   Navigator.pop(context);
                 }
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      success
-                          ? 'Cloud account and remote data successfully deleted.'
-                          : 'Failed to purge cloud data. Please check your network connection.',
-                    ),
-                    backgroundColor:
-                        success ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                  ),
-                );
+                if (success) {
+                  ModulixToast.showSuccess(
+                    context,
+                    message: 'Cloud account and remote data successfully deleted.',
+                  );
+                } else {
+                  ModulixToast.showError(
+                    context,
+                    message: 'Failed to purge cloud data. Please check your network connection.',
+                  );
+                }
               }
             },
             child: const Text('Delete Cloud Data'),
