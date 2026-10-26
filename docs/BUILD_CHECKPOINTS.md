@@ -4,6 +4,35 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.23.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk`
+- **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
+- **Compilation Time:** 198.5s | **Test Suite:** 43/43 Targeted Tests Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-076]`
+
+### Key Highlights & Releases in v1.23.0:
+1. **Active 24 FPS Cinema-Style Film Grain Jitter (`lib/widgets/animations/filmic_metal_mesh_background.dart`):**
+   - Authentic 35mm film cadence running at 24 discrete FPS steps (`final int frame = (progress * 480).floor();`) with hash-jittered matrix translations on the GPU `ImageShader`.
+   - Mid-screen horizon dissolve: atmospheric gradient gracefully dissolves between 42% and 62% viewport height into the solid canvas color (`AppTheme.paperBackground`), giving rich headroom with grounded contrast below.
+   - Harmonic chromatic orbs dynamically adapt to active theme tones (`AppTheme.accentPrimary` and `AppTheme.paperBackground`).
+2. **Unified Hero Centerpiece Card (`lib/widgets/study_desk_clock.dart`):**
+   - Merged personal greeting (`Focus, Doctor.` or `Focus, ${doctorName}.`) and uppercase date stamp (`TUESDAY, 27 OCTOBER`) directly above monumental 58px rolling digit clock numerals.
+   - Purged `LIVE` pill badge, live pulsing seconds dot, and bottom seconds progress line for a sculptural, unencumbered timepiece.
+3. **Top Bar Purification & Layout Adjustments (`lib/screens/home/home_screen.dart`):**
+   - Completely purged `"sync"` tag text and pill badge from top bar right actions; kept only the brand mark squircle on the left and the 40px `ProfileAvatar` on the right.
+   - Added 26px generous breathing space above the hero card allowing the luminous gradient to breathe across the upper viewport.
+   - Added crisp 0.75px architectural divider lines beneath both "Daily tasks" and "Module Based Tasks" section headings.
+4. **Monochromatic Minimalist Module Based Tasks Card (`lib/widgets/automated_module_tracker.dart`):**
+   - Completely purged colored pace status badge container (`TARGET MET`, `ON TRACK`, `STALE`).
+   - Removed extraneous single-line progress counter metrics row.
+   - Converted 5px continuous progress track to a sleek monochromatic silver/white gradient (`[Color(0xFFF8FAFC), Color(0xFF94A3B8)]` in dark / `[Color(0xFF334155), Color(0xFF0F172A)]` in light).
+   - Neutralized subject icon pod and bottom launcher strip into frosted monochrome tones, preserving the background gradient as the sole, striking color highlight.
+5. **Quality Assurance & Test Invariants:**
+   - Static analysis: **0 errors, 0 warnings**.
+   - Test suites: **43/43 tests passing (100% green)** across all 6 targeted test files.
+
+---
+
 ## 🚀 Build Manifest v1.22.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (248MB)
 - **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
@@ -316,7 +345,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Verification:**
   - `flutter analyze lib/ test/`: **No issues found! (0 errors, 0 warnings across entire codebase)**
   - `flutter test`: **43/43 tests passed across 6 test suites! (100% green)**
-- **Status:** Pending APK Build
+- **Status:** ✅ Included in Build (v1.23.0)
 
 ---
 
