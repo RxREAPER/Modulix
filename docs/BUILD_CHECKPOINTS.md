@@ -4,6 +4,23 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.20.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (238MB)
+- **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
+- **Compilation Time:** 180.0s | **Test Suite:** 47/47 Tests Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-072]`
+
+### Key Highlights & Releases in v1.20.0:
+1. **Library Modern Folder Cards & Fluid Container Morphing (`lib/widgets/curriculum/modern_subject_folder_card.dart`, `lib/screens/curriculum/curriculum_screen.dart`):** Replaced generic boxy cards with organic 24px squircle dossier folder cards with clinical tonal gradients, 40px circular clinical icon pods, and rounded progress capsules (`percent%`). Tapping cards triggers a 380ms `OpenContainer` fluid motion render expanding the folder directly into `SubjectScreen` without route bounce or slide flickers.
+2. **SubjectScreen Soft Pastel Units & Quick-Jump Index (`lib/widgets/curriculum/unit_card.dart`, `lib/screens/curriculum/subject_screen.dart`):** Upgraded unit rows to 18px soft pastel pills with circular check targets; added clean header with quick-jump index action `Jump to Unit (Index) ▾`.
+3. **Progress Page 2-Zone Breathable Layout & Subject Mastery Elimination (`lib/screens/analytics/analytics_screen.dart`):** Completely eradicated the Subject Mastery hub card and subpage per user instruction. Collapsed 9 stacked boxes into 2 breathable zones:
+   - *Zone 1: Editorial Momentum Header:* Large typography for streak (`12` or `${streak.current}`) with live flame badge, today's focus duration (`3h 45m`), sessions count, and top subject pill on a clean borderless card.
+   - *Zone 2: Module Planner Hero Card:* Rich sky-to-indigo gradient card (24px radius) with active subject name, `ProgressRadialGauge` (52px white ring), daily target, deadline, and insights CTA.
+   - *Zone 2: Today's Focus Tasks:* Soft rounded pastel pills (16px radius, emerald tint for completed, soft slate tint for pending, circular check targets, and estimated duration badges) with direct 1-tap toggling via `tasksHubProvider`.
+4. **Settings Inset Grouped Redesign (`lib/screens/settings/settings_screen.dart`):** Consolidated 10 disparate bulky cards into 4 Inset Grouped lists (Study & Atmosphere, Cloud & Community, Preferences, Resources); purged all dummy uppercase tags (`PROFILE SETUP`, `GUIDE`, `SECURITY`, `ABOUT`, `ACTIVE`); eradicated all paragraph text walls in favor of clean single-line subtitles.
+
+---
+
 ## 🚀 Build Manifest v1.19.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (238MB)
 - **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
@@ -253,7 +270,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Verification:**
   - `flutter analyze lib/`: **No issues found! (0 errors, 0 warnings)**
   - `flutter test`: **All 47 unit & widget tests passed! (100%)**
-- **Status:** ⏳ Pending APK Build
+- **Status:** ✅ Included in Build (Build Manifest v1.20.0)
 
 ### [CKPT-071] Interactions Suite: Home & Daily Tasks Swipe-to-Delete Undo, Timer State Transition Toasts & Curriculum Completion Undo Capsules
 - **Timestamp:** 2026-10-26 12:55 UTC
