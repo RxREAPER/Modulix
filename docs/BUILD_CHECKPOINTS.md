@@ -4,6 +4,26 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.19.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (238MB)
+- **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
+- **Compilation Time:** 180.2s | **Test Suite:** 24/24 Tests Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-071]`
+
+### Key Highlights & Releases in v1.19.0:
+1. **Home Screen Task Swipe-to-Delete with Undo (`lib/screens/home/home_screen.dart`):** Wrapped daily task items in `Dismissible` (`direction: DismissDirection.endToStart`) with light red accent background and delete icon. Swipe-to-delete triggers an instant `ModulixToast.showUndo` Dynamic Island capsule allowing one-tap restoration without losing state.
+2. **Daily Tasks Swipe-to-Delete Restoration (`lib/screens/daily_tasks/daily_tasks_screen.dart`):** Wired `ModulixToast.showUndo` on task dismissal with direct model restoration via `addTask`, guaranteeing zero task loss on accidental swipes.
+3. **Focus Timer State Transition Capsules (`lib/screens/timer/focus_timer_screen.dart`):** Frosted Dynamic Island capsules with tactile haptic feedback during timer state transitions:
+   - Start / Resume: `Focus session active · [Topic / Time]`
+   - Pause: `Focus timer paused`
+   - Break Start: `Break time started · Take a breath`
+   - Break End: `Break ended · Ready to focus`
+   - Session Completion: `Focus session recorded` with direct `View Stats` action anchor navigating to `/analytics`.
+4. **Curriculum Check-off Undo & Bulk Confirmation (`lib/screens/curriculum/chapter_screen.dart`):** Wired instant `ModulixToast.showUndo` capsules to lecture/video, Q-Bank, and Notes check-offs, allowing one-tap undo if a student taps by mistake; added toast confirmation upon bulk completing units.
+5. **Toast API Enhancement (`lib/widgets/feedback/modulix_toast.dart`):** Extended `showSuccess`, `showError`, and `showInfo` helpers to natively accept custom icons, `actionLabel`, and `onAction` callbacks.
+
+---
+
 ## 🚀 Build Manifest v1.18.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (210MB)
 - **Device Tested:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
@@ -234,7 +254,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Verification:**
   - `flutter analyze lib/`: **No issues found! (0 errors, 0 warnings)**
   - `flutter test`: **All 24 unit and widget tests passed! (100%)**
-- **Status:** Pending APK Build
+- **Status:** ✅ Included in Build (Build Manifest v1.19.0)
 
 ### [CKPT-070] States & Recovery Suite: Analytics Cold-Start Ghost Specimen, Humanized Error Recovery, Outbox Queue Counter & Zero-CLS Skeleton
 - **Timestamp:** 2026-10-26 10:57 UTC
