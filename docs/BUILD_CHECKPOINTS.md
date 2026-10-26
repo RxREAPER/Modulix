@@ -4,6 +4,20 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.17.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (210MB)
+- **Compilation Time:** 272.5s | **Test Suite:** 14/14 Tests Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-069]`
+
+### Key Highlights & Releases in v1.17.0:
+1. **Dynamic Island Top Apple Glass Toast & Undo Popup Overlay (`lib/widgets/feedback/modulix_toast.dart`):** Complete deprecation of rectangular Material SnackBars across all 23 call sites in 13 files. Floats down from the status notch with spring physics, 18.0 sigma frosted Apple glass translucency, 1.5px depleting countdown accent progress bar for undoable actions, responsive width (`min(420.0, screenWidth - 32.0)`), and tactile haptics.
+2. **Nav Bar Glass Pill Obscure Line Eradication (`lib/widgets/nav/liquid_lens_bubble.dart`):** Replaced the directional specular gradient stroke in `_AppleGlassPillPainter` with a seamless, whisper-soft 0.6px glass border (`alpha: 0.07` in dark, `0.04` in light mode), removing all horizontal chord/slit artifacts.
+3. **Android 14+ / 16 Predictive Back Gesture Support (`lib/theme/app_theme.dart`, `lib/theme/modulix_theme.dart`, `lib/app.dart`):** Configured canonical `PageTransitionsTheme` with `PredictiveBackPageTransitionsBuilder` and migrated subroutes to `MaterialPage`. Edge-swipe gestures interactively shrink the subroute into a rounded floating card previewing the parent route behind it.
+4. **120Hz Pre-Rendering & Screen Warm-Up (`lib/widgets/analytics/editorial_podium.dart`, `lib/screens/home/home_screen.dart`, `lib/app.dart`):** Strategic `RepaintBoundary` wrappers isolating looping pedestal/meter animation shaders, desk clock, and module trackers to maintain rock-solid 120 FPS rasterization during scroll events.
+5. **Universal Multi-Device Safe Area Insets (Google Play Store Compliance):** Dynamic bottom padding across Home, Settings, Curriculum, and Analytics adhering to $\text{MediaQuery.paddingOf}(context).\text{bottom} + 100.0\text{px}$, preventing any content collision with the floating dock across phones, foldables, tablets, and 3-button navigation bars.
+
+---
+
 ## 🚀 Build Manifest v1.16.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (237MB)
 - **Device Tested:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
@@ -210,7 +224,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Verification:**
   - `flutter analyze lib/`: **No issues found! (0 errors, 0 warnings)**
   - `flutter test test/modulix_toast_test.dart test/lovable_nav_bar_test.dart test/theme_system_test.dart test/tab_persistence_test.dart`: **All 14 tests passed! (100%)**
-- **Status:** Pending APK Build
+- **Status:** ✅ Included in Build (Build Manifest v1.17.0)
 
 ### [CKPT-068] Theme Studio Modernization: Paper & Ink and Midnight Slate Converted to Basic Light and Basic Dark
 - **Timestamp:** 2026-10-25 22:18 UTC
