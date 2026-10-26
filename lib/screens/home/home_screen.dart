@@ -19,6 +19,7 @@ import '../../services/tour/app_tour_controller.dart';
 import '../../widgets/sync_status_badge.dart';
 import '../../widgets/errors/app_error_state_view.dart';
 import '../../widgets/loading/app_shimmer.dart';
+import '../../widgets/feedback/modulix_toast.dart';
 
 
 class HomeScreen extends ConsumerWidget {
@@ -484,7 +485,17 @@ class _HomeTasksSection extends ConsumerWidget {
           GestureDetector(
             onTap: () {
               HapticFeedback.lightImpact();
+              final willBeDone = !isDone;
               ref.read(tasksHubProvider.notifier).toggleTaskComplete(task.id);
+              if (willBeDone) {
+                ModulixToast.showUndo(
+                  context,
+                  message: 'Completed "${task.title}"',
+                  onUndo: () {
+                    ref.read(tasksHubProvider.notifier).toggleTaskComplete(task.id);
+                  },
+                );
+              }
             },
             behavior: HitTestBehavior.opaque,
             child: Padding(
@@ -536,6 +547,11 @@ class _HomeTasksSection extends ConsumerWidget {
               HapticFeedback.mediumImpact();
               ref.read(focusTimerProvider.notifier).startTaskItemFocus(task);
               context.push('/timer');
+              ModulixToast.showInfo(
+                context,
+                message: 'Focus session initialized · ${task.title}',
+                icon: Icons.play_arrow_rounded,
+              );
             },
             child: Container(
               width: 30,
@@ -552,19 +568,50 @@ class _HomeTasksSection extends ConsumerWidget {
       ),
     );
 
+    final dismissibleRow = Dismissible(
+      key: ValueKey('home_task_dismiss_${task.id}'),
+      direction: DismissDirection.endToStart,
+      onDismissed: (_) {
+        HapticFeedback.lightImpact();
+        final taskToDelete = task;
+        ref.read(tasksHubProvider.notifier).deleteTask(task.id);
+        ModulixToast.showUndo(
+          context,
+          message: 'Task removed',
+          onUndo: () {
+            ref.read(tasksHubProvider.notifier).addTask(taskToDelete);
+          },
+        );
+      },
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: Colors.red.withValues(alpha: 0.12),
+        ),
+        child: const Icon(
+          Icons.delete_outline_rounded,
+          size: 20,
+          color: Colors.redAccent,
+        ),
+      ),
+      child: row,
+    );
+
     if (isFirst) {
       return KeyedSubtree(
         key: ValueKey(task.id),
         child: Container(
           key: TourTargetRegistry.keyFor(TourTargetId.todaysTasksTarget),
-          child: row,
+          child: dismissibleRow,
         ),
       );
     }
 
     return KeyedSubtree(
       key: ValueKey(task.id),
-      child: row,
+      child: dismissibleRow,
     );
   }
 }

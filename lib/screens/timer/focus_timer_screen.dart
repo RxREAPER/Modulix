@@ -22,6 +22,7 @@ import '../../widgets/in_situ_hint_pill.dart';
 import '../../widgets/discovery_pulse.dart';
 import '../../widgets/timer/medical_wave_visualizer.dart';
 import '../../services/study_presence_service.dart';
+import '../../widgets/feedback/modulix_toast.dart';
 
 class FocusTimerScreen extends ConsumerStatefulWidget {
   final String? initialSubjectId;
@@ -178,6 +179,12 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
           } else {
             context.go('/');
           }
+          ModulixToast.showSuccess(
+            context,
+            message: 'Focus session recorded',
+            actionLabel: 'View Stats',
+            onAction: () => context.go('/analytics'),
+          );
         },
         onViewAnalytics: () {
           Navigator.of(dCtx).pop();
@@ -855,7 +862,23 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                               : (isLight ? const Color(0xFF0F172A) : Colors.white),
                           bg: isLight ? Colors.white : Colors.white.withValues(alpha: 0.12),
                           borderColor: isLight ? const Color(0xFFE2E8F0) : Colors.white.withValues(alpha: 0.30),
-                          onTap: notifier.toggleBreak,
+                          onTap: () {
+                            final willBeBreak = !timer.isBreak;
+                            notifier.toggleBreak();
+                            if (willBeBreak) {
+                              ModulixToast.showInfo(
+                                context,
+                                message: 'Break time started · Take a breath',
+                                icon: Icons.coffee_rounded,
+                              );
+                            } else {
+                              ModulixToast.showInfo(
+                                context,
+                                message: 'Break ended · Ready to focus',
+                                icon: Icons.fitness_center_rounded,
+                              );
+                            }
+                          },
                         ),
                         const SizedBox(width: 12),
 
@@ -872,7 +895,22 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                                 );
                                 return;
                               }
+                              final wasRunning = timer.isRunning;
                               notifier.startOrPause();
+                              if (wasRunning) {
+                                ModulixToast.showInfo(
+                                  context,
+                                  message: 'Focus timer paused',
+                                  icon: Icons.pause_rounded,
+                                );
+                              } else {
+                                final label = timer.hasTarget ? timer.topicTitle : '${timer.pomodoroMinutes}m Focus';
+                                ModulixToast.showInfo(
+                                  context,
+                                  message: 'Focus session active · $label',
+                                  icon: Icons.play_arrow_rounded,
+                                );
+                              }
                             },
                             child: Container(
                               height: 48,

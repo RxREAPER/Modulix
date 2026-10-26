@@ -93,6 +93,9 @@ class ModulixToast {
     BuildContext context, {
     required String message,
     String? title,
+    IconData? icon,
+    String? actionLabel,
+    VoidCallback? onAction,
     Duration duration = const Duration(seconds: 3),
   }) {
     show(
@@ -100,7 +103,9 @@ class ModulixToast {
       message: message,
       title: title,
       type: ModulixToastType.success,
-      icon: Icons.check_circle_rounded,
+      icon: icon ?? Icons.check_circle_rounded,
+      actionLabel: actionLabel,
+      onAction: onAction,
       duration: duration,
     );
   }
@@ -110,6 +115,9 @@ class ModulixToast {
     BuildContext context, {
     required String message,
     String? title,
+    IconData? icon,
+    String? actionLabel,
+    VoidCallback? onAction,
     Duration duration = const Duration(seconds: 4),
   }) {
     show(
@@ -117,7 +125,9 @@ class ModulixToast {
       message: message,
       title: title,
       type: ModulixToastType.error,
-      icon: Icons.error_outline_rounded,
+      icon: icon ?? Icons.error_outline_rounded,
+      actionLabel: actionLabel,
+      onAction: onAction,
       duration: duration,
     );
   }
@@ -127,6 +137,9 @@ class ModulixToast {
     BuildContext context, {
     required String message,
     String? title,
+    IconData? icon,
+    String? actionLabel,
+    VoidCallback? onAction,
     Duration duration = const Duration(seconds: 3),
   }) {
     show(
@@ -134,7 +147,9 @@ class ModulixToast {
       message: message,
       title: title,
       type: ModulixToastType.info,
-      icon: Icons.info_outline_rounded,
+      icon: icon ?? Icons.info_outline_rounded,
+      actionLabel: actionLabel,
+      onAction: onAction,
       duration: duration,
     );
   }

@@ -12,6 +12,7 @@ import '../../providers/syllabus_provider.dart';
 import '../../providers/tasks_hub_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
+import '../../widgets/feedback/modulix_toast.dart';
 
 class DailyTasksScreen extends ConsumerStatefulWidget {
   const DailyTasksScreen({super.key});
@@ -422,12 +423,24 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
       direction: DismissDirection.endToStart,
       onDismissed: (_) {
         HapticFeedback.lightImpact();
+        final taskToDelete = task;
         ref.read(tasksHubProvider.notifier).deleteTask(task.id);
+        ModulixToast.showUndo(
+          context,
+          message: 'Task removed',
+          onUndo: () {
+            ref.read(tasksHubProvider.notifier).addTask(taskToDelete);
+          },
+        );
       },
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 16),
-        child: Icon(Icons.delete_outline_rounded, size: 20, color: AppTheme.mutedText),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: Colors.red.withValues(alpha: 0.12),
+        ),
+        child: const Icon(Icons.delete_outline_rounded, size: 20, color: Colors.redAccent),
       ),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -446,7 +459,17 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
             GestureDetector(
               onTap: () {
                 HapticFeedback.lightImpact();
+                final willBeDone = !isDone;
                 ref.read(tasksHubProvider.notifier).toggleTaskComplete(task.id);
+                if (willBeDone) {
+                  ModulixToast.showUndo(
+                    context,
+                    message: 'Completed "${task.title}"',
+                    onUndo: () {
+                      ref.read(tasksHubProvider.notifier).toggleTaskComplete(task.id);
+                    },
+                  );
+                }
               },
               behavior: HitTestBehavior.opaque,
               child: Padding(
@@ -498,6 +521,11 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                 HapticFeedback.mediumImpact();
                 ref.read(focusTimerProvider.notifier).startTaskItemFocus(task);
                 context.push('/timer');
+                ModulixToast.showInfo(
+                  context,
+                  message: 'Focus session initialized · ${task.title}',
+                  icon: Icons.play_arrow_rounded,
+                );
               },
               child: Container(
                 width: 32,

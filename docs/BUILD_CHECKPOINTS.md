@@ -217,6 +217,25 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-071] Interactions Suite: Home & Daily Tasks Swipe-to-Delete Undo, Timer State Transition Toasts & Curriculum Completion Undo Capsules
+- **Timestamp:** 2026-10-26 12:55 UTC
+- **Category:** interactions / Home & Daily Tasks Swipe-to-Delete Undo, Timer State Transition Toasts & Curriculum Completion Undo Capsules
+- **Files Modified (5 files):**
+  - `lib/screens/home/home_screen.dart` (Task Row Swipe-to-Delete: wrapped daily task items in `Dismissible` with `DismissDirection.endToStart`, light red accent background and delete icon; triggers `ModulixToast.showUndo` allowing instant 1-tap task restoration via `addTask`; wired `ModulixToast.showUndo` on checkmark completion and `ModulixToast.showInfo` on focus session play button)
+  - `lib/screens/daily_tasks/daily_tasks_screen.dart` (Daily Tasks Swipe Undo: wired `ModulixToast.showUndo` on task dismissal with direct model restoration; wired `ModulixToast.showUndo` on task check-off and `ModulixToast.showInfo` on focus launch)
+  - `lib/screens/timer/focus_timer_screen.dart` (Focus Timer State Transition Toasts: added Dynamic Island toasts with haptic feedback during timer play/start `Focus session active · [Label]`, pause `Focus timer paused`, break start `Break time started · Take a breath`, break resume `Break ended · Ready to focus`, and session completion with `View Stats` action anchor)
+  - `lib/screens/curriculum/chapter_screen.dart` (Curriculum Check-off Undo & Bulk Confirmation: wired `ModulixToast.showUndo` on lecture/video, Q-Bank, and Notes check-offs restoring previous status on undo; added `ModulixToast.showSuccess` upon bulk completing chapters, Q-Banks, or notes)
+  - `lib/widgets/feedback/modulix_toast.dart` (Enhanced `showSuccess`, `showError`, and `showInfo` helpers to accept optional `icon`, `actionLabel`, and `onAction` parameters)
+- **Summary:**
+  - Added swipe-to-delete to Home Screen daily tasks with instant undo capsule.
+  - Added undo toast to Daily Tasks screen swipe deletion and task check-offs.
+  - Added Dynamic Island frosted Apple Glass toasts for focus timer transitions (start, pause, break start, break end, session finish).
+  - Wired instant undo toasts to lecture, Q-Bank, and Notes completions in curriculum chapters.
+- **Verification:**
+  - `flutter analyze lib/`: **No issues found! (0 errors, 0 warnings)**
+  - `flutter test`: **All 24 unit and widget tests passed! (100%)**
+- **Status:** Pending APK Build
+
 ### [CKPT-070] States & Recovery Suite: Analytics Cold-Start Ghost Specimen, Humanized Error Recovery, Outbox Queue Counter & Zero-CLS Skeleton
 - **Timestamp:** 2026-10-26 10:57 UTC
 - **Category:** states / Analytics Cold-Start Ghost Preview, Humanized Error Recovery, Outbox Queue Counter & Zero-CLS Shimmer

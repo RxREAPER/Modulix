@@ -15,6 +15,8 @@ import '../../widgets/discovery_pulse.dart';
 import '../../widgets/video_tile.dart';
 import '../../widgets/errors/app_error_state_view.dart';
 import '../../widgets/loading/app_shimmer.dart';
+import '../../widgets/feedback/modulix_toast.dart';
+
 
 class ChapterScreen extends ConsumerStatefulWidget {
   final String subjectId;
@@ -480,7 +482,17 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
             completedAt: completedAt is String ? completedAt : null,
             accentColor: meta.accent,
             onToggle: () {
+              final willBeDone = !isCompleted;
               ref.read(appStateProvider.notifier).toggleQBankComplete(qbank.id);
+              if (willBeDone) {
+                ModulixToast.showUndo(
+                  context,
+                  message: 'Q-Bank completed: "${qbank.title}"',
+                  onUndo: () {
+                    ref.read(appStateProvider.notifier).toggleQBankComplete(qbank.id);
+                  },
+                );
+              }
             },
             onStartTimer: () {
               context.push('/timer', extra: {
@@ -535,7 +547,17 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
             completedAt: completedAt is String ? completedAt : null,
             accentColor: meta.accent,
             onToggle: () {
+              final willBeDone = !isCompleted;
               ref.read(appStateProvider.notifier).toggleNotesComplete(note.id);
+              if (willBeDone) {
+                ModulixToast.showUndo(
+                  context,
+                  message: 'Notes completed: "${note.title}"',
+                  onUndo: () {
+                    ref.read(appStateProvider.notifier).toggleNotesComplete(note.id);
+                  },
+                );
+              }
             },
             onStartTimer: () {
               context.push('/timer', extra: {
@@ -593,6 +615,13 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
                   .markVideoIncomplete(video.id);
             } else {
               ref.read(appStateProvider.notifier).markVideoComplete(video.id);
+              ModulixToast.showUndo(
+                context,
+                message: 'Completed "${video.title}"',
+                onUndo: () {
+                  ref.read(appStateProvider.notifier).markVideoIncomplete(video.id);
+                },
+              );
             }
           },
           onStartTimer: () {
@@ -642,6 +671,10 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
       onConfirm = () {
         final qbankIds = chapter.qbanks.map((q) => q.id).toList();
         ref.read(appStateProvider.notifier).markQBanksBulk(qbankIds);
+        ModulixToast.showSuccess(
+          context,
+          message: 'Marked ${chapter.qbanks.length} Q-Banks complete',
+        );
       };
     } else if (currentTab == 'notes') {
       title = 'Bulk Complete Notes';
@@ -650,6 +683,10 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
       onConfirm = () {
         final noteIds = chapter.notes.map((n) => n.id).toList();
         ref.read(appStateProvider.notifier).markNotesBulk(noteIds);
+        ModulixToast.showSuccess(
+          context,
+          message: 'Marked ${chapter.notes.length} notes complete',
+        );
       };
     } else {
       title = 'Bulk Complete';
@@ -661,6 +698,10 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
               chapter.name,
               videoIds,
             );
+        ModulixToast.showSuccess(
+          context,
+          message: 'Marked ${chapter.videos.length} lectures complete',
+        );
       };
     }
 
