@@ -80,7 +80,7 @@ void main() {
 
       // Verifies HomeScreen is displayed directly
       expect(find.text('Modulix'), findsOneWidget);
-      expect(find.text("Today's Tasks"), findsOneWidget);
+      expect(find.text("Daily tasks"), findsOneWidget);
     });
   });
 }

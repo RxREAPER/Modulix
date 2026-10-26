@@ -88,3 +88,6 @@ flutter:
       fonts:
         - asset: assets/fonts/EBGaramond-Italic.ttf
           style: italic
+
+  shaders:
+    - shaders/liquid_metal.frag
