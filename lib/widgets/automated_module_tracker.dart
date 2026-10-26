@@ -469,33 +469,21 @@ class AutomatedModuleTracker extends ConsumerWidget {
 
                     const SizedBox(height: 14),
 
-                    // Seamless Bottom Launcher Strip (Monochromatic)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8.5),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.04)
-                            : Colors.black.withValues(alpha: 0.03),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.07)
-                              : Colors.black.withValues(alpha: 0.06),
-                          width: 0.75,
-                        ),
-                      ),
+                    // Seamless Editorial Next Line (No inner container, breathable typography)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
                       child: Row(
                         children: [
                           Icon(
                             isAllDone
                                 ? Icons.check_circle_rounded
-                                : Icons.play_circle_outline_rounded,
-                            size: 15,
-                            color: isDark
-                                ? const Color(0xFF94A3B8)
-                                : const Color(0xFF475569),
+                                : Icons.play_arrow_rounded,
+                            size: 16,
+                            color: isAllDone
+                                ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669))
+                                : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 6),
                           Expanded(
                             child: Text(
                               isAllDone
@@ -506,7 +494,7 @@ class AutomatedModuleTracker extends ConsumerWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontSize: 11.5,
+                                fontSize: 12.0,
                                 fontWeight: FontWeight.w500,
                                 color: isDark
                                     ? const Color(0xFFCBD5E1)
@@ -514,14 +502,14 @@ class AutomatedModuleTracker extends ConsumerWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 10),
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
                                 'Open Queue',
                                 style: TextStyle(
-                                  fontSize: 11.0,
+                                  fontSize: 11.5,
                                   fontWeight: FontWeight.w700,
                                   color: isDark
                                       ? const Color(0xFFF8FAFC)
@@ -532,7 +520,7 @@ class AutomatedModuleTracker extends ConsumerWidget {
                               const SizedBox(width: 3),
                               Icon(
                                 Icons.arrow_forward_rounded,
-                                size: 12,
+                                size: 13,
                                 color: isDark
                                     ? const Color(0xFFF8FAFC)
                                     : const Color(0xFF0F172A),

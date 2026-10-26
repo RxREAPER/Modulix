@@ -110,14 +110,30 @@ class HomeScreen extends ConsumerWidget {
                                 ),
                               ),
                               const SizedBox(width: 10),
-                              Text(
-                                'Modulix',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: -0.5,
-                                  color: AppTheme.inkForeground,
-                                ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Modulix',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: -0.4,
+                                      color: AppTheme.inkForeground,
+                                      height: 1.1,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Focus, $doctorName',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.mutedText,
+                                      letterSpacing: -0.1,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),

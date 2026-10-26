@@ -945,7 +945,7 @@ class _TodayFocusTasksSection extends ConsumerWidget {
               textBaseline: TextBaseline.alphabetic,
               children: [
                 Text(
-                  'Daily tasks pacing',
+                  'Task analytics',
                   style: AppTheme.headingStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,

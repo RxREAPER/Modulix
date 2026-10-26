@@ -4,6 +4,45 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.29.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (248MB)
+- **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)
+- **Compilation Time:** 147.5s | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-083]`
+
+### Key Highlights & Releases in v1.29.0:
+1. **Authentic Split-Flap Flip Clock Widget (`StudyDeskClock`):**
+   - Transformed the home timer card into dual side-by-side flip clock cards (Hours on left, Minutes on right).
+   - Replicated exact split seam with subtle 1.5px divider, flap highlight/shadow layers, and left/right hinge notches.
+   - Left tile: Top-centered date (`dd/MM/yy`), bottom-left period (`AM`/`PM`), centered sculpted hour digits.
+   - Right tile: Top-centered day of week (`Tuesday`), bottom-right live seconds counter, centered sculpted minute digits.
+2. **Top Bar Greeting Integration:**
+   - Moved the personal greeting (`Focus, Dr. [Name]`) into the top brand bar beside `Modulix`, providing pure geometric symmetry and focus for the flip clock below.
+3. **Module Card "Next" Line Remodeling:**
+   - Removed the nested pill box container; replaced with a breathable, borderless editorial row (`Next: #138 MPGN and IgA...` with `Open Queue →`).
+4. **Renamed Task Analytics Header:**
+   - Updated header on Progress Screen from `Daily tasks pacing` to `Task analytics`.
+5. **Physical Device Verification:**
+   - Verified live on physical OnePlus 13R (`ba009d81`). All elements rendered cleanly without overflows or visual glitches.
+
+---
+
+### 🔖 `[CKPT-083]` — Dual-Card Split-Flap Flip Clock, Top Bar Greeting, Next Line Editorial Remodel & Task Analytics
+- **Category:** `ui` / `clock` / `editorial`
+- **Files Modified:**
+  - `lib/widgets/study_desk_clock.dart`
+  - `lib/screens/home/home_screen.dart`
+  - `lib/widgets/automated_module_tracker.dart`
+  - `lib/screens/analytics/analytics_screen.dart`
+- **Summary:**
+  - Adapted home timer card into authentic side-by-side split-flap flip clock matching user reference.
+  - Integrated personal doctor greeting into the top brand bar.
+  - Remodeled the module queue trigger into a seamless editorial row.
+  - Renamed `Daily tasks pacing` to `Task analytics` on Progress screen.
+- **Verification:** Verified via `flutter analyze` (0 issues), built debug APK, installed and tested live on OnePlus 13R (`ba009d81`).
+
+---
+
 ## 🚀 Build Manifest v1.28.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (248MB)
 - **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)
