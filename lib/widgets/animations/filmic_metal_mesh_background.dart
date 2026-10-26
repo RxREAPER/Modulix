@@ -84,6 +84,8 @@ class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
   @override
   Widget build(BuildContext context) {
     final isDark = AppTheme.current.isDark;
+    final themeAccent = AppTheme.accentPrimary;
+    final canvasColor = AppTheme.paperBackground;
 
     return Stack(
       fit: StackFit.expand,
@@ -97,6 +99,8 @@ class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
                 painter: _FilmicMetalMeshPainter(
                   progress: _controller.value,
                   isDark: isDark,
+                  themeAccent: themeAccent,
+                  canvasColor: canvasColor,
                   noiseImage: _noiseImage,
                 ),
                 size: Size.infinite,
@@ -115,11 +119,15 @@ class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
 class _FilmicMetalMeshPainter extends CustomPainter {
   final double progress;
   final bool isDark;
+  final Color themeAccent;
+  final Color canvasColor;
   final ui.Image? noiseImage;
 
   _FilmicMetalMeshPainter({
     required this.progress,
     required this.isDark,
+    required this.themeAccent,
+    required this.canvasColor,
     required this.noiseImage,
   });
 
@@ -128,49 +136,47 @@ class _FilmicMetalMeshPainter extends CustomPainter {
     if (size.width <= 0 || size.height <= 0) return;
 
     final double t = progress * 2.0 * math.pi;
+    final Rect rect = Offset.zero & size;
 
     // 1. Base metal canvas gradient
-    final Rect rect = Offset.zero & size;
     final Paint basePaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: isDark
-            ? const [
-                Color(0xFF07090E),
-                Color(0xFF0B0F19),
-                Color(0xFF090D15),
+            ? [
+                const Color(0xFF07090E),
+                const Color(0xFF0B0F19),
+                canvasColor,
               ]
-            : const [
-                Color(0xFFF8FAFC),
-                Color(0xFFF1F5F9),
-                Color(0xFFE2E8F0),
+            : [
+                const Color(0xFFFFFFFF),
+                const Color(0xFFF8FAFC),
+                canvasColor,
               ],
       ).createShader(rect);
     canvas.drawRect(rect, basePaint);
 
-    // 2. Harmonic Lissajous orbs (smooth, organic drift)
-    // Orb 1: Upper-left drift (Deep Indigo / Slate)
-    final double orb1X = size.width * (0.32 + 0.16 * math.sin(t));
-    final double orb1Y = size.height * (0.22 + 0.12 * math.cos(t * 0.8));
-    final double orb1Radius = size.width * 0.75;
+    // 2. Harmonic Lissajous orbs (concentrated in top 60% of viewport)
+    // Orb 1: Upper-left theme accent drift
+    final double orb1X = size.width * (0.35 + 0.18 * math.sin(t));
+    final double orb1Y = size.height * (0.20 + 0.10 * math.cos(t * 0.8));
+    final double orb1Radius = size.width * 0.80;
     final Paint orb1Paint = Paint()
       ..shader = ui.Gradient.radial(
         Offset(orb1X, orb1Y),
         orb1Radius,
         [
-          isDark
-              ? const Color(0xFF1E1B4B).withValues(alpha: 0.65)
-              : const Color(0xFFE2E8F0).withValues(alpha: 0.70),
+          themeAccent.withValues(alpha: isDark ? 0.38 : 0.22),
           Colors.transparent,
         ],
         [0.0, 1.0],
       );
     canvas.drawCircle(Offset(orb1X, orb1Y), orb1Radius, orb1Paint);
 
-    // Orb 2: Upper-right celestial cobalt / azure shimmer
-    final double orb2X = size.width * (0.75 + 0.18 * math.cos(t * 0.7));
-    final double orb2Y = size.height * (0.35 + 0.15 * math.sin(t * 1.1));
+    // Orb 2: Upper-right celestial shimmer complement
+    final double orb2X = size.width * (0.75 + 0.16 * math.cos(t * 0.7));
+    final double orb2Y = size.height * (0.28 + 0.12 * math.sin(t * 1.1));
     final double orb2Radius = size.width * 0.85;
     final Paint orb2Paint = Paint()
       ..shader = ui.Gradient.radial(
@@ -178,61 +184,43 @@ class _FilmicMetalMeshPainter extends CustomPainter {
         orb2Radius,
         [
           isDark
-              ? const Color(0xFF0C4A6E).withValues(alpha: 0.50)
-              : const Color(0xFFBAE6FD).withValues(alpha: 0.60),
+              ? const Color(0xFF0C4A6E).withValues(alpha: 0.35)
+              : const Color(0xFFBAE6FD).withValues(alpha: 0.40),
           Colors.transparent,
         ],
         [0.0, 1.0],
       );
     canvas.drawCircle(Offset(orb2X, orb2Y), orb2Radius, orb2Paint);
 
-    // Orb 3: Mid-bottom luminous cyan / titanium pearl accent
-    final double orb3X = size.width * (0.45 + 0.22 * math.sin(t * 0.9 + 1.2));
-    final double orb3Y = size.height * (0.68 + 0.14 * math.cos(t * 0.6));
-    final double orb3Radius = size.width * 0.70;
+    // Orb 3: Mid-tier ambient glow (drifts near 45% height)
+    final double orb3X = size.width * (0.48 + 0.20 * math.sin(t * 0.9 + 1.2));
+    final double orb3Y = size.height * (0.42 + 0.10 * math.cos(t * 0.6));
+    final double orb3Radius = size.width * 0.75;
     final Paint orb3Paint = Paint()
       ..shader = ui.Gradient.radial(
         Offset(orb3X, orb3Y),
         orb3Radius,
         [
           isDark
-              ? const Color(0xFF164E63).withValues(alpha: 0.38)
-              : const Color(0xFFCFFAFE).withValues(alpha: 0.55),
+              ? const Color(0xFF1E1B4B).withValues(alpha: 0.40)
+              : themeAccent.withValues(alpha: 0.16),
           Colors.transparent,
         ],
         [0.0, 1.0],
       );
     canvas.drawCircle(Offset(orb3X, orb3Y), orb3Radius, orb3Paint);
 
-    // Orb 4: Subtle deep violet / iris glow
-    final double orb4X = size.width * (0.20 + 0.15 * math.cos(t * 1.2 + 2.0));
-    final double orb4Y = size.height * (0.85 + 0.10 * math.sin(t * 0.75));
-    final double orb4Radius = size.width * 0.65;
-    final Paint orb4Paint = Paint()
-      ..shader = ui.Gradient.radial(
-        Offset(orb4X, orb4Y),
-        orb4Radius,
-        [
-          isDark
-              ? const Color(0xFF2E1065).withValues(alpha: 0.32)
-              : const Color(0xFFEDE9FE).withValues(alpha: 0.50),
-          Colors.transparent,
-        ],
-        [0.0, 1.0],
-      );
-    canvas.drawCircle(Offset(orb4X, orb4Y), orb4Radius, orb4Paint);
-
-    // 3. Apple-style metallic specular sheen sweep
+    // 3. Apple-style metallic specular sheen sweep (upper atmosphere)
     final double sweepOffset = (progress * 2.0 - 0.5);
     final Paint sheenPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment(-1.0 + sweepOffset, -1.0),
-        end: Alignment(1.0 + sweepOffset, 1.0),
+        end: Alignment(1.0 + sweepOffset, 0.4),
         colors: [
           Colors.transparent,
           isDark
-              ? Colors.white.withValues(alpha: 0.035)
-              : Colors.white.withValues(alpha: 0.25),
+              ? Colors.white.withValues(alpha: 0.030)
+              : Colors.white.withValues(alpha: 0.20),
           Colors.transparent,
         ],
         stops: const [0.35, 0.50, 0.65],
@@ -240,14 +228,35 @@ class _FilmicMetalMeshPainter extends CustomPainter {
       ..blendMode = isDark ? BlendMode.plus : BlendMode.softLight;
     canvas.drawRect(rect, sheenPaint);
 
-    // 4. Procedural film grain noise overlay
+    // 4. Mid-Screen Horizon Dissolve (fading gradient into solid canvasColor between 45% and 62% height)
+    final Paint horizonFadePaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        stops: const [0.0, 0.42, 0.62, 1.0],
+        colors: [
+          Colors.transparent,
+          Colors.transparent,
+          canvasColor,
+          canvasColor,
+        ],
+      ).createShader(rect);
+    canvas.drawRect(rect, horizonFadePaint);
+
+    // 5. Active 24 FPS Cinema Film Grain Jitter Overlay
+    // Translates the texture matrix at 24 discrete frames per second across 35mm film cadence
     if (noiseImage != null) {
+      final int frame = (progress * 480).floor(); // 24 FPS across 20-second repeat loop
+      final double grainDx = ((frame * 37 + 17) % 128).toDouble();
+      final double grainDy = ((frame * 59 + 29) % 128).toDouble();
+      final Matrix4 grainMatrix = Matrix4.translationValues(grainDx, grainDy, 0.0);
+
       final Paint noisePaint = Paint()
         ..shader = ImageShader(
           noiseImage!,
           TileMode.repeated,
           TileMode.repeated,
-          Matrix4.identity().storage,
+          grainMatrix.storage,
         )
         ..blendMode = isDark ? BlendMode.overlay : BlendMode.softLight;
       canvas.drawRect(rect, noisePaint);
@@ -258,6 +267,8 @@ class _FilmicMetalMeshPainter extends CustomPainter {
   bool shouldRepaint(covariant _FilmicMetalMeshPainter oldDelegate) {
     return oldDelegate.progress != progress ||
         oldDelegate.isDark != isDark ||
+        oldDelegate.themeAccent != themeAccent ||
+        oldDelegate.canvasColor != canvasColor ||
         oldDelegate.noiseImage != noiseImage;
   }
 }

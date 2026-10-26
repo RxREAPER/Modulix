@@ -302,6 +302,24 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 12. **Cloud Snapshot Vault & Tombstone Sync:** Compressed `.json.gz` snapshot archiving into Supabase Storage, and `deleted_ids` tombstone tracking.
 13. **Clean Architecture, Zero Emojis & Zero Nori Mascot:** Complete purge of legacy mascot, 1,276 lines of dead code pruned, and 100% adherence to zero-emoji clinical UI standards.
 
+### [CKPT-076] 24 FPS Cinema Grain Jitter, Mid-Screen Gradient Fade, Unified Hero Card & Monochromatic Module Tracker
+- **Timestamp:** 2026-10-27 01:55 IST
+- **Category:** ui_modernization / 24 FPS Cinema Grain Jitter, Mid-Screen Horizon Fade, Unified Hero Card & Monochromatic Module Tracker
+- **Files Modified (5 files):**
+  - `lib/widgets/animations/filmic_metal_mesh_background.dart` (Active 24 FPS cinema-cadence film grain jitter shifting ImageShader matrix offset at discrete ticks; extended mid-screen horizon dissolve between 42% and 62% height into solid canvas color; dynamically inherits theme-adaptive chromatic orbs)
+  - `lib/widgets/study_desk_clock.dart` (Standout unified hero centerpiece card: merged Focus, Doctor. greeting + uppercase date stamp + monumental 58px rolling digit timepiece numerals + monochromatic AM/PM capsule; purged LIVE badge, pulsating live seconds dot, and bottom seconds progress track)
+  - `lib/screens/home/home_screen.dart` (Purged "sync" text tag and pill badge from top bar; provided 26px generous breathing room below top bar allowing luminous gradient to breathe; removed redundant separate date/greeting rows; added 0.75px architectural divider lines beneath "Daily tasks" and "Module Based Tasks" headers)
+  - `lib/widgets/automated_module_tracker.dart` (Full monochromatic minimalist overhaul: purged colored pace status badge, removed progress metrics row, converted 5px continuous progress track to sleek monochromatic silver/white gradient, neutralized subject icon pod and launcher strip)
+  - `test/study_desk_test.dart` (Updated test assertions to verify greeting and absence of LIVE badge; verified tagless and metric-clean module tracker)
+- **Summary:**
+  - Modernized Home Screen inspired by Cecilia Kim's design flow: active 24 FPS cinema film grain jitter, mid-screen gradient fade, pure sculptural Hero centerpiece card, and monochromatic foreground cards ensuring the animated theme gradient remains the sole, striking color highlight.
+- **Verification:**
+  - `flutter analyze lib/ test/`: **No issues found! (0 errors, 0 warnings across entire codebase)**
+  - `flutter test`: **43/43 tests passed across 6 test suites! (100% green)**
+- **Status:** Pending APK Build
+
+---
+
 ### [CKPT-075] Animated Filmic Metal Mesh Background, Modern Ambient Clock & Unboxed Home Screen
 - **Timestamp:** 2026-10-27 01:05 IST
 - **Category:** ui_modernization / Home Screen Motion, Metal Mesh Background & Ambient Timepiece

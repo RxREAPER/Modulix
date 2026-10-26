@@ -40,8 +40,9 @@ void main() {
     // Verifies no InkWell / interactive link to focus timer screen
     expect(find.byType(InkWell), findsNothing);
 
-    // Verifies LIVE indicator and date text are rendered
-    expect(find.text('LIVE'), findsOneWidget);
+    // Verifies greeting and absence of LIVE badge or progress track
+    expect(find.text('LIVE'), findsNothing);
+    expect(find.text('Focus, Doctor.'), findsOneWidget);
   });
 
   testWidgets('StudyTaskCard renders title, subtitle and triggers toggle', (tester) async {
@@ -160,7 +161,8 @@ void main() {
     expect(find.text('Open Queue'), findsOneWidget);
     expect(find.text('Anatomy'), findsOneWidget);
     expect(find.text('Upper Limb'), findsOneWidget);
-    expect(find.text('0 of 4 done today'), findsOneWidget);
+    // Verifies clutter-free card with no extra progress counter texts
+    expect(find.text('0 of 4 done today'), findsNothing);
 
     // Minimalist verification: No Setup button on Home card, no footer CTA button
     expect(find.text('Setup'), findsNothing);

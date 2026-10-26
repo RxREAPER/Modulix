@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../data/subjects_metadata.dart';
 import '../models/app_state.dart';
 import '../models/syllabus.dart';
 import '../providers/app_state_provider.dart';
@@ -12,7 +11,6 @@ import '../theme/app_theme.dart';
 import 'package:animations/animations.dart';
 import '../screens/curriculum/module_tasks_screen.dart';
 import 'curriculum/subject_sketch_icon.dart';
-import 'in_situ_hint_pill.dart';
 import 'animations/apple_pressable.dart';
 
 
@@ -35,6 +33,7 @@ class AutomatedModuleTracker extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final plan = editionState.plan;
     final isConfigured = plan.isConfigured;
+    final isDark = AppTheme.current.isDark;
 
     // Resolve target subject
     Subject? targetSubject;
@@ -64,13 +63,6 @@ class AutomatedModuleTracker extends ConsumerWidget {
         planVideos = targetSubject.allVideos;
       }
     }
-
-    final totalVideos = planVideos.length;
-    final completedVideosCount =
-        planVideos.where((v) => editionState.completedVideos.containsKey(v.id)).length;
-    final double overallProgress =
-        totalVideos > 0 ? (completedVideosCount / totalVideos) : 0.0;
-    final int progressPercent = (overallProgress * 100).round();
 
     // Day Window Calculation linked to start of the day setting
     final appState = ref.watch(appStateProvider).valueOrNull;
@@ -129,23 +121,6 @@ class AutomatedModuleTracker extends ConsumerWidget {
         .where((v) => staleIds.contains(v.id) && !editionState.completedVideos.containsKey(v.id))
         .length;
 
-    // Dynamic pace status
-    final String paceStatusText;
-    final Color paceStatusColor;
-    if (completedBatchCount >= targetQuota && targetQuota > 0) {
-      paceStatusText = 'Target Met';
-      paceStatusColor = const Color(0xFF059669);
-    } else if (uncompletedStaleCount > 0) {
-      paceStatusText = '$uncompletedStaleCount Stale';
-      paceStatusColor = const Color(0xFFD97706);
-    } else if (completedBatchCount > 0) {
-      paceStatusText = '${targetQuota - completedBatchCount} left';
-      paceStatusColor = const Color(0xFF2563EB);
-    } else {
-      paceStatusText = 'On Track';
-      paceStatusColor = const Color(0xFF4A463F);
-    }
-
     final double todayProgressFraction =
         batchVideos.isNotEmpty ? (completedBatchCount / batchVideos.length) : 0.0;
     final totalBatchCount = batchVideos.length;
@@ -182,6 +157,14 @@ class AutomatedModuleTracker extends ConsumerWidget {
             ),
           ],
         ),
+        const SizedBox(height: 10),
+        Container(
+          height: 0.75,
+          width: double.infinity,
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.06),
+        ),
         const SizedBox(height: 12),
 
         // UI Box below the header
@@ -195,12 +178,7 @@ class AutomatedModuleTracker extends ConsumerWidget {
             selectedUnitDisplay: selectedUnitDisplay,
             completedBatchCount: completedBatchCount,
             batchVideos: batchVideos,
-            uncompletedStaleCount: uncompletedStaleCount,
-            paceStatusText: paceStatusText,
-            paceStatusColor: paceStatusColor,
             todayProgressFraction: todayProgressFraction,
-            targetQuota: targetQuota,
-            progressPercent: progressPercent,
           ),
       ],
     );
@@ -265,7 +243,7 @@ class AutomatedModuleTracker extends ConsumerWidget {
                         child: Icon(
                           Icons.auto_graph_rounded,
                           size: 20,
-                          color: isDark ? const Color(0xFF38BDF8) : AppTheme.accentPrimary,
+                          color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A),
                         ),
                       ),
                     ),
@@ -352,19 +330,13 @@ class AutomatedModuleTracker extends ConsumerWidget {
     required String selectedUnitDisplay,
     required int completedBatchCount,
     required List<Video> batchVideos,
-    required int uncompletedStaleCount,
-    required String paceStatusText,
-    required Color paceStatusColor,
     required double todayProgressFraction,
-    required int targetQuota,
-    required int progressPercent,
   }) {
     final isDark = AppTheme.current.isDark;
     final nextVideo = batchVideos
         .where((v) => !editionState.completedVideos.containsKey(v.id))
         .firstOrNull;
 
-    final meta = subjectMeta(subjectId);
     final isAllDone = batchVideos.isNotEmpty && completedBatchCount >= batchVideos.length;
 
     return ClipRRect(
@@ -416,125 +388,64 @@ class AutomatedModuleTracker extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Top Row: Subject icon + Name/Unit on left, Pace badge on right
+                    // Top Row: Minimal Monochromatic Subject Icon + Name & Unit
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF1E293B)
+                                : const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: SubjectSketchIcon(
+                              subjectId: subjectId,
+                              color: isDark
+                                  ? const Color(0xFFF8FAFC)
+                                  : const Color(0xFF0F172A),
+                              size: 22,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
                         Expanded(
-                          child: Row(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                width: 38,
-                                height: 38,
-                                decoration: BoxDecoration(
-                                  color: meta.accent.withValues(alpha: isDark ? 0.18 : 0.12),
-                                  borderRadius: BorderRadius.circular(10),
+                              Text(
+                                subjectName,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.inkForeground,
+                                  letterSpacing: -0.2,
                                 ),
-                                child: Center(
-                                  child: SubjectSketchIcon(
-                                    subjectId: subjectId,
-                                    color: meta.accent,
-                                    size: 22,
-                                  ),
-                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      subjectName,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppTheme.inkForeground,
-                                        letterSpacing: -0.2,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 1),
-                                    Text(
-                                      selectedUnitDisplay,
-                                      style: TextStyle(
-                                        fontSize: 11.5,
-                                        fontWeight: FontWeight.w500,
-                                        color: AppTheme.mutedText,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
+                              const SizedBox(height: 1),
+                              Text(
+                                selectedUnitDisplay,
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppTheme.mutedText,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: paceStatusColor.withValues(alpha: isDark ? 0.20 : 0.12),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: paceStatusColor.withValues(alpha: isDark ? 0.40 : 0.25),
-                              width: 0.75,
-                            ),
-                          ),
-                          child: Text(
-                            paceStatusText.toUpperCase(),
-                            style: TextStyle(
-                              color: paceStatusColor,
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.6,
-                            ),
-                          ),
-                        ),
                       ],
                     ),
-
-                    if (uncompletedStaleCount > 0) ...[
-                      const SizedBox(height: 12),
-                      const InSituHintPill(
-                        prefKey: 'hint_behind_pace_seen',
-                        message: 'Tap Recalibrate to re-balance your daily video quota',
-                        icon: Icons.tune_rounded,
-                        margin: EdgeInsets.zero,
-                      ),
-                    ],
 
                     const SizedBox(height: 16),
 
-                    // Progress Counters Row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '$completedBatchCount of ${batchVideos.length} done today',
-                          style: TextStyle(
-                            fontSize: 12.0,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.inkForeground,
-                            letterSpacing: -0.1,
-                          ),
-                        ),
-                        Text(
-                          '$progressPercent% scope completed',
-                          style: TextStyle(
-                            fontSize: 11.0,
-                            fontWeight: FontWeight.w500,
-                            color: AppTheme.mutedText,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    // Continuous 5px gradient progress track
+                    // Continuous 5px Monochromatic Progress Track
                     Container(
                       height: 5,
                       width: double.infinity,
@@ -550,9 +461,15 @@ class AutomatedModuleTracker extends ConsumerWidget {
                         child: Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: isAllDone
-                                  ? const [Color(0xFF10B981), Color(0xFF059669)]
-                                  : [meta.accent, meta.accent.withValues(alpha: 0.75)],
+                              colors: isDark
+                                  ? const [
+                                      Color(0xFFF8FAFC),
+                                      Color(0xFF94A3B8),
+                                    ]
+                                  : const [
+                                      Color(0xFF334155),
+                                      Color(0xFF0F172A),
+                                    ],
                             ),
                             borderRadius: BorderRadius.circular(2.5),
                           ),
@@ -562,26 +479,18 @@ class AutomatedModuleTracker extends ConsumerWidget {
 
                     const SizedBox(height: 14),
 
-                    // Seamless Bottom Launcher Strip
+                    // Seamless Bottom Launcher Strip (Monochromatic)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8.5),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? (isAllDone
-                                ? const Color(0xFF064E3B).withValues(alpha: 0.35)
-                                : Colors.white.withValues(alpha: 0.05))
-                            : (isAllDone
-                                ? const Color(0xFFECFDF5)
-                                : const Color(0xFFF8FAFC)),
+                            ? Colors.white.withValues(alpha: 0.04)
+                            : Colors.black.withValues(alpha: 0.03),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: isDark
-                              ? (isAllDone
-                                  ? const Color(0xFF059669).withValues(alpha: 0.40)
-                                  : Colors.white.withValues(alpha: 0.06))
-                              : (isAllDone
-                                  ? const Color(0xFFA7F3D0)
-                                  : const Color(0xFFE2E8F0)),
+                              ? Colors.white.withValues(alpha: 0.07)
+                              : Colors.black.withValues(alpha: 0.06),
                           width: 0.75,
                         ),
                       ),
@@ -592,9 +501,9 @@ class AutomatedModuleTracker extends ConsumerWidget {
                                 ? Icons.check_circle_rounded
                                 : Icons.play_circle_outline_rounded,
                             size: 15,
-                            color: isAllDone
-                                ? const Color(0xFF10B981)
-                                : (isDark ? const Color(0xFF38BDF8) : AppTheme.accentPrimary),
+                            color: isDark
+                                ? const Color(0xFF94A3B8)
+                                : const Color(0xFF475569),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
@@ -609,9 +518,9 @@ class AutomatedModuleTracker extends ConsumerWidget {
                               style: TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w500,
-                                color: isAllDone
-                                    ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669))
-                                    : AppTheme.inkForeground,
+                                color: isDark
+                                    ? const Color(0xFFCBD5E1)
+                                    : const Color(0xFF334155),
                               ),
                             ),
                           ),
@@ -624,9 +533,9 @@ class AutomatedModuleTracker extends ConsumerWidget {
                                 style: TextStyle(
                                   fontSize: 11.0,
                                   fontWeight: FontWeight.w700,
-                                  color: isAllDone
-                                      ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669))
-                                      : (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7)),
+                                  color: isDark
+                                      ? const Color(0xFFF8FAFC)
+                                      : const Color(0xFF0F172A),
                                   letterSpacing: 0.1,
                                 ),
                               ),
@@ -634,9 +543,9 @@ class AutomatedModuleTracker extends ConsumerWidget {
                               Icon(
                                 Icons.arrow_forward_rounded,
                                 size: 12,
-                                color: isAllDone
-                                    ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669))
-                                    : (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7)),
+                                color: isDark
+                                    ? const Color(0xFFF8FAFC)
+                                    : const Color(0xFF0F172A),
                               ),
                             ],
                           ),

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 import '../../providers/app_state_provider.dart';
 import '../../providers/syllabus_provider.dart';
@@ -18,7 +17,6 @@ import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/animations/filmic_metal_mesh_background.dart';
 import '../../services/tour/app_tour_controller.dart';
-import '../../widgets/sync_status_badge.dart';
 import '../../widgets/errors/app_error_state_view.dart';
 import '../../widgets/loading/app_shimmer.dart';
 import '../../widgets/feedback/modulix_toast.dart';
@@ -53,7 +51,6 @@ class HomeScreen extends ConsumerWidget {
       ),
       data: (state) {
         final doctorName = state.doctorName.isNotEmpty ? state.doctorName : 'Doctor';
-        final todayFormatted = DateFormat('EEEE, MMM d').format(DateTime.now()).toUpperCase();
 
         return Scaffold(
           backgroundColor: Colors.transparent,
@@ -71,108 +68,75 @@ class HomeScreen extends ConsumerWidget {
                   durationMs: 220,
                   slideY: 12.0,
                   children: [
-                    // ① Top Header + Greeting (clean, unboxed modern layout)
+                    // ① Sleek Brand Bar (without sync tag)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          // Sleek brand mark
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              // Sleek brand mark
-                              Row(
-                                children: [
-                                  Container(
-                                    width: 36,
-                                    height: 36,
-                                    decoration: BoxDecoration(
-                                      color: isDark ? const Color(0xFF1E293B) : AppTheme.inkForeground,
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                        color: isDark ? Colors.white.withValues(alpha: 0.10) : Colors.transparent,
-                                        width: 0.75,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: isDark
-                                              ? const Color(0xFF38BDF8).withValues(alpha: 0.20)
-                                              : Colors.black.withValues(alpha: 0.12),
-                                          blurRadius: 10,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        'M',
-                                        style: TextStyle(
-                                          color: AppTheme.paperBackground,
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w900,
-                                          fontFamily: 'serif',
-                                        ),
-                                      ),
-                                    ),
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF1E293B) : AppTheme.inkForeground,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: isDark ? Colors.white.withValues(alpha: 0.10) : Colors.transparent,
+                                    width: 0.75,
                                   ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    'Modulix',
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: isDark
+                                          ? const Color(0xFF38BDF8).withValues(alpha: 0.20)
+                                          : Colors.black.withValues(alpha: 0.12),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'M',
                                     style: TextStyle(
+                                      color: AppTheme.paperBackground,
                                       fontSize: 20,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: -0.5,
-                                      color: AppTheme.inkForeground,
+                                      fontWeight: FontWeight.w900,
+                                      fontFamily: 'serif',
                                     ),
                                   ),
-                                ],
+                                ),
                               ),
-                              // Integrated right actions
-                              Row(
-                                children: [
-                                  const SyncStatusBadge(compact: true),
-                                  const SizedBox(width: 10),
-                                  ProfileAvatar(
-                                    size: 40,
-                                    colorId: state.avatarColorId,
-                                    iconId: state.avatarIconId,
-                                    doctorName: doctorName,
-                                    onTap: () => context.go('/settings?from=/'),
-                                  ),
-                                ],
+                              const SizedBox(width: 10),
+                              Text(
+                                'Modulix',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.5,
+                                  color: AppTheme.inkForeground,
+                                ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 20),
-                          Text(
-                            todayFormatted,
-                            style: TextStyle(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.2,
-                              color: isDark
-                                  ? const Color(0xFF94A3B8)
-                                  : const Color(0xFF64748B),
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Focus, $doctorName.',
-                            style: TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w800,
-                              color: AppTheme.inkForeground,
-                              letterSpacing: -0.6,
-                            ),
+                          // Right profile avatar (purged sync tag for pure minimalism)
+                          ProfileAvatar(
+                            size: 40,
+                            colorId: state.avatarColorId,
+                            iconId: state.avatarIconId,
+                            doctorName: doctorName,
+                            onTap: () => context.go('/settings?from=/'),
                           ),
                         ],
                       ),
                     ),
 
-                    // ② Hero Modern Ambient Clock
-                    const Padding(
-                      padding: EdgeInsets.only(top: 16),
-                      child: RepaintBoundary(child: StudyDeskClock()),
+                    // ② Standout Unified Hero Clock Card (with generous breathing room for the gradient)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 26),
+                      child: RepaintBoundary(child: StudyDeskClock(doctorName: doctorName)),
                     ),
 
                     // ③ Today's Tasks Section
@@ -317,6 +281,14 @@ class _HomeTasksSection extends ConsumerWidget {
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 10),
+        Container(
+          height: 0.75,
+          width: double.infinity,
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.06),
         ),
         const SizedBox(height: 12),
 
