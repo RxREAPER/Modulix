@@ -274,8 +274,8 @@ void main() {
       // Focus & Deep Work
       expect(find.text('Focus & Deep Work'), findsOneWidget);
 
-      // Daily Tasks Analytics
-      expect(find.text('Daily Tasks Analytics'), findsOneWidget);
+      // Daily Tasks
+      expect(find.text('DAILY TASKS'), findsOneWidget);
 
       // Subject Mastery is eliminated per user instruction
       expect(find.text('Subject Mastery'), findsNothing);

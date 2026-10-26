@@ -23,7 +23,6 @@ import '../../widgets/errors/app_error_state_view.dart';
 import '../../widgets/loading/app_shimmer.dart';
 import '../../widgets/analytics/progress_radial_gauge.dart';
 import '../../widgets/analytics/concentric_donut_indicator.dart';
-import '../../widgets/analytics/segmented_velocity_pill.dart';
 import '../../widgets/analytics/animated_trophy.dart';
 
 class AnalyticsScreen extends ConsumerWidget {
@@ -911,200 +910,197 @@ class _TodayFocusTasksSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final allTasks = [...todayTasks, ...todayCompleted];
+    final isDark = AppTheme.current.isDark;
 
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppTheme.cardWhite,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppTheme.borderLight, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Section Title Row
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppTheme.accentEmerald.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  Icons.check_circle_outline_rounded,
-                  size: 18,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section Header Row: Title, Pill Count, Open Tasks
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              'DAILY TASKS',
+              style: TextStyle(
+                fontSize: 12.0,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.8,
+                color: AppTheme.mutedText,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+              decoration: BoxDecoration(
+                color: AppTheme.accentEmerald.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                isColdStart ? '5/6' : '$doneTasks/$totalTasks',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
                   color: AppTheme.accentEmerald,
                 ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Daily Tasks Analytics',
-                      style: AppTypography.cardTitle(
-                        fontSize: 15.5,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.inkForeground,
-                      ),
-                    ),
-                    const SizedBox(height: 1),
-                    Text(
-                      isColdStart
-                          ? '5 of 6 goals met today (Sample)'
-                          : (totalTasks > 0
-                              ? '$doneTasks of $totalTasks targets completed today'
-                              : 'Plan and track your daily medical study targets'),
-                      style: AppTypography.cardSubtitle(
-                        fontSize: 11.5,
-                        color: AppTheme.mutedText,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              ApplePressable(
-                onTap: onOpenDailyTasks,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: AppTheme.parchmentSurface,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppTheme.borderLight, width: 1.0),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Open Tasks',
-                        style: AppTypography.compactAction(
-                          fontSize: 11.0,
-                          color: AppTheme.inkForeground,
-                        ),
-                      ),
-                      const SizedBox(width: 3),
-                      Icon(Icons.arrow_forward_ios_rounded, size: 9, color: AppTheme.mutedText),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 14),
-
-          // Render tasks as soft pastel pill rows (Image 1 style)
-          if (isColdStart) ...[
-            _TaskPill(
-              title: 'High-Yield Upper Limb Anatomy MCQs',
-              isDone: true,
-              timeEstimate: '30m',
-              onTap: () {},
             ),
-            _TaskPill(
-              title: 'Brachial Plexus Notes & Clinical Flashcards',
-              isDone: true,
-              timeEstimate: '25m',
-              onTap: () {},
-            ),
-            _TaskPill(
-              title: 'Review General Pathology Cell Injury',
-              isDone: false,
-              timeEstimate: '40m',
-              onTap: () {},
-            ),
-          ] else if (allTasks.isNotEmpty) ...[
-            ...allTasks.take(4).map((task) {
-              final String id = task is TaskItem ? task.id : (task as DailyDeskTask).id;
-              final String title = task is TaskItem ? task.title : (task as DailyDeskTask).title;
-              final bool isDone = task is TaskItem
-                  ? task.isCompleted
-                  : ref.read(dailyTasksProvider).completedIds.contains(id);
-              final int estMins = task is TaskItem ? (task.estimatedMinutes ?? 25) : 25;
-
-              return _TaskPill(
-                title: title,
-                isDone: isDone,
-                timeEstimate: '${estMins}m',
-                onTap: () {
-                  if (task is TaskItem) {
-                    ref.read(tasksHubProvider.notifier).toggleComplete(id);
-                  } else {
-                    ref.read(dailyTasksProvider.notifier).toggleTask(id);
-                  }
-                },
-              );
-            }),
-          ] else ...[
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-              decoration: BoxDecoration(
-                color: AppTheme.parchmentSurface,
-                borderRadius: BorderRadius.circular(16),
-              ),
+            const Spacer(),
+            ApplePressable(
+              onTap: onOpenDailyTasks,
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.edit_calendar_rounded, size: 20, color: AppTheme.mutedText),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'No tasks scheduled for today',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: AppTheme.mutedText,
-                      ),
+                  Text(
+                    'Open Tasks',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.primaryBlue,
                     ),
                   ),
-                  ApplePressable(
-                    onTap: onOpenDailyTasks,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: AppTheme.accentEmerald,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '+ Add Task',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.onAccent,
-                        ),
-                      ),
-                    ),
+                  const SizedBox(width: 3),
+                  Icon(
+                    Icons.arrow_outward_rounded,
+                    size: 13,
+                    color: AppTheme.primaryBlue,
                   ),
                 ],
               ),
             ),
           ],
+        ),
 
-          if (isColdStart || totalTasks > 0) ...[
-            const SizedBox(height: 12),
-            SegmentedVelocityPill(
-              totalSegments: isColdStart ? 6 : totalTasks,
-              completedSegments: isColdStart ? 5 : doneTasks,
-              activeColor: AppTheme.accentEmerald,
-              velocityLabel: isColdStart
-                  ? '100% Target Met (Sample)'
-                  : (tasksProgress >= 1.0
-                      ? '100% Target Met'
-                      : '${totalTasks - doneTasks} tasks pending'),
-              isPositiveVelocity: isColdStart ? true : (tasksProgress >= 0.5),
+        const SizedBox(height: 10),
+
+        // Tasks directly rendered as soft pastel pill rows
+        if (isColdStart) ...[
+          _TaskPill(
+            title: 'High-Yield Upper Limb Anatomy MCQs',
+            isDone: true,
+            timeEstimate: '30m',
+            onTap: () {},
+          ),
+          _TaskPill(
+            title: 'Brachial Plexus Notes & Clinical Flashcards',
+            isDone: true,
+            timeEstimate: '25m',
+            onTap: () {},
+          ),
+          _TaskPill(
+            title: 'Review General Pathology Cell Injury',
+            isDone: false,
+            timeEstimate: '40m',
+            onTap: () {},
+          ),
+        ] else if (allTasks.isNotEmpty) ...[
+          ...allTasks.take(4).map((task) {
+            final String id = task is TaskItem ? task.id : (task as DailyDeskTask).id;
+            final String title = task is TaskItem ? task.title : (task as DailyDeskTask).title;
+            final bool isDone = task is TaskItem
+                ? task.isCompleted
+                : ref.read(dailyTasksProvider).completedIds.contains(id);
+            final int estMins = task is TaskItem ? (task.estimatedMinutes ?? 25) : 25;
+
+            return _TaskPill(
+              title: title,
+              isDone: isDone,
+              timeEstimate: '${estMins}m',
+              onTap: () {
+                if (task is TaskItem) {
+                  ref.read(tasksHubProvider.notifier).toggleComplete(id);
+                } else {
+                  ref.read(dailyTasksProvider.notifier).toggleTask(id);
+                }
+              },
+            );
+          }),
+        ] else ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: AppTheme.borderLight.withValues(alpha: 0.7),
+                width: 1.0,
+              ),
             ),
-          ],
+            child: Row(
+              children: [
+                Icon(Icons.edit_calendar_rounded, size: 20, color: AppTheme.mutedText),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'No tasks scheduled for today',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: AppTheme.mutedText,
+                    ),
+                  ),
+                ),
+                ApplePressable(
+                  onTap: onOpenDailyTasks,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentEmerald,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '+ Add Task',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.onAccent,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
-      ),
+
+        if (isColdStart || totalTasks > 0) ...[
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: Container(
+                    height: 5,
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : AppTheme.borderLight,
+                    child: FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: (isColdStart ? (5 / 6) : (totalTasks > 0 ? (doneTasks / totalTasks) : 0.0)).clamp(0.0, 1.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppTheme.accentEmerald,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                isColdStart ? '5 of 6 done' : '$doneTasks of $totalTasks completed',
+                style: TextStyle(
+                  fontSize: 11.0,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.mutedText,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
     );
   }
 }
@@ -1130,7 +1126,7 @@ class _TaskPill extends StatelessWidget {
       pressedScale: 0.98,
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: isDone
               ? (isDark ? const Color(0xFF0D281E) : const Color(0xFFE8F5E9))
@@ -1142,22 +1138,45 @@ class _TaskPill extends StatelessWidget {
                 : AppTheme.borderLight.withValues(alpha: 0.7),
             width: 1.0,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            Icon(
-              isDone ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-              size: 20,
-              color: isDone ? AppTheme.accentEmerald : AppTheme.mutedText,
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isDone ? AppTheme.accentEmerald : Colors.transparent,
+                border: Border.all(
+                  color: isDone
+                      ? AppTheme.accentEmerald
+                      : AppTheme.mutedText.withValues(alpha: 0.35),
+                  width: 1.5,
+                ),
+              ),
+              child: Center(
+                child: isDone
+                    ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
+                    : null,
+              ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 13.0,
+                  fontSize: 13.5,
                   fontWeight: FontWeight.w600,
                   decoration: isDone ? TextDecoration.lineThrough : null,
                   color: isDone ? AppTheme.mutedText : AppTheme.inkForeground,
@@ -1170,13 +1189,15 @@ class _TaskPill extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isDone
                     ? AppTheme.accentEmerald.withValues(alpha: 0.15)
-                    : AppTheme.borderLight.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(8),
+                    : (isDark
+                        ? Colors.white.withValues(alpha: 0.06)
+                        : Colors.black.withValues(alpha: 0.04)),
+                borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
                 timeEstimate,
                 style: TextStyle(
-                  fontSize: 10.0,
+                  fontSize: 10.5,
                   fontWeight: FontWeight.w700,
                   color: isDone ? AppTheme.accentEmerald : AppTheme.mutedText,
                 ),
@@ -1216,116 +1237,171 @@ class _FocusDeepWorkCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppTheme.current.isDark;
+    final displayDuration = isColdStart
+        ? '3h 45m'
+        : (todayFocusSecs > 0
+            ? AnalyticsScreen._formatDuration(todayFocusSecs)
+            : '0m');
+
     return ApplePressable(
       onTap: onTap,
       pressedScale: 0.98,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(24),
       child: Container(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppTheme.cardWhite,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppTheme.borderLight, width: 1.2),
+          borderRadius: BorderRadius.circular(24),
+          gradient: LinearGradient(
+            colors: isDark
+                ? [
+                    const Color(0xFF0F172A),
+                    const Color(0xFF1E1B4B),
+                  ]
+                : [
+                    const Color(0xFF1E293B),
+                    const Color(0xFF0F172A),
+                  ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: isDark ? 0.08 : 0.12),
+            width: 1.0,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
+              color: const Color(0xFF0F172A).withValues(alpha: 0.25),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Top row: Mini label + Concentric Donut Ring
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(9),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentSecondary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    Icons.timer_outlined,
-                    color: AppTheme.accentSecondary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Focus & Deep Work',
-                        style: AppTypography.cardTitle(
-                          fontSize: 15.5,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.inkForeground,
-                        ),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        isColdStart
-                            ? '3h 45m studied across 4 sessions (Sample)'
-                            : (todayFocusSecs > 0
-                                ? '${AnalyticsScreen._formatDuration(todayFocusSecs)} studied today across $todaySessions sessions'
-                                : 'No focus sessions logged today · Start timer'),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTypography.cardSubtitle(
-                          fontSize: 11.5,
-                          color: AppTheme.mutedText,
-                        ),
+                      child: const Icon(
+                        Icons.timer_outlined,
+                        color: Color(0xFF67E8F9),
+                        size: 15,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Focus & Deep Work',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                        color: Colors.white.withValues(alpha: 0.85),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
                 ConcentricDonutIndicator(
                   progress1: isColdStart ? 0.50 : (totalFocusSecs > 0 ? (videoFocusSecs / totalFocusSecs) : 0.0),
                   progress2: isColdStart ? 0.30 : (totalFocusSecs > 0 ? (qbankFocusSecs / totalFocusSecs) : 0.0),
                   progress3: isColdStart ? 0.20 : (totalFocusSecs > 0 ? (notesFocusSecs / totalFocusSecs) : 0.0),
-                  size: 42,
-                  ringWidth: 3.2,
-                  ringSpacing: 1.8,
-                  color1: AppTheme.accentPrimary,
-                  color2: AppTheme.accentSecondary,
-                  color3: AppTheme.accentTertiary,
+                  size: 44,
+                  ringWidth: 3.5,
+                  ringSpacing: 2.0,
+                  color1: const Color(0xFF60A5FA),
+                  color2: const Color(0xFF34D399),
+                  color3: const Color(0xFFA78BFA),
                 ),
               ],
             ),
+
             const SizedBox(height: 14),
+
+            // Big Bold Time Display
             Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
               children: [
                 Text(
-                  'Top Subject: $topSubject',
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.inkForeground,
+                  displayDuration,
+                  style: const TextStyle(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                    color: Colors.white,
+                    height: 1.0,
                   ),
                 ),
-                const Spacer(),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Deep Dive',
-                      style: AppTypography.compactAction(
-                        fontSize: 11.0,
-                        color: AppTheme.accentSecondary,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 10,
-                      color: AppTheme.accentSecondary,
-                    ),
-                  ],
+                const SizedBox(width: 10),
+                Text(
+                  isColdStart
+                      ? '4 sessions'
+                      : (todaySessions > 0
+                          ? '$todaySessions session${todaySessions == 1 ? '' : 's'}'
+                          : 'logged today'),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white.withValues(alpha: 0.60),
+                  ),
                 ),
               ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // Bottom metadata capsule strip
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0xFF34D399),
+                    ),
+                  ),
+                  const SizedBox(width: 7),
+                  Text(
+                    'Top: $topSubject',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white.withValues(alpha: 0.85),
+                    ),
+                  ),
+                  const Spacer(),
+                  const Text(
+                    'Deep Dive',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF67E8F9),
+                    ),
+                  ),
+                  const SizedBox(width: 3),
+                  const Icon(
+                    Icons.arrow_outward_rounded,
+                    size: 13,
+                    color: Color(0xFF67E8F9),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

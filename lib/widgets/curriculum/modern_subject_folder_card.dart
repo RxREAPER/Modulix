@@ -3,6 +3,7 @@ import '../../models/syllabus.dart';
 import '../../theme/app_theme.dart';
 import '../../data/subjects_metadata.dart';
 import '../animations/apple_pressable.dart';
+import 'subject_sketch_icon.dart';
 
 /// Modern Project / Dossier Folder Card for Curriculum Library.
 /// Inspired by modern fluid mobile interfaces with generous 24px squircle curves,
@@ -132,9 +133,9 @@ class ModernSubjectFolderCard extends StatelessWidget {
                           ],
                         ),
                         child: Center(
-                          child: Icon(
-                            meta.icon,
-                            size: 19,
+                          child: SubjectSketchIcon(
+                            subjectId: subject.id,
+                            size: 22,
                             color: primaryColor,
                           ),
                         ),

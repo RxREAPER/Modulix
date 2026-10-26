@@ -4,6 +4,24 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.21.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (237MB)
+- **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
+- **Compilation Time:** 242.6s | **Test Suite:** 53/53 Targeted Tests Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-073]`
+
+### Key Highlights & Releases in v1.21.0:
+1. **Restored Custom Selected Subject Icons (`lib/widgets/curriculum/modern_subject_folder_card.dart`):** Replaced fallback Material icons with the user-selected high-resolution 512x512 Flaticon PNG assets via `SubjectSketchIcon` across all 19 MBBS subjects (Anatomy skull, Biochemistry DNA, Physiology lungs/adrenal, Pharmacology Rx, etc.).
+2. **Subject Header Hero Folder Card (`lib/widgets/curriculum/subject_header_card.dart`):** Replaced legacy sketch decoration and offset shadows with a 24px squircle tonal gradient folder hero card featuring a 46px circular pod with `SubjectSketchIcon`, interactive `Analytics` pill, frosted glass metrics capsule (`VIDEOS`, `Q-BANK TOPICS`, `COMPLETION %`), and 6px rounded progress track.
+3. **Subject Screen Modernization & Fluid Morphing (`lib/screens/curriculum/subject_screen.dart`):** Eradicated obsolete in-situ hint cards, upgraded unit rows to soft pastel pill containers with circular check targets, and wrapped each in `OpenContainer` (360ms `fadeThrough`, 18px rounded shape) transitioning smoothly directly into `ChapterScreen`.
+4. **Chapter Screen Soft Pastel Lecture & Unit Row Design (`lib/widgets/video_tile.dart`, `lib/screens/curriculum/chapter_screen.dart`):** Eradicated legacy boxy `Card`s in favor of soft pastel pill rows (mint `#E8F5E9` in light / `#0D281E` in dark for completed; soft slate `#F8FAFC` in light / `#1E293B` in dark for pending). Added 36px circular serial nodes (`01`, `02`...), sleek duration badge pills, tactile circular 1-tap play timer launchers, and circular check toggles matching reference designs across Videos, Q-Bank, and Notes tabs.
+5. **Progress Screen Daily Tasks Section Redesign (`lib/screens/analytics/analytics_screen.dart`):** Eradicated outer boxy container and redundant "Daily Tasks Analytics" label in favor of an airy, open layout with clean `DAILY TASKS` header, live completion badge (`0/1` or `${doneTasks}/${totalTasks}`), `Open Tasks ↗` link, interactive soft pastel task pills (`_TaskPill` with strikethrough upon completion), and a 5px rounded continuous progress track.
+6. **Progress Screen Focus & Deep Work Obsidian Hero Card (`lib/screens/analytics/analytics_screen.dart`):** Overhauled from plain white box into a high-contrast clinical hero card with deep obsidian/indigo gradient (`[#0F172A, #1E1B4B]`, 24px squircle radius), bold 34pt typography for focus duration (`35m` or `${AnalyticsScreen._formatDuration(todayFocusSecs)}`), session counter, concentric study donut rings (Videos, Q-Bank, Notes), and frosted metadata strip (`Top: [Subject] · Deep Dive ↗`).
+7. **Progress Screen Study Matrix Heatmap Modernization (`lib/widgets/analytics/neet_consistency_matrix.dart`):** Purged `AppTheme.sketchDecoration` and harsh offset shadows. Redesigned into a 24px squircle container with whisper-thin border (`0.7px`), ambient shadow, integrated segmented capsule switcher (`[ 3M | 6M | 1Y ]`), soft pastel metric switcher pills (`[ Videos | Q-Banks | Notes ]`), and softened modern cell highlight borders.
+8. **Live Physical Device Verification:** Built and deployed to connected OnePlus 13R hardware (`ba009d81`), verifying both Basic Light and Basic Dark atmospheres with 0 crashes, 0 overflows, and clean layout presentation.
+
+---
+
 ## 🚀 Build Manifest v1.20.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (238MB)
 - **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36)

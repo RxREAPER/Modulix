@@ -312,16 +312,26 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
         (widget.dailyTasks != null);
 
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: AppTheme.sketchDecoration(
-        backgroundColor: AppTheme.cardWhite,
-        borderRadius: 18,
-        shadowOffset: 3,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppTheme.cardWhite,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppTheme.borderLight.withValues(alpha: 0.7),
+          width: 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with Title and Duration Range Selector
+          // Header with Title and Segmented Duration Capsule
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -334,22 +344,31 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
                   color: ink,
                 ),
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _durationChip(14, '3M'),
-                  const SizedBox(width: 4),
-                  _durationChip(26, '6M'),
-                  const SizedBox(width: 4),
-                  _durationChip(52, '1Y'),
-                ],
+              Container(
+                padding: const EdgeInsets.all(2.5),
+                decoration: BoxDecoration(
+                  color: AppTheme.parchmentSurface,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _durationChip(14, '3M'),
+                    _durationChip(26, '6M'),
+                    _durationChip(52, '1Y'),
+                  ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 3),
           Text(
             '$_selectedWeeksCount-week cycle · Total: ${_formatMetricValue(totalValue)}',
-            style: TextStyle(fontSize: 11, color: secondary),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: secondary,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -453,7 +472,7 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
                                         color: cellColor,
                                         borderRadius: BorderRadius.circular(3.5),
                                         border: isToday
-                                            ? Border.all(color: ink, width: 1.5)
+                                            ? Border.all(color: accent, width: 1.5)
                                             : (isFuture
                                                 ? Border.all(
                                                     color: isDark
@@ -590,21 +609,26 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: isSelected ? accent.withValues(alpha: 0.14) : AppTheme.parchmentSurface,
+          color: isSelected ? AppTheme.cardWhite : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected ? accent : AppTheme.borderLight,
-            width: isSelected ? 1.4 : 1.0,
-          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
         ),
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 10.5,
-            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-            color: isSelected ? accent : AppTheme.inkForeground,
+            fontSize: 11.0,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected ? accent : AppTheme.mutedText,
           ),
         ),
       ),
@@ -622,25 +646,29 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: isSelected ? accent.withValues(alpha: 0.12) : AppTheme.parchmentSurface,
-          borderRadius: BorderRadius.circular(8),
+          color: isSelected
+              ? accent.withValues(alpha: 0.15)
+              : AppTheme.parchmentSurface,
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? accent : AppTheme.borderLight,
-            width: isSelected ? 1.4 : 1.0,
+            color: isSelected
+                ? accent.withValues(alpha: 0.35)
+                : AppTheme.borderLight.withValues(alpha: 0.5),
+            width: 1.0,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 11, color: isSelected ? accent : AppTheme.mutedText),
-            const SizedBox(width: 4),
+            Icon(icon, size: 12, color: isSelected ? accent : AppTheme.mutedText),
+            const SizedBox(width: 5),
             Text(
               label,
               style: TextStyle(
-                fontSize: 10.5,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                fontSize: 11.0,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: isSelected ? accent : AppTheme.inkForeground,
               ),
             ),

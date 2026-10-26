@@ -3,6 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:animations/animations.dart';
 import '../../models/syllabus.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/syllabus_provider.dart';
@@ -11,9 +12,9 @@ import '../../theme/app_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/curriculum/subject_header_card.dart';
 import '../../widgets/curriculum/unit_card.dart';
-import '../../widgets/in_situ_hint_pill.dart';
 import '../../widgets/errors/app_error_state_view.dart';
 import '../../widgets/loading/app_shimmer.dart';
+import 'chapter_screen.dart';
 
 
 class SubjectScrollHelper {
@@ -580,39 +581,47 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                           ],
                         ),
 
-                        const SizedBox(height: 8),
-                        const InSituHintPill(
-                          prefKey: 'hint_unit_cards_seen',
-                          message: 'Tap any unit to explore Videos, Q-Bank, and Notes • Tap Timer for quick focus',
-                          icon: Icons.layers_outlined,
-                        ),
                         const SizedBox(height: 12),
                       ],
                     ),
                   ),
                 ),
 
-                // 3. Virtualized List of Minimalist Unit Cards
+                // 3. Virtualized List of Minimalist Unit Cards with Fluid Morph
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
                   sliver: SliverList.separated(
                     itemCount: subject.chapters.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       final chapter = subject.chapters[index];
                       return KeyedSubtree(
                         key: _unitKeys[index],
                         child: RepaintBoundary(
-                          child: UnitCard(
-                            subject: subject,
-                            chapter: chapter,
-                            unitIndex: index,
-                            completedVideos: completedVideos,
-                            completedQBanks: completedQBanks,
-                            completedNotes: completedNotes,
-                            onTap: () {
-                              context.push('/curriculum/${subject.id}/$index');
-                            },
+                          child: OpenContainer(
+                            closedElevation: 0,
+                            openElevation: 0,
+                            closedColor: Colors.transparent,
+                            openColor: AppTheme.paperBackground,
+                            middleColor: AppTheme.paperBackground,
+                            transitionType: ContainerTransitionType.fadeThrough,
+                            transitionDuration: const Duration(milliseconds: 360),
+                            closedShape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            openBuilder: (context, _) => ChapterScreen(
+                              subjectId: subject.id,
+                              chapterIndex: index,
+                            ),
+                            closedBuilder: (context, openContainer) => UnitCard(
+                              subject: subject,
+                              chapter: chapter,
+                              unitIndex: index,
+                              completedVideos: completedVideos,
+                              completedQBanks: completedQBanks,
+                              completedNotes: completedNotes,
+                              onTap: openContainer,
+                            ),
                           ),
                         ),
                       );
