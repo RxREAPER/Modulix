@@ -4,6 +4,22 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.18.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (210MB)
+- **Device Tested:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
+- **Compilation Time:** 181.9s | **Test Suite:** 24/24 Tests Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-069]`, `[CKPT-070]`
+
+### Key Highlights & Releases in v1.18.0:
+1. **Dynamic Island Top Apple Glass Toast & Undo Capsule (`lib/widgets/feedback/modulix_toast.dart`):** Complete deprecation of rectangular Material SnackBars across all 23 call sites in 13 files. Frosted 18.0 sigma Apple glass capsule with depleting countdown accent progress bar, verified live on hardware.
+2. **Nav Bar Glass Pill Obscure Line Eradication (`lib/widgets/nav/liquid_lens_bubble.dart`):** Whisper-soft 0.6px glass rim removing all horizontal slits/chords while preserving true Apple Glass depth.
+3. **Android 14+ / 16 Predictive Back Gesture Support (`lib/theme/app_theme.dart`, `lib/app.dart`):** Smooth edge-swipe gesture shrinking subpages interactively into floating cards.
+4. **States & Recovery Suite (`lib/screens/analytics/analytics_screen.dart`, `lib/services/error_translator_service.dart`, `lib/widgets/loading/app_shimmer.dart`):** Day 1 Analytics Ghost Specimen preview with 'Start First Focus Session' CTA, humanized error recovery with JWT 401 session pause protection, and zero-CLS skeleton shimmer.
+5. **Cloud Outbox Queue Counter & Back Up Now (`lib/services/sync_service.dart`, `lib/screens/settings/settings_screen.dart`):** Dynamic outbox queue status in Settings showing local un-synced study session count and one-tap manual sync.
+6. **Universal Multi-Device Safe Area Insets (Google Play Store Compliance):** Clamped `MediaQuery.paddingOf(context).bottom + 100.0px` clearance across all root tabs.
+
+---
+
 ## 🚀 Build Manifest v1.17.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (210MB)
 - **Compilation Time:** 272.5s | **Test Suite:** 14/14 Tests Passed (100%) | **Static Analysis:** 0 Errors, 0 Warnings
@@ -220,7 +236,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Verification:**
   - `flutter analyze lib/`: **No issues found! (0 errors, 0 warnings)**
   - `flutter test test/modulix_toast_test.dart test/lovable_nav_bar_test.dart test/theme_system_test.dart test/tab_persistence_test.dart test/progress_overhaul_test.dart`: **All 24 tests passed! (100%)**
-- **Status:** ⏳ Pending APK Build
+- **Status:** ✅ Included in Build (Build Manifest v1.18.0)
 
 ### [CKPT-069] Modernization Suite: Dynamic Island Glass Toasts, 120Hz Pre-Rendering, Android Predictive Back, Universal Safe Insets & Nav Bar Pill Refinement
 - **Timestamp:** 2026-10-26 09:52 UTC
