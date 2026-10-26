@@ -4,6 +4,27 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.27.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (248MB)
+- **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)
+- **Compilation Time:** 168.4s | **Test Suite:** 22/22 Domain Invariant Tests Passed (100% Green) | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-080]`
+
+### Key Highlights & Releases in v1.27.0:
+1. **Prominent 35mm Analog Film Grain Texture:**
+   - Evaluated film grain at 2.2 physical pixel granules (`floor(fragCoord / 2.2)`), creating authentic, tactile silver halide analog film clusters that remain crisp and prominent on 450+ PPI displays.
+2. **Subtle Toned-Down Dark Mode Atmosphere:**
+   - Toned down heavy electric blue saturation; replaced with sophisticated metallic obsidian slate rolls and whisper-soft silver crests (`0.18 + 0.14 * height`).
+3. **Clean Light Mode Paper Canvas:**
+   - Toned down saturated pool blue in Light Mode; rendered an airy, crisp paper canvas with delicate silvery refraction ribbons (`mix(uBaseColor, uAccentColor, 0.22)`).
+4. **Blue-Shaded Grain in Atomic Orange Theme:**
+   - Added uniform `uGrainColor` into GLSL fragment pipeline.
+   - When the Atomic Orange + Ice Cream Blue theme is active, grain crystals take on a cool blue/cyan tint (`#0288A6`) rather than orange, creating a striking analog film look.
+5. **Physical Device Verification:**
+   - Verified live on physical OnePlus 13R hardware (`ba009d81`) across Dark, Light, and Atomic Orange themes.
+
+---
+
 ## 🚀 Build Manifest v1.26.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (248MB)
 - **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)

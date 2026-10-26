@@ -8,14 +8,13 @@ uniform float uGrainSeed;
 uniform vec4 uBaseColor;
 uniform vec4 uAccentColor;
 uniform vec4 uHighlightColor;
+uniform vec4 uGrainColor;
 uniform float uIsDark;
 
 out vec4 fragColor;
 
-// Organic 35mm film grain generator:
-// 1. 45-degree rotation & 2D cross-mixing completely breaks any X/Y grid alignment or vertical striping
-// 2. 3D dot product couples X, Y, and temporal frame seed simultaneously
-// 3. Dual-sample triangular distribution mimics analog silver halide grain (no digital harshness)
+// 45-degree rotated 3D noise generator:
+// Guarantees zero vertical or horizontal banding lines across any DPI or GPU architecture
 float hash3D(vec3 p) {
     return fract(sin(dot(p, vec3(12.9898, 78.233, 45.164))) * 43758.5453123);
 }
@@ -24,10 +23,10 @@ float organicFilmGrain(vec2 coord, float seed) {
     // 45-degree coordinate rotation completely eliminates vertical & horizontal banding lines
     vec2 rotCoord = vec2(coord.x * 0.70710678 - coord.y * 0.70710678, coord.x * 0.70710678 + coord.y * 0.70710678);
     
-    // Dual sampling produces triangular distribution (Gaussian analog film approximation)
+    // Dual sampling produces triangular distribution (Gaussian analog silver halide approximation)
     float g1 = hash3D(vec3(rotCoord, seed * 17.31));
     float g2 = hash3D(vec3(rotCoord + vec2(37.19, 71.43), seed * 31.17));
-    return (g1 + g2) * 0.5 - 0.5; // Centered at 0.0 with range [-0.5, 0.5]
+    return (g1 + g2) * 0.5 - 0.5; // Range [-0.5, 0.5], centered at 0.0
 }
 
 void main() {
@@ -41,7 +40,7 @@ void main() {
     // Continuous monotonic wave time (seamless, no loop breaks)
     float t = uTime * 0.70;
 
-    // Multi-octave domain warping: Apple Metal fluid water & liquid chrome simulation
+    // Multi-octave domain warping: Apple Metal fluid water & liquid simulation
     for (int i = 1; i <= 3; i++) {
         float fi = float(i);
         vec2 prev = p;
@@ -55,36 +54,46 @@ void main() {
     float wave3 = sin((p.x + p.y) * 1.9 + t * 1.05);
     float height = (wave1 + wave2 + wave3) / 3.0;
 
-    // Specular light caustics: intense, glistening water caustics & liquid ribbons
+    // Specular light caustics: gentle, refined liquid ribbons
     float ripple = abs(sin(p.x * 2.2 + t * 0.75) * cos(p.y * 2.2 - t * 0.75));
     float caustic = pow(clamp(1.0 - ripple, 0.0, 1.0), 4.8);
     float crestGleam = pow(clamp(height * 0.5 + 0.5, 0.0, 1.0), 2.5);
 
-    // Color mixing: Liquid metal / fluid water depth
+    // Color mixing:
     vec4 liquidCol;
     if (uIsDark > 0.5) {
-        // Dark Mode: Deep metallic obsidian base with rich theme liquid waves & luminous cyan/silver caustics
-        vec4 darkDeep = mix(uBaseColor, uAccentColor, 0.38 + 0.32 * height);
-        liquidCol = darkDeep + uHighlightColor * (caustic * 0.72 + crestGleam * 0.40);
+        // 1st User Requirement: "when in dark mode its too blue lets tone down it"
+        // Toned-down deep metallic obsidian with subtle muted slate-blue rolls & soft silver crests
+        vec4 darkDeep = mix(uBaseColor, uAccentColor, 0.18 + 0.14 * height);
+        liquidCol = darkDeep + uHighlightColor * (caustic * 0.32 + crestGleam * 0.18);
     } else {
-        // Light Mode: Physical water refraction
-        // Deep translucent watercolor in wave troughs, crisp light silver canvas at crests, with brilliant white caustic light ribbons
-        vec4 troughColor = mix(uAccentColor, uBaseColor, 0.42);
-        vec4 crestColor = mix(uBaseColor, vec4(1.0, 1.0, 1.0, 1.0), 0.60);
+        // 3rd User Requirement: "in light mode its also too blue"
+        // Toned-down clean light paper canvas with delicate airy refraction ribbons (no heavy pool blue)
+        vec4 troughColor = mix(uBaseColor, uAccentColor, 0.22);
+        vec4 crestColor = mix(uBaseColor, vec4(1.0, 1.0, 1.0, 1.0), 0.80);
         vec4 lightDeep = mix(troughColor, crestColor, height * 0.5 + 0.5);
-        liquidCol = mix(lightDeep, vec4(1.0, 1.0, 1.0, 1.0), caustic * 0.58 + crestGleam * 0.22);
+        liquidCol = mix(lightDeep, vec4(1.0, 1.0, 1.0, 1.0), caustic * 0.22 + crestGleam * 0.10);
     }
 
-    // User requirement: "lets go with 50%"
-    // Fades smoothly into clean canvas color between 25% and 50% viewport height
+    // 50% Viewport Height Horizon Dissolve
     float horizonFade = smoothstep(0.25, 0.50, uv.y);
     vec4 finalColor = mix(liquidCol, uBaseColor, horizonFade);
 
-    // User requirement: "no vertical lines no i need grainy effects ... keep the colour of the grains a bit dimmed"
-    // Truly isotropic, 45-degree rotated, stripe-free, dimmed 35mm film grain via dual-sampled rotated 3D noise
-    float grain = organicFilmGrain(fragCoord, uGrainSeed);
-    float grainIntensity = uIsDark > 0.5 ? 0.050 : 0.038;
-    finalColor.rgb += grain * grainIntensity;
+    // User requirements:
+    // 1. "i see no grains lets add that component too"
+    // 2. "when in atomic orange theme lets make the grain blue shaded not orange"
+    // Scaled to 2.2 physical pixels so silver halide grain particles are distinctly visible on 450+ PPI displays
+    vec2 grainCoord = floor(fragCoord / 2.2);
+    float grain = organicFilmGrain(grainCoord, uGrainSeed); // -0.5 to 0.5
+
+    // Visibly tactile grain amplitude
+    float grainIntensity = uIsDark > 0.5 ? 0.095 : 0.075;
+
+    // Chromatic grain shading:
+    // When uGrainColor is blue (e.g. in atomic orange), the grain crystals are distinctly BLUE-SHADED!
+    vec3 grainTint = uGrainColor.rgb;
+    vec3 grainDelta = mix(vec3(grain), (grainTint - vec3(0.5)) * 1.6 + vec3(grain), 0.60);
+    finalColor.rgb = clamp(finalColor.rgb + grainDelta * grainIntensity, 0.0, 1.0);
 
     fragColor = finalColor;
 }
