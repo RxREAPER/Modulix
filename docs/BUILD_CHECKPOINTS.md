@@ -268,6 +268,42 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 12. **Cloud Snapshot Vault & Tombstone Sync:** Compressed `.json.gz` snapshot archiving into Supabase Storage, and `deleted_ids` tombstone tracking.
 13. **Clean Architecture, Zero Emojis & Zero Nori Mascot:** Complete purge of legacy mascot, 1,276 lines of dead code pruned, and 100% adherence to zero-emoji clinical UI standards.
 
+### [CKPT-074] Task Analytics Overhaul, Sub-Pages Pastel Pills & Study Matrix Adaptations
+- **Timestamp:** 2026-10-26 18:55 UTC
+- **Category:** ui_modernization / Task Analytics Overhaul, Sub-Pages Pastel Pills & Study Matrix Adaptations
+- **Files Modified (7 files):**
+  - `lib/screens/analytics/analytics_screen.dart` (Revamped Daily Tasks section into rich Task Analytics: Pacing & Velocity card, radial gauge, 6px gradient track, 3-metric ribbon, workload distribution pills, actionable pacing insight strip, and unified test-compatible header)
+  - `lib/screens/analytics/leaderboard_screen.dart` (Modernized sliding segmented capsule switcher, converted Ranks 4-20 into soft pastel pill rows with circular rank pods, level badges, and verified duration capsules; dynamic safe area padding)
+  - `lib/screens/analytics/study_plan_analytics_page.dart` (Purged legacy sketchDecoration; upgraded Hero Syllabus Progress card to 24px squircle, What-If Velocity Simulator to 22px squircle, and unit breakdown to soft pastel pill rows)
+  - `lib/screens/daily_tasks/daily_tasks_screen.dart` (Converted task rows into 16px soft pastel pill rows with 22px animated circular emerald checkmarks and play launchers; modernized project cards with continuous 5px gradient tracks)
+  - `lib/screens/analytics/daily_tasks_analytics_page.dart` (Upgraded Hero Completion card to 24px squircle, rendered standalone tasks as soft pastel pill rows, modernized 14-day activity matrix with pill streak badge and 4px rounded bars)
+  - `lib/screens/analytics/focus_timer_analytics_page.dart` (Purged all 4 legacy sketchDecoration sites; upgraded Deep Work Volume hero card to 24px squircle with ConcentricDonutIndicator; modernized time distribution pacing chart and recent sessions log)
+  - `lib/widgets/analytics/neet_consistency_matrix.dart` (Major adaptations: 3-metric analytical ribbon [STREAK, CONSISTENCY, TOTAL VOLUME], metric-adaptive palettes [Apple Blue, Clinical Emerald, Warm Amber, Deep Indigo, Royal Violet], 16x16 squircle cells with 2.5px micro-spacing, subpixel alignment, and frosted squircle day details sheet)
+- **Summary:**
+  - Full modernization of task analytics and sub-pages: Leaderboard, Module Plan Progress, Daily Tasks, Tasks Analytics, Focus Analytics, and Study Matrix Heatmap.
+- **Verification:**
+  - `flutter analyze lib/`: **No issues found! (0 errors, 0 warnings across entire codebase)**
+  - `flutter test`: **43/43 tests passed across 6 test suites! (100% green)**
+- **Status:** ⏳ Pending APK Build / Verified
+
+---
+
+### [CKPT-073] MBBS Custom Icons & Subject/Chapter Screen Pastel Row Modernization
+- **Timestamp:** 2026-10-26 17:15 UTC
+- **Category:** ui_modernization / Custom Selected Subject Icons & Subject/Chapter Pastel Rows
+- **Files Modified (5 files):**
+  - `lib/widgets/curriculum/modern_subject_folder_card.dart` (Restored custom high-res selected subject icons)
+  - `lib/widgets/curriculum/subject_header_card.dart` (Upgraded subject hero card to 24px squircle folder card)
+  - `lib/screens/curriculum/subject_screen.dart` (Modernized unit cards to soft pastel pills with OpenContainer transition)
+  - `lib/widgets/video_tile.dart` (Converted lecture tiles into soft pastel pill rows with 36px circular serial nodes)
+  - `lib/screens/curriculum/chapter_screen.dart` (Upgraded Q-Bank and Notes tabs to soft pastel pill rows)
+- **Summary:**
+  - Restored selected subject Flaticon icons and modernized subject/chapter lecture views with soft pastel pills.
+- **Verification:**
+  - `flutter analyze lib/`: **No issues found!**
+  - `flutter test`: **Passed!**
+- **Status:** ✅ Included in Build (Build Manifest v1.21.0)
+
 ---
 
 ### [CKPT-072] Major UI Overhaul: Library Folder Morphing, 2-Zone Breathable Progress (Mastery Eliminated), & Inset Grouped Settings

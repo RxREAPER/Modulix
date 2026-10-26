@@ -417,6 +417,7 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
     required FocusTimerState timerState,
   }) {
     final isFocusActive = timerState.isRunning && timerState.boundTaskId == task.id;
+    final isDark = AppTheme.current.isDark;
 
     return Dismissible(
       key: ValueKey('task_${task.id}'),
@@ -443,14 +444,28 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
         child: const Icon(Icons.delete_outline_rounded, size: 20, color: Colors.redAccent),
       ),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: AppTheme.borderLight.withValues(alpha: 0.5),
-              width: 0.6,
-            ),
+          color: isDone
+              ? (isDark ? const Color(0xFF0D281E) : const Color(0xFFE8F5E9))
+              : (isDark ? const Color(0xFF1E293B) : Colors.white),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDone
+                ? AppTheme.accentEmerald.withValues(alpha: 0.35)
+                : (isDark
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : AppTheme.borderLight.withValues(alpha: 0.8)),
+            width: 1.0,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -472,32 +487,30 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                 }
               },
               behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: const EdgeInsets.all(4),
-                child: Container(
-                  width: 19,
-                  height: 19,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isDone ? AppTheme.inkForeground : Colors.transparent,
-                    border: Border.all(
-                      color: isDone
-                          ? AppTheme.inkForeground
-                          : AppTheme.mutedText.withValues(alpha: 0.4),
-                      width: 1.5,
-                    ),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isDone ? AppTheme.accentEmerald : Colors.transparent,
+                  border: Border.all(
+                    color: isDone
+                        ? AppTheme.accentEmerald
+                        : AppTheme.mutedText.withValues(alpha: 0.35),
+                    width: 1.5,
                   ),
-                  child: isDone
-                      ? Icon(
-                          Icons.check_rounded,
-                          size: 13,
-                          color: AppTheme.paperBackground,
-                        )
-                      : null,
                 ),
+                child: isDone
+                    ? const Icon(
+                        Icons.check_rounded,
+                        size: 14,
+                        color: Colors.white,
+                      )
+                    : null,
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
 
             // Task text in middle
             Expanded(
@@ -505,7 +518,7 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                 task.title,
                 style: TextStyle(
                   fontSize: 14.5,
-                  fontWeight: isDone ? FontWeight.w400 : FontWeight.w500,
+                  fontWeight: isDone ? FontWeight.w400 : FontWeight.w600,
                   color: isDone ? AppTheme.mutedText : AppTheme.inkForeground,
                   decoration: isDone ? TextDecoration.lineThrough : null,
                   decorationColor: AppTheme.mutedText,
@@ -530,11 +543,21 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
               child: Container(
                 width: 32,
                 height: 32,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isFocusActive
+                      ? AppTheme.accentPrimary
+                      : (isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : const Color(0xFFF1F5F9)),
+                ),
                 alignment: Alignment.center,
                 child: Icon(
                   Icons.play_arrow_rounded,
-                  size: 21,
-                  color: isFocusActive ? AppTheme.accentPrimary : AppTheme.inkForeground,
+                  size: 19,
+                  color: isFocusActive
+                      ? Colors.white
+                      : (isDark ? Colors.white : AppTheme.inkForeground),
                 ),
               ),
             ),
@@ -642,9 +665,28 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
     final completedCount = tasks.where((t) => t.isCompleted).length;
     final progressRatio = totalCount == 0 ? 0.0 : (completedCount / totalCount);
     final progressPercent = (progressRatio * 100).toInt();
+    final isDark = AppTheme.current.isDark;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 24),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : AppTheme.borderLight.withValues(alpha: 0.8),
+          width: 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -659,7 +701,7 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                     Text(
                       (project.subjectName ?? 'Subject').toUpperCase(),
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 10.5,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.8,
                         color: AppTheme.mutedText,
@@ -669,7 +711,7 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                     Text(
                       project.unitName ?? project.name,
                       style: TextStyle(
-                        fontSize: 17,
+                        fontSize: 16.5,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.inkForeground,
                       ),
@@ -687,29 +729,36 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
           // PROJECT ANALYTICS
-          // Sleek 2.5px progress line
-          Container(
-            height: 2.5,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: AppTheme.borderLight,
-              borderRadius: BorderRadius.circular(1.5),
-            ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: progressRatio.clamp(0.0, 1.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppTheme.inkForeground,
-                  borderRadius: BorderRadius.circular(1.5),
+          // Continuous 5px rounded progress track
+          ClipRRect(
+            borderRadius: BorderRadius.circular(3),
+            child: Container(
+              height: 5,
+              width: double.infinity,
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : AppTheme.borderLight,
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: progressRatio.clamp(0.0, 1.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.accentEmerald,
+                        AppTheme.primaryBlue,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
 
           // Analytics metrics text & + Add task action
           Row(
@@ -739,11 +788,18 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                   });
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppTheme.parchmentSurface,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppTheme.borderLight, width: 0.8),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.06)
+                          : AppTheme.borderLight.withValues(alpha: 0.6),
+                      width: 0.8,
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -855,8 +911,6 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
               isDone: task.isCompleted,
               timerState: timerState,
             ),
-          const SizedBox(height: 8),
-          Divider(height: 1, thickness: 0.6, color: AppTheme.borderLight),
         ],
       ),
     );

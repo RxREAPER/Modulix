@@ -27,6 +27,7 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
     );
     final tasksHubAsync = ref.watch(tasksHubProvider);
     final timerState = ref.watch(focusTimerProvider);
+    final isDark = AppTheme.current.isDark;
 
     return Scaffold(
       backgroundColor: AppTheme.paperBackground,
@@ -157,15 +158,25 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
             slideY: 12.0,
             child: ListView(
               physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
+              padding: EdgeInsets.fromLTRB(20, 8, 20, MediaQuery.paddingOf(context).bottom + 100),
               children: [
                 // ── 1. Hero Completion Card ────────────────────────────────────
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: AppTheme.cardWhite,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: AppTheme.borderLight, width: 1),
+                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                      width: 1.0,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Row(
                     children: [
@@ -173,7 +184,7 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                         progress: completionPct,
                         size: 84,
                         strokeWidth: 7,
-                        progressColor: AppTheme.inkForeground,
+                        progressColor: const Color(0xFF10B981),
                         percentageStyle: TextStyle(
                           fontSize: 19,
                           fontWeight: FontWeight.w700,
@@ -217,7 +228,7 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                             SegmentedVelocityPill(
                               totalSegments: totalTasks > 0 ? totalTasks : 1,
                               completedSegments: completedCount,
-                              activeColor: AppTheme.inkForeground,
+                              activeColor: const Color(0xFF10B981),
                               velocityLabel: completionPct >= 1.0
                                   ? '100% Target Met'
                                   : (pendingCount > 0 ? '$pendingCount remaining' : 'No tasks'),
@@ -264,9 +275,12 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
                     decoration: BoxDecoration(
-                      color: AppTheme.cardWhite,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppTheme.borderLight, width: 0.8),
+                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                        width: 0.8,
+                      ),
                     ),
                     alignment: Alignment.center,
                     child: Text(
@@ -281,6 +295,7 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                       tasks: hubState.tasksForProject(project.id),
                       timerState: timerState,
                       ref: ref,
+                      isDark: isDark,
                     ),
 
                 const SizedBox(height: 24),
@@ -301,9 +316,12 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
                     decoration: BoxDecoration(
-                      color: AppTheme.cardWhite,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppTheme.borderLight, width: 0.8),
+                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                        width: 0.8,
+                      ),
                     ),
                     alignment: Alignment.center,
                     child: Text(
@@ -312,32 +330,14 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                     ),
                   )
                 else
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: AppTheme.cardWhite,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppTheme.borderLight, width: 1),
+                  for (final task in standaloneTasks)
+                    _buildAnalyticsTaskRow(
+                      task: task,
+                      timerState: timerState,
+                      ref: ref,
+                      context: context,
+                      isDark: isDark,
                     ),
-                    child: Column(
-                      children: [
-                        for (int i = 0; i < standaloneTasks.length; i++) ...[
-                          _buildAnalyticsTaskRow(
-                            task: standaloneTasks[i],
-                            timerState: timerState,
-                            ref: ref,
-                            context: context,
-                          ),
-                          if (i < standaloneTasks.length - 1)
-                            Divider(
-                              height: 1,
-                              thickness: 0.5,
-                              color: AppTheme.borderLight.withValues(alpha: 0.5),
-                            ),
-                        ],
-                      ],
-                    ),
-                  ),
 
                 const SizedBox(height: 24),
 
@@ -361,9 +361,19 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: AppTheme.cardWhite,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: AppTheme.borderLight, width: 1),
+                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                      width: 1.0,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                        blurRadius: 12,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -379,12 +389,20 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                               color: AppTheme.inkForeground,
                             ),
                           ),
-                          Text(
-                            streak > 0 ? '$streak-day streak' : 'Start streak today',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: AppTheme.inkForeground,
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              streak > 0 ? '$streak-DAY STREAK' : 'START STREAK',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.5,
+                                color: Color(0xFF10B981),
+                              ),
                             ),
                           ),
                         ],
@@ -405,30 +423,39 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                                 Text(
                                   count > 0 ? '$count' : '',
                                   style: TextStyle(
-                                    fontSize: 8,
+                                    fontSize: 8.5,
                                     fontWeight: FontWeight.w700,
                                     fontFamily: 'monospace',
-                                    color: AppTheme.mutedText,
+                                    color: isToday ? const Color(0xFF10B981) : AppTheme.mutedText,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 Container(
                                   height: height,
-                                  margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                                  margin: const EdgeInsets.symmetric(horizontal: 3),
                                   decoration: BoxDecoration(
+                                    gradient: count > 0
+                                        ? LinearGradient(
+                                            begin: Alignment.bottomCenter,
+                                            end: Alignment.topCenter,
+                                            colors: isToday
+                                                ? [const Color(0xFF10B981), const Color(0xFF34D399)]
+                                                : [const Color(0xFF10B981).withValues(alpha: 0.45), const Color(0xFF10B981).withValues(alpha: 0.75)],
+                                          )
+                                        : null,
                                     color: count > 0
-                                        ? (isToday ? AppTheme.inkForeground : AppTheme.inkForeground.withValues(alpha: 0.35))
-                                        : AppTheme.borderLight.withValues(alpha: 0.4),
-                                    borderRadius: BorderRadius.circular(3),
+                                        ? null
+                                        : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                                    borderRadius: BorderRadius.circular(4),
                                   ),
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
                                   d['label'] as String,
                                   style: TextStyle(
-                                    fontSize: 9,
+                                    fontSize: 9.5,
                                     fontWeight: isToday ? FontWeight.w900 : FontWeight.w600,
-                                    color: isToday ? AppTheme.inkForeground : AppTheme.mutedText,
+                                    color: isToday ? const Color(0xFF10B981) : AppTheme.mutedText,
                                   ),
                                 ),
                               ],
@@ -452,6 +479,7 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
     required List<TaskItem> tasks,
     required FocusTimerState timerState,
     required WidgetRef ref,
+    required bool isDark,
   }) {
     final totalCount = tasks.length;
     final completedCount = tasks.where((t) => t.isCompleted).length;
@@ -463,9 +491,19 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.cardWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.borderLight, width: 1),
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          width: 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -490,26 +528,27 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
           ),
           const SizedBox(height: 10),
 
-          // Sleek 2.5px progress line
-          Container(
-            height: 2.5,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: AppTheme.borderLight,
-              borderRadius: BorderRadius.circular(1.5),
-            ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: progressRatio.clamp(0.0, 1.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppTheme.inkForeground,
-                  borderRadius: BorderRadius.circular(1.5),
+          // Continuous 5px rounded gradient progress track
+          ClipRRect(
+            borderRadius: BorderRadius.circular(2.5),
+            child: Container(
+              height: 5,
+              width: double.infinity,
+              color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: progressRatio.clamp(0.0, 1.0),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF10B981), Color(0xFF06B6D4)],
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 7),
+          const SizedBox(height: 8),
 
           // Analytics metrics
           Row(
@@ -535,12 +574,10 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
           ),
 
           if (tasks.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Divider(height: 1, thickness: 0.5, color: AppTheme.borderLight.withValues(alpha: 0.6)),
-            const SizedBox(height: 6),
+            const SizedBox(height: 12),
             for (final task in tasks)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
+                padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
                   children: [
                     GestureDetector(
@@ -549,22 +586,26 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                         ref.read(tasksHubProvider.notifier).toggleTaskComplete(task.id);
                       },
                       child: Container(
-                        width: 16,
-                        height: 16,
+                        width: 20,
+                        height: 20,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: task.isCompleted ? AppTheme.inkForeground : Colors.transparent,
+                          color: task.isCompleted
+                              ? const Color(0xFF10B981)
+                              : Colors.transparent,
                           border: Border.all(
-                            color: task.isCompleted ? AppTheme.inkForeground : AppTheme.mutedText.withValues(alpha: 0.4),
-                            width: 1.4,
+                            color: task.isCompleted
+                                ? const Color(0xFF10B981)
+                                : (isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
+                            width: 1.5,
                           ),
                         ),
                         child: task.isCompleted
-                            ? Icon(Icons.check_rounded, size: 10, color: AppTheme.paperBackground)
+                            ? const Icon(Icons.check_rounded, size: 12, color: Colors.white)
                             : null,
                       ),
                     ),
-                    const SizedBox(width: 9),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         task.title,
@@ -591,12 +632,24 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
     required FocusTimerState timerState,
     required WidgetRef ref,
     required BuildContext context,
+    required bool isDark,
   }) {
     final isDone = task.isCompleted;
     final isFocusActive = timerState.isRunning && timerState.boundTaskId == task.id;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDone
+              ? (isDark ? const Color(0xFF334155).withValues(alpha: 0.5) : const Color(0xFFE2E8F0).withValues(alpha: 0.6))
+              : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+          width: 0.9,
+        ),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -607,20 +660,22 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
             },
             behavior: HitTestBehavior.opaque,
             child: Padding(
-              padding: const EdgeInsets.all(3),
+              padding: const EdgeInsets.all(2),
               child: Container(
-                width: 18,
-                height: 18,
+                width: 22,
+                height: 22,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isDone ? AppTheme.inkForeground : Colors.transparent,
+                  color: isDone ? const Color(0xFF10B981) : Colors.transparent,
                   border: Border.all(
-                    color: isDone ? AppTheme.inkForeground : AppTheme.mutedText.withValues(alpha: 0.4),
+                    color: isDone
+                        ? const Color(0xFF10B981)
+                        : (isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
                     width: 1.5,
                   ),
                 ),
                 child: isDone
-                    ? Icon(Icons.check_rounded, size: 12, color: AppTheme.paperBackground)
+                    ? const Icon(Icons.check_rounded, size: 13, color: Colors.white)
                     : null,
               ),
             ),
@@ -646,13 +701,23 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
               context.push('/timer');
             },
             child: Container(
-              width: 28,
-              height: 28,
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isFocusActive
+                    ? AppTheme.accentPrimary
+                    : (isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : const Color(0xFFF1F5F9)),
+              ),
               alignment: Alignment.center,
               child: Icon(
                 Icons.play_arrow_rounded,
-                size: 20,
-                color: isFocusActive ? AppTheme.accentPrimary : AppTheme.inkForeground,
+                size: 19,
+                color: isFocusActive
+                    ? Colors.white
+                    : (isDark ? Colors.white : AppTheme.inkForeground),
               ),
             ),
           ),

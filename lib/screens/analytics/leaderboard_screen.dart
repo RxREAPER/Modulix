@@ -116,7 +116,14 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               physics: const AlwaysScrollableScrollPhysics(
                 parent: BouncingScrollPhysics(),
               ),
-              padding: EdgeInsets.fromLTRB(16, 8, 16, standing.isInTop20 ? 40 : 100),
+              padding: EdgeInsets.fromLTRB(
+                16,
+                8,
+                16,
+                standing.isInTop20
+                    ? (MediaQuery.paddingOf(context).bottom + 24)
+                    : (MediaQuery.paddingOf(context).bottom + 100),
+              ),
               children: [
                 // ── 1. Tactile 4-Way Spring Switcher ─────────────────────────
                 _TactileScaleSwitcher(
@@ -167,29 +174,17 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
 
-                  // ── 5. Minimalist Rows (Ranks 4-20) ────────────────────────
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppTheme.cardBackground,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.cardBorder, width: 0.8),
-                    ),
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: listEntries.length,
-                      separatorBuilder: (_, __) => Divider(
-                        height: 1,
-                        thickness: 0.5,
-                        color: AppTheme.cardBorder.withValues(alpha: 0.5),
-                      ),
-                      itemBuilder: (context, index) {
-                        final entry = listEntries[index];
-                        return _LeaderboardRow(entry: entry);
-                      },
-                    ),
+                  // ── 5. Modern Soft Pastel Pill Rows (Ranks 4-20) ───────────
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: listEntries.length,
+                    itemBuilder: (context, index) {
+                      final entry = listEntries[index];
+                      return _LeaderboardRow(entry: entry);
+                    },
                   ),
                 ],
               ],
@@ -213,7 +208,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   }
 }
 
-/// Tactile spring sliding switcher for 4 scales: Daily, Weekly, Monthly, Yearly
+/// Modern Tactile Segmented Sliding Capsule Switcher
 class _TactileScaleSwitcher extends StatelessWidget {
   final LeaderboardScale activeScale;
   final ValueChanged<LeaderboardScale> onScaleChanged;
@@ -225,13 +220,20 @@ class _TactileScaleSwitcher extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppTheme.current.isDark;
+
     return Container(
-      height: 42,
-      padding: const EdgeInsets.all(3.5),
+      height: 44,
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppTheme.cardBackground,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppTheme.cardBorder, width: 0.8),
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.06)
+              : AppTheme.borderLight.withValues(alpha: 0.7),
+          width: 0.8,
+        ),
       ),
       child: Row(
         children: LeaderboardScale.values.map((scale) {
@@ -239,12 +241,25 @@ class _TactileScaleSwitcher extends StatelessWidget {
           return Expanded(
             child: ApplePressable(
               onTap: () => onScaleChanged(scale),
+              pressedScale: 0.96,
+              borderRadius: BorderRadius.circular(10),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 curve: Curves.easeOutCubic,
                 decoration: BoxDecoration(
-                  color: isSelected ? AppTheme.inkForeground : Colors.transparent,
-                  borderRadius: BorderRadius.circular(7),
+                  color: isSelected
+                      ? (isDark ? const Color(0xFF334155) : Colors.white)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Center(
                   child: Text(
@@ -252,7 +267,9 @@ class _TactileScaleSwitcher extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12.0,
                       fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                      color: isSelected ? AppTheme.paperBackground : AppTheme.mutedText,
+                      color: isSelected
+                          ? AppTheme.inkForeground
+                          : AppTheme.mutedText,
                     ),
                   ),
                 ),
@@ -356,7 +373,7 @@ class _ResetReminderBanner extends StatelessWidget {
   }
 }
 
-/// Minimalist leaderboard row for Ranks 4 to 20
+/// Modern soft pastel pill row for Ranks 4 to 20
 class _LeaderboardRow extends StatelessWidget {
   final LeaderboardEntry entry;
 
@@ -364,40 +381,81 @@ class _LeaderboardRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppTheme.current.isDark;
+    final isUser = entry.isCurrentUser;
+
     return Container(
-      color: entry.isCurrentUser
-          ? AppTheme.accentPrimary.withValues(alpha: 0.08)
-          : Colors.transparent,
+      margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: isUser
+            ? (isDark ? const Color(0xFF1E1B4B) : const Color(0xFFEEF2FF))
+            : (isDark ? const Color(0xFF1E293B) : Colors.white),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isUser
+              ? AppTheme.accentPrimary.withValues(alpha: 0.45)
+              : (isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : AppTheme.borderLight.withValues(alpha: 0.8)),
+          width: 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Row(
         children: [
-          // Rank Numeral
-          SizedBox(
+          // Circular Rank Pod
+          Container(
             width: 32,
-            child: Text(
-              '#${entry.rank}',
-              style: TextStyle(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w700,
-                fontFamily: 'monospace',
-                color: entry.isCurrentUser
-                    ? AppTheme.accentPrimary
-                    : AppTheme.mutedText,
+            height: 32,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isUser
+                  ? AppTheme.accentPrimary.withValues(alpha: 0.15)
+                  : (isDark
+                      ? Colors.white.withValues(alpha: 0.06)
+                      : Colors.black.withValues(alpha: 0.04)),
+              border: Border.all(
+                color: isUser
+                    ? AppTheme.accentPrimary.withValues(alpha: 0.3)
+                    : (isDark
+                        ? Colors.white.withValues(alpha: 0.06)
+                        : AppTheme.borderLight.withValues(alpha: 0.5)),
+                width: 0.8,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                '#${entry.rank.toString().padLeft(2, '0')}',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w800,
+                  fontFamily: 'monospace',
+                  color: isUser
+                      ? AppTheme.accentPrimary
+                      : AppTheme.mutedText,
+                ),
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
 
           // Doctor Avatar
           ProfileAvatar(
-            size: 26,
+            size: 28,
             colorId: entry.avatarColorId,
             iconId: entry.avatarIconId,
             doctorName: entry.displayName,
           ),
           const SizedBox(width: 10),
 
-          // Doctor Name
+          // Doctor Name & '(You)'
           Expanded(
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -409,23 +467,29 @@ class _LeaderboardRow extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 13.5,
-                      fontWeight: entry.isCurrentUser
-                          ? FontWeight.w700
-                          : FontWeight.w500,
-                      color: entry.isCurrentUser
+                      fontWeight: isUser ? FontWeight.w700 : FontWeight.w600,
+                      color: isUser
                           ? AppTheme.accentPrimary
                           : AppTheme.inkForeground,
                     ),
                   ),
                 ),
-                if (entry.isCurrentUser) ...[
+                if (isUser) ...[
                   const SizedBox(width: 6),
-                  Text(
-                    '(You)',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.accentPrimary,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentPrimary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'YOU',
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.4,
+                        color: AppTheme.accentPrimary,
+                      ),
                     ),
                   ),
                 ],
@@ -436,16 +500,35 @@ class _LeaderboardRow extends StatelessWidget {
 
           // Level Micro-Badge
           RankBadge(level: entry.level, showTitle: false, fontSize: 10),
-          const SizedBox(width: 14),
+          const SizedBox(width: 10),
 
-          // Verified Duration
-          Text(
-            entry.formattedDuration,
-            style: TextStyle(
-              fontSize: 13.0,
-              fontWeight: FontWeight.w700,
-              fontFamily: 'monospace',
-              color: AppTheme.inkForeground,
+          // Verified Duration Capsule
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: isUser
+                  ? AppTheme.accentPrimary.withValues(alpha: 0.15)
+                  : (isDark
+                      ? Colors.white.withValues(alpha: 0.06)
+                      : const Color(0xFFF1F5F9)),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isUser
+                    ? AppTheme.accentPrimary.withValues(alpha: 0.25)
+                    : (isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : AppTheme.borderLight.withValues(alpha: 0.6)),
+                width: 0.8,
+              ),
+            ),
+            child: Text(
+              entry.formattedDuration,
+              style: TextStyle(
+                fontSize: 12.0,
+                fontWeight: FontWeight.w700,
+                fontFamily: 'monospace',
+                color: isUser ? AppTheme.accentPrimary : AppTheme.inkForeground,
+              ),
             ),
           ),
         ],

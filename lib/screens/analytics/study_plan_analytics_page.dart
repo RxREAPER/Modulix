@@ -45,6 +45,7 @@ class _StudyPlanAnalyticsPageState
 
     final edition = appState.currentEdition;
     final plan = edition.plan;
+    final isDark = AppTheme.current.isDark;
 
     if (!_simulatorInitialized && plan.videosPerDay != null) {
       _simulatorPace = plan.videosPerDay!.toDouble().clamp(1.0, 12.0);
@@ -190,10 +191,22 @@ class _StudyPlanAnalyticsPageState
             // ── 1. Hero Radial Progress Card ───────────────────────────────
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: AppTheme.sketchDecoration(
-                backgroundColor: AppTheme.cardWhite,
-                borderRadius: 22,
-                shadowOffset: 4,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : AppTheme.borderLight.withValues(alpha: 0.8),
+                  width: 1.0,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
@@ -291,11 +304,23 @@ class _StudyPlanAnalyticsPageState
             const SizedBox(height: 8),
 
             Container(
-              padding: const EdgeInsets.all(18),
-              decoration: AppTheme.sketchDecoration(
-                backgroundColor: AppTheme.cardWhite,
-                borderRadius: 20,
-                shadowOffset: 3,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : AppTheme.borderLight.withValues(alpha: 0.8),
+                  width: 1.0,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                    blurRadius: 12,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,11 +337,18 @@ class _StudyPlanAnalyticsPageState
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppTheme.parchmentSurface,
-                          borderRadius: BorderRadius.circular(9),
-                          border: Border.all(color: AppTheme.borderLight, width: 1),
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.06)
+                                : AppTheme.borderLight.withValues(alpha: 0.6),
+                            width: 0.8,
+                          ),
                         ),
                         child: Text(
                           '${_simulatorPace.round()} vids/day',
@@ -333,8 +365,10 @@ class _StudyPlanAnalyticsPageState
                   SliderTheme(
                     data: SliderTheme.of(context).copyWith(
                       activeTrackColor: AppTheme.accentPrimary,
-                      inactiveTrackColor: AppTheme.borderLight,
-                      thumbColor: AppTheme.inkForeground,
+                      inactiveTrackColor: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : AppTheme.borderLight,
+                      thumbColor: isDark ? Colors.white : AppTheme.inkForeground,
                       trackHeight: 4,
                       overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
                       thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 9),
@@ -355,8 +389,16 @@ class _StudyPlanAnalyticsPageState
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppTheme.parchmentSurface,
-                      borderRadius: BorderRadius.circular(12),
+                      color: isDark
+                          ? const Color(0xFF0F172A).withValues(alpha: 0.6)
+                          : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.06)
+                            : AppTheme.borderLight.withValues(alpha: 0.6),
+                        width: 0.8,
+                      ),
                     ),
                     child: Row(
                       children: [
@@ -392,10 +434,17 @@ class _StudyPlanAnalyticsPageState
                           );
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
                           decoration: BoxDecoration(
                             color: AppTheme.inkForeground,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                           alignment: Alignment.center,
                           child: Text(
@@ -458,9 +507,15 @@ class _StudyPlanAnalyticsPageState
             if (filteredChapters.isEmpty)
               Container(
                 padding: const EdgeInsets.all(24),
-                decoration: AppTheme.sketchDecoration(
-                  backgroundColor: AppTheme.cardWhite,
-                  borderRadius: 18,
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : AppTheme.borderLight.withValues(alpha: 0.8),
+                    width: 1.0,
+                  ),
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -481,10 +536,22 @@ class _StudyPlanAnalyticsPageState
                 return Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   padding: const EdgeInsets.all(16),
-                  decoration: AppTheme.sketchDecoration(
-                    backgroundColor: AppTheme.cardWhite,
-                    borderRadius: 18,
-                    shadowOffset: 2,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : AppTheme.borderLight.withValues(alpha: 0.8),
+                      width: 1.0,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -502,25 +569,36 @@ class _StudyPlanAnalyticsPageState
                               ),
                             ),
                           ),
-                          Text(
-                            '$done/$total vids (${(chPct * 100).round()}%)',
-                            style: AppTypography.metricValue(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
                               color: chPct >= 1.0
-                                  ? const Color(0xFF10B981)
-                                  : AppTheme.inkForeground,
+                                  ? const Color(0xFF10B981).withValues(alpha: 0.12)
+                                  : (isDark
+                                      ? Colors.white.withValues(alpha: 0.06)
+                                      : const Color(0xFFF1F5F9)),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '$done/$total vids (${(chPct * 100).round()}%)',
+                              style: AppTypography.metricValue(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                color: chPct >= 1.0
+                                    ? const Color(0xFF10B981)
+                                    : AppTheme.inkForeground,
+                              ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 12),
                       ClipRRect(
                         borderRadius: BorderRadius.circular(4),
                         child: LinearProgressIndicator(
                           value: chPct,
-                          minHeight: 5,
-                          backgroundColor: AppTheme.current.isDark
+                          minHeight: 6,
+                          backgroundColor: isDark
                               ? Colors.white.withValues(alpha: 0.08)
                               : AppTheme.borderLight,
                           valueColor: AlwaysStoppedAnimation(
@@ -542,6 +620,7 @@ class _StudyPlanAnalyticsPageState
 
   Widget _filterChip(int index, String label) {
     final isSelected = _selectedFilterIndex == index;
+    final isDark = AppTheme.current.isDark;
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -550,20 +629,33 @@ class _StudyPlanAnalyticsPageState
       },
       child: Container(
         margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6.5),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.inkForeground : AppTheme.cardWhite,
-          borderRadius: BorderRadius.circular(12),
+          color: isSelected
+              ? AppTheme.inkForeground
+              : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? AppTheme.inkForeground : AppTheme.borderLight,
-            width: 1.2,
+            color: isSelected
+                ? AppTheme.inkForeground
+                : (isDark ? Colors.white.withValues(alpha: 0.08) : AppTheme.borderLight),
+            width: 0.8,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.06),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
         ),
         child: Text(
           label,
           style: AppTypography.compactAction(
             fontSize: 11.5,
-            fontWeight: FontWeight.w600,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
             color: isSelected ? AppTheme.paperBackground : AppTheme.inkForeground,
           ),
         ),

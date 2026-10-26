@@ -39,6 +39,7 @@ class _FocusTimerAnalyticsPageState
   Widget build(BuildContext context) {
     ref.watch(appThemeDataProvider);
     final timeLogs = ref.watch(timeLogsProvider);
+    final isDark = AppTheme.current.isDark;
     final dayStartHour =
         ref.watch(appStateProvider.select((s) => s.valueOrNull?.dayStartHour ?? 5));
 
@@ -158,15 +159,25 @@ class _FocusTimerAnalyticsPageState
         slideY: 12.0,
         child: ListView(
           physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
+          padding: EdgeInsets.fromLTRB(20, 8, 20, MediaQuery.paddingOf(context).bottom + 100),
           children: [
             // ── 1. Hero Concentric Progress Card ───────────────────────────
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: AppTheme.sketchDecoration(
-                backgroundColor: AppTheme.cardWhite,
-                borderRadius: 22,
-                shadowOffset: 4,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  width: 1.0,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
@@ -177,9 +188,9 @@ class _FocusTimerAnalyticsPageState
                     size: 88,
                     ringWidth: 6.0,
                     ringSpacing: 3.0,
-                    color1: AppTheme.accentPrimary,
-                    color2: AppTheme.accentSecondary,
-                    color3: AppTheme.accentTertiary,
+                    color1: const Color(0xFF007AFF),
+                    color2: const Color(0xFF10B981),
+                    color3: const Color(0xFFF59E0B),
                   ),
                   const SizedBox(width: 20),
                   Expanded(
@@ -211,14 +222,14 @@ class _FocusTimerAnalyticsPageState
                             color: AppTheme.mutedText,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 10),
                         Row(
                           children: [
-                            _modeIndicator('Videos', AppTheme.accentPrimary),
-                            const SizedBox(width: 8),
-                            _modeIndicator('QBank', AppTheme.accentSecondary),
-                            const SizedBox(width: 8),
-                            _modeIndicator('Notes', AppTheme.accentTertiary),
+                            _modeIndicator('Videos', const Color(0xFF007AFF)),
+                            const SizedBox(width: 10),
+                            _modeIndicator('Q-Bank', const Color(0xFF10B981)),
+                            const SizedBox(width: 10),
+                            _modeIndicator('Notes', const Color(0xFFF59E0B)),
                           ],
                         ),
                       ],
@@ -245,9 +256,9 @@ class _FocusTimerAnalyticsPageState
                 // Timeframe selector
                 Row(
                   children: [
-                    _timeframePill(0, '7D'),
+                    _timeframePill(0, '7D', isDark),
                     const SizedBox(width: 6),
-                    _timeframePill(1, '30D'),
+                    _timeframePill(1, '30D', isDark),
                   ],
                 ),
               ],
@@ -256,10 +267,20 @@ class _FocusTimerAnalyticsPageState
 
             Container(
               padding: const EdgeInsets.all(18),
-              decoration: AppTheme.sketchDecoration(
-                backgroundColor: AppTheme.cardWhite,
-                borderRadius: 20,
-                shadowOffset: 3,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  width: 1.0,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                    blurRadius: 12,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -564,9 +585,13 @@ class _FocusTimerAnalyticsPageState
             if (timeLogs.isEmpty)
               Container(
                 padding: const EdgeInsets.all(24),
-                decoration: AppTheme.sketchDecoration(
-                  backgroundColor: AppTheme.cardWhite,
-                  borderRadius: 18,
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                    width: 0.8,
+                  ),
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -583,24 +608,27 @@ class _FocusTimerAnalyticsPageState
               ...timeLogs.reversed.take(15).map((log) {
                 return Container(
                   margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(14),
-                  decoration: AppTheme.sketchDecoration(
-                    backgroundColor: AppTheme.cardWhite,
-                    borderRadius: 16,
-                    shadowOffset: 2,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                      width: 0.9,
+                    ),
                   ),
                   child: Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppTheme.parchmentSurface,
+                          color: (isDark ? Colors.white : AppTheme.inkForeground).withValues(alpha: 0.08),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.timer_outlined,
                           size: 16,
-                          color: AppTheme.accentPrimary,
+                          color: Color(0xFF10B981),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -616,16 +644,15 @@ class _FocusTimerAnalyticsPageState
                                       : 'Focus Session'),
                               style: TextStyle(
                                 fontSize: 13,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                                 color: AppTheme.inkForeground,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              DateFormat('d MMM, h:mm a').format(log.timestamp),
+                              '${DateFormat('d MMM, h:mm a').format(log.timestamp)}${log.chapterName.isNotEmpty ? ' · ${log.chapterName}' : ''}',
                               style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 11,
                                 color: AppTheme.mutedText,
                               ),
                             ),
@@ -636,18 +663,16 @@ class _FocusTimerAnalyticsPageState
                         padding: const EdgeInsets.symmetric(
                             horizontal: 9, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppTheme.parchmentSurface,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                              color: AppTheme.borderLight, width: 1.0),
+                          color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
                           _formatDuration(log.durationSecs),
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 11,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             fontFamily: 'monospace',
-                            color: AppTheme.inkForeground,
+                            color: Color(0xFF10B981),
                           ),
                         ),
                       ),
@@ -685,7 +710,7 @@ class _FocusTimerAnalyticsPageState
     );
   }
 
-  Widget _timeframePill(int index, String label) {
+  Widget _timeframePill(int index, String label, bool isDark) {
     final isSelected = _selectedDaysIndex == index;
     return GestureDetector(
       onTap: () {
@@ -695,21 +720,27 @@ class _FocusTimerAnalyticsPageState
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.inkForeground : AppTheme.cardWhite,
+          color: isSelected
+              ? (isDark ? Colors.white : AppTheme.inkForeground)
+              : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? AppTheme.inkForeground : AppTheme.borderLight,
-            width: 1.1,
+            color: isSelected
+                ? Colors.transparent
+                : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+            width: 1.0,
           ),
         ),
         child: Text(
           label,
           style: AppTypography.compactAction(
-            fontSize: 10.5,
-            fontWeight: FontWeight.w600,
-            color: isSelected ? AppTheme.paperBackground : AppTheme.inkForeground,
+            fontSize: 11.0,
+            fontWeight: FontWeight.w700,
+            color: isSelected
+                ? (isDark ? const Color(0xFF0F172A) : Colors.white)
+                : AppTheme.mutedText,
           ),
         ),
       ),

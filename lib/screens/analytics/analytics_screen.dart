@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../models/daily_desk_task.dart';
 import '../../models/task_item.dart';
 import '../../models/user_rank.dart';
 import '../../providers/app_state_provider.dart';
@@ -559,23 +558,36 @@ class _HeroMomentumHeader extends StatelessWidget {
                     ),
                     const SizedBox(width: 5),
                     Text(
-                      'DAYS',
+                      'DAYS ACTIVE',
                       style: AppTypography.metricLabel(
-                        fontSize: 11.0,
+                        fontSize: 10.0,
+                        letterSpacing: 0.5,
                         color: AppTheme.mutedText,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  isColdStart ? 'Sample streak · Start timer' : 'Best: ${streakBest}d record',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.cardSubtitle(
-                    fontSize: 10.5,
-                    color: const Color(0xFFEAB308),
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      'RECORD',
+                      style: AppTypography.cardSubtitle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFFEAB308),
+                      ),
+                    ),
+                    Text(
+                      isColdStart ? ': 24 DAYS' : ': ${streakBest} DAYS',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.cardSubtitle(
+                        fontSize: 10.5,
+                        color: const Color(0xFFEAB308),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -882,7 +894,7 @@ class _ModulePlannerHeroCard extends StatelessWidget {
   }
 }
 
-// ── Zone 2: Today's Focus Tasks Section (Reference Image 1 Soft Pastel Pills) ──
+// ── Zone 2: Task Analytics Section (Modern 24px Squircle & Telemetry Card) ──
 class _TodayFocusTasksSection extends ConsumerWidget {
   final List<dynamic> todayTasks;
   final List<dynamic> todayCompleted;
@@ -909,8 +921,24 @@ class _TodayFocusTasksSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final allTasks = [...todayTasks, ...todayCompleted];
     final isDark = AppTheme.current.isDark;
+    final int velocityPercent = isColdStart
+        ? 83
+        : (totalTasks > 0 ? ((doneTasks / totalTasks) * 100).round() : 0);
+
+    int totalEstMinutes = 0;
+    for (final t in [...todayTasks, ...todayCompleted]) {
+      final int m = t is TaskItem ? (t.estimatedMinutes ?? 25) : 25;
+      totalEstMinutes += m;
+    }
+    if (isColdStart || totalEstMinutes == 0) {
+      totalEstMinutes = isColdStart ? 95 : 60;
+    }
+
+    final int displayTotal = isColdStart ? 6 : totalTasks;
+    final int displayDone = isColdStart ? 5 : doneTasks;
+    final int displayPending = isColdStart ? 1 : pendingTasks;
+    final int displayProjects = isColdStart ? 2 : activeProjectsCount;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -919,29 +947,30 @@ class _TodayFocusTasksSection extends ConsumerWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+              decoration: BoxDecoration(
+                color: AppTheme.accentEmerald.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                'DAILY TASKS',
+                style: TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.6,
+                  color: AppTheme.accentEmerald,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
             Text(
-              'DAILY TASKS',
+              'Daily Tasks Analytics',
               style: TextStyle(
                 fontSize: 12.0,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.8,
                 color: AppTheme.mutedText,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-              decoration: BoxDecoration(
-                color: AppTheme.accentEmerald.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                isColdStart ? '5/6' : '$doneTasks/$totalTasks',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.accentEmerald,
-                ),
               ),
             ),
             const Spacer(),
@@ -951,7 +980,7 @@ class _TodayFocusTasksSection extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Open Tasks',
+                    'Full Analytics',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -972,234 +1001,372 @@ class _TodayFocusTasksSection extends ConsumerWidget {
 
         const SizedBox(height: 10),
 
-        // Tasks directly rendered as soft pastel pill rows
-        if (isColdStart) ...[
-          _TaskPill(
-            title: 'High-Yield Upper Limb Anatomy MCQs',
-            isDone: true,
-            timeEstimate: '30m',
-            onTap: () {},
-          ),
-          _TaskPill(
-            title: 'Brachial Plexus Notes & Clinical Flashcards',
-            isDone: true,
-            timeEstimate: '25m',
-            onTap: () {},
-          ),
-          _TaskPill(
-            title: 'Review General Pathology Cell Injury',
-            isDone: false,
-            timeEstimate: '40m',
-            onTap: () {},
-          ),
-        ] else if (allTasks.isNotEmpty) ...[
-          ...allTasks.take(4).map((task) {
-            final String id = task is TaskItem ? task.id : (task as DailyDeskTask).id;
-            final String title = task is TaskItem ? task.title : (task as DailyDeskTask).title;
-            final bool isDone = task is TaskItem
-                ? task.isCompleted
-                : ref.read(dailyTasksProvider).completedIds.contains(id);
-            final int estMins = task is TaskItem ? (task.estimatedMinutes ?? 25) : 25;
-
-            return _TaskPill(
-              title: title,
-              isDone: isDone,
-              timeEstimate: '${estMins}m',
-              onTap: () {
-                if (task is TaskItem) {
-                  ref.read(tasksHubProvider.notifier).toggleComplete(id);
-                } else {
-                  ref.read(dailyTasksProvider.notifier).toggleTask(id);
-                }
-              },
-            );
-          }),
-        ] else ...[
-          Container(
+        // Modern 24px Squircle Task Analytics Card
+        ApplePressable(
+          onTap: onOpenDailyTasks,
+          pressedScale: 0.99,
+          borderRadius: BorderRadius.circular(24),
+          child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(16),
+              color: isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: AppTheme.borderLight.withValues(alpha: 0.7),
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : AppTheme.borderLight.withValues(alpha: 0.8),
                 width: 1.0,
               ),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.edit_calendar_rounded, size: 20, color: AppTheme.mutedText),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'No tasks scheduled for today',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: AppTheme.mutedText,
-                    ),
-                  ),
-                ),
-                ApplePressable(
-                  onTap: onOpenDailyTasks,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: AppTheme.accentEmerald,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '+ Add Task',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.onAccent,
-                      ),
-                    ),
-                  ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
-          ),
-        ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top Row: Pacing Icon + Velocity Gauge
+                Row(
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentEmerald.withValues(alpha: isDark ? 0.2 : 0.12),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppTheme.accentEmerald.withValues(alpha: 0.3),
+                          width: 1.0,
+                        ),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.task_alt_rounded,
+                          size: 22,
+                          color: AppTheme.accentEmerald,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'Task Pacing & Velocity',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.2,
+                                  color: AppTheme.inkForeground,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.accentEmerald.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  '$velocityPercent% Pace',
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppTheme.accentEmerald,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            displayTotal > 0
+                                ? '$displayDone of $displayTotal targets locked today'
+                                : 'No targets scheduled for today',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: AppTheme.mutedText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ProgressRadialGauge(
+                      progress: (velocityPercent / 100.0).clamp(0.0, 1.0),
+                      size: 46,
+                      strokeWidth: 4.5,
+                      progressColor: AppTheme.accentEmerald,
+                      trackColor: isDark
+                          ? Colors.white.withValues(alpha: 0.1)
+                          : AppTheme.borderLight,
+                      percentageStyle: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        fontFamily: 'monospace',
+                        color: AppTheme.inkForeground,
+                      ),
+                    ),
+                  ],
+                ),
 
-        if (isColdStart || totalTasks > 0) ...[
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Expanded(
-                child: ClipRRect(
+                const SizedBox(height: 16),
+
+                // Continuous Velocity Progress Bar
+                ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: Container(
-                    height: 5,
+                    height: 6,
+                    width: double.infinity,
                     color: isDark
                         ? Colors.white.withValues(alpha: 0.08)
                         : AppTheme.borderLight,
                     child: FractionallySizedBox(
                       alignment: Alignment.centerLeft,
-                      widthFactor: (isColdStart ? (5 / 6) : (totalTasks > 0 ? (doneTasks / totalTasks) : 0.0)).clamp(0.0, 1.0),
+                      widthFactor: (velocityPercent / 100.0).clamp(0.0, 1.0),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: AppTheme.accentEmerald,
+                          gradient: LinearGradient(
+                            colors: [
+                              AppTheme.accentEmerald,
+                              const Color(0xFF10B981),
+                              AppTheme.primaryBlue,
+                            ],
+                          ),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                isColdStart ? '5 of 6 done' : '$doneTasks of $totalTasks completed',
-                style: TextStyle(
-                  fontSize: 11.0,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.mutedText,
+
+                const SizedBox(height: 16),
+
+                // 3-Column Metrics Ribbon
+                Row(
+                  children: [
+                    Expanded(
+                      child: _AnalyticsMetricBlock(
+                        label: 'COMPLETION',
+                        value: '$displayDone / $displayTotal',
+                        subtext: displayPending == 0 ? 'All Done' : '$displayPending Pending',
+                        color: AppTheme.accentEmerald,
+                      ),
+                    ),
+                    Container(
+                      width: 1,
+                      height: 36,
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : AppTheme.borderLight.withValues(alpha: 0.7),
+                    ),
+                    Expanded(
+                      child: _AnalyticsMetricBlock(
+                        label: 'EST. BUDGET',
+                        value: '~${totalEstMinutes}m',
+                        subtext: 'Time Allocated',
+                        color: AppTheme.primaryBlue,
+                      ),
+                    ),
+                    Container(
+                      width: 1,
+                      height: 36,
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : AppTheme.borderLight.withValues(alpha: 0.7),
+                    ),
+                    Expanded(
+                      child: _AnalyticsMetricBlock(
+                        label: 'PROJECTS',
+                        value: '$displayProjects Active',
+                        subtext: 'Curriculum Hub',
+                        color: const Color(0xFF8B5CF6),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+
+                const SizedBox(height: 14),
+
+                // Workload Distribution Badges
+                Row(
+                  children: [
+                    _WorkloadPill(
+                      label: 'Syllabus Modules',
+                      icon: Icons.menu_book_rounded,
+                      color: AppTheme.primaryBlue,
+                    ),
+                    const SizedBox(width: 6),
+                    const _WorkloadPill(
+                      label: 'Rituals & Notes',
+                      icon: Icons.auto_awesome_rounded,
+                      color: Color(0xFF8B5CF6),
+                    ),
+                    const SizedBox(width: 6),
+                    _WorkloadPill(
+                      label: 'Revision',
+                      icon: Icons.repeat_rounded,
+                      color: AppTheme.accentAmber,
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 14),
+
+                // Actionable Pacing Insight Strip
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF0F172A).withValues(alpha: 0.6)
+                        : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.06)
+                          : AppTheme.borderLight.withValues(alpha: 0.6),
+                      width: 1.0,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        displayPending == 0
+                            ? Icons.verified_rounded
+                            : Icons.trending_up_rounded,
+                        size: 16,
+                        color: displayPending == 0
+                            ? AppTheme.accentEmerald
+                            : AppTheme.primaryBlue,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          displayPending == 0
+                              ? 'Daily targets fulfilled. Velocity index at peak capacity.'
+                              : '$displayPending target${displayPending == 1 ? '' : 's'} remaining to lock 100% daily velocity streak.',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.mutedText,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        size: 16,
+                        color: AppTheme.mutedText,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ],
     );
   }
 }
 
-class _TaskPill extends StatelessWidget {
-  final String title;
-  final bool isDone;
-  final String timeEstimate;
-  final VoidCallback onTap;
+class _AnalyticsMetricBlock extends StatelessWidget {
+  final String label;
+  final String value;
+  final String subtext;
+  final Color color;
 
-  const _TaskPill({
-    required this.title,
-    required this.isDone,
-    required this.timeEstimate,
-    required this.onTap,
+  const _AnalyticsMetricBlock({
+    required this.label,
+    required this.value,
+    required this.subtext,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 9.5,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.6,
+            color: AppTheme.mutedText,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+            color: color,
+            letterSpacing: -0.2,
+          ),
+        ),
+        const SizedBox(height: 1),
+        Text(
+          subtext,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w500,
+            color: AppTheme.mutedText,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _WorkloadPill extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  const _WorkloadPill({
+    required this.label,
+    required this.icon,
+    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark = AppTheme.current.isDark;
-    return ApplePressable(
-      onTap: onTap,
-      pressedScale: 0.98,
+    return Expanded(
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
         decoration: BoxDecoration(
-          color: isDone
-              ? (isDark ? const Color(0xFF0D281E) : const Color(0xFFE8F5E9))
-              : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC)),
-          borderRadius: BorderRadius.circular(16),
+          color: color.withValues(alpha: isDark ? 0.15 : 0.08),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isDone
-                ? AppTheme.accentEmerald.withValues(alpha: 0.35)
-                : AppTheme.borderLight.withValues(alpha: 0.7),
-            width: 1.0,
+            color: color.withValues(alpha: 0.2),
+            width: 0.8,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOutCubic,
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isDone ? AppTheme.accentEmerald : Colors.transparent,
-                border: Border.all(
-                  color: isDone
-                      ? AppTheme.accentEmerald
-                      : AppTheme.mutedText.withValues(alpha: 0.35),
-                  width: 1.5,
-                ),
-              ),
-              child: Center(
-                child: isDone
-                    ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
-                    : null,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
+            Icon(icon, size: 12, color: color),
+            const SizedBox(width: 4),
+            Flexible(
               child: Text(
-                title,
+                label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 13.5,
+                  fontSize: 10,
                   fontWeight: FontWeight.w600,
-                  decoration: isDone ? TextDecoration.lineThrough : null,
-                  color: isDone ? AppTheme.mutedText : AppTheme.inkForeground,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-              decoration: BoxDecoration(
-                color: isDone
-                    ? AppTheme.accentEmerald.withValues(alpha: 0.15)
-                    : (isDark
-                        ? Colors.white.withValues(alpha: 0.06)
-                        : Colors.black.withValues(alpha: 0.04)),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                timeEstimate,
-                style: TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w700,
-                  color: isDone ? AppTheme.accentEmerald : AppTheme.mutedText,
+                  color: color,
                 ),
               ),
             ),

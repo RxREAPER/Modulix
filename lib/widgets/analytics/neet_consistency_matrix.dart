@@ -115,23 +115,40 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
     }
   }
 
+  Color _getMetricAccentColor(ConsistencyMetric m) {
+    if (widget.accentColor != null) return widget.accentColor!;
+    switch (m) {
+      case ConsistencyMetric.videos:
+        return const Color(0xFF007AFF); // Apple Blue
+      case ConsistencyMetric.qbanks:
+        return const Color(0xFF10B981); // Clinical Emerald
+      case ConsistencyMetric.notes:
+        return const Color(0xFFF59E0B); // Warm Amber
+      case ConsistencyMetric.focusTime:
+        return const Color(0xFF6366F1); // Deep Indigo
+      case ConsistencyMetric.tasks:
+        return const Color(0xFF8B5CF6); // Royal Violet
+    }
+  }
+
   Color _getCellColor(int value, int maxValue, Color accent, bool isDark) {
     if (value <= 0 || maxValue <= 0) {
-      return isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.05);
+      return isDark ? const Color(0xFF334155).withValues(alpha: 0.35) : const Color(0xFFF1F5F9);
     }
     final ratio = (value / maxValue).clamp(0.0, 1.0);
-    if (ratio < 0.25) return accent.withValues(alpha: 0.25);
-    if (ratio < 0.50) return accent.withValues(alpha: 0.48);
-    if (ratio < 0.75) return accent.withValues(alpha: 0.72);
+    if (ratio < 0.25) return accent.withValues(alpha: 0.28);
+    if (ratio < 0.50) return accent.withValues(alpha: 0.52);
+    if (ratio < 0.75) return accent.withValues(alpha: 0.76);
     return accent;
   }
 
   void _showDayDetails(BuildContext context, DateTime day, int value) {
     HapticFeedback.selectionClick();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final dateStr = DateFormat('EEEE, MMM d, yyyy').format(day);
     final ink = AppTheme.inkForeground;
     final secondary = AppTheme.mutedText;
-    final accent = widget.accentColor ?? AppTheme.accentPrimary;
+    final accent = _getMetricAccentColor(_currentMetric);
 
     showModalBottomSheet(
       context: context,
@@ -144,9 +161,19 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
           child: Container(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
             decoration: BoxDecoration(
-              color: AppTheme.cardWhite,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
-              border: Border.all(color: AppTheme.borderLight),
+              color: isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              border: Border.all(
+                color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                width: 1.0,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                  blurRadius: 20,
+                  offset: const Offset(0, -4),
+                ),
+              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -154,10 +181,10 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
               children: [
                 Center(
                   child: Container(
-                    width: 40,
+                    width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
+                      color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -179,7 +206,7 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Daily Prep Consistency Snapshot',
+                          'Daily Study Consistency Record',
                           style: TextStyle(fontSize: 11.5, color: secondary),
                         ),
                       ],
@@ -187,15 +214,17 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: value > 0 ? accent.withValues(alpha: 0.12) : AppTheme.parchmentSurface,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: value > 0 ? accent : AppTheme.borderLight),
+                        color: value > 0 ? accent.withValues(alpha: 0.12) : (isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: value > 0 ? accent.withValues(alpha: 0.3) : (isDark ? const Color(0xFF475569) : const Color(0xFFE2E8F0)),
+                        ),
                       ),
                       child: Text(
-                        value > 0 ? 'Active' : 'Rest Day',
+                        value > 0 ? 'Active Day' : 'Rest Day',
                         style: TextStyle(
                           fontSize: 11,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: value > 0 ? accent : secondary,
                         ),
                       ),
@@ -206,16 +235,26 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: AppTheme.parchmentSurface,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppTheme.borderLight),
+                    color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                      width: 0.9,
+                    ),
                   ),
                   child: Row(
                     children: [
-                      Icon(
-                        _metricIcon(_currentMetric),
-                        size: 24,
-                        color: accent,
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: accent.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          _metricIcon(_currentMetric),
+                          size: 22,
+                          color: accent,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -232,10 +271,10 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              value > 0 ? _formatMetricValue(value) : 'None recorded',
+                              value > 0 ? _formatMetricValue(value) : 'No study logged',
                               style: TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.w800,
                                 color: ink,
                               ),
                             ),
@@ -286,7 +325,7 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final accent = widget.accentColor ?? AppTheme.accentPrimary;
+    final activeAccent = _getMetricAccentColor(_currentMetric);
     final ink = AppTheme.inkForeground;
     final secondary = AppTheme.mutedText;
 
@@ -306,6 +345,46 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
       return List.generate(7, (d) => weekStart.add(Duration(days: d)));
     });
 
+    // Compute Streak, Active Days & Consistency %
+    int streak = 0;
+    int activeDays = 0;
+    int totalEligibleDays = 0;
+
+    for (final week in weeks) {
+      for (final day in week) {
+        if (!day.isAfter(today)) {
+          totalEligibleDays++;
+          final key = DateFormat('yyyy-MM-dd').format(day);
+          final count = data[key] ?? 0;
+          if (count > 0) {
+            activeDays++;
+          }
+        }
+      }
+    }
+
+    DateTime checkDay = today;
+    final todayKey = DateFormat('yyyy-MM-dd').format(today);
+    final todayHasActivity = (data[todayKey] ?? 0) > 0;
+    if (!todayHasActivity) {
+      final yesterday = today.subtract(const Duration(days: 1));
+      final yesterdayKey = DateFormat('yyyy-MM-dd').format(yesterday);
+      if ((data[yesterdayKey] ?? 0) > 0) {
+        checkDay = yesterday;
+      }
+    }
+    while (true) {
+      final k = DateFormat('yyyy-MM-dd').format(checkDay);
+      if ((data[k] ?? 0) > 0) {
+        streak++;
+        checkDay = checkDay.subtract(const Duration(days: 1));
+      } else {
+        break;
+      }
+    }
+
+    final consistencyPct = totalEligibleDays > 0 ? ((activeDays / totalEligibleDays) * 100).toInt() : 0;
+
     final hasMultipleMetrics = (widget.dailyQBanks != null) ||
         (widget.dailyNotes != null) ||
         (widget.dailyFocusSecs != null) ||
@@ -314,17 +393,17 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppTheme.cardWhite,
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: AppTheme.borderLight.withValues(alpha: 0.7),
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
           width: 1.0,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -347,78 +426,183 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
               Container(
                 padding: const EdgeInsets.all(2.5),
                 decoration: BoxDecoration(
-                  color: AppTheme.parchmentSurface,
+                  color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _durationChip(14, '3M'),
-                    _durationChip(26, '6M'),
-                    _durationChip(52, '1Y'),
+                    _durationChip(14, '3M', activeAccent, isDark),
+                    _durationChip(26, '6M', activeAccent, isDark),
+                    _durationChip(52, '1Y', activeAccent, isDark),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 3),
-          Text(
-            '$_selectedWeeksCount-week cycle · Total: ${_formatMetricValue(totalValue)}',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: secondary,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+
           if (hasMultipleMetrics) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
               child: Row(
                 children: [
-                  _metricChip(ConsistencyMetric.videos, 'Videos', Icons.play_lesson_rounded),
+                  _metricChip(ConsistencyMetric.videos, 'Videos', Icons.play_lesson_rounded, activeAccent, isDark),
                   const SizedBox(width: 6),
                   if (widget.dailyQBanks != null) ...[
-                    _metricChip(ConsistencyMetric.qbanks, 'Q-Banks', Icons.quiz_rounded),
+                    _metricChip(ConsistencyMetric.qbanks, 'Q-Banks', Icons.quiz_rounded, activeAccent, isDark),
                     const SizedBox(width: 6),
                   ],
                   if (widget.dailyNotes != null) ...[
-                    _metricChip(ConsistencyMetric.notes, 'Notes', Icons.description_rounded),
+                    _metricChip(ConsistencyMetric.notes, 'Notes', Icons.description_rounded, activeAccent, isDark),
                     const SizedBox(width: 6),
                   ],
                   if (widget.dailyFocusSecs != null) ...[
-                    _metricChip(ConsistencyMetric.focusTime, 'Time', Icons.timer_rounded),
+                    _metricChip(ConsistencyMetric.focusTime, 'Time', Icons.timer_rounded, activeAccent, isDark),
                     const SizedBox(width: 6),
                   ],
                   if (widget.dailyTasks != null) ...[
-                    _metricChip(ConsistencyMetric.tasks, 'Tasks', Icons.checklist_rounded),
+                    _metricChip(ConsistencyMetric.tasks, 'Tasks', Icons.checklist_rounded, activeAccent, isDark),
                   ],
                 ],
               ),
             ),
           ],
 
-          const SizedBox(height: 14),
+          // ── 3-Metric Analytical Ribbon ──────────────────────────────
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                width: 0.9,
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'STREAK',
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.8,
+                          color: AppTheme.mutedText,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Icon(Icons.bolt_rounded, size: 14, color: activeAccent),
+                          const SizedBox(width: 2),
+                          Text(
+                            streak > 0 ? '$streak Days' : '0 Days',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              color: ink,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 26,
+                  color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'CONSISTENCY',
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.8,
+                            color: AppTheme.mutedText,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '$activeDays/$totalEligibleDays · $consistencyPct%',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: ink,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 26,
+                  color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'VOLUME',
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.8,
+                            color: AppTheme.mutedText,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _formatMetricValue(totalValue),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: activeAccent,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
 
           // Scrollable Matrix Grid with Weekday Labels
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Weekday indicators column strictly matching cell rows 0 to 6
+              // Weekday indicators column strictly matching cell rows 0 to 6 (21.0 height per row)
               Padding(
                 padding: const EdgeInsets.only(top: 24.0, right: 6.0),
                 child: Column(
                   children: [
-                    _weekdayLabel('Mon', 19.0),
-                    _weekdayLabel('Tue', 19.0),
-                    _weekdayLabel('Wed', 19.0),
-                    _weekdayLabel('Thu', 19.0),
-                    _weekdayLabel('Fri', 19.0),
-                    _weekdayLabel('Sat', 19.0),
-                    _weekdayLabel('Sun', 19.0),
+                    _weekdayLabel('Mon', 21.0),
+                    _weekdayLabel('Tue', 21.0),
+                    _weekdayLabel('Wed', 21.0),
+                    _weekdayLabel('Thu', 21.0),
+                    _weekdayLabel('Fri', 21.0),
+                    _weekdayLabel('Sat', 21.0),
+                    _weekdayLabel('Sun', 21.0),
                   ],
                 ),
               ),
@@ -438,12 +622,12 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
                       ),
                       const SizedBox(height: 6),
 
-                      // Day cell columns
+                      // Day cell columns (16x16 squircles with 2.5px margins)
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: weeks.map((week) {
                           return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 2.5),
                             child: Column(
                               children: week.map((day) {
                                 final isFuture = day.isAfter(today);
@@ -452,7 +636,7 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
                                 final isToday = _isSameDay(day, today);
                                 final cellColor = isFuture
                                     ? Colors.transparent
-                                    : _getCellColor(count, maxCount, accent, isDark);
+                                    : _getCellColor(count, maxCount, activeAccent, isDark);
 
                                 return Tooltip(
                                   message: isFuture
@@ -465,22 +649,30 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
                                         ? null
                                         : () => _showDayDetails(context, day, count),
                                     child: Container(
-                                      margin: const EdgeInsets.symmetric(vertical: 2.0),
-                                      width: 15.0,
-                                      height: 15.0,
+                                      margin: const EdgeInsets.symmetric(vertical: 2.5),
+                                      width: 16.0,
+                                      height: 16.0,
                                       decoration: BoxDecoration(
                                         color: cellColor,
-                                        borderRadius: BorderRadius.circular(3.5),
+                                        borderRadius: BorderRadius.circular(4.0),
                                         border: isToday
-                                            ? Border.all(color: accent, width: 1.5)
+                                            ? Border.all(color: activeAccent, width: 1.8)
                                             : (isFuture
                                                 ? Border.all(
                                                     color: isDark
-                                                        ? Colors.white.withValues(alpha: 0.03)
-                                                        : Colors.black.withValues(alpha: 0.03),
+                                                        ? Colors.white.withValues(alpha: 0.05)
+                                                        : Colors.black.withValues(alpha: 0.05),
                                                     width: 0.5,
                                                   )
                                                 : null),
+                                        boxShadow: isToday
+                                            ? [
+                                                BoxShadow(
+                                                  color: activeAccent.withValues(alpha: 0.4),
+                                                  blurRadius: 4,
+                                                ),
+                                              ]
+                                            : null,
                                       ),
                                     ),
                                   ),
@@ -498,31 +690,31 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
           ),
 
           if (_selectedWeeksCount > 14) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.08),
+                    color: activeAccent.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: accent.withValues(alpha: 0.22),
+                      color: activeAccent.withValues(alpha: 0.22),
                       width: 1.0,
                     ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.swap_horiz_rounded, size: 14, color: accent),
+                      Icon(Icons.swap_horiz_rounded, size: 14, color: activeAccent),
                       const SizedBox(width: 4),
                       Text(
                         'Slide horizontally to explore full $_selectedWeeksCount-week timeline',
                         style: TextStyle(
                           fontSize: 10.0,
                           fontWeight: FontWeight.w600,
-                          color: accent,
+                          color: activeAccent,
                         ),
                       ),
                     ],
@@ -532,7 +724,7 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
             ),
           ],
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
           // Legend Footer
           Row(
@@ -540,31 +732,31 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
             children: [
               Text(
                 'Tap any square to inspect day',
-                style: TextStyle(fontSize: 10, color: secondary),
+                style: TextStyle(fontSize: 10.5, color: secondary),
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Less', style: TextStyle(fontSize: 10, color: secondary)),
-                  const SizedBox(width: 4),
+                  Text('Less', style: TextStyle(fontSize: 10.5, color: secondary)),
+                  const SizedBox(width: 5),
                   ...List.generate(5, (i) {
                     final color = i == 0
                         ? (isDark
-                            ? Colors.white.withValues(alpha: 0.06)
-                            : Colors.black.withValues(alpha: 0.05))
-                        : accent.withValues(alpha: 0.25 * i);
+                            ? const Color(0xFF334155).withValues(alpha: 0.35)
+                            : const Color(0xFFF1F5F9))
+                        : activeAccent.withValues(alpha: 0.25 * i);
                     return Container(
                       margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                      width: 10,
-                      height: 10,
+                      width: 11,
+                      height: 11,
                       decoration: BoxDecoration(
                         color: color,
-                        borderRadius: BorderRadius.circular(2.5),
+                        borderRadius: BorderRadius.circular(3.0),
                       ),
                     );
                   }),
-                  const SizedBox(width: 4),
-                  Text('More', style: TextStyle(fontSize: 10, color: secondary)),
+                  const SizedBox(width: 5),
+                  Text('More', style: TextStyle(fontSize: 10.5, color: secondary)),
                 ],
               ),
             ],
@@ -593,9 +785,8 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
     );
   }
 
-  Widget _durationChip(int weeks, String label) {
+  Widget _durationChip(int weeks, String label, Color accent, bool isDark) {
     final isSelected = _selectedWeeksCount == weeks;
-    final accent = widget.accentColor ?? AppTheme.accentPrimary;
 
     return ApplePressable(
       pressedScale: 0.94,
@@ -611,12 +802,14 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.cardWhite : Colors.transparent,
+          color: isSelected
+              ? (isDark ? const Color(0xFF1E293B) : Colors.white)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.06),
                     blurRadius: 4,
                     offset: const Offset(0, 1),
                   ),
@@ -635,9 +828,9 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
     );
   }
 
-  Widget _metricChip(ConsistencyMetric metric, String label, IconData icon) {
+  Widget _metricChip(ConsistencyMetric metric, String label, IconData icon, Color activeAccent, bool isDark) {
     final isSelected = _currentMetric == metric;
-    final accent = widget.accentColor ?? AppTheme.accentPrimary;
+    final metricColor = _getMetricAccentColor(metric);
 
     return ApplePressable(
       pressedScale: 0.94,
@@ -646,30 +839,30 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
         decoration: BoxDecoration(
           color: isSelected
-              ? accent.withValues(alpha: 0.15)
-              : AppTheme.parchmentSurface,
+              ? metricColor.withValues(alpha: 0.15)
+              : (isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9)),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isSelected
-                ? accent.withValues(alpha: 0.35)
-                : AppTheme.borderLight.withValues(alpha: 0.5),
+                ? metricColor.withValues(alpha: 0.45)
+                : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
             width: 1.0,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 12, color: isSelected ? accent : AppTheme.mutedText),
+            Icon(icon, size: 12, color: isSelected ? metricColor : AppTheme.mutedText),
             const SizedBox(width: 5),
             Text(
               label,
               style: TextStyle(
                 fontSize: 11.0,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? accent : AppTheme.inkForeground,
+                color: isSelected ? metricColor : AppTheme.inkForeground,
               ),
             ),
           ],
@@ -682,7 +875,8 @@ class _NeetConsistencyMatrixState extends State<NeetConsistencyMatrix> {
     final labels = <Widget>[];
     if (weeks.isEmpty) return labels;
 
-    const columnWidth = 19.0;
+    // Subpixel-perfect column width: 16.0 cell + 2.5*2 margin = 21.0
+    const columnWidth = 21.0;
     // Anchor week month attribution to Thursday (index 3) per ISO-8601 majority rule
     String currentMonth = DateFormat('MMM').format(weeks.first[3]);
     int weekSpanCount = 0;
