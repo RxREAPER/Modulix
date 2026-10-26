@@ -268,6 +268,25 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 12. **Cloud Snapshot Vault & Tombstone Sync:** Compressed `.json.gz` snapshot archiving into Supabase Storage, and `deleted_ids` tombstone tracking.
 13. **Clean Architecture, Zero Emojis & Zero Nori Mascot:** Complete purge of legacy mascot, 1,276 lines of dead code pruned, and 100% adherence to zero-emoji clinical UI standards.
 
+### [CKPT-075] Animated Filmic Metal Mesh Background, Modern Ambient Clock & Unboxed Home Screen
+- **Timestamp:** 2026-10-27 01:05 IST
+- **Category:** ui_modernization / Home Screen Motion, Metal Mesh Background & Ambient Timepiece
+- **Files Modified/Created (6 files):**
+  - `lib/widgets/animations/filmic_metal_mesh_background.dart` (NEW: 60 FPS continuous Lissajous organic harmonic mesh orb motion, Apple-style metallic specular sweep, hardware-accelerated procedural film-grain noise texture tiled with ImageShader and BlendMode.overlay, isolated RepaintBoundary)
+  - `lib/widgets/study_desk_clock.dart` (MODIFIED: Modern aesthetic timepiece with 24px frosted squircle, 0.75px specular border gradient, sculpted digital typography with RollingDigitText, breathing LIVE micro-seconds pulse dot, and smooth micro-seconds progress track; purged sketchy ornate border and CabinSketch)
+  - `lib/screens/home/home_screen.dart` (MODIFIED: Full-screen wrap over FilmicMetalMeshBackground; modernized top bar with sleek brand mark, integrated profile/sync capsule, refined greeting; unboxed frosted glass task rows with 22px animated circular emerald checkmarks and play launchers; eliminated divider lines, loud tags, and coral marker lines)
+  - `lib/widgets/automated_module_tracker.dart` (MODIFIED: Purged sketchDecoration offset shadows, nested boxes, and uppercase tags; converted to 22px frosted glass squircle hero card with glowing subject icon, high-hierarchy typography, continuous 5px gradient progress track, and seamless launcher strip with OpenContainer transition)
+  - `lib/screens/analytics/analytics_screen.dart` (MODIFIED: Cleaned string interpolation lint)
+  - `test/study_desk_test.dart` (MODIFIED: Updated StudyDeskClock tests to verify modern aesthetic timepiece and LIVE indicator)
+- **Summary:**
+  - Major UI and motion overhaul of the Home Screen inspired by high-end iOS design: dynamic filmic metal mesh background, monumental aesthetic clock, and remodeled frosted surfaces with zero generic boxes and zero clutter.
+- **Verification:**
+  - `flutter analyze lib/`: **No issues found! (0 errors, 0 warnings across entire codebase)**
+  - `flutter test`: **43/43 tests passed across 6 test suites! (100% green)**
+- **Status:** ⏳ Pending APK Build / Verified
+
+---
+
 ### [CKPT-074] Task Analytics Overhaul, Sub-Pages Pastel Pills & Study Matrix Adaptations
 - **Timestamp:** 2026-10-26 18:55 UTC
 - **Category:** ui_modernization / Task Analytics Overhaul, Sub-Pages Pastel Pills & Study Matrix Adaptations

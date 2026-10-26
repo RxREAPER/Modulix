@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,12 +16,12 @@ import '../../widgets/study_desk_clock.dart';
 import '../../widgets/profile/profile_customization.dart';
 import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/animations/apple_pressable.dart';
+import '../../widgets/animations/filmic_metal_mesh_background.dart';
 import '../../services/tour/app_tour_controller.dart';
 import '../../widgets/sync_status_badge.dart';
 import '../../widgets/errors/app_error_state_view.dart';
 import '../../widgets/loading/app_shimmer.dart';
 import '../../widgets/feedback/modulix_toast.dart';
-
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -29,19 +30,24 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(appThemeDataProvider);
     final appStateAsync = ref.watch(appStateProvider);
+    final isDark = AppTheme.current.isDark;
 
     return appStateAsync.when(
-      loading: () => Scaffold(
-        backgroundColor: AppTheme.paperBackground,
-        body: const SafeArea(child: DeskTasksSkeletonView()),
+      loading: () => const Scaffold(
+        backgroundColor: Colors.transparent,
+        body: FilmicMetalMeshBackground(
+          child: SafeArea(child: DeskTasksSkeletonView()),
+        ),
       ),
       error: (e, st) => Scaffold(
-        backgroundColor: AppTheme.paperBackground,
-        body: SafeArea(
-          child: AppErrorStateView(
-            error: e,
-            stackTrace: st,
-            onRetry: () => ref.refresh(appStateProvider),
+        backgroundColor: Colors.transparent,
+        body: FilmicMetalMeshBackground(
+          child: SafeArea(
+            child: AppErrorStateView(
+              error: e,
+              stackTrace: st,
+              onRetry: () => ref.refresh(appStateProvider),
+            ),
           ),
         ),
       ),
@@ -50,144 +56,138 @@ class HomeScreen extends ConsumerWidget {
         final todayFormatted = DateFormat('EEEE, MMM d').format(DateTime.now()).toUpperCase();
 
         return Scaffold(
-          backgroundColor: AppTheme.paperBackground,
-          body: SafeArea(
-            bottom: false,
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-              padding: EdgeInsets.only(
-                top: 16,
-                bottom: MediaQuery.paddingOf(context).bottom + 100.0,
-              ),
-              child: PageEntrance(
-                staggerMs: 35,
-                durationMs: 220,
-                slideY: 12.0,
-                children: [
-                  // ① Top Header + Greeting (single block — they're small)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  width: 46,
-                                  height: 46,
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.inkForeground,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      'M',
-                                      style: TextStyle(
-                                        color: AppTheme.paperBackground,
-                                        fontSize: 25,
-                                        fontWeight: FontWeight.w900,
-                                        fontFamily: 'serif',
+          backgroundColor: Colors.transparent,
+          body: FilmicMetalMeshBackground(
+            child: SafeArea(
+              bottom: false,
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                padding: EdgeInsets.only(
+                  top: 14,
+                  bottom: MediaQuery.paddingOf(context).bottom + 100.0,
+                ),
+                child: PageEntrance(
+                  staggerMs: 35,
+                  durationMs: 220,
+                  slideY: 12.0,
+                  children: [
+                    // ① Top Header + Greeting (clean, unboxed modern layout)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Sleek brand mark
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      color: isDark ? const Color(0xFF1E293B) : AppTheme.inkForeground,
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: isDark ? Colors.white.withValues(alpha: 0.10) : Colors.transparent,
+                                        width: 0.75,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: isDark
+                                              ? const Color(0xFF38BDF8).withValues(alpha: 0.20)
+                                              : Colors.black.withValues(alpha: 0.12),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        'M',
+                                        style: TextStyle(
+                                          color: AppTheme.paperBackground,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w900,
+                                          fontFamily: 'serif',
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 12),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Modulix',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppTheme.inkForeground,
-                                      ),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    'Modulix',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: -0.5,
+                                      color: AppTheme.inkForeground,
                                     ),
-                                    const Text(
-                                      'DAILY COMPANION',
-                                      style: TextStyle(
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: 0.8,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                const SyncStatusBadge(compact: true),
-                                const SizedBox(width: 10),
-                                ProfileAvatar(
-                                  size: 46,
-                                  colorId: state.avatarColorId,
-                                  iconId: state.avatarIconId,
-                                  doctorName: doctorName,
-                                  onTap: () => context.go('/settings?from=/'),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          todayFormatted,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.8,
-                            color: Colors.grey.shade500,
+                                  ),
+                                ],
+                              ),
+                              // Integrated right actions
+                              Row(
+                                children: [
+                                  const SyncStatusBadge(compact: true),
+                                  const SizedBox(width: 10),
+                                  ProfileAvatar(
+                                    size: 40,
+                                    colorId: state.avatarColorId,
+                                    iconId: state.avatarIconId,
+                                    doctorName: doctorName,
+                                    onTap: () => context.go('/settings?from=/'),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Focus, $doctorName.',
-                          style: AppTheme.headingStyle(
-                            fontSize: 34,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.inkForeground,
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Transform.rotate(
-                          angle: -0.02,
-                          child: Container(
-                            width: 90,
-                            height: 5,
-                            decoration: BoxDecoration(
-                              color: AppTheme.highlightCoral,
-                              borderRadius: BorderRadius.circular(3),
+                          const SizedBox(height: 20),
+                          Text(
+                            todayFormatted,
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.2,
+                              color: isDark
+                                  ? const Color(0xFF94A3B8)
+                                  : const Color(0xFF64748B),
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 2),
+                          Text(
+                            'Focus, $doctorName.',
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.inkForeground,
+                              letterSpacing: -0.6,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
 
-                  // ② Hero Study Desk Clock (Full Width Integration)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 14),
-                    child: RepaintBoundary(child: StudyDeskClock()),
-                  ),
+                    // ② Hero Modern Ambient Clock
+                    const Padding(
+                      padding: EdgeInsets.only(top: 16),
+                      child: RepaintBoundary(child: StudyDeskClock()),
+                    ),
 
-                  // ③ Today's Tasks Section
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
-                    child: RepaintBoundary(child: _HomeTasksSection()),
-                  ),
+                    // ③ Today's Tasks Section
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
+                      child: RepaintBoundary(child: _HomeTasksSection()),
+                    ),
 
-                  // ④ Module Based Tasks Section
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(20, 28, 20, 0),
-                    child: RepaintBoundary(child: _HomeModuleTrackerSection()),
-                  ),
-                ],
+                    // ④ Module Based Tasks Section
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
+                      child: RepaintBoundary(child: _HomeModuleTrackerSection()),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -231,10 +231,11 @@ class _HomeTasksSection extends ConsumerWidget {
                     children: [
                       Text(
                         'Daily tasks',
-                        style: AppTheme.headingStyle(
-                          fontSize: 22,
+                        style: TextStyle(
+                          fontSize: 20,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.inkForeground,
+                          letterSpacing: -0.3,
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -244,13 +245,20 @@ class _HomeTasksSection extends ConsumerWidget {
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: AppTheme.parchmentSurface,
+                            color: isDark
+                                ? const Color(0xFF1E293B)
+                                : AppTheme.parchmentSurface,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: AppTheme.borderLight, width: 1),
+                            border: Border.all(
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.08)
+                                  : AppTheme.borderLight,
+                              width: 0.75,
+                            ),
                           ),
                           child: Icon(
                             Icons.arrow_forward_ios_rounded,
-                            size: 11,
+                            size: 10,
                             color: AppTheme.inkForeground,
                           ),
                         ),
@@ -269,7 +277,7 @@ class _HomeTasksSection extends ConsumerWidget {
                       fontWeight: isAllDone ? FontWeight.w700 : FontWeight.w500,
                       color: isAllDone
                           ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669))
-                          : AppTheme.mutedText,
+                          : (isDark ? const Color(0xFF94A3B8) : AppTheme.mutedText),
                     ),
                   ),
                 ],
@@ -280,22 +288,22 @@ class _HomeTasksSection extends ConsumerWidget {
               onTap: () => context.push('/daily-tasks'),
               child: Container(
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1C1C1E) : AppTheme.inkForeground,
-                  borderRadius: BorderRadius.circular(8),
+                  color: isDark ? const Color(0xFF1E293B) : AppTheme.inkForeground,
+                  borderRadius: BorderRadius.circular(10),
                   border: isDark
-                      ? Border.all(color: const Color(0xFF2C2C2E), width: 1)
+                      ? Border.all(color: Colors.white.withValues(alpha: 0.10), width: 0.75)
                       : null,
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6.5),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       Icons.add_rounded,
-                      size: 14,
+                      size: 15,
                       color: isDark ? Colors.white : AppTheme.paperBackground,
                     ),
-                    const SizedBox(width: 3),
+                    const SizedBox(width: 4),
                     Text(
                       'Add',
                       style: TextStyle(
@@ -312,19 +320,49 @@ class _HomeTasksSection extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
 
-        // Unboxed Vertical Text Continuations (NO CARDS)
+        // Unboxed Frosted Glass Rows
         if (allTasks.isEmpty)
-          ApplePressable(
-            onTap: () => context.push('/daily-tasks'),
-            child: Padding(
-              key: TourTargetRegistry.keyFor(TourTargetId.todaysTasksTarget),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Text(
-                '+ Add your first daily task or project...',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: AppTheme.mutedText,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+              child: ApplePressable(
+                onTap: () => context.push('/daily-tasks'),
+                child: Container(
+                  key: TourTargetRegistry.keyFor(TourTargetId.todaysTasksTarget),
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 18),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF0F172A).withValues(alpha: 0.40)
+                        : Colors.white.withValues(alpha: 0.60),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.10)
+                          : Colors.white.withValues(alpha: 0.70),
+                      width: 0.75,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.add_circle_outline_rounded,
+                        size: 16,
+                        color: isDark ? const Color(0xFF38BDF8) : AppTheme.accentPrimary,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Add your first daily task or project...',
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? const Color(0xFF94A3B8) : AppTheme.mutedText,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -345,44 +383,17 @@ class _HomeTasksSection extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 1. Standalone Normal Tasks
-                  if (standaloneTasks.isNotEmpty) ...[
-                    if (projectGroups.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4, bottom: 4),
-                        child: Row(
-                          children: [
-                            Text(
-                              'STANDALONE',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.9,
-                                color: AppTheme.mutedText,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Divider(
-                                height: 1,
-                                thickness: 0.5,
-                                color: AppTheme.borderLight.withValues(alpha: 0.6),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    for (int i = 0; i < standaloneTasks.length; i++)
-                      _buildHomeTaskRow(
-                        context: context,
-                        ref: ref,
-                        task: standaloneTasks[i],
-                        timerState: timerState,
-                        isFirst: i == 0 && projectGroups.isEmpty,
-                        isProjectTask: false,
-                      ),
-                  ],
+                  for (int i = 0; i < standaloneTasks.length; i++)
+                    _buildHomeTaskRow(
+                      context: context,
+                      ref: ref,
+                      task: standaloneTasks[i],
+                      timerState: timerState,
+                      isFirst: i == 0 && projectGroups.isEmpty,
+                      isProjectTask: false,
+                    ),
 
-                  // 2. Project Task Groups (Subtle Intra-Project Differentiation)
+                  // 2. Project Task Groups
                   for (final entry in projectGroups.entries) ...[
                     Builder(
                       builder: (ctx) {
@@ -393,33 +404,25 @@ class _HomeTasksSection extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Padding(
-                              padding: const EdgeInsets.only(top: 10, bottom: 4),
+                              padding: const EdgeInsets.only(top: 8, bottom: 6),
                               child: Row(
                                 children: [
                                   Container(
-                                    width: 4,
-                                    height: 4,
+                                    width: 5,
+                                    height: 5,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: AppTheme.mutedText,
+                                      color: isDark ? const Color(0xFF38BDF8) : AppTheme.accentPrimary,
                                     ),
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
                                     label,
                                     style: TextStyle(
-                                      fontSize: 10,
+                                      fontSize: 10.5,
                                       fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.9,
-                                      color: AppTheme.mutedText,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Divider(
-                                      height: 1,
-                                      thickness: 0.5,
-                                      color: AppTheme.borderLight.withValues(alpha: 0.6),
+                                      letterSpacing: 0.8,
+                                      color: isDark ? const Color(0xFF94A3B8) : AppTheme.mutedText,
                                     ),
                                   ),
                                 ],
@@ -456,147 +459,179 @@ class _HomeTasksSection extends ConsumerWidget {
     required bool isFirst,
     required bool isProjectTask,
   }) {
+    final isDark = AppTheme.current.isDark;
     final isDone = task.isCompleted;
     final isFocusActive = timerState.isRunning && timerState.boundTaskId == task.id;
 
-    final row = Padding(
-      padding: EdgeInsets.only(
-        top: 9,
-        bottom: 9,
-        left: isProjectTask ? 6 : 0,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Subtle vertical notch for project tasks
-          if (isProjectTask) ...[
-            Container(
-              width: 1.5,
-              height: 16,
-              decoration: BoxDecoration(
-                color: AppTheme.borderLight,
-                borderRadius: BorderRadius.circular(1),
-              ),
+    final rowContent = ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark
+                ? (isDone
+                    ? const Color(0xFF0F172A).withValues(alpha: 0.30)
+                    : const Color(0xFF0F172A).withValues(alpha: 0.50))
+                : (isDone
+                    ? Colors.white.withValues(alpha: 0.45)
+                    : Colors.white.withValues(alpha: 0.70)),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark
+                  ? (isDone ? Colors.white.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.12))
+                  : (isDone ? Colors.white.withValues(alpha: 0.50) : Colors.white.withValues(alpha: 0.85)),
+              width: 0.75,
             ),
-            const SizedBox(width: 8),
-          ],
-
-          // Check-off circle on left
-          GestureDetector(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              final willBeDone = !isDone;
-              ref.read(tasksHubProvider.notifier).toggleTaskComplete(task.id);
-              if (willBeDone) {
-                ModulixToast.showUndo(
-                  context,
-                  message: 'Completed "${task.title}"',
-                  onUndo: () {
-                    ref.read(tasksHubProvider.notifier).toggleTaskComplete(task.id);
-                  },
-                );
-              }
-            },
-            behavior: HitTestBehavior.opaque,
-            child: Padding(
-              padding: const EdgeInsets.all(3),
-              child: Container(
-                width: 18,
-                height: 18,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isDone ? AppTheme.inkForeground : Colors.transparent,
-                  border: Border.all(
-                    color: isDone
-                        ? AppTheme.inkForeground
-                        : AppTheme.mutedText.withValues(alpha: 0.4),
-                    width: 1.5,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.03),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Check-off circle on left with emerald animation
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  final willBeDone = !isDone;
+                  ref.read(tasksHubProvider.notifier).toggleTaskComplete(task.id);
+                  if (willBeDone) {
+                    ModulixToast.showUndo(
+                      context,
+                      message: 'Completed "${task.title}"',
+                      onUndo: () {
+                        ref.read(tasksHubProvider.notifier).toggleTaskComplete(task.id);
+                      },
+                    );
+                  }
+                },
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.all(2),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOutBack,
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isDone
+                          ? const Color(0xFF10B981)
+                          : Colors.transparent,
+                      border: Border.all(
+                        color: isDone
+                            ? const Color(0xFF10B981)
+                            : (isDark
+                                ? Colors.white.withValues(alpha: 0.35)
+                                : const Color(0xFF94A3B8)),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: isDone
+                        ? const Icon(
+                            Icons.check_rounded,
+                            size: 14,
+                            color: Colors.white,
+                          )
+                        : null,
                   ),
                 ),
-                child: isDone
-                    ? Icon(
-                        Icons.check_rounded,
-                        size: 12,
-                        color: AppTheme.paperBackground,
-                      )
-                    : null,
               ),
-            ),
-          ),
-          const SizedBox(width: 11),
+              const SizedBox(width: 12),
 
-          // Continuous text in middle
-          Expanded(
-            child: Text(
-              task.title,
-              style: TextStyle(
-                fontSize: 14.5,
-                fontWeight: isDone ? FontWeight.w400 : FontWeight.w500,
-                color: isDone ? AppTheme.mutedText : AppTheme.inkForeground,
-                decoration: isDone ? TextDecoration.lineThrough : null,
-                decorationColor: AppTheme.mutedText,
-                height: 1.25,
+              // Task title in continuous typography
+              Expanded(
+                child: Text(
+                  task.title,
+                  style: TextStyle(
+                    fontSize: 14.5,
+                    fontWeight: isDone ? FontWeight.w400 : FontWeight.w600,
+                    color: isDone
+                        ? (isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8))
+                        : AppTheme.inkForeground,
+                    decoration: isDone ? TextDecoration.lineThrough : null,
+                    decorationColor: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                    height: 1.25,
+                  ),
+                ),
               ),
-            ),
-          ),
-          const SizedBox(width: 8),
+              const SizedBox(width: 8),
 
-          // Play button on right
-          ApplePressable(
-            onTap: () {
-              HapticFeedback.mediumImpact();
-              ref.read(focusTimerProvider.notifier).startTaskItemFocus(task);
-              context.push('/timer');
-              ModulixToast.showInfo(
-                context,
-                message: 'Focus session initialized · ${task.title}',
-                icon: Icons.play_arrow_rounded,
-              );
-            },
-            child: Container(
-              width: 30,
-              height: 30,
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.play_arrow_rounded,
-                size: 21,
-                color: isFocusActive ? AppTheme.accentPrimary : AppTheme.inkForeground,
+              // Play launcher button on right
+              ApplePressable(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  ref.read(focusTimerProvider.notifier).startTaskItemFocus(task);
+                  context.push('/timer');
+                  ModulixToast.showInfo(
+                    context,
+                    message: 'Focus session initialized · ${task.title}',
+                    icon: Icons.play_arrow_rounded,
+                  );
+                },
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: isFocusActive
+                        ? (isDark ? const Color(0xFF0369A1) : const Color(0xFF0284C7))
+                        : (isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05)),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.play_arrow_rounded,
+                    size: 18,
+                    color: isFocusActive
+                        ? Colors.white
+                        : AppTheme.inkForeground,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
 
-    final dismissibleRow = Dismissible(
-      key: ValueKey('home_task_dismiss_${task.id}'),
-      direction: DismissDirection.endToStart,
-      onDismissed: (_) {
-        HapticFeedback.lightImpact();
-        final taskToDelete = task;
-        ref.read(tasksHubProvider.notifier).deleteTask(task.id);
-        ModulixToast.showUndo(
-          context,
-          message: 'Task removed',
-          onUndo: () {
-            ref.read(tasksHubProvider.notifier).addTask(taskToDelete);
-          },
-        );
-      },
-      background: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.red.withValues(alpha: 0.12),
+    final dismissibleRow = Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Dismissible(
+        key: ValueKey('home_task_dismiss_${task.id}'),
+        direction: DismissDirection.endToStart,
+        onDismissed: (_) {
+          HapticFeedback.lightImpact();
+          final taskToDelete = task;
+          ref.read(tasksHubProvider.notifier).deleteTask(task.id);
+          ModulixToast.showUndo(
+            context,
+            message: 'Task removed',
+            onUndo: () {
+              ref.read(tasksHubProvider.notifier).addTask(taskToDelete);
+            },
+          );
+        },
+        background: Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: Colors.red.withValues(alpha: 0.15),
+          ),
+          child: const Icon(
+            Icons.delete_outline_rounded,
+            size: 20,
+            color: Colors.redAccent,
+          ),
         ),
-        child: const Icon(
-          Icons.delete_outline_rounded,
-          size: 20,
-          color: Colors.redAccent,
-        ),
+        child: rowContent,
       ),
-      child: row,
     );
 
     if (isFirst) {
@@ -636,6 +671,3 @@ class _HomeModuleTrackerSection extends ConsumerWidget {
     );
   }
 }
-
-
-

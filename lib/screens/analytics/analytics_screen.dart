@@ -579,7 +579,7 @@ class _HeroMomentumHeader extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      isColdStart ? ': 24 DAYS' : ': ${streakBest} DAYS',
+                      isColdStart ? ': 24 DAYS' : ': $streakBest DAYS',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTypography.cardSubtitle(

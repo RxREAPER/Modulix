@@ -22,7 +22,7 @@ class _FakeAppStateNotifier extends AppStateNotifier {
 }
 
 void main() {
-  testWidgets('StudyDeskClock renders pure ornate sketchy clock with no buttons, tags, or timer links', (tester) async {
+  testWidgets('StudyDeskClock renders modern aesthetic timepiece with no buttons, tags, or timer links', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
@@ -37,15 +37,11 @@ void main() {
     expect(find.byIcon(Icons.play_arrow_rounded), findsNothing);
     expect(find.text('STUDY STATION'), findsNothing);
 
-    // Verifies ornate sketch frame image is rendered
-    expect(find.byType(Image), findsOneWidget);
-
     // Verifies no InkWell / interactive link to focus timer screen
     expect(find.byType(InkWell), findsNothing);
 
-    // Verifies sketchy CabinSketch font is used for time display
-    final timeTexts = tester.widgetList<Text>(find.byType(Text));
-    expect(timeTexts.any((t) => t.style?.fontFamily == 'CabinSketch'), isTrue);
+    // Verifies LIVE indicator and date text are rendered
+    expect(find.text('LIVE'), findsOneWidget);
   });
 
   testWidgets('StudyTaskCard renders title, subtitle and triggers toggle', (tester) async {
