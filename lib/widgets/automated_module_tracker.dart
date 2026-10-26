@@ -33,7 +33,6 @@ class AutomatedModuleTracker extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final plan = editionState.plan;
     final isConfigured = plan.isConfigured;
-    final isDark = AppTheme.current.isDark;
 
     // Resolve target subject
     Subject? targetSubject;
@@ -126,61 +125,21 @@ class AutomatedModuleTracker extends ConsumerWidget {
     final totalBatchCount = batchVideos.length;
     final isAllDone = totalBatchCount > 0 && completedBatchCount == totalBatchCount;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section Header (clean, without redundant outer View Details button)
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Module Based Tasks',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.inkForeground,
-                letterSpacing: -0.3,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              !isConfigured
-                  ? 'Tap to setup daily curriculum pace'
-                  : isAllDone
-                      ? 'All modules completed · Great pace today, Doctor'
-                      : '$completedBatchCount of $totalBatchCount completed${uncompletedStaleCount > 0 ? ' · $uncompletedStaleCount stale' : ''}',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: (isConfigured && isAllDone) ? FontWeight.w700 : FontWeight.w500,
-                color: (isConfigured && isAllDone) ? const Color(0xFF059669) : Colors.grey.shade600,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Container(
-          height: 0.75,
-          width: double.infinity,
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : Colors.black.withValues(alpha: 0.06),
-        ),
-        const SizedBox(height: 12),
+    if (!isConfigured) {
+      return _buildEmptyModuleState(context);
+    }
 
-        // UI Box below the header
-        if (!isConfigured)
-          _buildEmptyModuleState(context)
-        else
-          _buildConfiguredModuleCard(
-            context: context,
-            subjectId: plan.targetSubject,
-            subjectName: subjectName,
-            selectedUnitDisplay: selectedUnitDisplay,
-            completedBatchCount: completedBatchCount,
-            batchVideos: batchVideos,
-            todayProgressFraction: todayProgressFraction,
-          ),
-      ],
+    return _buildConfiguredModuleCard(
+      context: context,
+      subjectId: plan.targetSubject,
+      subjectName: subjectName,
+      selectedUnitDisplay: selectedUnitDisplay,
+      completedBatchCount: completedBatchCount,
+      totalBatchCount: totalBatchCount,
+      isAllDone: isAllDone,
+      uncompletedStaleCount: uncompletedStaleCount,
+      batchVideos: batchVideos,
+      todayProgressFraction: todayProgressFraction,
     );
   }
 
@@ -329,6 +288,9 @@ class AutomatedModuleTracker extends ConsumerWidget {
     required String subjectName,
     required String selectedUnitDisplay,
     required int completedBatchCount,
+    required int totalBatchCount,
+    required bool isAllDone,
+    required int uncompletedStaleCount,
     required List<Video> batchVideos,
     required double todayProgressFraction,
   }) {
@@ -336,8 +298,6 @@ class AutomatedModuleTracker extends ConsumerWidget {
     final nextVideo = batchVideos
         .where((v) => !editionState.completedVideos.containsKey(v.id))
         .firstOrNull;
-
-    final isAllDone = batchVideos.isNotEmpty && completedBatchCount >= batchVideos.length;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(22),
@@ -388,6 +348,36 @@ class AutomatedModuleTracker extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Unified Component Header: Title & Counter
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Module Based Tasks',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.inkForeground,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        Text(
+                          isAllDone
+                              ? 'All done'
+                              : '$completedBatchCount of $totalBatchCount completed',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: isAllDone ? FontWeight.w700 : FontWeight.w600,
+                            color: isAllDone
+                                ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669))
+                                : AppTheme.mutedText,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+
                     // Top Row: Minimal Monochromatic Subject Icon + Name & Unit
                     Row(
                       children: [
@@ -418,7 +408,7 @@ class AutomatedModuleTracker extends ConsumerWidget {
                               Text(
                                 subjectName,
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 15.5,
                                   fontWeight: FontWeight.w700,
                                   color: AppTheme.inkForeground,
                                   letterSpacing: -0.2,

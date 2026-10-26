@@ -4,6 +4,48 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.28.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (248MB)
+- **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)
+- **Compilation Time:** 185.4s | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-082]`
+
+### Key Highlights & Releases in v1.28.0:
+1. **Unboxed Editorial Task Analytics on Progress Screen:**
+   - Completely stripped heavy squircle container, borders, drop shadows, and pill tags (`DAILY TASKS`, `Syllabus Modules`, `Rituals & Notes`, `Revision`).
+   - Replaced with an unboxed, breathable, typography-led editorial layout (`Daily tasks pacing`, `0 of 1 completed`, progress track, `0% daily velocity`).
+   - Fixed all RenderFlex horizontal overflows.
+2. **Removed Study Matrix Streak/Consistency/Volume Bar:**
+   - Removed the 3-metric analytical ribbon container (`STREAK`, `CONSISTENCY`, `VOLUME`) from `NeetConsistencyMatrix`.
+   - Cleaned up duration selector into a sleek, minimal 8px radius capsule switcher.
+   - Streamlined metric chips (`Videos`, `Q-Banks`, `Notes`) to pure editorial text typography pills, removing generic system icons.
+3. **Hidden Focus Session Topics:**
+   - In `_HeroMomentumHeader` (top right "TODAY'S FLOW"), removed topic names, displaying only session count (`2 sessions`).
+   - In `_FocusDeepWorkCard`, removed the bottom capsule metadata bar (`Top: $topSubject` and `Deep Dive` button).
+4. **Unified Home Screen Module & Daily Task Cards:**
+   - In `AutomatedModuleTracker`, merged detached floating headers into one cohesive frosted glass card component.
+   - In `_HomeTasksSection`, integrated the title, counters, `+ Add` button, and task rows into a single frosted container matching the rest of the app.
+5. **Physical Device Verification:**
+   - Verified live on physical OnePlus 13R (`ba009d81`). All views render cleanly with zero overflow.
+
+---
+
+### 🔖 `[CKPT-082]` — Unify Task Cards, Streamline Progress Analytics & Study Matrix
+- **Category:** `ui` / `analytics`
+- **Files Modified:**
+  - `lib/screens/analytics/analytics_screen.dart`
+  - `lib/widgets/analytics/neet_consistency_matrix.dart`
+  - `lib/widgets/automated_module_tracker.dart`
+  - `lib/screens/home/home_screen.dart`
+- **Summary:**
+  - Redesigned Progress task analytics into an unboxed, tag-less editorial layout.
+  - Removed Streak/Consistency/Volume metrics ribbon and generic chip icons from Study Matrix.
+  - Hid focus topic names from Today's Flow momentum header and Focus Deep Work card.
+  - Unified detached headers and task contents into single frosted card components on Home Screen.
+- **Verification:** Verified via `flutter analyze` (0 issues), built debug APK, installed and tested live on OnePlus 13R (`ba009d81`).
+
+---
+
 ### 🔖 `[CKPT-081]` — Revert Heavy Grain Addition & Calibrate Balanced Fluid Atmospheres
 - **Category:** `theme` / `shaders`
 - **Files Modified:**

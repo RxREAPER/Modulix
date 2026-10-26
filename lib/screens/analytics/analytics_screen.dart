@@ -634,7 +634,7 @@ class _HeroMomentumHeader extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '$todaySessions sessions · $topSubject',
+                    '$todaySessions session${todaySessions == 1 ? '' : 's'}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTypography.cardSubtitle(
@@ -894,7 +894,7 @@ class _ModulePlannerHeroCard extends StatelessWidget {
   }
 }
 
-// ── Zone 2: Task Analytics Section (Modern 24px Squircle & Telemetry Card) ──
+// ── Zone 2: Task Velocity Section (Editorial Unboxed: No Card, No Tags, Less Text) ──
 class _TodayFocusTasksSection extends ConsumerWidget {
   final List<dynamic> todayTasks;
   final List<dynamic> todayCompleted;
@@ -926,449 +926,111 @@ class _TodayFocusTasksSection extends ConsumerWidget {
         ? 83
         : (totalTasks > 0 ? ((doneTasks / totalTasks) * 100).round() : 0);
 
-    int totalEstMinutes = 0;
-    for (final t in [...todayTasks, ...todayCompleted]) {
-      final int m = t is TaskItem ? (t.estimatedMinutes ?? 25) : 25;
-      totalEstMinutes += m;
-    }
-    if (isColdStart || totalEstMinutes == 0) {
-      totalEstMinutes = isColdStart ? 95 : 60;
-    }
-
     final int displayTotal = isColdStart ? 6 : totalTasks;
     final int displayDone = isColdStart ? 5 : doneTasks;
     final int displayPending = isColdStart ? 1 : pendingTasks;
-    final int displayProjects = isColdStart ? 2 : activeProjectsCount;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section Header Row: Title, Pill Count, Open Tasks
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+    return ApplePressable(
+      onTap: onOpenDailyTasks,
+      pressedScale: 0.99,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-              decoration: BoxDecoration(
-                color: AppTheme.accentEmerald.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                'DAILY TASKS',
-                style: TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.6,
-                  color: AppTheme.accentEmerald,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              'Daily Tasks Analytics',
-              style: TextStyle(
-                fontSize: 12.0,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.8,
-                color: AppTheme.mutedText,
-              ),
-            ),
-            const Spacer(),
-            ApplePressable(
-              onTap: onOpenDailyTasks,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Full Analytics',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.primaryBlue,
-                    ),
-                  ),
-                  const SizedBox(width: 3),
-                  Icon(
-                    Icons.arrow_outward_rounded,
-                    size: 13,
-                    color: AppTheme.primaryBlue,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 10),
-
-        // Modern 24px Squircle Task Analytics Card
-        ApplePressable(
-          onTap: onOpenDailyTasks,
-          pressedScale: 0.99,
-          borderRadius: BorderRadius.circular(24),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.08)
-                    : AppTheme.borderLight.withValues(alpha: 0.8),
-                width: 1.0,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            // Row 1: Clean Editorial Header with Navigation
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
               children: [
-                // Top Row: Pacing Icon + Velocity Gauge
-                Row(
-                  children: [
-                    Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(
-                        color: AppTheme.accentEmerald.withValues(alpha: isDark ? 0.2 : 0.12),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppTheme.accentEmerald.withValues(alpha: 0.3),
-                          width: 1.0,
-                        ),
-                      ),
-                      child: Center(
-                        child: Icon(
-                          Icons.task_alt_rounded,
-                          size: 22,
-                          color: AppTheme.accentEmerald,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                'Task Pacing & Velocity',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: -0.2,
-                                  color: AppTheme.inkForeground,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.accentEmerald.withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  '$velocityPercent% Pace',
-                                  style: TextStyle(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppTheme.accentEmerald,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            displayTotal > 0
-                                ? '$displayDone of $displayTotal targets locked today'
-                                : 'No targets scheduled for today',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: AppTheme.mutedText,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    ProgressRadialGauge(
-                      progress: (velocityPercent / 100.0).clamp(0.0, 1.0),
-                      size: 46,
-                      strokeWidth: 4.5,
-                      progressColor: AppTheme.accentEmerald,
-                      trackColor: isDark
-                          ? Colors.white.withValues(alpha: 0.1)
-                          : AppTheme.borderLight,
-                      percentageStyle: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        fontFamily: 'monospace',
-                        color: AppTheme.inkForeground,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 16),
-
-                // Continuous Velocity Progress Bar
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: Container(
-                    height: 6,
-                    width: double.infinity,
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.08)
-                        : AppTheme.borderLight,
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: (velocityPercent / 100.0).clamp(0.0, 1.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              AppTheme.accentEmerald,
-                              const Color(0xFF10B981),
-                              AppTheme.primaryBlue,
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                    ),
+                Text(
+                  'Daily tasks pacing',
+                  style: AppTheme.headingStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.inkForeground,
                   ),
                 ),
-
-                const SizedBox(height: 16),
-
-                // 3-Column Metrics Ribbon
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      child: _AnalyticsMetricBlock(
-                        label: 'COMPLETION',
-                        value: '$displayDone / $displayTotal',
-                        subtext: displayPending == 0 ? 'All Done' : '$displayPending Pending',
-                        color: AppTheme.accentEmerald,
-                      ),
-                    ),
-                    Container(
-                      width: 1,
-                      height: 36,
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.08)
-                          : AppTheme.borderLight.withValues(alpha: 0.7),
-                    ),
-                    Expanded(
-                      child: _AnalyticsMetricBlock(
-                        label: 'EST. BUDGET',
-                        value: '~${totalEstMinutes}m',
-                        subtext: 'Time Allocated',
-                        color: AppTheme.primaryBlue,
-                      ),
-                    ),
-                    Container(
-                      width: 1,
-                      height: 36,
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.08)
-                          : AppTheme.borderLight.withValues(alpha: 0.7),
-                    ),
-                    Expanded(
-                      child: _AnalyticsMetricBlock(
-                        label: 'PROJECTS',
-                        value: '$displayProjects Active',
-                        subtext: 'Curriculum Hub',
-                        color: const Color(0xFF8B5CF6),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 14),
-
-                // Workload Distribution Badges
-                Row(
-                  children: [
-                    _WorkloadPill(
-                      label: 'Syllabus Modules',
-                      icon: Icons.menu_book_rounded,
-                      color: AppTheme.primaryBlue,
-                    ),
-                    const SizedBox(width: 6),
-                    const _WorkloadPill(
-                      label: 'Rituals & Notes',
-                      icon: Icons.auto_awesome_rounded,
-                      color: Color(0xFF8B5CF6),
-                    ),
-                    const SizedBox(width: 6),
-                    _WorkloadPill(
-                      label: 'Revision',
-                      icon: Icons.repeat_rounded,
-                      color: AppTheme.accentAmber,
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 14),
-
-                // Actionable Pacing Insight Strip
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF0F172A).withValues(alpha: 0.6)
-                        : const Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.06)
-                          : AppTheme.borderLight.withValues(alpha: 0.6),
-                      width: 1.0,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        displayPending == 0
-                            ? Icons.verified_rounded
-                            : Icons.trending_up_rounded,
-                        size: 16,
-                        color: displayPending == 0
-                            ? AppTheme.accentEmerald
-                            : AppTheme.primaryBlue,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          displayPending == 0
-                              ? 'Daily targets fulfilled. Velocity index at peak capacity.'
-                              : '$displayPending target${displayPending == 1 ? '' : 's'} remaining to lock 100% daily velocity streak.',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w500,
-                            color: AppTheme.mutedText,
-                          ),
-                        ),
-                      ),
-                      Icon(
-                        Icons.chevron_right_rounded,
-                        size: 16,
+                    Text(
+                      displayTotal > 0
+                          ? '$displayDone of $displayTotal completed'
+                          : 'No tasks scheduled',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
                         color: AppTheme.mutedText,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 11,
+                      color: AppTheme.mutedText,
+                    ),
+                  ],
                 ),
               ],
             ),
-          ),
-        ),
-      ],
-    );
-  }
-}
+            const SizedBox(height: 10),
 
-class _AnalyticsMetricBlock extends StatelessWidget {
-  final String label;
-  final String value;
-  final String subtext;
-  final Color color;
-
-  const _AnalyticsMetricBlock({
-    required this.label,
-    required this.value,
-    required this.subtext,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 9.5,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.6,
-            color: AppTheme.mutedText,
-          ),
-        ),
-        const SizedBox(height: 3),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-            color: color,
-            letterSpacing: -0.2,
-          ),
-        ),
-        const SizedBox(height: 1),
-        Text(
-          subtext,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
-            color: AppTheme.mutedText,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _WorkloadPill extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final Color color;
-
-  const _WorkloadPill({
-    required this.label,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = AppTheme.current.isDark;
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: isDark ? 0.15 : 0.08),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: color.withValues(alpha: 0.2),
-            width: 0.8,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 12, color: color),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: color,
+            // Row 2: Sleek Minimal Velocity Track
+            ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: Container(
+                height: 4.5,
+                width: double.infinity,
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : Colors.black.withValues(alpha: 0.06),
+                child: FractionallySizedBox(
+                  alignment: Alignment.centerLeft,
+                  widthFactor: (velocityPercent / 100.0).clamp(0.0, 1.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppTheme.accentEmerald,
+                          AppTheme.primaryBlue,
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
                 ),
               ),
+            ),
+            const SizedBox(height: 8),
+
+            // Row 3: Minimal Single-Line Pace Summary
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  displayPending == 0 && displayTotal > 0
+                      ? 'All targets complete'
+                      : '$velocityPercent% daily velocity',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: displayPending == 0 && displayTotal > 0
+                        ? AppTheme.accentEmerald
+                        : AppTheme.mutedText,
+                  ),
+                ),
+                if (displayPending > 0)
+                  Text(
+                    '$displayPending remaining',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppTheme.mutedText,
+                    ),
+                  ),
+              ],
             ),
           ],
         ),
@@ -1522,53 +1184,6 @@ class _FocusDeepWorkCard extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-
-            const SizedBox(height: 16),
-
-            // Bottom metadata capsule strip
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Color(0xFF34D399),
-                    ),
-                  ),
-                  const SizedBox(width: 7),
-                  Text(
-                    'Top: $topSubject',
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white.withValues(alpha: 0.85),
-                    ),
-                  ),
-                  const Spacer(),
-                  const Text(
-                    'Deep Dive',
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF67E8F9),
-                    ),
-                  ),
-                  const SizedBox(width: 3),
-                  const Icon(
-                    Icons.arrow_outward_rounded,
-                    size: 13,
-                    color: Color(0xFF67E8F9),
-                  ),
-                ],
-              ),
             ),
           ],
         ),

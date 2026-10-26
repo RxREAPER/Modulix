@@ -179,24 +179,47 @@ class _HomeTasksSection extends ConsumerWidget {
     final completedCount = completedTasks.length;
     final isAllDone = totalCount > 0 && completedCount == totalCount;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Header: "Daily tasks" with clean counter and navigation
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(22),
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: isDark
+                ? const Color(0xFF0F172A).withValues(alpha: 0.50)
+                : Colors.white.withValues(alpha: 0.65),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.12)
+                  : Colors.white.withValues(alpha: 0.70),
+              width: 0.75,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.30 : 0.05),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Unified Header: Title, Counter, and Quick Add Action
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         'Daily tasks',
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.inkForeground,
                           letterSpacing: -0.3,
@@ -207,12 +230,12 @@ class _HomeTasksSection extends ConsumerWidget {
                         pressedScale: 0.90,
                         onTap: () => context.push('/daily-tasks'),
                         child: Container(
-                          padding: const EdgeInsets.all(4),
+                          padding: const EdgeInsets.all(3.5),
                           decoration: BoxDecoration(
                             color: isDark
                                 ? const Color(0xFF1E293B)
                                 : AppTheme.parchmentSurface,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(6),
                             border: Border.all(
                               color: isDark
                                   ? Colors.white.withValues(alpha: 0.08)
@@ -222,204 +245,194 @@ class _HomeTasksSection extends ConsumerWidget {
                           ),
                           child: Icon(
                             Icons.arrow_forward_ios_rounded,
-                            size: 10,
+                            size: 9.5,
                             color: AppTheme.inkForeground,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    totalCount == 0
-                        ? 'Plan your daily targets'
-                        : isAllDone
-                            ? 'All goals completed today'
-                            : '$completedCount of $totalCount completed',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: isAllDone ? FontWeight.w700 : FontWeight.w500,
-                      color: isAllDone
-                          ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669))
-                          : (isDark ? const Color(0xFF94A3B8) : AppTheme.mutedText),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            ApplePressable(
-              pressedScale: 0.94,
-              onTap: () => context.push('/daily-tasks'),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : AppTheme.inkForeground,
-                  borderRadius: BorderRadius.circular(10),
-                  border: isDark
-                      ? Border.all(color: Colors.white.withValues(alpha: 0.10), width: 0.75)
-                      : null,
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6.5),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.add_rounded,
-                      size: 15,
-                      color: isDark ? Colors.white : AppTheme.paperBackground,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Add',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? Colors.white : AppTheme.paperBackground,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Container(
-          height: 0.75,
-          width: double.infinity,
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : Colors.black.withValues(alpha: 0.06),
-        ),
-        const SizedBox(height: 12),
-
-        // Unboxed Frosted Glass Rows
-        if (allTasks.isEmpty)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: BackdropFilter(
-              filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-              child: ApplePressable(
-                onTap: () => context.push('/daily-tasks'),
-                child: Container(
-                  key: TourTargetRegistry.keyFor(TourTargetId.todaysTasksTarget),
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 18),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF0F172A).withValues(alpha: 0.40)
-                        : Colors.white.withValues(alpha: 0.60),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.10)
-                          : Colors.white.withValues(alpha: 0.70),
-                      width: 0.75,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.add_circle_outline_rounded,
-                        size: 16,
-                        color: isDark ? const Color(0xFF38BDF8) : AppTheme.accentPrimary,
+                      Text(
+                        totalCount == 0
+                            ? 'No targets'
+                            : isAllDone
+                                ? 'All done'
+                                : '$completedCount of $totalCount completed',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: isAllDone ? FontWeight.w700 : FontWeight.w600,
+                          color: isAllDone
+                              ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669))
+                              : AppTheme.mutedText,
+                        ),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        'Add your first daily task or project...',
-                        style: TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? const Color(0xFF94A3B8) : AppTheme.mutedText,
+                      ApplePressable(
+                        pressedScale: 0.92,
+                        onTap: () => context.push('/daily-tasks'),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1E293B) : AppTheme.inkForeground,
+                            borderRadius: BorderRadius.circular(8),
+                            border: isDark
+                                ? Border.all(color: Colors.white.withValues(alpha: 0.10), width: 0.75)
+                                : null,
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4.5),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.add_rounded,
+                                size: 13,
+                                color: isDark ? Colors.white : AppTheme.paperBackground,
+                              ),
+                              const SizedBox(width: 3),
+                              Text(
+                                'Add',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark ? Colors.white : AppTheme.paperBackground,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ),
-              ),
-            ),
-          )
-        else ...[
-          // Grouping: Standalone Normal Tasks vs Project-Specific Tasks
-          Builder(
-            builder: (context) {
-              final standaloneTasks = allTasks.where((t) => t.projectId == null || t.projectId!.isEmpty).toList();
-              final Map<String, List<TaskItem>> projectGroups = {};
-              for (final t in allTasks) {
-                if (t.projectId != null && t.projectId!.isNotEmpty) {
-                  projectGroups.putIfAbsent(t.projectId!, () => []).add(t);
-                }
-              }
-
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 1. Standalone Normal Tasks
-                  for (int i = 0; i < standaloneTasks.length; i++)
-                    _buildHomeTaskRow(
-                      context: context,
-                      ref: ref,
-                      task: standaloneTasks[i],
-                      timerState: timerState,
-                      isFirst: i == 0 && projectGroups.isEmpty,
-                      isProjectTask: false,
-                    ),
-
-                  // 2. Project Task Groups
-                  for (final entry in projectGroups.entries) ...[
-                    Builder(
-                      builder: (ctx) {
-                        final project = tasksState?.projectById(entry.key);
-                        final label = (project?.unitName ?? project?.name ?? entry.value.first.note ?? 'Project').toUpperCase();
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8, bottom: 6),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 5,
-                                    height: 5,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: isDark ? const Color(0xFF38BDF8) : AppTheme.accentPrimary,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    label,
-                                    style: TextStyle(
-                                      fontSize: 10.5,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.8,
-                                      color: isDark ? const Color(0xFF94A3B8) : AppTheme.mutedText,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            for (final task in entry.value)
-                              _buildHomeTaskRow(
-                                context: context,
-                                ref: ref,
-                                task: task,
-                                timerState: timerState,
-                                isFirst: false,
-                                isProjectTask: true,
-                              ),
-                          ],
-                        );
-                      },
-                    ),
-                  ],
                 ],
-              );
-            },
+              ),
+              const SizedBox(height: 14),
+
+              // Tasks Content Area inside the Card
+              if (allTasks.isEmpty)
+                ApplePressable(
+                  onTap: () => context.push('/daily-tasks'),
+                  child: Container(
+                    key: TourTargetRegistry.keyFor(TourTargetId.todaysTasksTarget),
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.04)
+                          : Colors.black.withValues(alpha: 0.025),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.08)
+                            : Colors.black.withValues(alpha: 0.05),
+                        width: 0.75,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.add_circle_outline_rounded,
+                          size: 15,
+                          color: isDark ? const Color(0xFF38BDF8) : AppTheme.accentPrimary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Add your first daily task or project...',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? const Color(0xFF94A3B8) : AppTheme.mutedText,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else ...[
+                Builder(
+                  builder: (context) {
+                    final standaloneTasks = allTasks.where((t) => t.projectId == null || t.projectId!.isEmpty).toList();
+                    final Map<String, List<TaskItem>> projectGroups = {};
+                    for (final t in allTasks) {
+                      if (t.projectId != null && t.projectId!.isNotEmpty) {
+                        projectGroups.putIfAbsent(t.projectId!, () => []).add(t);
+                      }
+                    }
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Standalone Tasks
+                        for (int i = 0; i < standaloneTasks.length; i++)
+                          _buildHomeTaskRow(
+                            context: context,
+                            ref: ref,
+                            task: standaloneTasks[i],
+                            timerState: timerState,
+                            isFirst: i == 0 && projectGroups.isEmpty,
+                            isProjectTask: false,
+                          ),
+
+                        // Project Task Groups
+                        for (final entry in projectGroups.entries) ...[
+                          Builder(
+                            builder: (ctx) {
+                              final project = tasksState?.projectById(entry.key);
+                              final label = (project?.unitName ?? project?.name ?? entry.value.first.note ?? 'Project').toUpperCase();
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 6, bottom: 6),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 5,
+                                          height: 5,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: isDark ? const Color(0xFF38BDF8) : AppTheme.accentPrimary,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          label,
+                                          style: TextStyle(
+                                            fontSize: 10.0,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: 0.8,
+                                            color: isDark ? const Color(0xFF94A3B8) : AppTheme.mutedText,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  for (final task in entry.value)
+                                    _buildHomeTaskRow(
+                                      context: context,
+                                      ref: ref,
+                                      task: task,
+                                      timerState: timerState,
+                                      isFirst: false,
+                                      isProjectTask: true,
+                                    ),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ],
           ),
-        ],
-      ],
+        ),
+      ),
     );
   }
 
