@@ -265,20 +265,20 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.text('Progress'), findsOneWidget);
-      expect(find.text('PERFORMANCE HUBS'), findsOneWidget);
+      expect(find.text('STUDY STREAK'), findsOneWidget);
 
-      // Hub 1
+      // Zone 2: Module Planner
       expect(find.text('Module Plan Progress'), findsOneWidget);
       expect(find.textContaining('50% complete'), findsOneWidget);
 
-      // Hub 2
+      // Focus & Deep Work
       expect(find.text('Focus & Deep Work'), findsOneWidget);
 
-      // Hub 3
+      // Daily Tasks Analytics
       expect(find.text('Daily Tasks Analytics'), findsOneWidget);
 
-      // Hub 4: Subject Mastery
-      expect(find.text('Subject Mastery'), findsOneWidget);
+      // Subject Mastery is eliminated per user instruction
+      expect(find.text('Subject Mastery'), findsNothing);
     });
 
     testWidgets('AnalyticsScreen renders cold-start preview banner and navigates to /timer when CTA is tapped', (tester) async {

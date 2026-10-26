@@ -235,7 +235,25 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ---
 
-## 📋 Active Checkpoints
+### [CKPT-072] Major UI Overhaul: Library Folder Morphing, 2-Zone Breathable Progress (Mastery Eliminated), & Inset Grouped Settings
+- **Timestamp:** 2026-10-26 14:00 UTC
+- **Category:** ui_overhaul / Modern Folder OpenContainer Morph, 2-Zone Breathable Progress Focus & Inset Grouped Settings
+- **Files Modified (7 files):**
+  - `lib/widgets/curriculum/modern_subject_folder_card.dart` (Created 24px squircle project folder card inspired by Reference Image 2: rich clinical tonal gradient atmosphere, circular clinical icon pod, capsule progress pill, dual-line typography, and continuous rounded track)
+  - `lib/screens/curriculum/curriculum_screen.dart` (Integrated `OpenContainer` from `package:animations` for 380ms ease-out fluid motion render morphing closed folder cards into `SubjectScreen` without route bounce or slide flickers)
+  - `lib/widgets/curriculum/unit_card.dart` (Upgraded unit rows to 18px soft pastel tinted pills: emerald for completed, clean slate for pending, with circular check nodes)
+  - `lib/screens/curriculum/subject_screen.dart` (Added clean clinical units header with quick-jump index action and modernized squircle styling)
+  - `lib/screens/analytics/analytics_screen.dart` (Major overhaul eliminating 9 stacked boxes down to 2 breathable zones; completely removed Subject Mastery card and subpage; built Zone 1 Editorial Momentum Header without box outlines; built Zone 2 Module Planner Hero Card + Today's Focus Tasks rendered as interactive soft pastel pills matching Reference Image 1)
+  - `lib/screens/settings/settings_screen.dart` (Consolidated 10 bulky cards into 4 sleek Inset Grouped lists for Study & Atmosphere, Cloud & Community, Preferences, and Resources; purged all dummy uppercase tags like 'PROFILE SETUP', 'GUIDE', 'SECURITY', 'ABOUT', 'ACTIVE'; eliminated all paragraph text walls)
+  - `test/progress_overhaul_test.dart` (Updated test suite to verify 2-zone progress layout and assert that Subject Mastery is eliminated)
+- **Summary:**
+  - Modernized Library with dossier folder cards and fluid 380ms `OpenContainer` hero morphing into `SubjectScreen`.
+  - Re-architected Progress screen into Zone 1 Editorial Momentum and Zone 2 Module Planner & Focus Tasks (soft pastel pills with 1-tap completion toggles), eliminating Subject Mastery and box clutter.
+  - Redesigned Settings into 4 Inset Grouped cards with zero text walls and no dummy tags.
+- **Verification:**
+  - `flutter analyze lib/`: **No issues found! (0 errors, 0 warnings)**
+  - `flutter test`: **All 47 unit & widget tests passed! (100%)**
+- **Status:** ⏳ Pending APK Build
 
 ### [CKPT-071] Interactions Suite: Home & Daily Tasks Swipe-to-Delete Undo, Timer State Transition Toasts & Curriculum Completion Undo Capsules
 - **Timestamp:** 2026-10-26 12:55 UTC

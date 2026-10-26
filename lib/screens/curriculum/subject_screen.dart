@@ -542,7 +542,45 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
 
                         const SizedBox(height: 14),
 
-                        const SizedBox(height: 6),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'CLINICAL UNITS (${subject.chapters.length})',
+                              style: AppTypography.sectionMicroHeader(
+                                fontSize: 10.5,
+                                letterSpacing: 0.8,
+                                color: AppTheme.mutedText,
+                              ),
+                            ),
+                            ApplePressable(
+                              onTap: () => _openIndexSheet(
+                                subject: subject,
+                                completedVideos: completedVideos,
+                                completedQBanks: completedQBanks,
+                                completedNotes: completedNotes,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.format_list_bulleted_rounded,
+                                      size: 13, color: AppTheme.mutedText),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Jump to Unit (Index) ▾',
+                                    style: AppTypography.compactAction(
+                                      fontSize: 11.0,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.mutedText,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 8),
                         const InSituHintPill(
                           prefKey: 'hint_unit_cards_seen',
                           message: 'Tap any unit to explore Videos, Q-Bank, and Notes • Tap Timer for quick focus',

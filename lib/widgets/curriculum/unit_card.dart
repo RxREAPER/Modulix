@@ -56,45 +56,49 @@ class UnitCard extends StatelessWidget {
           },
       child: Container(
         decoration: BoxDecoration(
-          color: AppTheme.cardWhite,
-          borderRadius: BorderRadius.circular(14),
+          color: isComplete
+              ? (AppTheme.current.isDark
+                  ? const Color(0xFF064E3B).withValues(alpha: 0.20)
+                  : const Color(0xFFECFDF5))
+              : AppTheme.cardWhite,
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: isComplete
-                ? AppTheme.accentPrimary.withValues(alpha: 0.35)
+                ? const Color(0xFF10B981).withValues(alpha: 0.35)
                 : AppTheme.borderLight,
-            width: 1.1,
+            width: 1.0,
           ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 6,
-              offset: const Offset(0, 1.5),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Left: Compact Unit Badge / Status indicator
+            // Left: Circular Unit Badge / Status indicator
             Container(
               width: 36,
               height: 36,
               decoration: BoxDecoration(
+                shape: BoxShape.circle,
                 color: isComplete
-                    ? AppTheme.accentSubtle
+                    ? const Color(0xFF10B981).withValues(alpha: 0.15)
                     : accent.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(9),
                 border: Border.all(
                   color: isComplete
-                      ? AppTheme.accentPrimary.withValues(alpha: 0.30)
+                      ? const Color(0xFF10B981).withValues(alpha: 0.35)
                       : accent.withValues(alpha: 0.25),
-                  width: 1.0,
+                  width: 1.2,
                 ),
               ),
               child: Center(
                 child: isComplete
-                    ? Icon(Icons.check_rounded, size: 17, color: AppTheme.accentPrimary)
+                    ? const Icon(Icons.check_rounded, size: 17, color: Color(0xFF10B981))
                     : Text(
                         unitNumberFormatted,
                         style: AppTypography.metricValue(
