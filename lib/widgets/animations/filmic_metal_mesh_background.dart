@@ -283,12 +283,12 @@ class _FilmicMetalMeshPainter extends CustomPainter {
       );
     canvas.drawCircle(Offset(size.width * 0.70, waveY2), size.width * 0.80, wave2Paint);
 
-    // Strict 35% Horizon fade into clean base color
+    // 50% Horizon fade into clean base color
     final Paint horizonFadePaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        stops: const [0.0, 0.14, 0.35, 1.0],
+        stops: const [0.0, 0.25, 0.50, 1.0],
         colors: [
           Colors.transparent,
           Colors.transparent,

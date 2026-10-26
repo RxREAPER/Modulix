@@ -12,73 +12,79 @@ uniform float uIsDark;
 
 out vec4 fragColor;
 
-// 35mm Film Grain Hash
-float hash(vec2 p) {
-    p = fract(p * vec2(123.34, 456.21));
-    p += dot(p, p + 45.32);
-    return fract(p.x * p.y);
+// Organic 35mm film grain generator:
+// 1. 45-degree rotation & 2D cross-mixing completely breaks any X/Y grid alignment or vertical striping
+// 2. 3D dot product couples X, Y, and temporal frame seed simultaneously
+// 3. Dual-sample triangular distribution mimics analog silver halide grain (no digital harshness)
+float hash3D(vec3 p) {
+    return fract(sin(dot(p, vec3(12.9898, 78.233, 45.164))) * 43758.5453123);
 }
 
-// Multi-scale film grain: combines fine 35mm grain with analog paper fiber texture
-float multiScaleGrain(vec2 coord, float seed) {
-    vec2 p1 = coord + vec2(seed * 117.7, seed * 243.1);
-    float g1 = hash(p1);
-
-    // Sub-harmonic micro-texture
-    vec2 p2 = (coord * 0.5) + vec2(seed * 71.3, seed * 183.9);
-    float g2 = hash(p2);
-
-    return g1 * 0.70 + g2 * 0.30;
+float organicFilmGrain(vec2 coord, float seed) {
+    // 45-degree coordinate rotation completely eliminates vertical & horizontal banding lines
+    vec2 rotCoord = vec2(coord.x * 0.70710678 - coord.y * 0.70710678, coord.x * 0.70710678 + coord.y * 0.70710678);
+    
+    // Dual sampling produces triangular distribution (Gaussian analog film approximation)
+    float g1 = hash3D(vec3(rotCoord, seed * 17.31));
+    float g2 = hash3D(vec3(rotCoord + vec2(37.19, 71.43), seed * 31.17));
+    return (g1 + g2) * 0.5 - 0.5; // Centered at 0.0 with range [-0.5, 0.5]
 }
 
 void main() {
     vec2 fragCoord = FlutterFragCoord().xy;
     vec2 uv = fragCoord / uResolution;
 
-    // Centered coordinates for gentle atmospheric flow
+    // Centered aspect-corrected coordinates for fluid wave domain
     float aspect = uResolution.x / uResolution.y;
-    vec2 p = (uv - vec2(0.5, 0.18)) * vec2(aspect, 1.0) * 5.5;
+    vec2 p = (uv - vec2(0.5, 0.26)) * vec2(aspect, 1.0) * 8.5;
 
-    // Smooth, calming, continuous atmospheric flow (seamless, no sharp caustics or harsh metal)
-    float t = uTime * 0.35;
+    // Continuous monotonic wave time (seamless, no loop breaks)
+    float t = uTime * 0.70;
 
-    // Soft organic domain warping
-    p.x += 0.22 * sin(p.y * 1.5 + t * 0.65);
-    p.y += 0.22 * cos(p.x * 1.5 - t * 0.55);
-    p.x += 0.12 * sin(p.y * 2.6 - t * 0.85 + 0.6);
-    p.y += 0.12 * cos(p.x * 2.3 + t * 0.75 + 0.9);
-
-    // Broad atmospheric wave elevation (soft, smooth, velvety)
-    float wave1 = sin(p.x * 1.8 + t * 0.50);
-    float wave2 = cos(p.y * 1.8 - t * 0.40);
-    float wave3 = sin((p.x + p.y) * 1.4 + t * 0.60);
-    float height = (wave1 + wave2 + wave3) / 3.0;
-
-    // Soft matte ambient sheen (velvety, smooth, not sharp chrome)
-    float sheen = pow(clamp(height * 0.5 + 0.5, 0.0, 1.0), 1.8);
-
-    // Color mixing: Atmospheric theme glow in upper viewport
-    vec4 atmosphericCol;
-    if (uIsDark > 0.5) {
-        // Dark Mode: Deep obsidian canvas with muted theme aurora & celestial mist
-        vec4 darkDeep = mix(uBaseColor, uAccentColor, 0.28 + 0.22 * height);
-        atmosphericCol = darkDeep + uHighlightColor * (sheen * 0.25);
-    } else {
-        // Light Mode: Clean paper canvas with gentle, soft watercolor tint
-        vec4 softWash = mix(uBaseColor, uAccentColor, 0.22 + 0.20 * height);
-        atmosphericCol = mix(softWash, vec4(1.0, 1.0, 1.0, 1.0), sheen * 0.18);
+    // Multi-octave domain warping: Apple Metal fluid water & liquid chrome simulation
+    for (int i = 1; i <= 3; i++) {
+        float fi = float(i);
+        vec2 prev = p;
+        p.x += 0.50 / fi * sin(fi * 1.5 * prev.y + t * 0.70 + fi * 0.9);
+        p.y += 0.50 / fi * cos(fi * 1.5 * prev.x - t * 0.60 + fi * 0.9);
     }
 
-    // User requirement: "its coming too down from the middle lets put it to 35% top"
-    // Fades smoothly into clean canvas color strictly by 35% of screen height
-    float horizonFade = smoothstep(0.14, 0.35, uv.y);
-    vec4 finalColor = mix(atmosphericCol, uBaseColor, horizonFade);
+    // High-definition wave ripple height field
+    float wave1 = sin(p.x * 2.5 + t * 0.85);
+    float wave2 = cos(p.y * 2.5 - t * 0.65);
+    float wave3 = sin((p.x + p.y) * 1.9 + t * 1.05);
+    float height = (wave1 + wave2 + wave3) / 3.0;
 
-    // User requirement: "more grainy more grainy and more grainyn ... keep the colour of the grains a bit dimmed"
-    // Pronounced, rich, tactile 35mm film grain, dimmed/softened so it blends naturally without harsh clipping
-    float grain = multiScaleGrain(fragCoord, uGrainSeed);
-    float grainIntensity = uIsDark > 0.5 ? 0.078 : 0.068;
-    finalColor.rgb += (grain - 0.5) * grainIntensity;
+    // Specular light caustics: intense, glistening water caustics & liquid ribbons
+    float ripple = abs(sin(p.x * 2.2 + t * 0.75) * cos(p.y * 2.2 - t * 0.75));
+    float caustic = pow(clamp(1.0 - ripple, 0.0, 1.0), 4.8);
+    float crestGleam = pow(clamp(height * 0.5 + 0.5, 0.0, 1.0), 2.5);
+
+    // Color mixing: Liquid metal / fluid water depth
+    vec4 liquidCol;
+    if (uIsDark > 0.5) {
+        // Dark Mode: Deep metallic obsidian base with rich theme liquid waves & luminous cyan/silver caustics
+        vec4 darkDeep = mix(uBaseColor, uAccentColor, 0.38 + 0.32 * height);
+        liquidCol = darkDeep + uHighlightColor * (caustic * 0.72 + crestGleam * 0.40);
+    } else {
+        // Light Mode: Physical water refraction
+        // Deep translucent watercolor in wave troughs, crisp light silver canvas at crests, with brilliant white caustic light ribbons
+        vec4 troughColor = mix(uAccentColor, uBaseColor, 0.42);
+        vec4 crestColor = mix(uBaseColor, vec4(1.0, 1.0, 1.0, 1.0), 0.60);
+        vec4 lightDeep = mix(troughColor, crestColor, height * 0.5 + 0.5);
+        liquidCol = mix(lightDeep, vec4(1.0, 1.0, 1.0, 1.0), caustic * 0.58 + crestGleam * 0.22);
+    }
+
+    // User requirement: "lets go with 50%"
+    // Fades smoothly into clean canvas color between 25% and 50% viewport height
+    float horizonFade = smoothstep(0.25, 0.50, uv.y);
+    vec4 finalColor = mix(liquidCol, uBaseColor, horizonFade);
+
+    // User requirement: "no vertical lines no i need grainy effects ... keep the colour of the grains a bit dimmed"
+    // Truly isotropic, 45-degree rotated, stripe-free, dimmed 35mm film grain via dual-sampled rotated 3D noise
+    float grain = organicFilmGrain(fragCoord, uGrainSeed);
+    float grainIntensity = uIsDark > 0.5 ? 0.050 : 0.038;
+    finalColor.rgb += grain * grainIntensity;
 
     fragColor = finalColor;
 }
