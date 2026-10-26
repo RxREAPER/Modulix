@@ -43,6 +43,25 @@ class ErrorTranslatorService {
     final explicitDomain = domain?.toLowerCase();
 
     // ── Domain A: Authentication & Sign-In ──────────────────────────────
+    // 1. Session Expiration / JWT 401
+    if (lowerError.contains('jwt') ||
+        lowerError.contains('401') ||
+        lowerError.contains('unauthorized') ||
+        lowerError.contains('token expired') ||
+        lowerError.contains('session expired') ||
+        lowerError.contains('refresh_token_not_found') ||
+        lowerError.contains('invalid_token')) {
+      return DoctorErrorTranslation(
+        headline: 'Session Paused',
+        explanation:
+            'Your login session expired, but your local study notes and progress are safe. Re-connect your account or keep studying offline.',
+        primaryActionLabel: 'Sign In Again',
+        icon: Icons.lock_reset_outlined,
+        domain: 'Authentication Session',
+        technicalDetails: combinedDetails,
+      );
+    }
+
     if (explicitDomain == 'auth' ||
         lowerError.contains('google_sign_in') ||
         lowerError.contains('googlesignin') ||
@@ -59,7 +78,7 @@ class ErrorTranslatorService {
         return DoctorErrorTranslation(
           headline: 'Account Setup in Progress',
           explanation:
-              'Google Play authentication is temporarily unavailable on this device. You can continue studying uninterrupted.',
+              'Google Play sign-in is temporarily unavailable on this device. You can keep studying uninterrupted as a guest.',
           primaryActionLabel: 'Continue as Guest',
           icon: Icons.account_circle_outlined,
           domain: 'Authentication',
@@ -75,9 +94,9 @@ class ErrorTranslatorService {
           lowerError.contains('canceled') ||
           lowerError.contains('cancelled')) {
         return DoctorErrorTranslation(
-          headline: 'Sign-In Deferred',
+          headline: 'Sign-In Cancelled',
           explanation:
-              'You closed the Google authentication window. Your offline progress remains stored on this phone.',
+              'You closed the Google sign-in window. Your study progress remains safely saved on this phone.',
           primaryActionLabel: 'Try Again',
           icon: Icons.lock_clock_outlined,
           domain: 'Authentication',
@@ -92,9 +111,9 @@ class ErrorTranslatorService {
           lowerError.contains('invalid-login-credentials') ||
           lowerError.contains('user-not-found')) {
         return DoctorErrorTranslation(
-          headline: 'Credentials Unrecognized',
+          headline: 'Account Not Recognized',
           explanation:
-              'The email or password entered does not match our records. Please verify and retry.',
+              'The email or password does not match our records. Please double check and try again.',
           primaryActionLabel: 'Reset Password',
           icon: Icons.password_outlined,
           domain: 'Authentication',
@@ -107,9 +126,9 @@ class ErrorTranslatorService {
           lowerError.contains('rate_limit') ||
           lowerError.contains('rate-limit')) {
         return DoctorErrorTranslation(
-          headline: 'Sign-In Cooldown Active',
+          headline: 'Take a Quick Breath',
           explanation:
-              'Multiple access attempts detected. For account security, please wait 60 seconds before retrying.',
+              'Too many attempts in a row. For your security, please wait about a minute before trying again.',
           primaryActionLabel: 'Wait & Retry',
           icon: Icons.timer_outlined,
           domain: 'Authentication',
@@ -122,9 +141,9 @@ class ErrorTranslatorService {
           error is SocketException ||
           lowerError.contains('socketexception')) {
         return DoctorErrorTranslation(
-          headline: 'Authentication Server Unreachable',
+          headline: 'Sign-In Server Offline',
           explanation:
-              'Could not establish a secure handshake with the login server. Check your network or work offline.',
+              'Could not reach the authentication service. Check your internet connection or keep studying offline.',
           primaryActionLabel: 'Retry Connection',
           icon: Icons.wifi_off_outlined,
           domain: 'Authentication',
@@ -144,10 +163,10 @@ class ErrorTranslatorService {
         error is TimeoutException ||
         lowerError.contains('timeoutexception')) {
       return DoctorErrorTranslation(
-        headline: 'Offline Mode Active',
+        headline: 'You\'re Offline',
         explanation:
-            'No internet connection detected. Modulix has saved your study hours locally and will sync when reconnected.',
-        primaryActionLabel: 'Got It',
+            'No internet connection detected. Modulix has saved your study hours locally and will sync when you\'re back online.',
+        primaryActionLabel: 'Keep Studying',
         icon: Icons.cloud_off_outlined,
         domain: 'Cloud & Network',
         technicalDetails: combinedDetails,
@@ -163,7 +182,7 @@ class ErrorTranslatorService {
       return DoctorErrorTranslation(
         headline: 'Cloud Sync Queued',
         explanation:
-            'The sync servers are currently undergoing brief routine maintenance. Your local database remains intact.',
+            'The sync servers are taking a brief break. Your notes and study logs are safely stored right here on your phone.',
         primaryActionLabel: 'Keep Studying',
         icon: Icons.sync_problem_outlined,
         domain: 'Cloud & Network',
@@ -178,9 +197,9 @@ class ErrorTranslatorService {
                 lowerError.contains('unreadable') ||
                 lowerError.contains('invalid'))) {
       return DoctorErrorTranslation(
-        headline: 'Backup Archive Unreadable',
+        headline: 'File Unreadable',
         explanation:
-            'The selected file appears damaged or incomplete. Your active study logs were preserved untouched.',
+            'We couldn\'t read this backup file. Don\'t worry, your current study logs are safe and untouched.',
         primaryActionLabel: 'Choose Another File',
         icon: Icons.folder_delete_outlined,
         domain: 'Backup & Restore',
@@ -193,9 +212,9 @@ class ErrorTranslatorService {
         lowerError.contains('insufficient storage') ||
         lowerError.contains('quotaexceeded')) {
       return DoctorErrorTranslation(
-        headline: 'Cloud Storage Filled',
+        headline: 'Cloud Storage Full',
         explanation:
-            'Your personal cloud storage account has reached its capacity limit. Local backups are continuing normally.',
+            'Your cloud backup space is full. Your local study logs are still saving normally on this phone.',
         primaryActionLabel: 'Manage Storage',
         icon: Icons.cloud_queue_outlined,
         domain: 'Cloud Storage',
@@ -212,9 +231,9 @@ class ErrorTranslatorService {
         lowerError.contains('chapter not found') ||
         lowerError.contains('subject not found')) {
       return DoctorErrorTranslation(
-        headline: 'Topic Being Refreshed',
+        headline: 'Topic Not Found',
         explanation:
-            'This specific lecture unit is not indexed in the active curriculum edition.',
+            'This lecture unit isn\'t in your current curriculum edition. Browse the full syllabus to find it.',
         primaryActionLabel: 'Browse All Units',
         icon: Icons.auto_stories_outlined,
         domain: 'Curriculum',
@@ -229,9 +248,9 @@ class ErrorTranslatorService {
         lowerError.contains('page not found') ||
         lowerError.contains('404')) {
       return DoctorErrorTranslation(
-        headline: 'Destination Not in Syllabus',
+        headline: 'Page Not Found',
         explanation:
-            'The requested syllabus link could not be located in this edition.',
+            'We couldn\'t find that screen in your current edition. Let\'s head back to your study desk.',
         primaryActionLabel: 'Return to Home Desk',
         icon: Icons.alt_route_outlined,
         domain: 'Navigation',
@@ -246,7 +265,7 @@ class ErrorTranslatorService {
       return DoctorErrorTranslation(
         headline: 'No Modules Found',
         explanation:
-            'No lectures or Q-Banks match your search query in this subject.',
+            'Nothing matched what you searched for in this subject.',
         primaryActionLabel: 'Clear Filters',
         icon: Icons.search_off_outlined,
         domain: 'Search',
@@ -258,9 +277,9 @@ class ErrorTranslatorService {
         lowerError.contains('no notes yet') ||
         lowerError.contains('empty notes')) {
       return DoctorErrorTranslation(
-        headline: 'No Clinical Notes Yet',
+        headline: 'No Notes Yet',
         explanation:
-            'You have not attached personal summaries or mnemonics to this chapter.',
+            'You haven\'t added any personal notes or mnemonics to this chapter yet.',
         primaryActionLabel: '+ Add First Note',
         icon: Icons.note_add_outlined,
         domain: 'Clinical Notes',
@@ -275,9 +294,9 @@ class ErrorTranslatorService {
         lowerError.contains('sound') ||
         lowerError.contains('track')) {
       return DoctorErrorTranslation(
-        headline: 'Ambient Audio Paused',
+        headline: 'Audio Paused',
         explanation:
-            'The selected background audio track could not be loaded. Your focus timer continues running uninterrupted.',
+            'The background sound track couldn\'t be loaded. Your focus timer is still running normally.',
         primaryActionLabel: 'Pick Another Sound',
         icon: Icons.volume_off_outlined,
         domain: 'Focus Timer & Audio',
@@ -290,9 +309,9 @@ class ErrorTranslatorService {
         lowerError.contains('killed') ||
         lowerError.contains('background execution')) {
       return DoctorErrorTranslation(
-        headline: 'Study Session Preserved',
+        headline: 'Timer Recovered',
         explanation:
-            'The device closed the timer to conserve battery. Modulix safely recovered your logged focus minutes.',
+            'Your device paused the timer to save battery. Modulix safely recovered your logged focus minutes.',
         primaryActionLabel: 'Resume Session',
         icon: Icons.battery_saver_outlined,
         domain: 'Focus Session',
@@ -304,9 +323,9 @@ class ErrorTranslatorService {
         lowerError.contains('permission denied') ||
         lowerError.contains('permission_denied')) {
       return DoctorErrorTranslation(
-        headline: 'Quiet Timer Enabled',
+        headline: 'Quiet Timer Mode',
         explanation:
-            'End-of-session audio chimes require notification privileges to sound when the screen is locked.',
+            'Timer completion chimes need notification permissions to sound when your screen is locked.',
         primaryActionLabel: 'Enable in Settings',
         icon: Icons.notifications_off_outlined,
         domain: 'System Permissions',
@@ -321,9 +340,9 @@ class ErrorTranslatorService {
         lowerError.contains('database locked') ||
         lowerError.contains('contention')) {
       return DoctorErrorTranslation(
-        headline: 'Data Re-Verified',
+        headline: 'Data Protected',
         explanation:
-            'A temporary storage contention occurred. The database automatically re-indexed your records.',
+            'Your device had a momentary hiccup saving data. Everything is safe and re-indexed.',
         primaryActionLabel: 'Reload Desk',
         icon: Icons.verified_user_outlined,
         domain: 'Database & Storage',
@@ -335,7 +354,7 @@ class ErrorTranslatorService {
     return DoctorErrorTranslation(
       headline: 'Study Session Protected',
       explanation:
-          'An unexpected screen display glitch occurred. Your logged hours, notes, and task progress remain safely cached.',
+          'Something went slightly off with the screen display. Don\'t worry, all your notes and study time are safe.',
       primaryActionLabel: 'Reopen Home Desk',
       icon: Icons.shield_outlined,
       domain: 'Runtime Shield',

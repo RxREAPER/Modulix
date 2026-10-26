@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:modulix/models/app_state.dart';
 import 'package:modulix/models/daily_desk_task.dart';
 import 'package:modulix/models/syllabus.dart';
@@ -18,6 +19,8 @@ import 'package:modulix/widgets/analytics/progress_radial_gauge.dart';
 import 'package:modulix/widgets/analytics/concentric_donut_indicator.dart';
 import 'package:modulix/widgets/analytics/segmented_velocity_pill.dart';
 import 'package:modulix/widgets/analytics/chronotype_heat_strip.dart';
+import 'package:modulix/models/task_item.dart';
+import 'package:modulix/providers/tasks_hub_provider.dart';
 
 class _MockAppStateNotifier extends AppStateNotifier {
   final AppState _initial;
@@ -32,6 +35,14 @@ class _MockDailyTasksNotifier extends DailyTasksNotifier {
   _MockDailyTasksNotifier(this._initial) : super(null) {
     state = _initial;
   }
+}
+
+class _MockTasksHubNotifier extends TasksHubNotifier {
+  final TasksHubState _initial;
+  _MockTasksHubNotifier(this._initial);
+
+  @override
+  Future<TasksHubState> build() async => _initial;
 }
 
 class _MockTimeLogsNotifier extends TimeLogsNotifier {
@@ -145,6 +156,25 @@ void main() {
     completedIds: {'t_1'},
   );
 
+  final testTasksHubState = TasksHubState(
+    tasks: [
+      TaskItem(
+        id: 't_1',
+        title: 'Review Upper Limb',
+        dueDate: DateTime.now(),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      TaskItem(
+        id: 't_2',
+        title: 'Solve 20 MCQs',
+        dueDate: DateTime.now(),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+    ],
+  );
+
   group('Custom Analytics UI Components Tests', () {
     testWidgets('ProgressRadialGauge renders percentage text correctly', (tester) async {
       await tester.pumpWidget(
@@ -250,6 +280,69 @@ void main() {
       // Hub 4: Subject Mastery
       expect(find.text('Subject Mastery'), findsOneWidget);
     });
+
+    testWidgets('AnalyticsScreen renders cold-start preview banner and navigates to /timer when CTA is tapped', (tester) async {
+      tester.view.physicalSize = const Size(800, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      var navigatedToTimer = false;
+      final router = GoRouter(
+        initialLocation: '/analytics',
+        routes: [
+          GoRoute(
+            path: '/analytics',
+            builder: (context, state) => const AnalyticsScreen(),
+          ),
+          GoRoute(
+            path: '/timer',
+            builder: (context, state) {
+              navigatedToTimer = true;
+              return const Scaffold(body: Text('Timer Screen'));
+            },
+          ),
+        ],
+      );
+
+      const coldStartAppState = AppState(
+        activeEdition: 'marrow_8',
+        editions: {
+          'marrow_8': EditionState(),
+        },
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            appStateProvider.overrideWith(() => _MockAppStateNotifier(coldStartAppState)),
+            activeSyllabusProvider.overrideWithValue(const AsyncValue.data(testSubjects)),
+            timeLogsProvider.overrideWith((ref) => _MockTimeLogsNotifier([])),
+            dailyTasksProvider.overrideWith((ref) => _MockDailyTasksNotifier(const DailyTasksState())),
+            tasksHubProvider.overrideWith(() => _MockTasksHubNotifier(TasksHubState())),
+          ],
+          child: MaterialApp.router(
+            routerConfig: router,
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('Day 1 Preview'), findsOneWidget);
+      expect(find.text('Sample Data'), findsOneWidget);
+      expect(find.text('Ready for your first session?'), findsOneWidget);
+      expect(find.text('Start First Focus Session'), findsOneWidget);
+
+      await tester.tap(find.text('Start First Focus Session'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(navigatedToTimer, isTrue);
+      expect(find.text('Timer Screen'), findsOneWidget);
+    });
   });
 
   group('Dedicated Full Page Views Tests', () {
@@ -320,15 +413,17 @@ void main() {
           overrides: [
             appStateProvider.overrideWith(() => _MockAppStateNotifier(testAppState)),
             dailyTasksProvider.overrideWith((ref) => _MockDailyTasksNotifier(testTasksState)),
+            tasksHubProvider.overrideWith(() => _MockTasksHubNotifier(testTasksHubState)),
           ],
           child: const MaterialApp(
             home: DailyTasksAnalyticsPage(),
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
-      expect(find.text('Daily Tasks & Desk Pad'), findsOneWidget);
+      expect(find.text('Tasks Analytics'), findsOneWidget);
       expect(find.text('14-DAY ACTIVITY MATRIX'), findsOneWidget);
       expect(find.text('Review Upper Limb'), findsOneWidget);
     });

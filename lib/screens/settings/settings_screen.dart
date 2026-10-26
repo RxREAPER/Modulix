@@ -552,8 +552,40 @@ class _CloudSyncSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(appThemeDataProvider);
     final isAuthenticated = ref.watch(isAuthenticatedProvider);
-    final currentUser = ref.watch(currentUserProvider);
     final syncStatus = ref.watch(syncStatusProvider);
+    final pendingCount = ref.watch(pendingSyncCountProvider);
+
+    // Compute dynamic human status and icon
+    final IconData syncIcon;
+    final Color syncIconColor;
+    final String syncSubtitle;
+    final Color syncSubtitleColor;
+
+    if (isAuthenticated) {
+      if (syncStatus == SyncStatus.syncing) {
+        syncIcon = Icons.cloud_sync_rounded;
+        syncIconColor = AppTheme.accentPrimary;
+        syncSubtitle = 'Syncing study sessions to cloud...';
+        syncSubtitleColor = AppTheme.accentPrimary;
+      } else if (pendingCount > 0) {
+        syncIcon = Icons.cloud_upload_outlined;
+        syncIconColor = const Color(0xFFF59E0B);
+        syncSubtitle = '$pendingCount ${pendingCount == 1 ? "session" : "sessions"} waiting to back up';
+        syncSubtitleColor = const Color(0xFFF59E0B);
+      } else {
+        syncIcon = Icons.cloud_done_rounded;
+        syncIconColor = AppTheme.accentEmerald;
+        syncSubtitle = '✓ All study sessions backed up';
+        syncSubtitleColor = AppTheme.accentEmerald;
+      }
+    } else {
+      syncIcon = Icons.cloud_off_rounded;
+      syncIconColor = AppTheme.mutedText;
+      syncSubtitle = pendingCount > 0
+          ? '$pendingCount sessions saved locally on device'
+          : 'Guest Mode • Stored locally';
+      syncSubtitleColor = AppTheme.mutedText;
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -596,16 +628,16 @@ class _CloudSyncSection extends ConsumerWidget {
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    color: AppTheme.accentSubtle,
+                    color: syncIconColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: AppTheme.accentPrimary.withValues(alpha: 0.3),
+                      color: syncIconColor.withValues(alpha: 0.3),
                       width: 1.2,
                     ),
                   ),
                   child: Icon(
-                    Icons.cloud_sync_rounded,
-                    color: AppTheme.accentPrimary,
+                    syncIcon,
+                    color: syncIconColor,
                     size: 22,
                   ),
                 ),
@@ -624,16 +656,12 @@ class _CloudSyncSection extends ConsumerWidget {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        isAuthenticated
-                            ? (currentUser?.email ?? 'Connected & Synced')
-                            : 'Guest Mode • Local only',
+                        syncSubtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppTypography.cardSubtitle(
                           fontSize: 12.0,
-                          color: isAuthenticated
-                              ? AppTheme.accentEmerald
-                              : AppTheme.mutedText,
+                          color: syncSubtitleColor,
                         ),
                       ),
                     ],
@@ -647,7 +675,31 @@ class _CloudSyncSection extends ConsumerWidget {
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  else
+                  else ...[
+                    if (pendingCount > 0) ...[
+                      ApplePressable(
+                        onTap: () {
+                          SyncService.instance.syncFull(ref);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppTheme.accentPrimary,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            'Back Up Now',
+                            style: AppTypography.compactAction(
+                              fontSize: 11.0,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.onAccent,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     ApplePressable(
                       onTap: () async {
                         final confirm = await showDialog<bool>(
@@ -705,6 +757,7 @@ class _CloudSyncSection extends ConsumerWidget {
                         ),
                       ),
                     ),
+                  ],
                 ] else ...[
                   Container(
                     padding: const EdgeInsets.symmetric(

@@ -21,3 +21,25 @@ class SyncStatusNotifier extends StateNotifier<SyncStatus> {
     super.dispose();
   }
 }
+
+final pendingSyncCountProvider =
+    StateNotifierProvider<PendingSyncCountNotifier, int>((ref) {
+  return PendingSyncCountNotifier();
+});
+
+class PendingSyncCountNotifier extends StateNotifier<int> {
+  PendingSyncCountNotifier() : super(SyncService.instance.pendingSyncCount) {
+    SyncService.instance.pendingSyncCountNotifier.addListener(_onCountChanged);
+    SyncService.instance.refreshPendingCount();
+  }
+
+  void _onCountChanged() {
+    state = SyncService.instance.pendingSyncCount;
+  }
+
+  @override
+  void dispose() {
+    SyncService.instance.pendingSyncCountNotifier.removeListener(_onCountChanged);
+    super.dispose();
+  }
+}

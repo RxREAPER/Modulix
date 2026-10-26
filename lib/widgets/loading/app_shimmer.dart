@@ -246,7 +246,7 @@ class DeskTasksSkeletonView extends StatelessWidget {
   }
 }
 
-/// Shimmer skeleton for Analytics & Study Metrics.
+/// Shimmer skeleton for Analytics & Study Metrics with zero Cumulative Layout Shift (CLS).
 class AnalyticsSkeletonView extends StatelessWidget {
   const AnalyticsSkeletonView({super.key});
 
@@ -255,26 +255,68 @@ class AnalyticsSkeletonView extends StatelessWidget {
     return AppShimmer(
       child: SingleChildScrollView(
         physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(18),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          8,
+          20,
+          MediaQuery.paddingOf(context).bottom + 100.0,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 1. Streak Cards Row (Height ~76)
             const Row(
               children: [
-                Expanded(child: ShimmerBox(height: 80, borderRadius: 14)),
+                Expanded(child: ShimmerBox(height: 76, borderRadius: 18)),
                 SizedBox(width: 12),
-                Expanded(child: ShimmerBox(height: 80, borderRadius: 14)),
+                Expanded(child: ShimmerBox(height: 76, borderRadius: 18)),
               ],
             ),
-            const SizedBox(height: 16),
-            const ShimmerBox(height: 180, borderRadius: 16),
-            const SizedBox(height: 16),
-            const ShimmerBox(width: 140, height: 18, borderRadius: 6),
+            const SizedBox(height: 24),
+
+            // 2. Section Header
+            const ShimmerBox(width: 130, height: 11, borderRadius: 4),
             const SizedBox(height: 12),
-            for (int i = 0; i < 3; i++) ...[
-              const ShimmerBox(height: 52, borderRadius: 12),
-              const SizedBox(height: 10),
+
+            // 3. Leaderboard Arena Special Box (Height ~72)
+            const ShimmerBox(height: 72, borderRadius: 16),
+            const SizedBox(height: 18),
+
+            // 4. Four Performance Hub Cards (Height ~92 each)
+            for (int i = 0; i < 4; i++) ...[
+              Container(
+                margin: const EdgeInsets.only(bottom: 14),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppTheme.cardWhite,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppTheme.borderLight, width: 1.2),
+                ),
+                child: const Row(
+                  children: [
+                    ShimmerBox(width: 44, height: 44, borderRadius: 12),
+                    SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ShimmerBox(width: 130, height: 15, borderRadius: 4),
+                          SizedBox(height: 7),
+                          ShimmerBox(width: 180, height: 12, borderRadius: 4),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    ShimmerBox(width: 46, height: 46, borderRadius: 23),
+                  ],
+                ),
+              ),
             ],
+
+            const SizedBox(height: 14),
+
+            // 5. NEET Consistency Matrix (Height ~140)
+            const ShimmerBox(height: 140, borderRadius: 16),
           ],
         ),
       ),

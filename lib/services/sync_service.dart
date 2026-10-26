@@ -34,12 +34,35 @@ class SyncService {
       ValueNotifier<SyncStatus>(SyncStatus.idle);
   SyncStatus get status => statusNotifier.value;
 
+  final ValueNotifier<int> pendingSyncCountNotifier = ValueNotifier<int>(0);
+  int get pendingSyncCount => pendingSyncCountNotifier.value;
+
   DateTime? lastSyncedAt;
   Timer? _debounceTimer;
   bool _isSyncing = false;
 
+  /// Recalculates the number of local items pending upload to cloud
+  Future<void> refreshPendingCount() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final lastSyncMillis = prefs.getInt('modulix_last_synced_at_v1') ?? 0;
+      final allLogs = await DatabaseService.instance.getAllTimeLogs();
+      if (lastSyncMillis == 0) {
+        pendingSyncCountNotifier.value = allLogs.length;
+      } else {
+        final pending = allLogs
+            .where((l) => l.timestamp.millisecondsSinceEpoch > lastSyncMillis)
+            .length;
+        pendingSyncCountNotifier.value = pending;
+      }
+    } catch (_) {
+      pendingSyncCountNotifier.value = 0;
+    }
+  }
+
   /// Trigger debounced sync to push local changes to cloud
   void schedulePush(dynamic ref) {
+    refreshPendingCount();
     if (!AuthService.instance.isAuthenticated) return;
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 1500), () {
@@ -425,6 +448,8 @@ class SyncService {
       });
 
       lastSyncedAt = DateTime.now();
+      await prefs.setInt('modulix_last_synced_at_v1', lastSyncedAt!.millisecondsSinceEpoch);
+      pendingSyncCountNotifier.value = 0;
       statusNotifier.value = SyncStatus.synced;
       debugPrint('[SyncService] Cloud synchronization completed successfully.');
       return true;

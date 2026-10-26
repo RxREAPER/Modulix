@@ -55,6 +55,19 @@ class AnalyticsScreen extends ConsumerWidget {
     return map;
   }
 
+  static Map<String, int> _generateSampleHistory(int daysCount) {
+    final map = <String, int>{};
+    final now = DateTime.now();
+    for (int i = 0; i < daysCount; i++) {
+      final date = now.subtract(Duration(days: i));
+      final dateKey = DateFormat('yyyy-MM-dd').format(date);
+      if (i % 7 != 5) {
+        map[dateKey] = (i % 3 == 0) ? 4 : ((i % 2 == 0) ? 3 : 2);
+      }
+    }
+    return map;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(appThemeDataProvider);
@@ -253,6 +266,13 @@ class AnalyticsScreen extends ConsumerWidget {
       }
     }
 
+    final bool isColdStart = timeLogs.isEmpty &&
+        totalFocusSecs == 0 &&
+        streak.current == 0 &&
+        edition.dailyHistory.isEmpty;
+
+    final sampleHistory = _generateSampleHistory(14 * 7);
+
     return Scaffold(
       backgroundColor: AppTheme.paperBackground,
       appBar: AppBar(
@@ -289,17 +309,24 @@ class AnalyticsScreen extends ConsumerWidget {
           padding: EdgeInsets.fromLTRB(
               20, 8, 20, MediaQuery.paddingOf(context).bottom + 100.0),
           children: [
+            if (isColdStart)
+              _AnalyticsColdStartBanner(
+                onStartSession: () => context.go('/timer'),
+              ),
+
             // ── Top Streak & Consistency Row ─────────────────────────────────
             Row(
               children: [
                 Expanded(
                   child: _HeroStreakCard(
                     label: 'STUDY STREAK',
-                    value: '${streak.current}',
+                    value: isColdStart ? '12' : '${streak.current}',
                     unit: 'DAYS ACTIVE',
-                    sub: streak.current > 0
-                        ? 'Active & burning strong'
-                        : 'Start your streak today',
+                    sub: isColdStart
+                        ? 'Sample streak · Start timer'
+                        : (streak.current > 0
+                            ? 'Active & burning strong'
+                            : 'Start your streak today'),
                     color: const Color(0xFFF97316),
                     trailingWidget: const _LiveFlameBadge(
                         color: Color(0xFFF97316), size: 20),
@@ -309,9 +336,11 @@ class AnalyticsScreen extends ConsumerWidget {
                 Expanded(
                   child: _HeroStreakCard(
                     label: 'BEST STREAK',
-                    value: '${streak.best}',
+                    value: isColdStart ? '24' : '${streak.best}',
                     unit: 'RECORD',
-                    sub: 'Personal all-time best',
+                    sub: isColdStart
+                        ? 'Sample milestone'
+                        : 'Personal all-time best',
                     color: const Color(0xFFCA8A04),
                     trailingWidget: const _ShiningMedalBadge(
                         color: Color(0xFFEAB308), size: 20),
@@ -353,19 +382,23 @@ class AnalyticsScreen extends ConsumerWidget {
             _HubCard(
               key: TourTargetRegistry.keyFor(TourTargetId.analyticsModuleHub),
               title: 'Module Plan Progress',
-              subtitle: plan.isConfigured
-                  ? '$planSubjectName · ${(planProgress * 100).round()}% complete'
-                  : 'No active plan configured · Tap to set',
-              badge: plan.isConfigured
-                  ? '$planCompletedVideos/$planTotalVideos Vids'
-                  : 'Setup',
+              subtitle: isColdStart
+                  ? 'Anatomy · 45% complete (Sample)'
+                  : (plan.isConfigured
+                      ? '$planSubjectName · ${(planProgress * 100).round()}% complete'
+                      : 'No active plan configured · Tap to set'),
+              badge: isColdStart
+                  ? '36/80 Vids'
+                  : (plan.isConfigured
+                      ? '$planCompletedVideos/$planTotalVideos Vids'
+                      : 'Setup'),
               badgeColor: AppTheme.accentPrimary,
               icon: Icons.track_changes_rounded,
               iconColor: AppTheme.accentPrimary,
               iconBg: AppTheme.accentSubtle,
-              progress: planProgress,
+              progress: isColdStart ? 0.45 : planProgress,
               indicatorWidget: ProgressRadialGauge(
-                progress: planProgress,
+                progress: isColdStart ? 0.45 : planProgress,
                 size: 46,
                 strokeWidth: 4.8,
                 progressColor: AppTheme.accentPrimary,
@@ -377,13 +410,16 @@ class AnalyticsScreen extends ConsumerWidget {
                 ),
               ),
               stat1Label: 'Daily Target',
-              stat1Value:
-                  plan.isConfigured ? '${plan.videosPerDay ?? 4} vids' : '--',
+              stat1Value: isColdStart
+                  ? '4 vids'
+                  : (plan.isConfigured ? '${plan.videosPerDay ?? 4} vids' : '--'),
               stat2Label: 'Deadline',
-              stat2Value: plan.isConfigured
-                  ? DateFormat('d MMM').format(
-                      DateTime.tryParse(plan.targetDate) ?? DateTime.now())
-                  : '--',
+              stat2Value: isColdStart
+                  ? '30 Nov'
+                  : (plan.isConfigured
+                      ? DateFormat('d MMM').format(
+                          DateTime.tryParse(plan.targetDate) ?? DateTime.now())
+                      : '--'),
               onTap: () => context.push('/analytics/plan-insights'),
             ),
 
@@ -393,28 +429,33 @@ class AnalyticsScreen extends ConsumerWidget {
             _HubCard(
               key: TourTargetRegistry.keyFor(TourTargetId.analyticsFocusHub),
               title: 'Focus & Deep Work',
-              subtitle: todayFocusSecs > 0
-                  ? '${_formatDuration(todayFocusSecs)} studied today across $todayFocusSessions sessions'
-                  : 'No sessions logged today · Start timer',
-              badge:
-                  todayFocusSecs > 0 ? _formatDuration(todayFocusSecs) : '0m',
+              subtitle: isColdStart
+                  ? '3h 45m studied across 4 sessions (Sample)'
+                  : (todayFocusSecs > 0
+                      ? '${_formatDuration(todayFocusSecs)} studied today across $todayFocusSessions sessions'
+                      : 'No sessions logged today · Start timer'),
+              badge: isColdStart
+                  ? '3h 45m'
+                  : (todayFocusSecs > 0 ? _formatDuration(todayFocusSecs) : '0m'),
               badgeColor: AppTheme.accentSecondary,
               icon: Icons.timer_outlined,
               iconColor: AppTheme.accentSecondary,
               iconBg: AppTheme.accentSecondary.withValues(alpha: 0.12),
-              progress: todayFocusSecs > 0
-                  ? (todayFocusSecs / (4 * 3600)).clamp(0.0, 1.0)
-                  : 0.0,
+              progress: isColdStart
+                  ? 0.65
+                  : (todayFocusSecs > 0
+                      ? (todayFocusSecs / (4 * 3600)).clamp(0.0, 1.0)
+                      : 0.0),
               indicatorWidget: ConcentricDonutIndicator(
-                progress1: totalFocusSecs > 0
-                    ? (videoFocusSecs / totalFocusSecs)
-                    : 0.0,
-                progress2: totalFocusSecs > 0
-                    ? (qbankFocusSecs / totalFocusSecs)
-                    : 0.0,
-                progress3: totalFocusSecs > 0
-                    ? (notesFocusSecs / totalFocusSecs)
-                    : 0.0,
+                progress1: isColdStart
+                    ? 0.50
+                    : (totalFocusSecs > 0 ? (videoFocusSecs / totalFocusSecs) : 0.0),
+                progress2: isColdStart
+                    ? 0.30
+                    : (totalFocusSecs > 0 ? (qbankFocusSecs / totalFocusSecs) : 0.0),
+                progress3: isColdStart
+                    ? 0.20
+                    : (totalFocusSecs > 0 ? (notesFocusSecs / totalFocusSecs) : 0.0),
                 size: 46,
                 ringWidth: 3.5,
                 ringSpacing: 2.0,
@@ -423,9 +464,9 @@ class AnalyticsScreen extends ConsumerWidget {
                 color3: AppTheme.accentTertiary,
               ),
               stat1Label: 'Today\'s Flow',
-              stat1Value: _formatDuration(todayFocusSecs),
+              stat1Value: isColdStart ? '3h 45m' : _formatDuration(todayFocusSecs),
               stat2Label: 'Top Subject',
-              stat2Value: topFocusSubject,
+              stat2Value: isColdStart ? 'Anatomy' : topFocusSubject,
               onTap: () => context.push('/analytics/focus-analytics'),
             ),
 
@@ -435,15 +476,19 @@ class AnalyticsScreen extends ConsumerWidget {
             _HubCard(
               key: TourTargetRegistry.keyFor(TourTargetId.analyticsTasksHub),
               title: 'Daily Tasks Analytics',
-              subtitle: tasksSubtitle,
-              badge: totalTasks > 0 ? '$doneTasks/$totalTasks' : '0/0',
+              subtitle: isColdStart
+                  ? '5 completed today · Target met (Sample)'
+                  : tasksSubtitle,
+              badge: isColdStart
+                  ? '5/6'
+                  : (totalTasks > 0 ? '$doneTasks/$totalTasks' : '0/0'),
               badgeColor: AppTheme.accentEmerald,
               icon: Icons.check_circle_outline_rounded,
               iconColor: AppTheme.accentEmerald,
               iconBg: AppTheme.accentEmerald.withValues(alpha: 0.12),
-              progress: tasksProgress,
+              progress: isColdStart ? 0.83 : tasksProgress,
               indicatorWidget: ProgressRadialGauge(
-                progress: tasksProgress,
+                progress: isColdStart ? 0.83 : tasksProgress,
                 size: 46,
                 strokeWidth: 4.8,
                 progressColor: AppTheme.accentEmerald,
@@ -454,21 +499,23 @@ class AnalyticsScreen extends ConsumerWidget {
                   color: AppTheme.inkForeground,
                 ),
               ),
-              customBottomWidget: totalTasks > 0
+              customBottomWidget: (isColdStart || totalTasks > 0)
                   ? SegmentedVelocityPill(
-                      totalSegments: totalTasks,
-                      completedSegments: doneTasks,
+                      totalSegments: isColdStart ? 6 : totalTasks,
+                      completedSegments: isColdStart ? 5 : doneTasks,
                       activeColor: AppTheme.accentEmerald,
-                      velocityLabel: tasksProgress >= 1.0
-                          ? '100% Target Met'
-                          : '${totalTasks - doneTasks} tasks pending',
-                      isPositiveVelocity: tasksProgress >= 0.5,
+                      velocityLabel: isColdStart
+                          ? '100% Target Met (Sample)'
+                          : (tasksProgress >= 1.0
+                              ? '100% Target Met'
+                              : '${totalTasks - doneTasks} tasks pending'),
+                      isPositiveVelocity: isColdStart ? true : (tasksProgress >= 0.5),
                     )
                   : null,
               stat1Label: 'Pending',
-              stat1Value: '$pendingTasks targets',
+              stat1Value: isColdStart ? '1 target' : '$pendingTasks targets',
               stat2Label: 'Projects',
-              stat2Value: '${activeProjects.length} active',
+              stat2Value: isColdStart ? '2 active' : '${activeProjects.length} active',
               onTap: () => context.push('/analytics/tasks-analytics'),
             ),
 
@@ -477,15 +524,17 @@ class AnalyticsScreen extends ConsumerWidget {
             // ── Hub Card 4: Subject Mastery ──────────────────────────────────
             _HubCard(
               title: 'Subject Mastery',
-              subtitle: masterySubtitle,
-              badge: '${(mbbsProgress * 100).round()}% MBBS',
+              subtitle: isColdStart
+                  ? 'Pathology needs focus · 35% complete (Sample)'
+                  : masterySubtitle,
+              badge: isColdStart ? '38% MBBS' : '${(mbbsProgress * 100).round()}% MBBS',
               badgeColor: AppTheme.accentTertiary,
               icon: Icons.layers_outlined,
               iconColor: AppTheme.accentTertiary,
               iconBg: AppTheme.accentTertiary.withValues(alpha: 0.12),
-              progress: mbbsProgress,
+              progress: isColdStart ? 0.38 : mbbsProgress,
               indicatorWidget: ProgressRadialGauge(
-                progress: mbbsProgress,
+                progress: isColdStart ? 0.38 : mbbsProgress,
                 size: 46,
                 strokeWidth: 4.8,
                 progressColor: AppTheme.accentTertiary,
@@ -497,9 +546,9 @@ class AnalyticsScreen extends ConsumerWidget {
                 ),
               ),
               stat1Label: 'Mastered Items',
-              stat1Value: '$completedMbbsItems/$totalMbbsItems',
+              stat1Value: isColdStart ? '142/380' : '$completedMbbsItems/$totalMbbsItems',
               stat2Label: 'Curriculum Scope',
-              stat2Value: '${subjects.length} Subjects',
+              stat2Value: isColdStart ? '19 Subjects' : '${subjects.length} Subjects',
               onTap: () => context.push('/analytics/subject-mastery'),
             ),
 
@@ -507,14 +556,150 @@ class AnalyticsScreen extends ConsumerWidget {
 
             // ── Study Matrix Section ───────────────────────────
             NeetConsistencyMatrix(
-              dailyVideos: edition.dailyHistory,
-              dailyQBanks: _aggregateDailyCompleted(edition.completedQBanks),
-              dailyNotes: _aggregateDailyCompleted(edition.completedNotes),
+              dailyVideos: isColdStart ? sampleHistory : edition.dailyHistory,
+              dailyQBanks: isColdStart
+                  ? sampleHistory
+                  : _aggregateDailyCompleted(edition.completedQBanks),
+              dailyNotes: isColdStart
+                  ? sampleHistory
+                  : _aggregateDailyCompleted(edition.completedNotes),
               accentColor: AppTheme.accentPrimary,
               weeksCount: 14,
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _AnalyticsColdStartBanner extends StatelessWidget {
+  final VoidCallback onStartSession;
+  const _AnalyticsColdStartBanner({required this.onStartSession});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppTheme.cardWhite,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppTheme.accentPrimary.withValues(alpha: 0.35),
+          width: 1.4,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.accentPrimary.withValues(alpha: 0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.accentSubtle,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.auto_awesome_rounded,
+                      size: 13,
+                      color: AppTheme.accentPrimary,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Day 1 Preview',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.accentPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              Text(
+                'Sample Data',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.mutedText,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Ready for your first session?',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.inkForeground,
+              letterSpacing: -0.3,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Start a timer today to see your daily study streak, charts, and milestones come alive right here.',
+            style: TextStyle(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.mutedText,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ApplePressable(
+            pressedScale: 0.97,
+            onPressed: onStartSession,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: AppTheme.accentPrimary,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.accentPrimary.withValues(alpha: 0.25),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.play_arrow_rounded,
+                    size: 18,
+                    color: AppTheme.onAccent,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Start First Focus Session',
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.onAccent,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

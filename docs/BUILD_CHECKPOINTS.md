@@ -201,6 +201,27 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ## 📋 Active Checkpoints
 
+### [CKPT-070] States & Recovery Suite: Analytics Cold-Start Ghost Specimen, Humanized Error Recovery, Outbox Queue Counter & Zero-CLS Skeleton
+- **Timestamp:** 2026-10-26 10:57 UTC
+- **Category:** states / Analytics Cold-Start Ghost Preview, Humanized Error Recovery, Outbox Queue Counter & Zero-CLS Shimmer
+- **Files Modified (7 files):**
+  - `lib/screens/analytics/analytics_screen.dart` (Day 1 Cold-Start Ghost Specimen: renders warm, reassuring `_AnalyticsColdStartBanner` with 'Day 1 Preview · Sample Data' badge, clean copy explaining how streaks and metrics activate, and full-width 'Start First Focus Session' CTA navigating directly to `/timer`; supplies realistic specimen study data across streak, 4 hubs, and consistency matrix when study history is empty)
+  - `lib/services/error_translator_service.dart` (Humanized Error Recovery Hierarchy: completely simplified and softened clinical errors across all domains; added explicit interceptor for JWT 401 / expired session returning 'Session Paused' with reassurance that local study notes are safe, enabling re-auth or uninterrupted offline guest study)
+  - `lib/widgets/loading/app_shimmer.dart` (Zero-CLS Analytics Skeleton: overhauled `AnalyticsSkeletonView` to match exact widget dimensions including 76px streak card row, 72px arena box, 4x 92px hub cards with concentric circular and velocity bar placeholders, and 140px matrix with dynamic safe-area bottom padding)
+  - `lib/services/sync_service.dart` (Persistent Outbox Queue Tracking: added `pendingSyncCountNotifier` and `refreshPendingCount()` to calculate un-synced local logs newer than persistent `modulix_last_synced_at_v1` in `SharedPreferences`, resetting counter on successful full sync)
+  - `lib/providers/sync_provider.dart` (Exposed `pendingSyncCountProvider` backed by `PendingSyncCountNotifier`)
+  - `lib/screens/settings/settings_screen.dart` (Live Outbox Status in `_CloudSyncSection`: displays dynamic status—syncing with spinner, amber 'X sessions waiting to back up' with prominent 'Back Up Now' button, or emerald '✓ All study sessions backed up' when clean)
+  - `test/progress_overhaul_test.dart` (Added widget test verifying Analytics cold-start banner rendering and CTA navigation to `/timer`; resolved async pump timeouts with mock providers)
+- **Summary:**
+  - Solved the Day 1 Cold-Start problem in Analytics with educational specimen preview data and an immediate on-ramp to starting a focus session.
+  - Hardened error handling into a calm, human-friendly recovery system with JWT 401 session pause handling that never wipes local SQLite progress.
+  - Implemented persistent cloud outbox queue visibility and one-tap manual sync in Settings.
+  - Eradicated Cumulative Layout Shift (CLS) on Analytics loading with pixel-accurate skeleton shimmers.
+- **Verification:**
+  - `flutter analyze lib/`: **No issues found! (0 errors, 0 warnings)**
+  - `flutter test test/modulix_toast_test.dart test/lovable_nav_bar_test.dart test/theme_system_test.dart test/tab_persistence_test.dart test/progress_overhaul_test.dart`: **All 24 tests passed! (100%)**
+- **Status:** ⏳ Pending APK Build
+
 ### [CKPT-069] Modernization Suite: Dynamic Island Glass Toasts, 120Hz Pre-Rendering, Android Predictive Back, Universal Safe Insets & Nav Bar Pill Refinement
 - **Timestamp:** 2026-10-26 09:52 UTC
 - **Category:** UI, Navigation & System Architecture / Dynamic Island Toasts, 120Hz Pre-Rendering, Android 14+ Predictive Back, Universal Multi-Device Safe Insets & Nav Bar Refinement
