@@ -24,6 +24,26 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-093]` — Smooth Preserved Monogram in Transparent Box & 58% Safe-Zone Launcher Icon
+- **Category:** `brand` / `ui` / `vector`
+- **Files Modified:**
+  - `assets/icons/brand/modulix_monogram.svg`
+  - `assets/icons/brand/modulix_monogram_dark.png`
+  - `assets/icons/brand/modulix_monogram_white.png`
+  - `assets/icons/brand/modulix_play_store_512.png`
+  - `android/app/src/main/res/drawable-*/ic_launcher_foreground.png` (mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi)
+  - `android/app/src/main/res/mipmap-*/ic_launcher.png` & `ic_launcher_round.png` (mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi)
+  - `lib/screens/home/home_screen.dart`
+- **Summary:**
+  - **Preserved Smooth Monogram (Anti-Aliasing & Continuity):** Re-engineered master vector and raster assets with 1.5px optical stroke boosting and filtered out microscopic sub-pixel cross-hatching speckles that caused line dropout and shivering under high-DPI downsampling. All inline stems, serifs, and calligraphic interlocking swashes stay solid, continuous, and preserved across all scales.
+  - **Top Bar Translucent Protection Container:** Housed `ModulixLogo(size: 26)` inside a subtle 40x40 dp transparent container (`color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.035)`, hairline border `0.6`, `BorderRadius.circular(10)`). This shields the monogram from background silk mesh/gradient shifts (such as in The Catalyst) without creating an opaque or heavy box.
+  - **Launcher Icon Rescaling (58%):** Scaled foreground monogram from 72% down to 58% across all Android adaptive icon density buckets (`drawable-mdpi` through `xxxhdpi`) and legacy mipmaps, restoring balanced coin margins and elegant breathing room on the mobile desktop.
+- **Verification:** Verified via `flutter analyze` (0 errors, 0 warnings, 0 hints), `flutter test test/modulix_logo_test.dart` (4/4 tests passed 100% green), Gradle debug APK compilation (`build/app/outputs/flutter-apk/app-debug.apk`, 276MB), and visual verification artifacts:
+  - `verify_topbar_transparent_box.png`: Monogram rendered inside the 40x40 transparent box across Daylight, Catalyst, and Midnight themes.
+  - `verify_launcher_icon_58_percent.png`: 58% safe-zone adaptive coin launcher icon on dark wallpaper.
+
+---
+
 ### 🔖 `[CKPT-092]` — Symmetrical Geometric Intaglio Monogram, Tight Canvas, Free-Floating Header & 72% Safe-Zone Icon
 - **Category:** `brand` / `ui` / `vector`
 - **Files Modified:**
