@@ -24,6 +24,25 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-095]` — AlarmManager.setAlarmClock Deep Doze Piercer & Headphone Disconnect Audio Resilience
+- **Category:** `timer` / `native` / `audio`
+- **Files Modified:**
+  - `android/app/src/main/AndroidManifest.xml`
+  - `android/app/src/main/kotlin/com/modulix/app/MainActivity.kt`
+  - `android/app/src/main/kotlin/com/modulix/app/TimerAlarmReceiver.kt`
+  - `lib/services/alarm_clock_service.dart`
+  - `lib/services/ambient_audio_service.dart`
+  - `lib/providers/focus_timer_provider.dart`
+  - `test/alarm_clock_service_test.dart`
+- **Summary:**
+  - **Native AlarmManager.setAlarmClock (`MainActivity.kt`, `TimerAlarmReceiver.kt`, `alarm_clock_service.dart`):** Integrated system-level alarm clock scheduling that pierces Android 11–16 Deep Doze at the exact millisecond. Displays upcoming alarm on lock screen and Always-On Display (AOD). Features defensive Android 12+ `canScheduleExactAlarms()` verification to avoid `SecurityException`.
+  - **Headphone Disconnection & Becoming Noisy Receiver (`MainActivity.kt`, `ambient_audio_service.dart`):** Registered native `ACTION_AUDIO_BECOMING_NOISY` broadcast receiver. Automatically pauses ambient background playback when Bluetooth earbuds or headphones disconnect, preventing accidental loudspeaker playback in quiet study spaces.
+  - **Focus Timer Alarm Synchronization (`focus_timer_provider.dart`):** Automatically schedules native alarm clock on countdown start, resumes on recovery, and cancels on pause, reset, or completion.
+- **Verification:** 15/15 unit tests passed 100% green (`alarm_clock_service_test.dart`, `battery_optimization_service_test.dart`, `focus_timer_idempotency_test.dart`), `flutter analyze` 0 issues, debug APK compiled successfully (`app-debug.apk`).
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### 🔖 `[CKPT-094]` — Uninterrupted Focus Timer, Wall-Clock Disk Session Anchor & OEM Battery Optimization Shield
 - **Category:** `timer` / `resilience` / `native`
 - **Files Modified:**

@@ -1,5 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -173,11 +176,27 @@ class AmbientAudioService extends ChangeNotifier {
   static final AmbientAudioService instance = AmbientAudioService._();
   AmbientAudioService._() {
     _loadPersistedState();
+    _initNoisyReceiver();
   }
 
+  static const MethodChannel _noisyChannel = MethodChannel('com.modulix.app/audio_becoming_noisy');
   static const _prefActiveTracksKey = 'modulix_ambient_active_tracks_v1';
   static const _prefVolumesKey = 'modulix_ambient_volumes_v1';
   static const _prefMasterVolumeKey = 'modulix_ambient_master_vol_v1';
+
+  void _initNoisyReceiver() {
+    if (kIsWeb || !Platform.isAndroid) return;
+    try {
+      _noisyChannel.setMethodCallHandler((call) async {
+        if (call.method == 'onAudioBecomingNoisy') {
+          debugPrint('[AmbientAudioService] Audio becoming noisy (headphones unplugged). Auto-pausing ambient playback.');
+          await onTimerPause();
+        }
+      });
+    } catch (e) {
+      debugPrint('[AmbientAudioService] _initNoisyReceiver error: $e');
+    }
+  }
 
   final Map<String, AudioPlayer> _players = {};
   final Set<String> _activeTrackIds = {};

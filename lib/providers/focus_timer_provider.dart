@@ -16,6 +16,7 @@ import '../services/analytics_service.dart';
 import '../services/sync_service.dart';
 import '../services/ambient_audio_service.dart';
 import '../services/study_presence_service.dart';
+import '../services/alarm_clock_service.dart';
 
 enum TimerMode { pomodoro, countUp, moduleLinked }
 enum TimerPhase { idle, focusing, onBreak }
@@ -407,6 +408,13 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
           _ticker = Timer.periodic(const Duration(milliseconds: 200), (_) => _tick());
           AmbientAudioService.instance.onTimerStartOrResume();
           _updateRealtimeNotification();
+          if (_sessionTargetEndTime != null) {
+            AlarmClockService.instance.scheduleAlarm(
+              targetTime: _sessionTargetEndTime!,
+              title: topicTitle,
+              isBreak: false,
+            );
+          }
           return;
         }
       }
@@ -702,6 +710,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
       _lastTickWallTime = null;
       NotificationService.instance.cancelFocusTimerEnd();
       NotificationService.instance.cancelFocusTimerRunning();
+      AlarmClockService.instance.cancelAlarm();
       AmbientAudioService.instance.onTimerPause();
       StudyPresenceService.instance.stopFocusSession();
       state = state.copyWith(isRunning: false);
@@ -742,6 +751,13 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
             topicTitle: state.topicTitle,
             isBreak: false,
           );
+          if (_sessionTargetEndTime != null) {
+            AlarmClockService.instance.scheduleAlarm(
+              targetTime: _sessionTargetEndTime!,
+              title: state.topicTitle,
+              isBreak: false,
+            );
+          }
         }
       }
       _ticker = Timer.periodic(const Duration(milliseconds: 200), (_) => _tick());
@@ -795,8 +811,21 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
 
     if (alertsEnabled) {
       NotificationService.instance.cancelFocusTimerEnd();
+      AlarmClockService.instance.cancelAlarm();
       if (state.isRunning) {
         _updateRealtimeNotification();
+        if (!willBeBreak && state.mode != TimerMode.countUp && state.remainingSeconds > 0 && _sessionTargetEndTime != null) {
+          NotificationService.instance.scheduleFocusTimerEnd(
+            duration: Duration(seconds: state.remainingSeconds),
+            topicTitle: state.topicTitle,
+            isBreak: false,
+          );
+          AlarmClockService.instance.scheduleAlarm(
+            targetTime: _sessionTargetEndTime!,
+            title: state.topicTitle,
+            isBreak: false,
+          );
+        }
       }
     }
     _persistSessionAnchor();
@@ -816,6 +845,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     _lastTickWallTime = null;
     NotificationService.instance.cancelFocusTimerEnd();
     NotificationService.instance.cancelFocusTimerRunning();
+    AlarmClockService.instance.cancelAlarm();
     AmbientAudioService.instance.onTimerPause();
     if (state.focusSecondsElapsed == 0) {
       reset();
@@ -918,6 +948,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     _lastTickWallTime = null;
     NotificationService.instance.cancelFocusTimerEnd();
     NotificationService.instance.cancelFocusTimerRunning();
+    AlarmClockService.instance.cancelAlarm();
     AmbientAudioService.instance.onTimerPause();
     StudyPresenceService.instance.stopFocusSession();
     state = FocusTimerState(
@@ -937,6 +968,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     _lastTickWallTime = null;
     NotificationService.instance.cancelFocusTimerEnd();
     NotificationService.instance.cancelFocusTimerRunning();
+    AlarmClockService.instance.cancelAlarm();
     AmbientAudioService.instance.onTimerPause();
     StudyPresenceService.instance.stopFocusSession();
     final rem = state.mode == TimerMode.pomodoro
@@ -1090,6 +1122,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     _lastTickWallTime = null;
     NotificationService.instance.cancelFocusTimerEnd();
     NotificationService.instance.cancelFocusTimerRunning();
+    AlarmClockService.instance.cancelAlarm();
     AmbientAudioService.instance.onTimerPause();
 
     final alertsEnabled =
