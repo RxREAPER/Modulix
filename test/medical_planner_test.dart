@@ -129,7 +129,7 @@ void main() {
 
       expect(find.text('Autonomic Pharmacology'), findsOneWidget);
       expect(find.text('PHARM'), findsOneWidget);
-      expect(find.text('25m/50m'), findsOneWidget);
+      expect(find.textContaining('25m/50m'), findsOneWidget);
       expect(find.byIcon(Icons.repeat_rounded), findsOneWidget);
     });
   });

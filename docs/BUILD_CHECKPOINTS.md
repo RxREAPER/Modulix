@@ -4,6 +4,51 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.32.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (276MB)
+- **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)
+- **Compilation Time:** 192.0s | **Static Analysis:** 0 Errors, 0 Warnings | **Test Suite:** 100% Green (All Targeted Suites Passed)
+- **Included Checkpoints:** `[CKPT-087]` (✅ Included in Build)
+
+### Key Highlights & Releases in v1.32.0:
+1. **Sub-Screens Modern Editorial Luxury & Box Fatigue Elimination:**
+   - **Daily Tasks & Projects Screen (`daily_tasks_screen.dart`):** Replaced repetitive boxed task cards with an airy, minimal list layout featuring 0.6px dividers, generous whitespace, tactile `ApplePressable` feedback, modernized switcher icons, and an elevated "Select Project" modal.
+   - **Module Tasks Screen (`module_tasks_screen.dart`):** Overhauled the top subject banner into the `SquareSubjectCard` library style with a 0.5px hairline border, diffused ambient shadow, and clean item progress tracking (`X of Y items done`). Redesigned module video tiles to match `VideoTile` with circular serial numbers, clean strike text, subtle `· Stale` text indicators, and rounded play buttons.
+   - **Module Plan Page (`plan_screen.dart`):** Refined deadline, pacing message boxes, and unit chips with 0.6px hairline boundaries. Replaced generic buttons with high-tactile `ApplePressable` controls for "Lock In Study Plan" and "Open Module Tasks Queue".
+   - **Curriculum Search Bar (`curriculum_search_bar.dart`):** Replaced harsh 1.8px blue border with smooth 0.6px hairline border and diffused focus glow. Added container expansion and minimalist dot badges.
+   - **Leaderboard Screen (`leaderboard_screen.dart`):** Wrapped ranks 4–20 into a single continuous card container with hairline dividers, eliminating 20 individual card boxes. Implemented a fluid 4-way sliding capsule switcher across Daily/Weekly/Monthly/Yearly scales with spring physics.
+   - **Analytics Screens (`study_plan_analytics_page.dart`, `focus_timer_analytics_page.dart`, `daily_tasks_analytics_page.dart`, `analytics_screen.dart`):** Renamed "Study Plan Insights" to "Module Plan Progress" and "Focus & Deep Work" to "Focus & Pomodoro Log" across sub-pages and hub cards. Replaced uppercase headings with `AppTheme.headingStyle()` italic serif titles; eliminated clipped titles and card clutter. Added a quick date filter bar `[All, Today, Yesterday, This Week]` in focus session logs.
+   - **Theme Studio Screen (`theme_studio_screen.dart`):** Transformed into an interactive high-motion catalogue with fluid card expansion, atmospheric gradient preview ribbons, and animated swatch scales.
+2. **Quality Assurance & Verification:**
+   - Static analysis: `flutter analyze` passed with 0 errors, 0 warnings, 0 hints across the entire project.
+   - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
+   - Debug APK compiled successfully (`app-debug.apk`, 276MB).
+
+---
+
+### 🔖 `[CKPT-087]` — Comprehensive Sub-Screens Luxury Editorial Overhaul & Motion Redesign
+- **Category:** `ui` / `editorial` / `motion` / `subscreens`
+- **Files Modified:**
+  - `lib/screens/daily_tasks/daily_tasks_screen.dart`
+  - `lib/screens/curriculum/module_tasks_screen.dart`
+  - `lib/screens/plan/plan_screen.dart`
+  - `lib/widgets/curriculum/curriculum_search_bar.dart`
+  - `lib/screens/analytics/leaderboard_screen.dart`
+  - `lib/screens/analytics/study_plan_analytics_page.dart`
+  - `lib/screens/analytics/focus_timer_analytics_page.dart`
+  - `lib/screens/analytics/daily_tasks_analytics_page.dart`
+  - `lib/screens/analytics/analytics_screen.dart`
+  - `lib/screens/settings/theme_studio_screen.dart`
+  - `test/progress_overhaul_test.dart`
+  - `test/study_desk_test.dart`
+  - `test/medical_planner_test.dart`
+- **Summary:**
+  - Modernized sub-screens, sub-pages, cards, buttons, tags, texts, motions, and animations across 9 major components.
+  - Eliminated repetitive box cards, reduced noisy tags, replaced uppercase labels with editorial italic serif typography, and unified list views with 0.6px hairline dividers.
+- **Verification:** Verified via `flutter analyze` (0 issues), test suites passed 100% (`flutter test`), debug APK built successfully (`app-debug.apk`, 276MB).
+
+---
+
 ## 🚀 Build Manifest v1.31.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (275MB)
 - **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)

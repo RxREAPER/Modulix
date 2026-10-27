@@ -206,9 +206,9 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: (_focusNode.hasFocus || _isSearching)
-                  ? AppTheme.accentPrimary
+                  ? AppTheme.accentPrimary.withValues(alpha: 0.6)
                   : AppTheme.borderLight,
-              width: (_focusNode.hasFocus || _isSearching) ? 1.8 : 1.2,
+              width: 0.6,
             ),
             boxShadow: [
               BoxShadow(
@@ -216,9 +216,9 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
                     ? AppTheme.accentPrimary.withValues(alpha: 0.12)
                     : (AppTheme.current.isDark
                         ? Colors.black.withValues(alpha: 0.25)
-                        : Colors.black.withValues(alpha: 0.04)),
+                        : Colors.black.withValues(alpha: 0.03)),
                 offset: const Offset(0, 2),
-                blurRadius: (_focusNode.hasFocus || _isSearching) ? 8 : 4,
+                blurRadius: (_focusNode.hasFocus || _isSearching) ? 12 : 4,
               ),
             ],
           ),
@@ -292,14 +292,19 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
                   constraints: const BoxConstraints(maxHeight: 340),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppTheme.borderLight, width: 1.2),
+                    border: Border.all(
+                      color: AppTheme.current.isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : const Color(0xFFE2E8F0),
+                      width: 0.6,
+                    ),
                     boxShadow: [
                       BoxShadow(
                         color: AppTheme.current.isDark
                             ? Colors.black.withValues(alpha: 0.35)
-                            : Colors.black.withValues(alpha: 0.08),
+                            : Colors.black.withValues(alpha: 0.06),
                         offset: const Offset(0, 4),
-                        blurRadius: 12,
+                        blurRadius: 14,
                       ),
                     ],
                   ),
@@ -630,33 +635,48 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
   Widget _typeBadge(String label, Color color) {
     return Container(
       margin: const EdgeInsets.only(left: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 0.8),
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 9,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 0.5,
-          color: color,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 4,
+            height: 4,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.4,
+              color: color,
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _resultHeader(String title) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      color: AppTheme.parchmentSurface,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: AppTheme.current.isDark
+          ? const Color(0xFF1E293B).withValues(alpha: 0.5)
+          : const Color(0xFFF8FAFC),
       child: Text(
         title,
         style: TextStyle(
           fontSize: 10,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           letterSpacing: 0.8,
           color: AppTheme.mutedText,
         ),

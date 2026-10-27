@@ -8,7 +8,6 @@ import '../../providers/leaderboard_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/analytics/editorial_podium.dart';
 import '../../widgets/analytics/personal_standing_dock.dart';
-import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/profile/profile_customization.dart';
 import '../../widgets/rank_badge.dart';
 import '../../services/study_presence_service.dart';
@@ -139,54 +138,97 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                 _ResetReminderBanner(activeScale: activeScale),
                 const SizedBox(height: 16),
 
-                // ── 3. Editorial Top 3 Podium ────────────────────────────────
-                EditorialPodium(
-                  first: first,
-                  second: second,
-                  third: third,
-                ),
-                const SizedBox(height: 16),
-
-                // ── 4. Ranks 4 to 20 Section Header ──────────────────────────
-                if (listEntries.isNotEmpty) ...[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // ── Animated Scale Transition Wrapper ───────────────────────
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 280),
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.easeInCubic,
+                  child: KeyedSubtree(
+                    key: ValueKey(activeScale),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'TOP 20',
-                          style: TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.1,
-                            color: AppTheme.mutedText,
-                          ),
+                        // ── 3. Editorial Top 3 Podium ────────────────────────
+                        EditorialPodium(
+                          first: first,
+                          second: second,
+                          third: third,
                         ),
-                        Text(
-                          '${activeScale.label} Standings',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: AppTheme.mutedText,
+                        const SizedBox(height: 16),
+
+                        // ── 4. Ranks 4 to 20 Section Header ──────────────────
+                        if (listEntries.isNotEmpty) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'TOP 20',
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 1.1,
+                                    color: AppTheme.mutedText,
+                                  ),
+                                ),
+                                Text(
+                                  '${activeScale.label} Standings',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppTheme.mutedText,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: 6),
+
+                          // ── 5. Single Cohesive Card for Ranks 4-20 ─────────
+                          Container(
+                            decoration: BoxDecoration(
+                              color: AppTheme.current.isDark ? const Color(0xFF1E293B) : Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: AppTheme.current.isDark
+                                    ? Colors.white.withValues(alpha: 0.08)
+                                    : const Color(0xFFE2E8F0),
+                                width: 0.6,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: AppTheme.current.isDark ? 0.2 : 0.03),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: listEntries.length,
+                              separatorBuilder: (context, index) => Divider(
+                                height: 1,
+                                thickness: 0.6,
+                                indent: 52,
+                                endIndent: 14,
+                                color: AppTheme.current.isDark
+                                    ? Colors.white.withValues(alpha: 0.06)
+                                    : const Color(0xFFF1F5F9),
+                              ),
+                              itemBuilder: (context, index) {
+                                final entry = listEntries[index];
+                                return _LeaderboardRow(entry: entry);
+                              },
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
-                  const SizedBox(height: 6),
-
-                  // ── 5. Modern Soft Pastel Pill Rows (Ranks 4-20) ───────────
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: listEntries.length,
-                    itemBuilder: (context, index) {
-                      final entry = listEntries[index];
-                      return _LeaderboardRow(entry: entry);
-                    },
-                  ),
-                ],
+                ),
               ],
             ),
           ),
@@ -221,10 +263,11 @@ class _TactileScaleSwitcher extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = AppTheme.current.isDark;
+    final activeIndex = LeaderboardScale.values.indexOf(activeScale);
 
     return Container(
       height: 44,
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(14),
@@ -232,51 +275,68 @@ class _TactileScaleSwitcher extends StatelessWidget {
           color: isDark
               ? Colors.white.withValues(alpha: 0.06)
               : AppTheme.borderLight.withValues(alpha: 0.7),
-          width: 0.8,
+          width: 0.6,
         ),
       ),
-      child: Row(
-        children: LeaderboardScale.values.map((scale) {
-          final isSelected = scale == activeScale;
-          return Expanded(
-            child: ApplePressable(
-              onTap: () => onScaleChanged(scale),
-              pressedScale: 0.96,
-              borderRadius: BorderRadius.circular(10),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final tabWidth = constraints.maxWidth / LeaderboardScale.values.length;
+          final tabHeight = constraints.maxHeight;
+
+          return Stack(
+            children: [
+              // Fluid Sliding Capsule Pill
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 240),
                 curve: Curves.easeOutCubic,
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? (isDark ? const Color(0xFF334155) : Colors.white)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Center(
-                  child: Text(
-                    scale.label,
-                    style: TextStyle(
-                      fontSize: 12.0,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                      color: isSelected
-                          ? AppTheme.inkForeground
-                          : AppTheme.mutedText,
-                    ),
+                left: activeIndex * tabWidth,
+                top: 0,
+                width: tabWidth,
+                height: tabHeight,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF334155) : Colors.white,
+                    borderRadius: BorderRadius.circular(11),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
+              // Interactive tabs
+              Row(
+                children: LeaderboardScale.values.map((scale) {
+                  final isSelected = scale == activeScale;
+                  return Expanded(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => onScaleChanged(scale),
+                      child: Container(
+                        height: tabHeight,
+                        alignment: Alignment.center,
+                        child: AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 180),
+                          style: TextStyle(
+                            fontSize: 12.0,
+                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                            color: isSelected
+                                ? AppTheme.inkForeground
+                                : AppTheme.mutedText,
+                          ),
+                          child: Text(scale.label),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
           );
-        }).toList(),
+        },
       ),
     );
   }
@@ -385,29 +445,12 @@ class _LeaderboardRow extends StatelessWidget {
     final isUser = entry.isCurrentUser;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: isUser
-            ? (isDark ? const Color(0xFF1E1B4B) : const Color(0xFFEEF2FF))
-            : (isDark ? const Color(0xFF1E293B) : Colors.white),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isUser
-              ? AppTheme.accentPrimary.withValues(alpha: 0.45)
-              : (isDark
-                  ? Colors.white.withValues(alpha: 0.08)
-                  : AppTheme.borderLight.withValues(alpha: 0.8)),
-          width: 1.0,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      color: isUser
+          ? (isDark
+              ? const Color(0xFF1E1B4B).withValues(alpha: 0.35)
+              : const Color(0xFFEEF2FF).withValues(alpha: 0.6))
+          : Colors.transparent,
       child: Row(
         children: [
           // Circular Rank Pod

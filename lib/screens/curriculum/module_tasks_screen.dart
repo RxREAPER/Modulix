@@ -391,167 +391,145 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
     required int daysRemaining,
     required bool isUnitScope,
   }) {
+    final isDark = AppTheme.current.isDark;
     final meta = targetSubject != null ? subjectMeta(targetSubject.id) : null;
 
     return Container(
       key: TourTargetRegistry.keyFor(TourTargetId.moduleTasksScreenHeader),
       width: double.infinity,
-      decoration: AppTheme.sketchDecoration(
-        backgroundColor: AppTheme.cardWhite,
-        borderRadius: 18,
-        borderWidth: 1.4,
-        shadowOffset: 2.5,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : AppTheme.borderLight.withValues(alpha: 0.6),
+          width: 0.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Row 1: Selected Subject with accent icon & Status Pill
+          // Row 1: Icon + Subject Name + Completion Pill
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              if (meta != null) ...[
+                SubjectSketchIcon(
+                  subjectId: plan.targetSubject,
+                  color: meta.accent,
+                  size: 32,
+                ),
+                const SizedBox(width: 14),
+              ],
               Expanded(
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (meta != null) ...[
-                      SubjectSketchIcon(
-                        subjectId: plan.targetSubject,
-                        color: meta.accent,
-                        size: 26,
+                    Text(
+                      subjectName,
+                      style: AppTheme.headingStyle(
+                        fontSize: 21,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.inkForeground,
                       ),
-                      const SizedBox(width: 12),
-                    ],
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            subjectName,
-                            style: AppTheme.headingStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              color: AppTheme.inkForeground,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            isUnitScope ? 'Unit: $selectedUnitDisplay' : 'Scope: $selectedUnitDisplay',
-                            style: AppTypography.cardSubtitle(
-                              fontSize: 11.5,
-                              color: AppTheme.mutedText,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      isUnitScope ? 'Unit: $selectedUnitDisplay' : 'All Units',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.mutedText,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: paceStatusColor.withValues(alpha: 0.12),
+                  color: unitProgress >= 1.0
+                      ? const Color(0xFF10B981).withValues(alpha: 0.12)
+                      : (isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFF1F5F9)),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: paceStatusColor, width: 1.2),
+                  border: Border.all(
+                    color: unitProgress >= 1.0
+                        ? const Color(0xFF10B981).withValues(alpha: 0.4)
+                        : (isDark ? Colors.white.withValues(alpha: 0.06) : AppTheme.borderLight.withValues(alpha: 0.6)),
+                    width: 0.8,
+                  ),
                 ),
                 child: Text(
-                  paceStatusText.toUpperCase(),
-                  style: AppTypography.microBadge(
-                    fontSize: 10.0,
-                    letterSpacing: 0.5,
-                    color: paceStatusColor,
+                  '$unitProgressPercent%',
+                  style: TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: unitProgress >= 1.0 ? const Color(0xFF10B981) : AppTheme.inkForeground,
                   ),
                 ),
               ),
             ],
           ),
 
-          const Divider(height: 24, thickness: 1, color: Color(0xFFF4F4F5)),
+          const SizedBox(height: 16),
 
-          // Row 2: Clean 3-Column Plan Metrics
-          Row(
-            children: [
-              Expanded(
-                child: _planMetric(
-                  label: 'DAILY GOAL',
-                  value: '${plan.videosPerDay ?? 4}',
-                  unit: 'vids/day',
-                ),
-              ),
-              Container(width: 1.0, height: 26, color: const Color(0xFFE5E7EB)),
-              Expanded(
-                child: _planMetric(
-                  label: 'DONE TODAY',
-                  value: '$completedBatchCount/$totalBatchCount',
-                  unit: 'completed',
-                  highlightColor: completedBatchCount >= totalBatchCount && totalBatchCount > 0
-                      ? const Color(0xFF059669)
-                      : null,
-                ),
-              ),
-              if (daysRemaining > 0) ...[
-                Container(width: 1.0, height: 26, color: const Color(0xFFE5E7EB)),
-                Expanded(
-                  child: _planMetric(
-                    label: 'TARGET',
-                    value: '$daysRemaining',
-                    unit: 'days left',
+          // Row 2: Continuous 5px rounded progress track
+          ClipRRect(
+            borderRadius: BorderRadius.circular(3),
+            child: Container(
+              height: 5,
+              width: double.infinity,
+              color: isDark ? Colors.white.withValues(alpha: 0.06) : const Color(0xFFF1F5F9),
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: unitProgress.clamp(0.0, 1.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: meta?.accent ?? AppTheme.primaryBlue,
+                    borderRadius: BorderRadius.circular(3),
                   ),
                 ),
-              ],
-            ],
+              ),
+            ),
           ),
 
-          const Divider(height: 24, thickness: 1, color: Color(0xFFF4F4F5)),
+          const SizedBox(height: 10),
 
-          // Row 3: Subject / Unit Progress Bar & Label
+          // Row 3: Modern visible text summary
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                isUnitScope ? 'Unit Progress' : 'Subject Progress',
+                '$completedInScope of $totalVideosInScope items done',
                 style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
                   color: AppTheme.inkForeground,
                 ),
               ),
               Text(
-                '$unitProgressPercent% ($completedInScope of $totalVideosInScope)',
+                '${plan.videosPerDay ?? 4} vids/day · $paceStatusText',
                 style: TextStyle(
                   fontSize: 11.5,
-                  fontWeight: FontWeight.w700,
-                  fontFamily: 'monospace',
-                  color: Colors.grey.shade700,
+                  fontWeight: FontWeight.w600,
+                  color: paceStatusColor,
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 8),
-          Container(
-            height: 7,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: AppTheme.parchmentSurface,
-              borderRadius: BorderRadius.circular(3.5),
-              border: Border.all(color: AppTheme.sketchBorderColor, width: 1.0),
-            ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: unitProgress.clamp(0.0, 1.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: meta?.accent ?? AppTheme.primaryBlue,
-                  borderRadius: BorderRadius.circular(2.5),
-                ),
-              ),
-            ),
           ),
         ],
       ),
@@ -666,6 +644,7 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _planMetric({
     required String label,
     required String value,
@@ -805,11 +784,15 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
         ? video.serialNumber
         : ((targetSubject?.allVideos.indexWhere((v) => v.id == video.id) ?? -1) + 1);
     final displayNum = globalIndex > 0 ? '$globalIndex' : '${index + 1}';
+    final isDark = AppTheme.current.isDark;
+    final meta = targetSubject != null ? subjectMeta(targetSubject.id) : null;
+    final accent = meta?.accent ?? AppTheme.primaryBlue;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: ApplePressable(
         pressedScale: 0.98,
+        pressedOpacity: 0.94,
         onTap: () {
           HapticFeedback.selectionClick();
           if (isDone) {
@@ -832,43 +815,62 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
         },
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          decoration: AppTheme.sketchDecoration(
-            backgroundColor: isDone ? AppTheme.parchmentSurface : AppTheme.cardWhite,
-            borderRadius: 16,
-            borderWidth: 1.2,
-            shadowOffset: 2.0,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: isDone
+                ? (isDark ? const Color(0xFF0D281E) : const Color(0xFFE8F5E9))
+                : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC)),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDone
+                  ? const Color(0xFF10B981).withValues(alpha: 0.35)
+                  : AppTheme.borderLight.withValues(alpha: 0.7),
+              width: 0.6,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              // Sequential number badge
+              // Circular Serial Node / Completed Indicator (matches ChapterScreen VideoTile)
               AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                width: 42,
-                height: 42,
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOutCubic,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
+                  shape: BoxShape.circle,
                   color: isDone
-                      ? Colors.green.withValues(alpha: 0.16)
-                      : AppTheme.accentPrimary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
-                  border: isDone
-                      ? Border.all(color: Colors.green.withValues(alpha: 0.5), width: 1.5)
-                      : null,
+                      ? const Color(0xFF10B981).withValues(alpha: 0.16)
+                      : accent.withValues(alpha: 0.12),
+                  border: Border.all(
+                    color: isDone
+                        ? const Color(0xFF10B981).withValues(alpha: 0.45)
+                        : accent.withValues(alpha: 0.28),
+                    width: 1.0,
+                  ),
                 ),
                 child: Center(
-                  child: Text(
-                    displayNum,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      color: isDone ? Colors.green.shade800 : AppTheme.accentPrimary,
-                      fontSize: 15,
-                    ),
-                  ),
+                  child: isDone
+                      ? const Icon(Icons.check_rounded, size: 18, color: Color(0xFF10B981))
+                      : Text(
+                          displayNum.padLeft(2, '0'),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: accent,
+                            fontSize: 12.5,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(width: 12),
 
-              // Title and Meta
+              // Title and Meta with AnimatedStrikeText
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -880,11 +882,12 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 13.5,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: isDone ? AppTheme.mutedText : AppTheme.inkForeground,
+                        height: 1.25,
                       ),
                       strikeColor: AppTheme.mutedText,
-                      strikeThickness: 1.8,
+                      strikeThickness: 1.6,
                     ),
                     const SizedBox(height: 3),
                     Row(
@@ -892,39 +895,20 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
                         Text(
                           detail,
                           style: TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
                             fontFamily: 'monospace',
                             color: AppTheme.mutedText,
                           ),
                         ),
                         if (isStale && !isDone) ...[
                           const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFEF3C7),
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: const Color(0xFFD97706), width: 0.9),
-                            ),
-                            child: const Text(
-                              'Stale',
-                              style: TextStyle(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFFB45309),
-                              ),
-                            ),
-                          ),
-                        ],
-                        if (isDone) ...[
-                          const SizedBox(width: 8),
-                          Text(
-                            '• Completed',
+                          const Text(
+                            '· Stale',
                             style: TextStyle(
                               fontSize: 10.5,
                               fontWeight: FontWeight.w600,
-                              color: AppTheme.accentPrimary,
+                              color: Color(0xFFD97706),
                             ),
                           ),
                         ],
@@ -934,7 +918,9 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
                 ),
               ),
 
-              // Focus Timer Shortcut
+              const SizedBox(width: 8),
+
+              // Play / Focus Timer Button
               ApplePressable(
                 pressedScale: 0.90,
                 onTap: () {
@@ -952,35 +938,20 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
                     },
                   );
                 },
-                child: Padding(
-                  padding: const EdgeInsets.all(6),
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : const Color(0xFFF1F5F9),
+                  ),
+                  alignment: Alignment.center,
                   child: Icon(
-                    Icons.timer_outlined,
+                    Icons.play_arrow_rounded,
                     size: 19,
-                    color: isDone ? AppTheme.mutedText : AppTheme.inkForeground,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 4),
-
-              // Animated Checkbox
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 22,
-                height: 22,
-                decoration: BoxDecoration(
-                  color: isDone ? AppTheme.accentPrimary : AppTheme.cardWhite,
-                  borderRadius: BorderRadius.circular(6.5),
-                  border: Border.all(
-                    color: isDone ? AppTheme.accentPrimary : AppTheme.sketchBorderColor,
-                    width: 1.5,
-                  ),
-                ),
-                child: Center(
-                  child: AnimatedCheckStroke(
-                    checked: isDone,
-                    size: 15,
-                    color: AppTheme.onAccent,
+                    color: isDark ? Colors.white : AppTheme.inkForeground,
                   ),
                 ),
               ),

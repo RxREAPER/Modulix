@@ -167,8 +167,8 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                     color: isDark ? const Color(0xFF1E293B) : Colors.white,
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
-                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                      width: 1.0,
+                      color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0),
+                      width: 0.6,
                     ),
                     boxShadow: [
                       BoxShadow(
@@ -197,11 +197,11 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'DAILY STUDY RITUALS',
+                              'Daily Study Rituals',
                               style: TextStyle(
                                 fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1.0,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8,
                                 color: AppTheme.mutedText,
                               ),
                             ),
@@ -248,12 +248,11 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'STUDY PROJECTS (${activeProjects.length})',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.1,
-                        color: AppTheme.mutedText,
+                      'Study Projects (${activeProjects.length})',
+                      style: AppTheme.headingStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.inkForeground,
                       ),
                     ),
                     ApplePressable(
@@ -302,12 +301,11 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
 
                 // ── 3. Standalone Tasks Section ───────────────────────────────
                 Text(
-                  'STANDALONE RITUALS (${standaloneTasks.length})',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.1,
-                    color: AppTheme.mutedText,
+                  'Standalone Tasks (${standaloneTasks.length})',
+                  style: AppTheme.headingStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.inkForeground,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -319,8 +317,8 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                       color: isDark ? const Color(0xFF1E293B) : Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                        width: 0.8,
+                        color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0),
+                        width: 0.6,
                       ),
                     ),
                     alignment: Alignment.center,
@@ -348,12 +346,11 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
 
                 // ── 5. 14-Day Consistency Matrix ─────────────────────────────
                 Text(
-                  '14-DAY ACTIVITY MATRIX',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.1,
-                    color: AppTheme.mutedText,
+                  '14-Day Activity Matrix',
+                  style: AppTheme.headingStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.inkForeground,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -494,13 +491,13 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-          width: 1.0,
+          color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0),
+          width: 0.6,
         ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-            blurRadius: 12,
+            blurRadius: 10,
             offset: const Offset(0, 3),
           ),
         ],
@@ -641,14 +638,21 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDone
-              ? (isDark ? const Color(0xFF334155).withValues(alpha: 0.5) : const Color(0xFFE2E8F0).withValues(alpha: 0.6))
-              : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-          width: 0.9,
+              ? (isDark ? Colors.white.withValues(alpha: 0.04) : const Color(0xFFE2E8F0).withValues(alpha: 0.5))
+              : (isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0)),
+          width: 0.6,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,

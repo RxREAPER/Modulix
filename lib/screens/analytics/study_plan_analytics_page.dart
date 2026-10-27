@@ -150,7 +150,7 @@ class _StudyPlanAnalyticsPageState
           },
         ),
         title: Text(
-          'Study Plan Insights',
+          'Module Plan Progress',
           style: AppTheme.headingStyle(
             fontSize: 22,
             fontWeight: FontWeight.w700,
@@ -166,7 +166,7 @@ class _StudyPlanAnalyticsPageState
                 decoration: BoxDecoration(
                   color: AppTheme.accentSubtle,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.accentPrimary, width: 1.2),
+                  border: Border.all(color: AppTheme.accentPrimary.withValues(alpha: 0.5), width: 0.6),
                 ),
                 child: Text(
                   targetSub?.name ?? 'Plan',
@@ -197,8 +197,8 @@ class _StudyPlanAnalyticsPageState
                 border: Border.all(
                   color: isDark
                       ? Colors.white.withValues(alpha: 0.08)
-                      : AppTheme.borderLight.withValues(alpha: 0.8),
-                  width: 1.0,
+                      : const Color(0xFFE2E8F0),
+                  width: 0.6,
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -311,8 +311,8 @@ class _StudyPlanAnalyticsPageState
                 border: Border.all(
                   color: isDark
                       ? Colors.white.withValues(alpha: 0.08)
-                      : AppTheme.borderLight.withValues(alpha: 0.8),
-                  width: 1.0,
+                      : const Color(0xFFE2E8F0),
+                  width: 0.6,
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -542,8 +542,8 @@ class _StudyPlanAnalyticsPageState
                     border: Border.all(
                       color: isDark
                           ? Colors.white.withValues(alpha: 0.08)
-                          : AppTheme.borderLight.withValues(alpha: 0.8),
-                      width: 1.0,
+                          : const Color(0xFFE2E8F0),
+                      width: 0.6,
                     ),
                     boxShadow: [
                       BoxShadow(

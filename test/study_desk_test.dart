@@ -234,12 +234,11 @@ void main() {
     expect(find.text('Module Based Tasks'), findsOneWidget);
     expect(find.text('Setup'), findsOneWidget);
 
-    // PART 1: Top Banner with Subject, small Unit text, Daily Goal, Done Today, Unit Progress
+    // PART 1: Top Banner with Subject, small Unit text, progress %, and items done
     expect(find.text('Anatomy'), findsOneWidget);
     expect(find.text('Unit: Upper Limb'), findsOneWidget);
-    expect(find.text('DAILY GOAL'), findsOneWidget);
-    expect(find.text('DONE TODAY'), findsOneWidget);
-    expect(find.text('Unit Progress'), findsOneWidget);
+    expect(find.text('0%'), findsWidgets);
+    expect(find.text('0 of 2 items done'), findsOneWidget);
 
     // PART 2: Minimalist curriculum deep link
     expect(find.text('All Units'), findsOneWidget);
@@ -251,10 +250,10 @@ void main() {
     expect(find.text('Vessels of Upper Limb'), findsOneWidget);
 
     // Stale tag verification
-    expect(find.text('Stale'), findsWidgets);
+    expect(find.textContaining('Stale'), findsWidgets);
 
-    // Timer shortcut icon buttons
-    expect(find.byIcon(Icons.timer_outlined), findsNWidgets(2));
+    // Play / Timer shortcut icon buttons
+    expect(find.byIcon(Icons.play_arrow_rounded), findsNWidgets(2));
   });
 
   testWidgets('AnalyticsScreen renders live streak badges, Module Plan Progress, and Dynamic Syllabus ETA & Pace Gauge', (tester) async {

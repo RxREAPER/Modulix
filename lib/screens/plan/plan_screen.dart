@@ -40,6 +40,7 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
     final appState = ref.watch(appStateProvider).value;
     final syllabusAsync = ref.watch(activeSyllabusProvider);
     final subjects = syllabusAsync.value ?? [];
+    final isDark = AppTheme.current.isDark;
 
     // Load existing configured plan once
     if (appState != null && !_loaded) {
@@ -331,10 +332,22 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
               RepaintBoundary(
                 child: Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: AppTheme.sketchDecoration(
-                    backgroundColor: AppTheme.cardWhite,
-                    borderRadius: 18,
-                    shadowOffset: 3,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : const Color(0xFFE2E8F0),
+                      width: 0.6,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -477,10 +490,11 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 5),
                             decoration: BoxDecoration(
-                              color: AppTheme.parchmentSurface,
+                              color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                  color: AppTheme.borderLight, width: 1.2),
+                                  color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0),
+                                  width: 0.6),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -554,89 +568,68 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: _videosPerDay != null && _videosPerDay! >= neededPerDay
-                            ? const Color(0xFFF0FDF4)
-                            : const Color(0xFFFFFBEB),
+                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: _videosPerDay != null && _videosPerDay! >= neededPerDay
-                              ? const Color(0xFF86EFAC).withValues(alpha: 0.8)
-                              : const Color(0xFFFCD34D).withValues(alpha: 0.8),
-                          width: 1.2,
+                          color: (_videosPerDay ?? 0) >= neededPerDay
+                              ? const Color(0xFF10B981).withValues(alpha: 0.35)
+                              : const Color(0xFFD97706).withValues(alpha: 0.35),
+                          width: 0.6,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.02),
-                            blurRadius: 6,
+                            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02),
+                            blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
                         ],
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
                         children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: (_videosPerDay ?? 0) >= neededPerDay
-                                      ? AppTheme.accentSubtle
-                                      : const Color(0xFFD97706).withValues(alpha: 0.15),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  (_videosPerDay ?? 0) >= neededPerDay
-                                      ? Icons.check_circle_rounded
-                                      : Icons.speed_rounded,
-                                  size: 17,
-                                  color: (_videosPerDay ?? 0) >= neededPerDay
-                                      ? AppTheme.accentPrimary
-                                      : const Color(0xFFD97706),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      (_videosPerDay ?? 0) >= neededPerDay
-                                          ? 'PACING: ON TRACK'
-                                          : 'PACING: ADJUSTMENT NEEDED',
-                                      style: AppTypography.microBadge(
-                                        fontSize: 9.5,
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: 0.6,
-                                        color: (_videosPerDay ?? 0) >= neededPerDay
-                                            ? const Color(0xFF15803D)
-                                            : const Color(0xFFB45309),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      'Target: $_videosPerDay/day  •  Required: ~$neededPerDay/day',
-                                      style: AppTypography.cardTitle(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppTheme.inkForeground,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            (_videosPerDay ?? 0) >= neededPerDay
-                                ? '$daysRemaining days remaining • Projected to finish on time'
-                                : '$daysRemaining days remaining • Dial up daily target to meet deadline',
-                            style: AppTypography.cardSubtitle(
-                              fontSize: 11.5,
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: ((_videosPerDay ?? 0) >= neededPerDay
+                                      ? const Color(0xFF10B981)
+                                      : const Color(0xFFD97706))
+                                  .withValues(alpha: 0.12),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              (_videosPerDay ?? 0) >= neededPerDay
+                                  ? Icons.check_circle_rounded
+                                  : Icons.speed_rounded,
+                              size: 18,
                               color: (_videosPerDay ?? 0) >= neededPerDay
-                                  ? const Color(0xFF166534)
-                                  : const Color(0xFF78350F),
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFFD97706),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Target: $_videosPerDay/day  ·  Needed: ~$neededPerDay/day',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.inkForeground,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  (_videosPerDay ?? 0) >= neededPerDay
+                                      ? '$daysRemaining days remaining · On track for deadline'
+                                      : '$daysRemaining days remaining · Increase daily target to meet target date',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppTheme.mutedText,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -820,21 +813,21 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                             horizontal: 9, vertical: 6),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AppTheme.accentEmeraldBg
-                              : AppTheme.cardWhite,
+                              ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.3) : const Color(0xFFECFDF5))
+                              : (isDark ? const Color(0xFF1E293B) : Colors.white),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: isSelected
-                                ? AppTheme.sketchBorderColor
-                                : AppTheme.borderLight,
-                            width: isSelected ? 1.4 : 1.0,
+                                ? const Color(0xFF10B981)
+                                : (isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0)),
+                            width: 0.6,
                           ),
                           boxShadow: isSelected
-                              ? const [
+                              ? [
                                   BoxShadow(
-                                    color: Color(0x12000000),
-                                    offset: Offset(0, 1.5),
-                                    blurRadius: 0,
+                                    color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                                    offset: const Offset(0, 1.5),
+                                    blurRadius: 4,
                                   ),
                                 ]
                               : null,
@@ -935,64 +928,115 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
               const SizedBox(height: 32),
 
               // ── Action Buttons: Save & Direct Link to Tasks ───────────────
-              // Task G: Locked In Study Plan button reacts to canSave
-              ElevatedButton.icon(
-                onPressed: (_saving || !canSave) ? null : _savePlan,
-                icon: _saving
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2),
-                      )
-                    : const Icon(Icons.check_circle_outline_rounded,
-                        size: 20),
-                label: Text(
-                  _saving
-                      ? 'Saving Plan...'
-                      : (canSave
-                          ? 'Lock In Study Plan'
-                          : 'Configure All Parameters Above'),
-                  style: AppTypography.buttonLabel(
-                    fontSize: 15.0,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: canSave
-                      ? AppTheme.inkForeground
-                      : (AppTheme.current.isDark ? const Color(0xFF27272A) : Colors.grey.shade400),
-                  foregroundColor: canSave
-                      ? AppTheme.paperBackground
-                      : (AppTheme.current.isDark ? const Color(0xFF71717A) : Colors.white),
+              // Tactile "Lock In Study Plan" button
+              ApplePressable(
+                onTap: (_saving || !canSave) ? null : _savePlan,
+                pressedScale: 0.98,
+                borderRadius: BorderRadius.circular(16),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
-                  elevation: 0,
+                  decoration: BoxDecoration(
+                    color: canSave
+                        ? (isDark ? const Color(0xFF2C2C2E) : AppTheme.inkForeground)
+                        : (isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
+                    borderRadius: BorderRadius.circular(16),
+                    border: canSave && isDark
+                        ? Border.all(color: Colors.white.withValues(alpha: 0.12), width: 0.8)
+                        : null,
+                    boxShadow: canSave
+                        ? [
+                            BoxShadow(
+                              color: isDark
+                                  ? Colors.black.withValues(alpha: 0.3)
+                                  : AppTheme.inkForeground.withValues(alpha: 0.15),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (_saving)
+                        const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      else
+                        Icon(
+                          Icons.check_circle_outline_rounded,
+                          size: 20,
+                          color: canSave
+                              ? (isDark ? Colors.white : AppTheme.paperBackground)
+                              : AppTheme.mutedText,
+                        ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _saving
+                            ? 'Saving Plan...'
+                            : (canSave
+                                ? 'Lock In Study Plan'
+                                : 'Configure All Parameters Above'),
+                        style: TextStyle(
+                          fontSize: 15.0,
+                          fontWeight: FontWeight.w700,
+                          color: canSave
+                              ? (isDark ? Colors.white : AppTheme.paperBackground)
+                              : AppTheme.mutedText,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
               const SizedBox(height: 12),
 
-              // Task F: "Open Module Tasks Queue" button designed just like "Lock In Study Plan"
-              ElevatedButton.icon(
-                onPressed: () => context.push('/module-tasks'),
-                icon: const Icon(Icons.view_timeline_rounded,
-                    size: 20, color: Colors.white),
-                label: Text(
-                  'Open Module Tasks Queue',
-                  style: AppTypography.buttonLabel(
-                    fontSize: 15.0,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryBlue,
-                  foregroundColor: Colors.white,
+              // Tactile "Open Module Tasks Queue" button
+              ApplePressable(
+                onTap: () => context.push('/module-tasks'),
+                pressedScale: 0.98,
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
-                  elevation: 0,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryBlue,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primaryBlue.withValues(alpha: 0.25),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.view_timeline_rounded,
+                        size: 20,
+                        color: Colors.white,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Open Module Tasks Queue',
+                        style: TextStyle(
+                          fontSize: 15.0,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -1008,15 +1052,14 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
       children: [
         Row(
           children: [
-            Icon(icon, size: 17, color: AppTheme.accentPrimary),
+            Icon(icon, size: 18, color: AppTheme.accentPrimary),
             const SizedBox(width: 8),
             Text(
               title,
-              style: AppTypography.cardTitle(
-                fontSize: 14.5,
-                fontWeight: FontWeight.w600,
+              style: AppTheme.headingStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
                 color: AppTheme.inkForeground,
-                letterSpacing: -0.2,
               ),
             ),
           ],

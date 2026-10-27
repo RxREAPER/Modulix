@@ -271,8 +271,8 @@ void main() {
       expect(find.text('Module Plan Progress'), findsOneWidget);
       expect(find.textContaining('50% complete'), findsOneWidget);
 
-      // Focus & Deep Work
-      expect(find.text('Focus & Deep Work'), findsOneWidget);
+      // Focus & Pomodoro Log
+      expect(find.text('Focus & Pomodoro Log'), findsOneWidget);
 
       // Daily Tasks (Renamed to Task analytics)
       expect(find.text('Task analytics'), findsOneWidget);
@@ -367,7 +367,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Study Plan Insights'), findsOneWidget);
+      expect(find.text('Module Plan Progress'), findsOneWidget);
       expect(find.text('WHAT-IF VELOCITY SIMULATOR'), findsOneWidget);
       expect(find.byType(Slider), findsOneWidget);
       expect(find.text('Upper Limb'), findsOneWidget);
@@ -394,7 +394,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Focus & Deep Work'), findsOneWidget);
+      expect(find.text('Focus & Pomodoro Log'), findsOneWidget);
       expect(find.text('7D'), findsOneWidget);
       expect(find.text('30D'), findsOneWidget);
       expect(find.text('Brachial Plexus'), findsOneWidget);
@@ -424,7 +424,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('Tasks Analytics'), findsOneWidget);
-      expect(find.text('14-DAY ACTIVITY MATRIX'), findsOneWidget);
+      expect(find.text('14-Day Activity Matrix'), findsOneWidget);
       expect(find.text('Review Upper Limb'), findsOneWidget);
     });
 

@@ -1158,7 +1158,7 @@ class _FocusDeepWorkCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Focus & Deep Work',
+                      'Focus & Pomodoro Log',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,

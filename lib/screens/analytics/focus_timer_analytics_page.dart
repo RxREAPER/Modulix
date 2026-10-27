@@ -24,6 +24,7 @@ class FocusTimerAnalyticsPage extends ConsumerStatefulWidget {
 class _FocusTimerAnalyticsPageState
     extends ConsumerState<FocusTimerAnalyticsPage> {
   int _selectedDaysIndex = 0; // 0: 7 Days, 1: 30 Days, 2: All Time
+  int _recentDateFilterIndex = 0; // 0: All, 1: Today, 2: Yesterday, 3: This Week
   int? _touchedBarIndex;
 
   static String _formatDuration(int totalSecs) {
@@ -123,7 +124,7 @@ class _FocusTimerAnalyticsPageState
           },
         ),
         title: Text(
-          'Focus & Deep Work',
+          'Focus & Pomodoro Log',
           style: AppTheme.headingStyle(
             fontSize: 22,
             fontWeight: FontWeight.w700,
@@ -571,115 +572,193 @@ class _FocusTimerAnalyticsPageState
             const SizedBox(height: 20),
 
             // ── 4. Recent Focus Sessions Log ───────────────────────────────
-            Text(
-              'RECENT SESSIONS (${timeLogs.length})',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.1,
-                color: AppTheme.mutedText,
-              ),
-            ),
-            const SizedBox(height: 8),
+            Builder(
+              builder: (context) {
+                final todayStart = DateTime(now.year, now.month, now.day);
+                final yesterdayStart = todayStart.subtract(const Duration(days: 1));
+                final weekStart = todayStart.subtract(Duration(days: now.weekday - 1));
 
-            if (timeLogs.isEmpty)
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                    width: 0.8,
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  'No sessions logged yet. Start the focus timer to track deep work.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.mutedText,
-                  ),
-                ),
-              )
-            else
-              ...timeLogs.reversed.take(15).map((log) {
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                      width: 0.9,
+                final filteredLogs = timeLogs.where((log) {
+                  switch (_recentDateFilterIndex) {
+                    case 1: // Today
+                      return log.timestamp.isAfter(todayStart);
+                    case 2: // Yesterday
+                      return log.timestamp.isAfter(yesterdayStart) && log.timestamp.isBefore(todayStart);
+                    case 3: // This Week
+                      return log.timestamp.isAfter(weekStart);
+                    default: // All
+                      return true;
+                  }
+                }).toList();
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'RECENT SESSIONS (${filteredLogs.length})',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.1,
+                            color: AppTheme.mutedText,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: (isDark ? Colors.white : AppTheme.inkForeground).withValues(alpha: 0.08),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.timer_outlined,
-                          size: 16,
-                          color: Color(0xFF10B981),
-                        ),
+                    const SizedBox(height: 8),
+
+                    // Quick Date Filter Bar: [All, Today, Yesterday, This Week]
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        children: [
+                          _recentDateFilterChip(0, 'All', isDark),
+                          _recentDateFilterChip(1, 'Today', isDark),
+                          _recentDateFilterChip(2, 'Yesterday', isDark),
+                          _recentDateFilterChip(3, 'This Week', isDark),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              log.topicTitle.isNotEmpty
-                                  ? log.topicTitle
-                                  : (log.chapterName.isNotEmpty
-                                      ? log.chapterName
-                                      : 'Focus Session'),
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: AppTheme.inkForeground,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${DateFormat('d MMM, h:mm a').format(log.timestamp)}${log.chapterName.isNotEmpty ? ' · ${log.chapterName}' : ''}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: AppTheme.mutedText,
-                              ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    if (filteredLogs.isEmpty)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0),
+                            width: 0.6,
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          'No sessions found for this timeframe.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.mutedText,
+                          ),
+                        ),
+                      )
+                    else
+                      Container(
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.08)
+                                : const Color(0xFFE2E8F0),
+                            width: 0.6,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
                             ),
                           ],
                         ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 9, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          _formatDuration(log.durationSecs),
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            fontFamily: 'monospace',
-                            color: Color(0xFF10B981),
+                        clipBehavior: Clip.antiAlias,
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: filteredLogs.reversed.take(20).length,
+                          separatorBuilder: (context, index) => Divider(
+                            height: 1,
+                            thickness: 0.6,
+                            indent: 52,
+                            endIndent: 14,
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.06)
+                                : const Color(0xFFF1F5F9),
                           ),
+                          itemBuilder: (context, index) {
+                            final log = filteredLogs.reversed.take(20).toList()[index];
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.timer_outlined,
+                                      size: 16,
+                                      color: Color(0xFF10B981),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          log.topicTitle.isNotEmpty
+                                              ? log.topicTitle
+                                              : (log.chapterName.isNotEmpty
+                                                  ? log.chapterName
+                                                  : 'Focus Session'),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppTheme.inkForeground,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '${DateFormat('d MMM, h:mm a').format(log.timestamp)}${log.chapterName.isNotEmpty ? ' · ${log.chapterName}' : ''}',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: AppTheme.mutedText,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 9, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      _formatDuration(log.durationSecs),
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        fontFamily: 'monospace',
+                                        color: Color(0xFF10B981),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
                       ),
-                    ],
-                  ),
+                  ],
                 );
-              }),
+              },
+            ),
           ],
         ),
       ),
@@ -741,6 +820,47 @@ class _FocusTimerAnalyticsPageState
             color: isSelected
                 ? (isDark ? const Color(0xFF0F172A) : Colors.white)
                 : AppTheme.mutedText,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _recentDateFilterChip(int index, String label, bool isDark) {
+    final isSelected = _recentDateFilterIndex == index;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          setState(() {
+            _recentDateFilterIndex = index;
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (isDark ? Colors.white : AppTheme.inkForeground)
+                : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected
+                  ? Colors.transparent
+                  : (isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0)),
+              width: 0.6,
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 11.5,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: isSelected
+                  ? (isDark ? const Color(0xFF0F172A) : Colors.white)
+                  : AppTheme.mutedText,
+            ),
           ),
         ),
       ),

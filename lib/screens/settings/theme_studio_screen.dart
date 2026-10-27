@@ -113,34 +113,32 @@ class _VisualThemeCard extends StatelessWidget {
     return ApplePressable(
       onTap: onTap,
       pressedScale: 0.98,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(20),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-        padding: const EdgeInsets.all(16),
+        duration: const Duration(milliseconds: 240),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: preset.cardBackground,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? themeAccent : preset.borderSubtle,
-            width: isSelected ? 2.2 : 1.4,
+            color: isSelected ? themeAccent : preset.borderSubtle.withValues(alpha: 0.5),
+            width: isSelected ? 1.0 : 0.6,
           ),
           boxShadow: [
             BoxShadow(
               color: isSelected
-                  ? themeAccent.withValues(alpha: 0.24)
-                  : (preset.isDark
-                      ? Colors.black.withValues(alpha: 0.35)
-                      : preset.inkForeground.withValues(alpha: 0.10)),
-              offset: const Offset(0, 2),
-              blurRadius: isSelected ? 8 : 4,
+                  ? themeAccent.withValues(alpha: 0.22)
+                  : Colors.black.withValues(alpha: preset.isDark ? 0.25 : 0.03),
+              offset: const Offset(0, 3),
+              blurRadius: isSelected ? 12 : 6,
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Row: Theme Title & Animated Selection Radio
+            // Top Row: Theme Title & Animated Selection Halo
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -148,15 +146,38 @@ class _VisualThemeCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        preset.label,
-                        style: AppTheme.headingStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: preset.inkForeground,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            preset.label,
+                            style: AppTheme.headingStyle(
+                              fontSize: 19,
+                              fontWeight: FontWeight.w700,
+                              color: preset.inkForeground,
+                            ),
+                          ),
+                          if (isSelected) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: themeAccent.withValues(alpha: 0.14),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                'ACTIVE',
+                                style: TextStyle(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.6,
+                                  color: themeAccent,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 3),
                       Text(
                         preset.description,
                         style: TextStyle(
@@ -172,7 +193,8 @@ class _VisualThemeCard extends StatelessWidget {
 
                 // Animated Selection Radio
                 AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
                   width: 26,
                   height: 26,
                   decoration: BoxDecoration(
@@ -180,12 +202,12 @@ class _VisualThemeCard extends StatelessWidget {
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: isSelected ? themeAccent : preset.borderSubtle,
-                      width: 1.8,
+                      width: 1.2,
                     ),
                   ),
                   child: AnimatedScale(
                     scale: isSelected ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 220),
+                    duration: const Duration(milliseconds: 200),
                     curve: Curves.easeOutBack,
                     child: Icon(
                       Icons.check_rounded,
@@ -198,36 +220,73 @@ class _VisualThemeCard extends StatelessWidget {
             ),
             const SizedBox(height: 14),
 
-            // Bottom: Palette Swatches & Status Label
+            // Fluid Expansion: Atmospheric Preview Strip when selected
+            AnimatedSize(
+              duration: const Duration(milliseconds: 260),
+              curve: Curves.easeOutCubic,
+              alignment: Alignment.topCenter,
+              child: isSelected
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            height: 6,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  preset.scaffoldBackground,
+                                  preset.surfaceSubtle,
+                                  themeAccent,
+                                  secondaryAccent,
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
+            ),
+
+            // Bottom: Animated Swatches & Status Label
             Row(
               children: [
-                _buildSwatch(
+                _buildAnimatedSwatch(
                   color: preset.scaffoldBackground,
                   borderColor: preset.borderSubtle,
+                  isSelected: isSelected,
                 ),
-                const SizedBox(width: 6),
-                _buildSwatch(
+                const SizedBox(width: 8),
+                _buildAnimatedSwatch(
                   color: preset.surfaceSubtle,
                   borderColor: preset.borderSubtle,
+                  isSelected: isSelected,
                 ),
-                const SizedBox(width: 6),
-                _buildSwatch(
+                const SizedBox(width: 8),
+                _buildAnimatedSwatch(
                   color: themeAccent,
-                  borderColor: themeAccent.withValues(alpha: 0.4),
+                  borderColor: themeAccent.withValues(alpha: 0.5),
+                  isSelected: isSelected,
                 ),
-                const SizedBox(width: 6),
-                _buildSwatch(
+                const SizedBox(width: 8),
+                _buildAnimatedSwatch(
                   color: secondaryAccent,
-                  borderColor: secondaryAccent.withValues(alpha: 0.4),
+                  borderColor: secondaryAccent.withValues(alpha: 0.5),
+                  isSelected: isSelected,
                 ),
                 const Spacer(),
-                Text(
-                  isSelected ? 'Active Atmosphere' : 'Tap to apply',
+                AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 180),
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     color: isSelected ? themeAccent : preset.mutedText,
                   ),
+                  child: Text(isSelected ? 'Active Atmosphere' : 'Tap to apply'),
                 ),
               ],
             ),
@@ -237,24 +296,30 @@ class _VisualThemeCard extends StatelessWidget {
     );
   }
 
-  Widget _buildSwatch({
+  Widget _buildAnimatedSwatch({
     required Color color,
     required Color borderColor,
+    required bool isSelected,
   }) {
-    return Container(
-      width: 22,
-      height: 22,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-        border: Border.all(color: borderColor, width: 1.2),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x10000000),
-            offset: Offset(0, 1),
-            blurRadius: 2,
-          ),
-        ],
+    return AnimatedScale(
+      scale: isSelected ? 1.08 : 1.0,
+      duration: const Duration(milliseconds: 240),
+      curve: Curves.easeOutBack,
+      child: Container(
+        width: 22,
+        height: 22,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(color: borderColor, width: 0.8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              offset: const Offset(0, 1),
+              blurRadius: 3,
+            ),
+          ],
+        ),
       ),
     );
   }

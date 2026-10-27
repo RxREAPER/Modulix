@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../models/syllabus.dart' show Subject, Chapter;
 import '../../models/task_item.dart';
 import '../../models/task_project.dart';
+import '../../data/subjects_metadata.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/focus_timer_provider.dart';
 import '../../providers/syllabus_provider.dart';
@@ -202,13 +203,13 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.check_circle_outline_rounded,
-                        size: 13,
+                        Icons.checklist_rounded,
+                        size: 14,
                         color: _selectedTabIndex == 0
                             ? (isDark ? Colors.white : AppTheme.paperBackground)
                             : AppTheme.mutedText,
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 5),
                       Text(
                         'Tasks',
                         style: TextStyle(
@@ -235,13 +236,13 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.folder_outlined,
-                        size: 13,
+                        Icons.workspaces_outlined,
+                        size: 14,
                         color: _selectedTabIndex == 1
                             ? (isDark ? Colors.white : AppTheme.paperBackground)
                             : AppTheme.mutedText,
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 5),
                       Text(
                         'Projects',
                         style: TextStyle(
@@ -444,28 +445,16 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
         child: const Icon(Icons.delete_outline_rounded, size: 20, color: Colors.redAccent),
       ),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 13),
         decoration: BoxDecoration(
-          color: isDone
-              ? (isDark ? const Color(0xFF0D281E) : const Color(0xFFE8F5E9))
-              : (isDark ? const Color(0xFF1E293B) : Colors.white),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isDone
-                ? AppTheme.accentEmerald.withValues(alpha: 0.35)
-                : (isDark
-                    ? Colors.white.withValues(alpha: 0.08)
-                    : AppTheme.borderLight.withValues(alpha: 0.8)),
-            width: 1.0,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
+          border: Border(
+            bottom: BorderSide(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.06)
+                  : AppTheme.borderLight.withValues(alpha: 0.6),
+              width: 0.6,
             ),
-          ],
+          ),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -668,24 +657,17 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
     final isDark = AppTheme.current.isDark;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.65),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: isDark
               ? Colors.white.withValues(alpha: 0.08)
-              : AppTheme.borderLight.withValues(alpha: 0.8),
-          width: 1.0,
+              : AppTheme.borderLight.withValues(alpha: 0.6),
+          width: 0.5,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1004,10 +986,10 @@ class _NewProjectModalState extends ConsumerState<_NewProjectModal> {
               children: [
                 Text(
                   _selectedSubject == null
-                      ? 'Select subject'
-                      : 'Select unit',
-                  style: TextStyle(
-                    fontSize: 18,
+                      ? 'Select Subject'
+                      : 'Select Unit',
+                  style: AppTheme.headingStyle(
+                    fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.inkForeground,
                   ),
@@ -1049,6 +1031,7 @@ class _NewProjectModalState extends ConsumerState<_NewProjectModal> {
                     ),
                     itemBuilder: (context, index) {
                       final sub = subjects[index];
+                      final meta = subjectMeta(sub.id);
                       return ApplePressable(
                         onTap: () {
                           HapticFeedback.selectionClick();
@@ -1058,6 +1041,15 @@ class _NewProjectModalState extends ConsumerState<_NewProjectModal> {
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           child: Row(
                             children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: meta.accent,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
                                   sub.displayName,
