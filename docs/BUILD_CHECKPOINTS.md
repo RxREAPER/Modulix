@@ -4,6 +4,39 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.31.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (275MB)
+- **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)
+- **Compilation Time:** 178.0s | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-086]` (✅ Included in Build)
+
+### Key Highlights & Releases in v1.31.0:
+1. **Universal EBGaramond Italic Serif Typography:**
+   - Unified headers and mastheads across Home and Progress screens (`Modulix`, `Focus, Dr. [Name]`, `Daily tasks`, `Module Based Tasks`, `Progress`, `Task analytics`, `Study Matrix`).
+   - Eliminated typography discordance by leveraging `AppTheme.headingStyle()` systematically while preserving clean sans-serif/monospace precision for micro-counters, timestamps, and badges.
+2. **Modern Editorial Luxury Surfaces (Airy & Unboxed):**
+   - Softened card containers across `AutomatedModuleTracker`, `AnalyticsScreen`, and `NeetConsistencyMatrix`.
+   - Replaced heavy borders with subtle 0.5px hairline boundaries and ultra-soft diffused ambient shadows (`blurRadius: 28`), relieving visual density and rectangle fatigue.
+3. **End-to-End Build & Device Verification:**
+   - Verified via `flutter analyze` (0 issues) and `flutter test` (18/18 passing).
+   - Full debug APK compiled, installed, and validated live on physical OnePlus 13R (`ba009d81`).
+
+---
+
+### 🔖 `[CKPT-086]` — Universal EBGaramond Italic Serif & Modern Editorial Luxury Surfaces
+- **Category:** `ui` / `typography` / `editorial` / `surfaces`
+- **Files Modified:**
+  - `lib/screens/home/home_screen.dart`
+  - `lib/widgets/automated_module_tracker.dart`
+  - `lib/screens/analytics/analytics_screen.dart`
+  - `lib/widgets/analytics/neet_consistency_matrix.dart`
+- **Summary:**
+  - Applied `EBGaramond` italic serif universally across all screen headers, eliminating font discordance.
+  - Softened card container borders to 0.5 hairline width with diffused luxury shadows.
+- **Verification:** Verified via `flutter analyze` (0 issues), test suite passed (`flutter test`), built debug APK, installed and verified live on OnePlus 13R (`ba009d81`).
+
+---
+
 ## 🚀 Build Manifest v1.30.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (275MB)
 - **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)

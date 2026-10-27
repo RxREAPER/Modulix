@@ -943,15 +943,15 @@ class _TodayFocusTasksSection extends ConsumerWidget {
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
               color: isDark
-                  ? Colors.white.withValues(alpha: 0.12)
-                  : Colors.white.withValues(alpha: 0.75),
-              width: 0.75,
+                  ? Colors.white.withValues(alpha: 0.07)
+                  : Colors.black.withValues(alpha: 0.05),
+              width: 0.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.30 : 0.05),
-                blurRadius: 20,
-                offset: const Offset(0, 6),
+                color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.03),
+                blurRadius: 28,
+                offset: const Offset(0, 10),
               ),
             ],
           ),

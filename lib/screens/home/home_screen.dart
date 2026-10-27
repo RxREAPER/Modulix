@@ -112,10 +112,10 @@ class HomeScreen extends ConsumerWidget {
                               const SizedBox(width: 10),
                               Text(
                                 'Modulix',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: -0.5,
+                                style: AppTheme.headingStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.3,
                                   color: AppTheme.inkForeground,
                                 ),
                               ),
@@ -133,16 +133,16 @@ class HomeScreen extends ConsumerWidget {
                       ),
                     ),
 
-                    // Normal Title: Focus, Dr. [Name] (white bold, no daily flow)
+                    // Editorial Title: Focus, Dr. [Name] in EBGaramond Italic
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 2),
+                      padding: const EdgeInsets.fromLTRB(20, 22, 20, 4),
                       child: Text(
                         'Focus, ${_formatDoctorTitle(doctorName)}',
-                        style: const TextStyle(
-                          fontSize: 25,
-                          fontWeight: FontWeight.w800,
+                        style: AppTheme.headingStyle(
+                          fontSize: 29,
+                          fontWeight: FontWeight.w700,
                           color: Colors.white,
-                          letterSpacing: -0.6,
+                          letterSpacing: -0.3,
                           height: 1.15,
                         ),
                       ),
@@ -202,20 +202,20 @@ class _HomeTasksSection extends ConsumerWidget {
           width: double.infinity,
           decoration: BoxDecoration(
             color: isDark
-                ? const Color(0xFF0F172A).withValues(alpha: 0.50)
-                : Colors.white.withValues(alpha: 0.65),
+                ? const Color(0xFF0F172A).withValues(alpha: 0.38)
+                : Colors.white.withValues(alpha: 0.55),
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
               color: isDark
-                  ? Colors.white.withValues(alpha: 0.12)
-                  : Colors.white.withValues(alpha: 0.70),
-              width: 0.75,
+                  ? Colors.white.withValues(alpha: 0.07)
+                  : Colors.black.withValues(alpha: 0.05),
+              width: 0.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.30 : 0.05),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
+                color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.04),
+                blurRadius: 18,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -233,11 +233,11 @@ class _HomeTasksSection extends ConsumerWidget {
                     children: [
                       Text(
                         'Daily tasks',
-                        style: TextStyle(
-                          fontSize: 18,
+                        style: AppTheme.headingStyle(
+                          fontSize: 20,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.inkForeground,
-                          letterSpacing: -0.3,
+                          letterSpacing: -0.2,
                         ),
                       ),
                       const SizedBox(width: 6),

@@ -165,15 +165,15 @@ class AutomatedModuleTracker extends ConsumerWidget {
               borderRadius: BorderRadius.circular(22),
               border: Border.all(
                 color: isDark
-                    ? Colors.white.withValues(alpha: 0.12)
-                    : Colors.white.withValues(alpha: 0.70),
-                width: 0.75,
+                    ? Colors.white.withValues(alpha: 0.07)
+                    : Colors.black.withValues(alpha: 0.05),
+                width: 0.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.30 : 0.05),
-                  blurRadius: 24,
-                  offset: const Offset(0, 8),
+                  color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.03),
+                  blurRadius: 28,
+                  offset: const Offset(0, 10),
                 ),
               ],
             ),
@@ -188,11 +188,11 @@ class AutomatedModuleTracker extends ConsumerWidget {
                   children: [
                     Text(
                       'Module Based Tasks',
-                      style: TextStyle(
-                        fontSize: 18,
+                      style: AppTheme.headingStyle(
+                        fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.inkForeground,
-                        letterSpacing: -0.3,
+                        letterSpacing: -0.2,
                       ),
                     ),
                     Container(
@@ -369,15 +369,15 @@ class AutomatedModuleTracker extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(22),
                   border: Border.all(
                     color: isDark
-                        ? Colors.white.withValues(alpha: 0.12)
-                        : Colors.white.withValues(alpha: 0.70),
-                    width: 0.75,
+                        ? Colors.white.withValues(alpha: 0.07)
+                        : Colors.black.withValues(alpha: 0.05),
+                    width: 0.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.30 : 0.05),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
+                      color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.03),
+                      blurRadius: 28,
+                      offset: const Offset(0, 10),
                     ),
                   ],
                 ),
@@ -395,11 +395,11 @@ class AutomatedModuleTracker extends ConsumerWidget {
                           children: [
                             Text(
                               'Module Based Tasks',
-                              style: TextStyle(
-                                fontSize: 18,
+                              style: AppTheme.headingStyle(
+                                fontSize: 20,
                                 fontWeight: FontWeight.w700,
                                 color: AppTheme.inkForeground,
-                                letterSpacing: -0.3,
+                                letterSpacing: -0.2,
                               ),
                             ),
                           ],
