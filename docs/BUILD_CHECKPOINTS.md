@@ -24,6 +24,27 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-089]` — Scholar & Intellectual Identity Themes & Catalyst Background Gradient Adaptation
+- **Category:** `ui` / `theme` / `shader`
+- **Files Modified:**
+  - `lib/theme/modulix_theme.dart`
+  - `lib/widgets/animations/filmic_metal_mesh_background.dart`
+  - `lib/services/tour/app_tour_controller.dart`
+  - `test/theme_system_test.dart`
+- **Summary:**
+  - Replaced technical/color theme names in Theme Studio with Scholar & Intellectual Persona identities:
+    - `paper` $\rightarrow$ **The Daylight Scholar** ("Pristine daylight clarity with focused cobalt precision")
+    - `slate` $\rightarrow$ **The Midnight Scholar** ("Zero-glare obsidian sanctuary for late-night deep work")
+    - `atomic_ice` $\rightarrow$ **The Catalyst** ("Kinetic ice-blue canvas with high-yield atomic energy")
+    - `forest_mint` $\rightarrow$ **The Naturalist** ("Refreshing mint fog with calming evergreen composure")
+    - `cosmic_mocha` $\rightarrow$ **The Academic** ("Warm vintage parchment with rich espresso depth")
+  - Added backward-compatible identity getters (`the_daylight_scholar`, `the_midnight_scholar`, `the_catalyst`, `the_naturalist`, `the_academic`) and updated `fromId` mapping.
+  - Adapted home screen `FilmicMetalMeshBackground` gradient for `atomic_ice` (The Catalyst) to derive its shader accent from the secondary accent (`preset.secondaryAccent`, deep ocean teal/cyan `0xFF0288A6`) rather than the orange accent, ensuring harmonious atmospheric ocean waves that complement the ice cream blue canvas.
+  - Updated Tour Step 6 description and unit tests.
+- **Verification:** Verified via `flutter analyze` (0 issues, ran in 22.0s), `flutter test` passed 100% green (13/13 theme suite tests).
+
+---
+
 ### 🔖 `[CKPT-088]` — Defensive Hardening, Sub-Page Header Auto-Scaling & Physical Device Screencap Verification
 - **Category:** `ui` / `hardening` / `verification`
 - **Files Modified:**

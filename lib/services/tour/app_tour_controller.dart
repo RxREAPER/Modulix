@@ -144,7 +144,7 @@ const List<TourStepData> kTourSteps = [
     title: 'Doctor Profile & Theme Studio',
     category: 'STUDY ENVIRONMENT',
     description:
-        'Personalize your doctor avatar and switch across themes including Basic Light, Basic Dark, and custom palettes.',
+        'Personalize your doctor avatar and switch across scholar identity themes including The Daylight Scholar, The Midnight Scholar, and custom palettes.',
     bulletPoints: [],
     route: '/settings',
     targetIds: [TourTargetId.settingsProfileCard, TourTargetId.settingsThemeSection],

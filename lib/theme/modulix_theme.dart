@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 enum PalettePreset {
   paper(
     id: 'paper',
-    label: 'Basic Light',
-    description: 'Clean, modern minimalist light atmosphere',
+    label: 'The Daylight Scholar',
+    description: 'Pristine daylight clarity with focused cobalt precision',
     isDark: false,
     scaffoldBackground: Color(0xFFF8F9FA),
     cardBackground: Color(0xFFFFFFFF),
@@ -23,8 +23,8 @@ enum PalettePreset {
   ),
   slate(
     id: 'slate',
-    label: 'Basic Dark',
-    description: 'Clean, AMOLED pitch-black dark atmosphere',
+    label: 'The Midnight Scholar',
+    description: 'Zero-glare obsidian sanctuary for late-night deep work',
     isDark: true,
     scaffoldBackground: Color(0xFF000000),
     cardBackground: Color(0xFF121212),
@@ -41,8 +41,8 @@ enum PalettePreset {
   ),
   atomic_ice(
     id: 'atomic_ice',
-    label: 'Atomic Orange + Ice Cream Blue',
-    description: 'Ice cream blue canvas with energetic atomic orange accent',
+    label: 'The Catalyst',
+    description: 'Kinetic ice-blue canvas with high-yield atomic energy',
     isDark: false,
     scaffoldBackground: Color(0xFFC8F3FF),
     cardBackground: Color(0xFFFFFFFF),
@@ -59,8 +59,8 @@ enum PalettePreset {
   ),
   forest_mint(
     id: 'forest_mint',
-    label: 'Forest Code + Mint Fog',
-    description: 'Fresh mint fog canvas with deep forest code accent',
+    label: 'The Naturalist',
+    description: 'Refreshing mint fog with calming evergreen composure',
     isDark: false,
     scaffoldBackground: Color(0xFFE8FFF2),
     cardBackground: Color(0xFFFFFFFF),
@@ -77,8 +77,8 @@ enum PalettePreset {
   ),
   cosmic_mocha(
     id: 'cosmic_mocha',
-    label: 'Cosmic Latte + Mocha Cream',
-    description: 'Warm mocha cream canvas with cosmic latte accent',
+    label: 'The Academic',
+    description: 'Warm vintage parchment with rich espresso depth',
     isDark: false,
     scaffoldBackground: Color(0xFFEBDCC6),
     cardBackground: Color(0xFFFAF5ED),
@@ -130,7 +130,7 @@ enum PalettePreset {
     required this.accentSubtle,
   });
 
-  // Backward compatibility getters
+  // Backward compatibility & identity getters
   static PalettePreset get basic_light => paper;
   static PalettePreset get basic_dark => slate;
   static PalettePreset get light => paper;
@@ -143,12 +143,19 @@ enum PalettePreset {
   static PalettePreset get mint_fog => forest_mint;
   static PalettePreset get cosmic_latte => cosmic_mocha;
   static PalettePreset get mocha_cream => cosmic_mocha;
+  static PalettePreset get the_daylight_scholar => paper;
+  static PalettePreset get the_midnight_scholar => slate;
+  static PalettePreset get the_catalyst => atomic_ice;
+  static PalettePreset get the_naturalist => forest_mint;
+  static PalettePreset get the_academic => cosmic_mocha;
 
   static PalettePreset fromId(String? id) {
     if (id == 'paper' ||
         id == 'paper_ink' ||
         id == 'classic_light' ||
         id == 'basic_light' ||
+        id == 'the_daylight_scholar' ||
+        id == 'daylight_scholar' ||
         id == 'light') {
       return PalettePreset.paper;
     }
@@ -158,6 +165,8 @@ enum PalettePreset {
         id == 'obsidian' ||
         id == 'slate_midnight' ||
         id == 'basic_dark' ||
+        id == 'the_midnight_scholar' ||
+        id == 'midnight_scholar' ||
         id == 'dark') {
       return PalettePreset.slate;
     }
@@ -167,6 +176,8 @@ enum PalettePreset {
         id == 'nordic_frost' ||
         id == 'nordic' ||
         id == 'rose_dawn' ||
+        id == 'the_catalyst' ||
+        id == 'catalyst' ||
         id == 'rose') {
       return PalettePreset.atomic_ice;
     }
@@ -174,6 +185,8 @@ enum PalettePreset {
         id == 'forest_code' ||
         id == 'mint_fog' ||
         id == 'forest_night' ||
+        id == 'the_naturalist' ||
+        id == 'naturalist' ||
         id == 'forest') {
       return PalettePreset.forest_mint;
     }
@@ -181,6 +194,8 @@ enum PalettePreset {
         id == 'cosmic_latte' ||
         id == 'mocha_cream' ||
         id == 'sepia_parchment' ||
+        id == 'the_academic' ||
+        id == 'academic' ||
         id == 'sepia') {
       return PalettePreset.cosmic_mocha;
     }

@@ -128,11 +128,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Theme Studio'), findsOneWidget);
-      expect(find.text('Basic Light'), findsWidgets);
-      expect(find.text('Basic Dark'), findsOneWidget);
-      expect(find.text('Atomic Orange + Ice Cream Blue'), findsOneWidget);
-      expect(find.text('Forest Code + Mint Fog'), findsOneWidget);
-      expect(find.text('Cosmic Latte + Mocha Cream'), findsOneWidget);
+      expect(find.text('The Daylight Scholar'), findsWidgets);
+      expect(find.text('The Midnight Scholar'), findsOneWidget);
+      expect(find.text('The Catalyst'), findsOneWidget);
+      expect(find.text('The Naturalist'), findsOneWidget);
+      expect(find.text('The Academic'), findsOneWidget);
     });
 
     testWidgets('AppearanceThemeSheet interaction triggers selection update', (tester) async {
@@ -154,8 +154,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Tap Forest Code + Mint Fog theme card
-      await tester.tap(find.text('Forest Code + Mint Fog'));
+      // Tap The Naturalist theme card
+      await tester.tap(find.text('The Naturalist'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 200));
       await tester.pumpAndSettle();

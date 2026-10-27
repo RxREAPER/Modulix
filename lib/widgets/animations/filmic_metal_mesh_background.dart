@@ -151,8 +151,8 @@ class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
       themeAccent = const Color(0xFF60A5FA);
       highlightColor = const Color(0xFFFFFFFF);
     } else if (preset == PalettePreset.atomic_ice) {
-      // Atomic Orange: Energetic flame waves
-      themeAccent = AppTheme.accentPrimary;
+      // The Catalyst / Atomic Ice: adapted from the other accent color (secondaryAccent) instead of atomic orange
+      themeAccent = preset.secondaryAccent;
       highlightColor = const Color(0xFFFFFFFF);
     } else {
       // Bespoke Palettes (Forest Mint, Cosmic Mocha, etc.): Pure theme reactive
