@@ -79,23 +79,23 @@ class HomeScreen extends ConsumerWidget {
                           Row(
                             children: [
                               Container(
-                                width: 36,
-                                height: 36,
+                                width: 38,
+                                height: 38,
                                 decoration: BoxDecoration(
                                   color: isDark
-                                      ? Colors.white.withValues(alpha: 0.06)
-                                      : Colors.black.withValues(alpha: 0.03),
-                                  borderRadius: BorderRadius.circular(9),
+                                      ? Colors.white.withValues(alpha: 0.07)
+                                      : Colors.black.withValues(alpha: 0.04),
+                                  borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
                                     color: isDark
-                                        ? Colors.white.withValues(alpha: 0.12)
-                                        : Colors.black.withValues(alpha: 0.08),
+                                        ? Colors.white.withValues(alpha: 0.14)
+                                        : Colors.black.withValues(alpha: 0.09),
                                     width: 0.6,
                                   ),
                                 ),
                                 child: const Center(
                                   child: ModulixLogo(
-                                    size: 24,
+                                    size: 28,
                                   ),
                                 ),
                               ),

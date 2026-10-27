@@ -24,6 +24,24 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-091]` — Monogram Stroke Contrast Boosting, Header Container Calibration & Physical Device Screencap Verification
+- **Category:** `brand` / `ui` / `verification`
+- **Files Modified:**
+  - `assets/icons/brand/modulix_monogram_dark.png`
+  - `assets/icons/brand/modulix_monogram_white.png`
+  - `lib/screens/home/home_screen.dart`
+- **Summary:**
+  - Boosted ink stroke core opacity by 35% on master brand rasters so the fine inline contours of the "Mx" monogram remain punchy, sharp, and high-contrast at micro mobile resolutions.
+  - Re-calibrated Home Screen header: adjusted container to 38x38 dp with 10px corner radius and resized inner `ModulixLogo` to 28 dp for optical alignment with the 22 pt serif title.
+  - Successfully compiled debug APK (190.1s) and installed on physical OnePlus 13R (`ba009d81`).
+  - Captured live hardware verification screencaps:
+    - `verify_home_screen_boosted_logo.png`: High-contrast "Mx" monogram in frosted squircle next to "Modulix" title on The Catalyst theme.
+    - `verify_theme_studio_screen.png`: Scholar Identity cards (The Daylight Scholar, The Midnight Scholar, The Catalyst, The Naturalist, The Academic).
+    - `verify_launcher_home_icon.png`: Adaptive parchment coin launcher icon rendering on the OnePlus 13R Android desktop with safe-zone margin.
+- **Verification:** Verified via live hardware execution on OnePlus 13R (`ba009d81`, Android 16), `flutter analyze` (0 issues), and full test suite (49/49 tests passed 100% green).
+
+---
+
 ### 🔖 `[CKPT-090]` — Official Modulix "Mx" Monogram Brand Integration & Android Adaptive Icons
 - **Category:** `brand` / `ui` / `assets`
 - **Files Modified:**
