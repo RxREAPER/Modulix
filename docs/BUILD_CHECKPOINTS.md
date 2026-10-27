@@ -24,6 +24,39 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-098]` — Modulix Web Landing Page, Google Play Privacy Policy & Self-Service Account Deletion Portal
+- **Category:** `web` / `privacy` / `compliance` / `showcase`
+- **Files Modified:**
+  - `modulix_landing_page/src/App.tsx`
+  - `modulix_landing_page/src/lib/supabase.ts`
+  - `modulix_landing_page/src/lib/theme.ts`
+  - `modulix_landing_page/src/components/layout/Navbar.tsx`
+  - `modulix_landing_page/src/components/layout/Footer.tsx`
+  - `modulix_landing_page/src/components/layout/FilmicBackground.tsx`
+  - `modulix_landing_page/src/components/sections/HeroSection.tsx`
+  - `modulix_landing_page/src/components/sections/FeaturesSection.tsx`
+  - `modulix_landing_page/src/components/sections/ThemeShowcase.tsx`
+  - `modulix_landing_page/src/components/sections/EcosystemSection.tsx`
+  - `modulix_landing_page/src/components/privacy/PrivacyView.tsx`
+  - `modulix_landing_page/src/components/privacy/TermsView.tsx`
+  - `modulix_landing_page/src/components/account/AccountPortalView.tsx`
+  - `modulix_landing_page/src/components/account/AuthGate.tsx`
+  - `modulix_landing_page/src/components/account/ProfileDashboard.tsx`
+  - `modulix_landing_page/src/components/account/AccountDeletionDialog.tsx`
+  - `modulix_landing_page/src/components/account/ManualDeleteForm.tsx`
+  - `modulix_landing_page/src/components/updates/ChangelogView.tsx`
+  - `modulix_landing_page/src/components/updates/SupportSection.tsx`
+- **Summary:**
+  - Built an authentic 1:1 component-driven Single Page Application (Vite 5 + React 18 + TypeScript + Tailwind CSS + Framer Motion) adhering strictly to Modulix's zero box-fatigue design tokens (Daylight Scholar `#F8F9FA` / Midnight Scholar `#000000`, 0.6px hairlines, EB Garamond italic headings, and ApplePressable spring physics).
+  - Implemented the Google Play Data Safety compliant Privacy Policy and Terms of Service with full Android permission justifications (`SCHEDULE_EXACT_ALARM`, `POST_NOTIFICATIONS`, battery killers).
+  - Established the mandatory Google Play external web Account Deletion Portal (`#/account`) featuring authenticated Supabase cascade account purges, 1-click GDPR JSON data export, live profile/leaderboard visibility toggles, and an unauthenticated manual deletion request form.
+  - Added curated live palette switcher across all 5 clinical themes, release changelog timeline (v1.0.0 through v1.32.0), and FAQ support hub.
+  - Generated production-optimized Cloudflare Pages build with manual code-splitting and `_redirects` SPA rewrite rules.
+- **Verification:** TypeScript strict check (`tsc -b`) and production bundle compilation (`vite build`) passed with 0 errors and 0 warnings.
+- **Build Status:** ✅ Ready for Cloudflare Pages Deployment
+
+---
+
 ### 🔖 `[CKPT-097]` — Full-App UI Render Isolation, Animation Lifecycle Optimization, Zero-CLS Skeletons & State Hardening
 - **Category:** `perf` / `ui` / `animation` / `render`
 - **Files Modified:**
