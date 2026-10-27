@@ -24,6 +24,34 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-090]` — Official Modulix "Mx" Monogram Brand Integration & Android Adaptive Icons
+- **Category:** `brand` / `ui` / `assets`
+- **Files Modified:**
+  - `lib/widgets/brand/modulix_logo.dart` (New)
+  - `lib/screens/home/home_screen.dart`
+  - `pubspec.yaml`
+  - `android/app/src/main/AndroidManifest.xml`
+  - `android/app/src/main/res/values/colors.xml` (New)
+  - `android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml` (New)
+  - `android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml` (New)
+  - `android/app/src/main/res/mipmap-*/ic_launcher.png` & `ic_launcher_round.png`
+  - `android/app/src/main/res/drawable-*/ic_launcher_foreground.png`
+  - `assets/icons/brand/modulix_monogram_dark.png`
+  - `assets/icons/brand/modulix_monogram_white.png`
+  - `assets/icons/brand/modulix_monogram_teal.png`
+  - `assets/icons/brand/modulix_monogram_cobalt.png`
+  - `assets/icons/brand/modulix_app_icon_squircle.png`
+  - `assets/icons/brand/modulix_play_store_512.png`
+  - `test/modulix_logo_test.dart` (New)
+- **Summary:**
+  - Extracted the high-resolution classical Roman serif "Mx" monogram from archival documents into transparent master brand assets for light and dark environments.
+  - Implemented reusable, theme-reactive `ModulixLogo` widget with `monogram` and `coaster` visual styles, dynamic tinting, and fallback safety.
+  - Upgraded Home Screen header: replaced legacy text `'M'` container with a 0.6px hairline squircle holding the live `ModulixLogo`.
+  - Built comprehensive Android Adaptive Icon infrastructure (`mipmap-anydpi-v26`, `ic_launcher_foreground` scaled to the 66dp safe zone, and `roundIcon`) along with all legacy density buckets (`mdpi`, `hdpi`, `xhdpi`, `xxhdpi`, `xxxhdpi`).
+- **Verification:** Verified via `flutter analyze` (0 issues, ran in 21.5s), `flutter test` passed 100% green across brand and full regression suites (49/49 tests passed).
+
+---
+
 ### 🔖 `[CKPT-089]` — Scholar & Intellectual Identity Themes & Catalyst Background Gradient Adaptation
 - **Category:** `ui` / `theme` / `shader`
 - **Files Modified:**

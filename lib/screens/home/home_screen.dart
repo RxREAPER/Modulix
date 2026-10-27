@@ -20,6 +20,7 @@ import '../../services/tour/app_tour_controller.dart';
 import '../../widgets/errors/app_error_state_view.dart';
 import '../../widgets/loading/app_shimmer.dart';
 import '../../widgets/feedback/modulix_toast.dart';
+import '../../widgets/brand/modulix_logo.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -81,31 +82,20 @@ class HomeScreen extends ConsumerWidget {
                                 width: 36,
                                 height: 36,
                                 decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF1E293B) : AppTheme.inkForeground,
-                                  borderRadius: BorderRadius.circular(10),
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.06)
+                                      : Colors.black.withValues(alpha: 0.03),
+                                  borderRadius: BorderRadius.circular(9),
                                   border: Border.all(
-                                    color: isDark ? Colors.white.withValues(alpha: 0.10) : Colors.transparent,
-                                    width: 0.75,
+                                    color: isDark
+                                        ? Colors.white.withValues(alpha: 0.12)
+                                        : Colors.black.withValues(alpha: 0.08),
+                                    width: 0.6,
                                   ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: isDark
-                                          ? const Color(0xFF38BDF8).withValues(alpha: 0.20)
-                                          : Colors.black.withValues(alpha: 0.12),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
                                 ),
-                                child: Center(
-                                  child: Text(
-                                    'M',
-                                    style: TextStyle(
-                                      color: AppTheme.paperBackground,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w900,
-                                      fontFamily: 'serif',
-                                    ),
+                                child: const Center(
+                                  child: ModulixLogo(
+                                    size: 24,
                                   ),
                                 ),
                               ),

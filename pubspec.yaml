@@ -70,6 +70,7 @@ flutter:
   assets:
     - assets/illustrations/
     - assets/icons/
+    - assets/icons/brand/
     - assets/icons/navbar/
     - assets/icons/subjects/
     - assets/audio/
