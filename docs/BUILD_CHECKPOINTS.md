@@ -41,7 +41,9 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
     2. **Not enclosing in a box:** Purged the enclosing `Container` (squircle box, background fill, and border) on the top app bar; `ModulixLogo` floats freely directly on the surface canvas beside "Modulix".
     3. **Follow geometry and symmetry all over:** Symmetrical Roman capital 'M' (identical stem widths, bilateral bracketed head and foot serifs, centered V vertex, and clean compound-path inline engraved channels). Mathematical $G^2$ continuous calligraphic swash on 'X' with optical knockout gap under the M foot serif.
     4. **A bigger sized one on top bar and icon:** Increased top bar optical size to 36px (width scaled proportionally to 46.4px at 1.29 aspect ratio). Re-generated Android adaptive launcher icons filling 72% of the circular safe zone.
-- **Verification:** Verified via `flutter analyze` (0 errors, 0 warnings), `flutter test test/modulix_logo_test.dart` (4/4 tests passed 100% green), visual multi-theme triptych render, top bar simulation render, and complete Gradle APK debug build (`BUILD SUCCESSFUL in 3m 13s`, 276MB).
+- **Verification:** Verified via live hardware execution on OnePlus 13R (`ba009d81`, Android 16), `flutter analyze` (0 errors, 0 warnings), `flutter test test/modulix_logo_test.dart` (4/4 tests passed 100% green), complete Gradle APK debug build (`BUILD SUCCESSFUL in 3m 13s`, 276MB), and verified via live hardware screencaps:
+  - `verify_device_live_home_logo.png`: Prominent 36px free-floating monogram floating directly on the surface canvas beside "Modulix" with zero enclosing box.
+  - `verify_device_live_search_modulix.png`: Prominent 72% safe-zone adaptive parchment coin launcher icon rendered live on the OnePlus 13R desktop.
 
 ---
 
