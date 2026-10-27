@@ -15,6 +15,7 @@ import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/analytics/progress_radial_gauge.dart';
 import '../../widgets/analytics/segmented_velocity_pill.dart';
 import '../../widgets/analytics/chronotype_timeline_grid.dart';
+import '../../widgets/loading/app_shimmer.dart';
 
 class DailyTasksAnalyticsPage extends ConsumerWidget {
   const DailyTasksAnalyticsPage({super.key});
@@ -104,8 +105,8 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
         ],
       ),
       body: tasksHubAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(strokeWidth: 2),
+        loading: () => const SafeArea(
+          child: AnalyticsSkeletonView(),
         ),
         error: (_, __) => Center(
           child: Text('Error loading tasks analytics', style: TextStyle(color: AppTheme.mutedText)),

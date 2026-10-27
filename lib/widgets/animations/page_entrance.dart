@@ -32,6 +32,8 @@ class PageEntrance extends StatefulWidget {
 class _PageEntranceState extends State<PageEntrance>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
+  final List<CurvedAnimation> _animations = [];
+  bool _isCompleted = false;
 
   @override
   void initState() {
@@ -39,33 +41,79 @@ class _PageEntranceState extends State<PageEntrance>
     _ctrl = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: widget.durationMs),
-    )..forward();
+    );
+    _initAnimations();
+    _ctrl.addStatusListener((status) {
+      if (status == AnimationStatus.completed && mounted) {
+        setState(() {
+          _isCompleted = true;
+        });
+      }
+    });
+    _ctrl.forward();
+  }
+
+  void _initAnimations() {
+    _disposeAnimations();
+    final count = widget.children.length;
+    if (count == 0) return;
+    final window = 1.0 / (count + 0.5);
+    final stagger = (widget.staggerMs / widget.durationMs).clamp(0.0, window);
+
+    for (int i = 0; i < count; i++) {
+      final start = (i * stagger).clamp(0.0, 1.0 - window);
+      final end = (start + window).clamp(0.0, 1.0);
+      _animations.add(
+        CurvedAnimation(
+          parent: _ctrl,
+          curve: Interval(start, end, curve: const Cubic(0.16, 1.0, 0.3, 1.0)),
+        ),
+      );
+    }
+  }
+
+  void _disposeAnimations() {
+    for (final anim in _animations) {
+      anim.dispose();
+    }
+    _animations.clear();
+  }
+
+  @override
+  void didUpdateWidget(covariant PageEntrance oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.children.length != widget.children.length ||
+        oldWidget.durationMs != widget.durationMs ||
+        oldWidget.staggerMs != widget.staggerMs) {
+      _initAnimations();
+    }
   }
 
   @override
   void dispose() {
+    _disposeAnimations();
     _ctrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // Zero-overhead fast path: once entrance completes, render raw children directly
+    if (_isCompleted) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: widget.children,
+      );
+    }
+
     final count = widget.children.length;
-    // Window per child: total / (count + 1) so the last child finishes before end.
-    final window = 1.0 / (count + 0.5);
-    final stagger = (widget.staggerMs / widget.durationMs).clamp(0.0, window);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: List.generate(count, (i) {
-        final start = (i * stagger).clamp(0.0, 1.0 - window);
-        final end = (start + window).clamp(0.0, 1.0);
-
-        final curved = CurvedAnimation(
-          parent: _ctrl,
-          curve: Interval(start, end, curve: const Cubic(0.16, 1.0, 0.3, 1.0)),
-        );
+        final curved = i < _animations.length ? _animations[i] : _ctrl;
 
         return FadeTransition(
           opacity: curved,
@@ -109,7 +157,8 @@ class FadeSlideEntrance extends StatefulWidget {
 class _FadeSlideEntranceState extends State<FadeSlideEntrance>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
-  late final Animation<double> _anim;
+  late final CurvedAnimation _anim;
+  bool _isCompleted = false;
 
   @override
   void initState() {
@@ -119,17 +168,29 @@ class _FadeSlideEntranceState extends State<FadeSlideEntrance>
       duration: Duration(milliseconds: widget.durationMs),
     );
     _anim = CurvedAnimation(parent: _ctrl, curve: widget.curve);
+    _ctrl.addStatusListener((status) {
+      if (status == AnimationStatus.completed && mounted) {
+        setState(() {
+          _isCompleted = true;
+        });
+      }
+    });
     _ctrl.forward();
   }
 
   @override
   void dispose() {
+    _anim.dispose();
     _ctrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isCompleted) {
+      return widget.child;
+    }
+
     return FadeTransition(
       opacity: _anim,
       child: AnimatedBuilder(

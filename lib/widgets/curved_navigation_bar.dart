@@ -136,11 +136,13 @@ class _CurvedAnimatedNavBarState extends State<CurvedAnimatedNavBar>
                   alignment: Alignment.bottomCenter,
                   children: [
                     // 1. Bar canvas with exact Figma Bézier cutout
-                    CustomPaint(
-                      size: Size(totalWidth, barHeight),
-                      painter: _FigmaCurvedBarPainter(
-                        activeCenterX: activeCenterX,
-                        barColor: widget.barColor,
+                    RepaintBoundary(
+                      child: CustomPaint(
+                        size: Size(totalWidth, barHeight),
+                        painter: _FigmaCurvedBarPainter(
+                          activeCenterX: activeCenterX,
+                          barColor: widget.barColor,
+                        ),
                       ),
                     ),
 

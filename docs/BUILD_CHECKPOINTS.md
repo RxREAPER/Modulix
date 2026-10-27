@@ -24,6 +24,34 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-097]` — Full-App UI Render Isolation, Animation Lifecycle Optimization, Zero-CLS Skeletons & State Hardening
+- **Category:** `perf` / `ui` / `animation` / `render`
+- **Files Modified:**
+  - `lib/widgets/loading/app_shimmer.dart`
+  - `lib/widgets/timer/medical_wave_visualizer.dart`
+  - `lib/widgets/timer/sketch_flip_digit.dart`
+  - `lib/widgets/curved_navigation_bar.dart`
+  - `lib/widgets/animations/page_entrance.dart`
+  - `lib/widgets/animations/rolling_digit_text.dart`
+  - `lib/screens/analytics/study_plan_analytics_page.dart`
+  - `lib/screens/analytics/daily_tasks_analytics_page.dart`
+  - `lib/screens/analytics/subject_mastery_analytics_page.dart`
+  - `lib/screens/daily_tasks/daily_tasks_screen.dart`
+  - `lib/screens/analytics/focus_timer_analytics_page.dart`
+  - `lib/widgets/automated_module_tracker.dart`
+  - `lib/screens/analytics/leaderboard_screen.dart`
+  - `lib/widgets/animations/filmic_metal_mesh_background.dart`
+  - `test/ui_optimization_test.dart`
+- **Summary:**
+  - **Render & Repaint Boundary Layer Isolation (`app_shimmer.dart`, `medical_wave_visualizer.dart`, `sketch_flip_digit.dart`, `curved_navigation_bar.dart`):** Enclosed continuous 60Hz/120Hz high-frequency animated layers (`AppShimmer` loading shader, `MedicalWaveVisualizer` ambient audio ECG wave, `SketchFlipCard` 3D split-flap perspective transforms, and `CurvedAnimatedNavBar` scooped cutout) inside dedicated `RepaintBoundary` compositing layers. Pre-allocated gradient color lists and clamped stop tuples in `AppShimmer`, completely eliminating per-frame heap allocations during loading skeletons.
+  - **Animation Lifecycle & Text Layout Caching (`page_entrance.dart`, `rolling_digit_text.dart`):** Pre-calculated and cached `CurvedAnimation` intervals in `PageEntrance`, eliminating persistent listener accumulation during rebuilds. Added zero-overhead fast path: once entrance animations finish, transition wrappers (`FadeTransition`, `AnimatedBuilder`, `Transform.translate`) are bypassed by returning raw children directly. Introduced static `_dimensionCache` in `RollingDigitText` keyed by `TextStyle`, making digit bounds lookups instant $O(1)$ and eliminating UI thread `TextPainter.layout()` passes during timer ticks.
+  - **Zero Cumulative Layout Shift (CLS) Shimmer Skeletons (`study_plan_analytics_page.dart`, `daily_tasks_analytics_page.dart`, `subject_mastery_analytics_page.dart`, `daily_tasks_screen.dart`):** Replaced raw, jumping `CircularProgressIndicator` spinners with editorial `AnalyticsSkeletonView` and `DeskTasksSkeletonView`, eliminating layout shift when pages load.
+  - **Reactive State Selectors & Allocations Cleanup (`focus_timer_analytics_page.dart`, `automated_module_tracker.dart`, `leaderboard_screen.dart`, `filmic_metal_mesh_background.dart`):** Pre-sliced `displayLogs` once before `ListView.separated` in Focus Timer session logs, removing 20 list allocations per frame. Refactored `AutomatedModuleTracker` to select `dayStartHour` specifically from Riverpod and perform $O(1)$ batch video lookups via pre-computed index map. Used direct `activeScale.index` in Leaderboard scale switcher. Driven `FilmicMetalMeshBackground` through a dedicated `ValueNotifier`, eliminating 60/120Hz `setState` rebuilds on the root widget hierarchy.
+- **Verification:** 40/40 targeted tests passed 100% green (`ui_optimization_test.dart`, `database_optimization_test.dart`, `battery_optimization_service_test.dart`, `alarm_clock_service_test.dart`, `focus_timer_idempotency_test.dart`, `chapter_screen_test.dart`), `flutter analyze` 0 issues across the entire project.
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### 🔖 `[CKPT-096]` — Full-App Memory Memoization, Native SQLite C-Aggregation & Incremental Cloud Sync
 - **Category:** `perf` / `database` / `network` / `resilience`
 - **Files Modified:**

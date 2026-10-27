@@ -34,6 +34,7 @@ class FilmicMetalMeshBackground extends StatefulWidget {
 class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final Ticker _ticker;
+  final ValueNotifier<double> _elapsedNotifier = ValueNotifier<double>(0.0);
   double _elapsedSeconds = 0.0;
   Duration _lastElapsed = Duration.zero;
   ui.FragmentProgram? _program;
@@ -53,9 +54,7 @@ class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
         }
       }
       _lastElapsed = elapsed;
-      if (mounted) {
-        setState(() {});
-      }
+      _elapsedNotifier.value = _elapsedSeconds;
     })..start();
 
     _loadShader();
@@ -128,6 +127,7 @@ class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _ticker.dispose();
+    _elapsedNotifier.dispose();
     _fallbackNoiseImage?.dispose();
     super.dispose();
   }
@@ -162,26 +162,31 @@ class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
           : const Color(0xFFFFFFFF);
     }
 
-    // 24 FPS cinema cadence for film grain jitter
-    final double grainSeed = (_elapsedSeconds * 24.0).floor() % 1000.0;
-
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Background atmospheric motion canvas in isolated RepaintBoundary
+        // Background atmospheric motion canvas in isolated RepaintBoundary driven by ValueNotifier
         RepaintBoundary(
-          child: CustomPaint(
-            painter: _FilmicMetalMeshPainter(
-              elapsedSeconds: _elapsedSeconds,
-              grainSeed: grainSeed,
-              isDark: isDark,
-              baseColor: canvasColor,
-              accentColor: themeAccent,
-              highlightColor: highlightColor,
-              program: _program,
-              fallbackNoiseImage: _fallbackNoiseImage,
-            ),
-            size: Size.infinite,
+          child: ValueListenableBuilder<double>(
+            valueListenable: _elapsedNotifier,
+            builder: (context, elapsed, _) {
+              // 24 FPS cinema cadence for film grain jitter
+              final double grainSeed = (elapsed * 24.0).floor() % 1000.0;
+
+              return CustomPaint(
+                painter: _FilmicMetalMeshPainter(
+                  elapsedSeconds: elapsed,
+                  grainSeed: grainSeed,
+                  isDark: isDark,
+                  baseColor: canvasColor,
+                  accentColor: themeAccent,
+                  highlightColor: highlightColor,
+                  program: _program,
+                  fallbackNoiseImage: _fallbackNoiseImage,
+                ),
+                size: Size.infinite,
+              );
+            },
           ),
         ),
 

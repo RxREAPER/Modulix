@@ -39,19 +39,26 @@ class RollingDigitText extends StatelessWidget {
     );
   }
 
+  static final Map<TextStyle, Size> _dimensionCache = {};
+
+  static Size _getDigitSize(TextStyle style) {
+    return _dimensionCache.putIfAbsent(style, () {
+      final textPainter = TextPainter(
+        text: TextSpan(text: '8', style: style),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      final size = Size(textPainter.width, textPainter.height);
+      textPainter.dispose();
+      return size;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final effectiveStyle = DefaultTextStyle.of(context).style.merge(style);
-
-    // Measure standard single digit dimensions
-    final textPainter = TextPainter(
-      text: TextSpan(text: '8', style: effectiveStyle),
-      textDirection: TextDirection.ltr,
-    )..layout();
-
-    final digitHeight = textPainter.height;
-    final digitWidth = textPainter.width;
-    textPainter.dispose();
+    final digitSize = _getDigitSize(effectiveStyle);
+    final digitHeight = digitSize.height;
+    final digitWidth = digitSize.width;
 
     return AnimatedSize(
       duration: duration,
@@ -107,7 +114,7 @@ class _RollingDigitSlot extends StatefulWidget {
 class _RollingDigitSlotState extends State<_RollingDigitSlot>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _animation;
+  late CurvedAnimation _animation;
   late double _fromValue;
   late double _toValue;
 
@@ -147,10 +154,13 @@ class _RollingDigitSlotState extends State<_RollingDigitSlot>
 
       _toValue = newTarget;
       _controller.duration = widget.duration;
-      _animation = CurvedAnimation(
-        parent: _controller,
-        curve: widget.curve,
-      );
+      if (oldWidget.curve != widget.curve) {
+        _animation.dispose();
+        _animation = CurvedAnimation(
+          parent: _controller,
+          curve: widget.curve,
+        );
+      }
       _controller.forward(from: 0.0).then((_) {
         if (mounted && _toValue >= 10.0) {
           // Normalize back to 0 cleanly with setState
@@ -165,6 +175,7 @@ class _RollingDigitSlotState extends State<_RollingDigitSlot>
 
   @override
   void dispose() {
+    _animation.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -174,10 +185,11 @@ class _RollingDigitSlotState extends State<_RollingDigitSlot>
     // 0 through 9, plus 0 and 1 for seamless forward wrap
     const digitsList = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1];
 
-    return SizedBox(
-      width: widget.digitWidth,
-      height: widget.digitHeight,
-      child: ClipRect(
+    return RepaintBoundary(
+      child: SizedBox(
+        width: widget.digitWidth,
+        height: widget.digitHeight,
+        child: ClipRect(
         child: AnimatedBuilder(
           animation: _animation,
           builder: (context, child) {
@@ -215,6 +227,7 @@ class _RollingDigitSlotState extends State<_RollingDigitSlot>
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

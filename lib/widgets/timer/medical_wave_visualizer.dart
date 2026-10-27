@@ -63,20 +63,22 @@ class _MedicalWaveVisualizerState extends State<MedicalWaveVisualizer>
     final trackCount = _audioService.activeTrackIds.length;
     final masterVol = _audioService.masterVolume;
 
-    return AnimatedBuilder(
-      animation: _ctrl,
-      builder: (context, _) {
-        return CustomPaint(
-          size: Size(double.infinity, widget.height),
-          painter: _ECGWavePainter(
-            progress: _ctrl.value,
-            color: waveColor,
-            isPlaying: isPlaying,
-            intensity: (masterVol * (0.6 + (trackCount * 0.15))).clamp(0.2, 1.0),
-            showBaseline: widget.showBaseline,
-          ),
-        );
-      },
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _ctrl,
+        builder: (context, _) {
+          return CustomPaint(
+            size: Size(double.infinity, widget.height),
+            painter: _ECGWavePainter(
+              progress: _ctrl.value,
+              color: waveColor,
+              isPlaying: isPlaying,
+              intensity: (masterVol * (0.6 + (trackCount * 0.15))).clamp(0.2, 1.0),
+              showBaseline: widget.showBaseline,
+            ),
+          );
+        },
+      ),
     );
   }
 }

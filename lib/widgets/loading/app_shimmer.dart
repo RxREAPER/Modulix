@@ -41,32 +41,32 @@ class _AppShimmerState extends State<AppShimmer>
   Widget build(BuildContext context) {
     final base = widget.baseColor ?? const Color(0xFFE5E7EB);
     final highlight = widget.highlightColor ?? const Color(0xFFF3F4F6);
+    final colors = [base, highlight, base];
 
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return ShaderMask(
-          blendMode: BlendMode.srcATop,
-          shaderCallback: (bounds) {
-            return LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              stops: [
-                _controller.value - 0.3,
-                _controller.value,
-                _controller.value + 0.3,
-              ].map((s) => s.clamp(0.0, 1.0)).toList(),
-              colors: [
-                base,
-                highlight,
-                base,
-              ],
-            ).createShader(bounds);
-          },
-          child: child,
-        );
-      },
-      child: widget.child,
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          final v = _controller.value;
+          final s0 = (v - 0.3).clamp(0.0, 1.0);
+          final s1 = v.clamp(0.0, 1.0);
+          final s2 = (v + 0.3).clamp(0.0, 1.0);
+
+          return ShaderMask(
+            blendMode: BlendMode.srcATop,
+            shaderCallback: (bounds) {
+              return LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                stops: [s0, s1, s2],
+                colors: colors,
+              ).createShader(bounds);
+            },
+            child: child,
+          );
+        },
+        child: widget.child,
+      ),
     );
   }
 }

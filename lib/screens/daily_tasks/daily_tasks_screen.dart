@@ -14,6 +14,7 @@ import '../../providers/tasks_hub_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/feedback/modulix_toast.dart';
+import '../../widgets/loading/app_shimmer.dart';
 
 class DailyTasksScreen extends ConsumerStatefulWidget {
   const DailyTasksScreen({super.key});
@@ -126,8 +127,8 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
         ),
       ),
       body: tasksStateAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(strokeWidth: 2),
+        loading: () => const SafeArea(
+          child: DeskTasksSkeletonView(),
         ),
         error: (err, _) => Center(
           child: Text('Error loading tasks', style: TextStyle(color: AppTheme.mutedText)),

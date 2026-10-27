@@ -263,7 +263,7 @@ class _TactileScaleSwitcher extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = AppTheme.current.isDark;
-    final activeIndex = LeaderboardScale.values.indexOf(activeScale);
+    final activeIndex = activeScale.index;
 
     return Container(
       height: 44,

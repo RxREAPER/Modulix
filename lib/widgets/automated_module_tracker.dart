@@ -64,8 +64,9 @@ class AutomatedModuleTracker extends ConsumerWidget {
     }
 
     // Day Window Calculation linked to start of the day setting
-    final appState = ref.watch(appStateProvider).valueOrNull;
-    final dayStartHour = appState?.dayStartHour ?? 5;
+    final dayStartHour = ref.watch(
+      appStateProvider.select((s) => s.valueOrNull?.dayStartHour ?? 5),
+    );
     final now = DateTime.now().subtract(Duration(hours: dayStartHour));
     final todayKey =
         '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
@@ -102,8 +103,9 @@ class AutomatedModuleTracker extends ConsumerWidget {
       });
     }
 
+    final videoMap = {for (final v in planVideos) v.id: v};
     final batchVideos = effectiveBatchIds
-        .map((id) => planVideos.where((v) => v.id == id).firstOrNull)
+        .map((id) => videoMap[id])
         .whereType<Video>()
         .toList();
 

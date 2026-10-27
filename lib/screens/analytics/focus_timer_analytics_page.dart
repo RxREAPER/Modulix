@@ -596,6 +596,8 @@ class _FocusTimerAnalyticsPageState
                   }
                 }).toList();
 
+                final displayLogs = filteredLogs.reversed.take(20).toList(growable: false);
+
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -630,7 +632,7 @@ class _FocusTimerAnalyticsPageState
                     ),
                     const SizedBox(height: 12),
 
-                    if (filteredLogs.isEmpty)
+                    if (displayLogs.isEmpty)
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(24),
@@ -676,7 +678,7 @@ class _FocusTimerAnalyticsPageState
                         child: ListView.separated(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          itemCount: filteredLogs.reversed.take(20).length,
+                          itemCount: displayLogs.length,
                           separatorBuilder: (context, index) => Divider(
                             height: 1,
                             thickness: 0.6,
@@ -687,7 +689,7 @@ class _FocusTimerAnalyticsPageState
                                 : const Color(0xFFF1F5F9),
                           ),
                           itemBuilder: (context, index) {
-                            final log = filteredLogs.reversed.take(20).toList()[index];
+                            final log = displayLogs[index];
                             return Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                               child: Row(

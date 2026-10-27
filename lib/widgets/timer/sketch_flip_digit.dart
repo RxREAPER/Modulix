@@ -85,8 +85,9 @@ class _SketchFlipCardState extends State<SketchFlipCard>
   Widget build(BuildContext context) {
     final halfHeight = widget.height / 2;
 
-    return AnimatedBuilder(
-      animation: _animation,
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _animation,
       builder: (context, _) {
         final val = _animation.value;
         final isAnimating = _controller.isAnimating || (val > 0.0 && val < 1.0);
@@ -244,8 +245,9 @@ class _SketchFlipCardState extends State<SketchFlipCard>
           ),
         );
       },
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildHalfCard({
     required String text,

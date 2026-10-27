@@ -11,6 +11,7 @@ import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/analytics/progress_radial_gauge.dart';
 import '../../widgets/curriculum/subject_sketch_icon.dart';
+import '../../widgets/loading/app_shimmer.dart';
 
 class SubjectMasteryAnalyticsPage extends ConsumerStatefulWidget {
   const SubjectMasteryAnalyticsPage({super.key});
@@ -33,7 +34,7 @@ class _SubjectMasteryAnalyticsPageState
     if (appState == null) {
       return Scaffold(
         backgroundColor: AppTheme.paperBackground,
-        body: const Center(child: CircularProgressIndicator()),
+        body: const SafeArea(child: AnalyticsSkeletonView()),
       );
     }
 

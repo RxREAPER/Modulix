@@ -11,6 +11,7 @@ import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/animations/page_entrance.dart';
 import '../../widgets/analytics/progress_radial_gauge.dart';
 import '../../widgets/analytics/pacing_velocity_chart.dart';
+import '../../widgets/loading/app_shimmer.dart';
 import '../../widgets/feedback/modulix_toast.dart';
 
 class StudyPlanAnalyticsPage extends ConsumerStatefulWidget {
@@ -39,7 +40,7 @@ class _StudyPlanAnalyticsPageState
     if (appState == null) {
       return Scaffold(
         backgroundColor: AppTheme.paperBackground,
-        body: const Center(child: CircularProgressIndicator()),
+        body: const SafeArea(child: AnalyticsSkeletonView()),
       );
     }
 
