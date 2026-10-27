@@ -17,8 +17,11 @@ enum ModulixLogoStyle {
 /// Features the classical Roman serif "Mx" monogram with calligraphic
 /// interlocking ligature and fine engraved intaglio styling.
 class ModulixLogo extends StatelessWidget {
-  /// Size of the logo (width and height will be equal).
+  /// Optical height of the logo (width scales proportionally to natural ~1.29 aspect ratio).
   final double size;
+
+  /// Optional custom width. If provided, overrides the proportional width.
+  final double? width;
 
   /// Optional custom tint color. If null, dynamically conforms to
   /// [AppTheme.inkForeground] or palette brightness.
@@ -32,7 +35,8 @@ class ModulixLogo extends StatelessWidget {
 
   const ModulixLogo({
     super.key,
-    this.size = 28.0,
+    this.size = 36.0,
+    this.width,
     this.color,
     this.style = ModulixLogoStyle.monogram,
     this.onTap,
@@ -55,10 +59,14 @@ class ModulixLogo extends StatelessWidget {
         ? 'assets/icons/brand/modulix_monogram_white.png'
         : 'assets/icons/brand/modulix_monogram_dark.png';
 
+    // The vector glyph has an aspect ratio of 1024 / 792 (~1.293:1)
+    final effectiveWidth = width ?? (size * 1.29);
+    final effectiveHeight = size;
+
     Widget image = Image.asset(
       assetPath,
-      width: size,
-      height: size,
+      width: effectiveWidth,
+      height: effectiveHeight,
       fit: BoxFit.contain,
       filterQuality: FilterQuality.high,
       color: color != null ? effectiveColor : null,
@@ -75,8 +83,8 @@ class ModulixLogo extends StatelessWidget {
     }
 
     return SizedBox(
-      width: size,
-      height: size,
+      width: effectiveWidth,
+      height: effectiveHeight,
       child: Center(child: image),
     );
   }

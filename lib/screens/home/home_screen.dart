@@ -29,7 +29,6 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(appThemeDataProvider);
     final appStateAsync = ref.watch(appStateProvider);
-    final isDark = AppTheme.current.isDark;
 
     return appStateAsync.when(
       loading: () => const Scaffold(
@@ -75,29 +74,12 @@ class HomeScreen extends ConsumerWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Sleek brand mark
+                          // Free-floating brand insignia and wordmark (Zero enclosing box)
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Container(
-                                width: 38,
-                                height: 38,
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? Colors.white.withValues(alpha: 0.07)
-                                      : Colors.black.withValues(alpha: 0.04),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: isDark
-                                        ? Colors.white.withValues(alpha: 0.14)
-                                        : Colors.black.withValues(alpha: 0.09),
-                                    width: 0.6,
-                                  ),
-                                ),
-                                child: const Center(
-                                  child: ModulixLogo(
-                                    size: 28,
-                                  ),
-                                ),
+                              const ModulixLogo(
+                                size: 36,
                               ),
                               const SizedBox(width: 10),
                               Text(

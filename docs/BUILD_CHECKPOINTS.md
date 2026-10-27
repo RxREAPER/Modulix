@@ -24,6 +24,27 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-092]` — Symmetrical Geometric Intaglio Monogram, Tight Canvas, Free-Floating Header & 72% Safe-Zone Icon
+- **Category:** `brand` / `ui` / `vector`
+- **Files Modified:**
+  - `assets/icons/brand/modulix_monogram.svg`
+  - `assets/icons/brand/modulix_monogram_dark.png`
+  - `assets/icons/brand/modulix_monogram_white.png`
+  - `assets/icons/brand/modulix_play_store_512.png`
+  - `android/app/src/main/res/drawable-*/ic_launcher_foreground.png` (mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi)
+  - `android/app/src/main/res/mipmap-*/ic_launcher.png` & `ic_launcher_round.png` (mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi)
+  - `lib/widgets/brand/modulix_logo.dart`
+  - `lib/screens/home/home_screen.dart`
+- **Summary:**
+  - Executed all 4 user brand rules with precision:
+    1. **No extra spaces:** Tight bounding box vector (`viewBox="0 0 644.9 498.8"`) with zero superfluous margins around glyph contours.
+    2. **Not enclosing in a box:** Purged the enclosing `Container` (squircle box, background fill, and border) on the top app bar; `ModulixLogo` floats freely directly on the surface canvas beside "Modulix".
+    3. **Follow geometry and symmetry all over:** Symmetrical Roman capital 'M' (identical stem widths, bilateral bracketed head and foot serifs, centered V vertex, and clean compound-path inline engraved channels). Mathematical $G^2$ continuous calligraphic swash on 'X' with optical knockout gap under the M foot serif.
+    4. **A bigger sized one on top bar and icon:** Increased top bar optical size to 36px (width scaled proportionally to 46.4px at 1.29 aspect ratio). Re-generated Android adaptive launcher icons filling 72% of the circular safe zone.
+- **Verification:** Verified via `flutter analyze` (0 errors, 0 warnings), `flutter test test/modulix_logo_test.dart` (4/4 tests passed 100% green), visual multi-theme triptych render, top bar simulation render, and complete Gradle APK debug build (`BUILD SUCCESSFUL in 3m 13s`, 276MB).
+
+---
+
 ### 🔖 `[CKPT-091]` — Monogram Stroke Contrast Boosting, Header Container Calibration & Physical Device Screencap Verification
 - **Category:** `brand` / `ui` / `verification`
 - **Files Modified:**
