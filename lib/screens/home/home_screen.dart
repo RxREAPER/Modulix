@@ -80,13 +80,13 @@ class HomeScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Container(
-                                width: 40,
-                                height: 40,
+                                width: 46,
+                                height: 44,
                                 decoration: BoxDecoration(
                                   color: isDark
                                       ? Colors.white.withValues(alpha: 0.06)
                                       : Colors.black.withValues(alpha: 0.035),
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(11),
                                   border: Border.all(
                                     color: isDark
                                         ? Colors.white.withValues(alpha: 0.12)
@@ -96,7 +96,7 @@ class HomeScreen extends ConsumerWidget {
                                 ),
                                 child: const Center(
                                   child: ModulixLogo(
-                                    size: 26,
+                                    size: 30,
                                   ),
                                 ),
                               ),

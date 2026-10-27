@@ -14,6 +14,7 @@ import '../../services/sync_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/sync_provider.dart';
 import '../../widgets/animations/apple_pressable.dart';
+import '../../widgets/timer/battery_optimization_sheet.dart';
 
 class SettingsScreen extends ConsumerWidget {
   final String? from;
@@ -883,6 +884,25 @@ class _PreferencesGroup extends StatelessWidget {
           title: 'Notifications & Routine',
           subtitle: 'Study reminders, streak & routine alerts',
           onTap: () => context.push('/settings/notifications-preferences'),
+        ),
+        _groupDivider(),
+        _SettingsItemRow(
+          leading: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              Icons.bolt_rounded,
+              color: Color(0xFF059669),
+              size: 20,
+            ),
+          ),
+          title: 'Background Reliability & Battery',
+          subtitle: 'Prevent timer halts & manage Doze mode',
+          onTap: () => BatteryOptimizationSheet.show(context),
         ),
       ],
     );

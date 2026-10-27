@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -152,15 +153,19 @@ final focusTimerProvider =
 class FocusTimerNotifier extends StateNotifier<FocusTimerState>
     with WidgetsBindingObserver {
   static const _prefKeepAwakeKey = 'focus_timer_keep_screen_awake';
+  static const _prefSessionAnchorKey = 'focus_timer_active_session_anchor_v1';
   final Ref _ref;
   Timer? _ticker;
+  DateTime? _sessionStartTime;
   DateTime? _sessionTargetEndTime;
   DateTime? _lastTickWallTime;
+  int _lastPersistSeconds = 0;
 
   FocusTimerNotifier(this._ref)
       : super(FocusTimerState(theme: kTimerThemes.first)) {
     _loadKeepAwakePreference();
     WidgetsBinding.instance.addObserver(this);
+    restoreSessionFromDisk();
   }
 
   Future<void> _loadKeepAwakePreference() async {
@@ -171,6 +176,281 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
         state = state.copyWith(keepScreenAwake: saved);
       }
     } catch (_) {}
+  }
+
+  /// Persist current active session to disk for crash, background kill, and reboot recovery
+  Future<void> _persistSessionAnchor() async {
+    if (!state.sessionActive) {
+      await _clearPersistedSessionAnchor();
+      return;
+    }
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final map = <String, dynamic>{
+        'sessionActive': state.sessionActive,
+        'isRunning': state.isRunning,
+        'startTimeMs': _sessionStartTime?.millisecondsSinceEpoch,
+        'targetEndTimeMs': _sessionTargetEndTime?.millisecondsSinceEpoch,
+        'lastTickWallTimeMs': _lastTickWallTime?.millisecondsSinceEpoch,
+        'mode': state.mode.name,
+        'phase': state.phase.name,
+        'subjectId': state.subjectId,
+        'subjectName': state.subjectName,
+        'topicId': state.topicId,
+        'topicTitle': state.topicTitle,
+        'chapterName': state.chapterName,
+        'topicType': state.topicType,
+        'pomodoroPresetMins': state.pomodoroPresetMins,
+        'pomodoroBreakMins': state.pomodoroBreakMins,
+        'modulePresetMins': state.modulePresetMins,
+        'pomodoroTotalCycles': state.pomodoroTotalCycles,
+        'pomodoroCurrentCycle': state.pomodoroCurrentCycle,
+        'pomodoroCompletedCycles': state.pomodoroCompletedCycles,
+        'pomodoroLongBreakMins': state.pomodoroLongBreakMins,
+        'pomodoroLongBreakInterval': state.pomodoroLongBreakInterval,
+        'isLongBreak': state.isLongBreak,
+        'remainingSeconds': state.remainingSeconds,
+        'focusSecondsElapsed': state.focusSecondsElapsed,
+        'breakSecondsElapsed': state.breakSecondsElapsed,
+        'hasTarget': state.hasTarget,
+        'boundTaskId': state.boundTaskId,
+        'activeSoundId': state.activeSoundId,
+        'savedAtMs': DateTime.now().millisecondsSinceEpoch,
+      };
+      await prefs.setString(_prefSessionAnchorKey, jsonEncode(map));
+    } catch (e) {
+      debugPrint('[FocusTimerNotifier] _persistSessionAnchor error: $e');
+    }
+  }
+
+  /// Clear session anchor when explicitly ended, finished, or reset
+  Future<void> _clearPersistedSessionAnchor() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_prefSessionAnchorKey);
+    } catch (_) {}
+  }
+
+  /// Reconstruct active focus session from disk following cold boot or OS process death
+  Future<void> restoreSessionFromDisk() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_prefSessionAnchorKey);
+      if (raw == null || raw.isEmpty) return;
+
+      final dynamic decoded = jsonDecode(raw);
+      if (decoded is! Map<String, dynamic>) return;
+
+      final bool sessionActive = decoded['sessionActive'] == true;
+      if (!sessionActive) return;
+
+      final bool isRunning = decoded['isRunning'] == true;
+      final String modeName = decoded['mode']?.toString() ?? 'pomodoro';
+      final String phaseName = decoded['phase']?.toString() ?? 'focusing';
+
+      final TimerMode mode = TimerMode.values.firstWhere(
+        (m) => m.name == modeName,
+        orElse: () => TimerMode.pomodoro,
+      );
+
+      final TimerPhase phase = TimerPhase.values.firstWhere(
+        (p) => p.name == phaseName,
+        orElse: () => TimerPhase.focusing,
+      );
+
+      final int? startMs = (decoded['startTimeMs'] as num?)?.toInt();
+      final int? targetMs = (decoded['targetEndTimeMs'] as num?)?.toInt();
+      final int savedAtMs = (decoded['savedAtMs'] as num?)?.toInt() ?? 0;
+
+      final int pomodoroPresetMins = (decoded['pomodoroPresetMins'] as num?)?.toInt() ?? 25;
+      final int pomodoroBreakMins = (decoded['pomodoroBreakMins'] as num?)?.toInt() ?? 5;
+      final int modulePresetMins = (decoded['modulePresetMins'] as num?)?.toInt() ?? 15;
+      final int pomodoroTotalCycles = (decoded['pomodoroTotalCycles'] as num?)?.toInt() ?? 4;
+      final int pomodoroCurrentCycle = (decoded['pomodoroCurrentCycle'] as num?)?.toInt() ?? 1;
+      final int pomodoroCompletedCycles = (decoded['pomodoroCompletedCycles'] as num?)?.toInt() ?? 0;
+      final int pomodoroLongBreakMins = (decoded['pomodoroLongBreakMins'] as num?)?.toInt() ?? 15;
+      final int pomodoroLongBreakInterval = (decoded['pomodoroLongBreakInterval'] as num?)?.toInt() ?? 4;
+      final bool isLongBreak = decoded['isLongBreak'] == true;
+
+      int focusSecondsElapsed = (decoded['focusSecondsElapsed'] as num?)?.toInt() ?? 0;
+      int breakSecondsElapsed = (decoded['breakSecondsElapsed'] as num?)?.toInt() ?? 0;
+      int remainingSeconds = (decoded['remainingSeconds'] as num?)?.toInt() ?? 0;
+
+      final String subjectId = decoded['subjectId']?.toString() ?? '';
+      final String subjectName = decoded['subjectName']?.toString() ?? 'General Focus';
+      final String? topicId = decoded['topicId']?.toString();
+      final String topicTitle = decoded['topicTitle']?.toString() ?? 'General Focus Session';
+      final String chapterName = decoded['chapterName']?.toString() ?? '';
+      final String topicType = decoded['topicType']?.toString() ?? 'general';
+      final String? boundTaskId = decoded['boundTaskId']?.toString();
+      final String activeSoundId = decoded['activeSoundId']?.toString() ?? 'none';
+      final bool hasTarget = decoded['hasTarget'] == true;
+
+      final now = DateTime.now();
+      final nowMs = now.millisecondsSinceEpoch;
+
+      if (startMs != null) {
+        _sessionStartTime = DateTime.fromMillisecondsSinceEpoch(startMs);
+      }
+
+      // ── CASE 1: Session was PAUSED when app terminated ───────────────────
+      if (!isRunning) {
+        state = state.copyWith(
+          sessionActive: true,
+          isRunning: false,
+          mode: mode,
+          phase: phase,
+          subjectId: subjectId,
+          subjectName: subjectName,
+          topicId: topicId,
+          topicTitle: topicTitle,
+          chapterName: chapterName,
+          topicType: topicType,
+          pomodoroPresetMins: pomodoroPresetMins,
+          pomodoroBreakMins: pomodoroBreakMins,
+          modulePresetMins: modulePresetMins,
+          pomodoroTotalCycles: pomodoroTotalCycles,
+          pomodoroCurrentCycle: pomodoroCurrentCycle,
+          pomodoroCompletedCycles: pomodoroCompletedCycles,
+          pomodoroLongBreakMins: pomodoroLongBreakMins,
+          pomodoroLongBreakInterval: pomodoroLongBreakInterval,
+          isLongBreak: isLongBreak,
+          focusSecondsElapsed: focusSecondsElapsed,
+          breakSecondsElapsed: breakSecondsElapsed,
+          remainingSeconds: remainingSeconds,
+          hasTarget: hasTarget,
+          boundTaskId: boundTaskId,
+          activeSoundId: activeSoundId,
+        );
+        return;
+      }
+
+      // ── CASE 2: Countdown Mode (Pomodoro or ModuleLinked) ─────────────────
+      if (mode != TimerMode.countUp && phase != TimerPhase.onBreak && targetMs != null) {
+        if (nowMs >= targetMs) {
+          // Completed while app was closed or device was asleep
+          final fullSessionSecs = pomodoroPresetMins * 60;
+          final safeElapsed = focusSecondsElapsed > 0 ? focusSecondsElapsed : fullSessionSecs;
+
+          state = state.copyWith(
+            sessionActive: true,
+            isRunning: false,
+            mode: mode,
+            phase: TimerPhase.focusing,
+            subjectId: subjectId,
+            subjectName: subjectName,
+            topicId: topicId,
+            topicTitle: topicTitle,
+            chapterName: chapterName,
+            topicType: topicType,
+            pomodoroPresetMins: pomodoroPresetMins,
+            pomodoroBreakMins: pomodoroBreakMins,
+            modulePresetMins: modulePresetMins,
+            pomodoroTotalCycles: pomodoroTotalCycles,
+            pomodoroCurrentCycle: pomodoroCurrentCycle,
+            pomodoroCompletedCycles: pomodoroCompletedCycles,
+            focusSecondsElapsed: safeElapsed,
+            remainingSeconds: 0,
+            hasTarget: hasTarget,
+            boundTaskId: boundTaskId,
+            activeSoundId: activeSoundId,
+          );
+
+          // Automatically finalize study session and log to database
+          await finishSession();
+
+          final alertsEnabled = _ref.read(appStateProvider).valueOrNull?.focusTimerAlertsEnabled ?? true;
+          if (alertsEnabled) {
+            NotificationService.instance.showFocusTimerCompleted(topicTitle: topicTitle);
+          }
+          await _clearPersistedSessionAnchor();
+          return;
+        } else {
+          // Active session still ongoing: calculate exact remaining seconds via wall-clock
+          final diffSecs = ((targetMs - nowMs) / 1000.0).ceil();
+          final elapsedSinceSave = savedAtMs > 0 ? ((nowMs - savedAtMs) / 1000.0).round() : 0;
+          focusSecondsElapsed += (elapsedSinceSave > 0 ? elapsedSinceSave : 0);
+          remainingSeconds = diffSecs;
+
+          _sessionTargetEndTime = DateTime.fromMillisecondsSinceEpoch(targetMs);
+          _lastTickWallTime = now;
+
+          state = state.copyWith(
+            sessionActive: true,
+            isRunning: true,
+            mode: mode,
+            phase: phase,
+            subjectId: subjectId,
+            subjectName: subjectName,
+            topicId: topicId,
+            topicTitle: topicTitle,
+            chapterName: chapterName,
+            topicType: topicType,
+            pomodoroPresetMins: pomodoroPresetMins,
+            pomodoroBreakMins: pomodoroBreakMins,
+            modulePresetMins: modulePresetMins,
+            pomodoroTotalCycles: pomodoroTotalCycles,
+            pomodoroCurrentCycle: pomodoroCurrentCycle,
+            pomodoroCompletedCycles: pomodoroCompletedCycles,
+            pomodoroLongBreakMins: pomodoroLongBreakMins,
+            pomodoroLongBreakInterval: pomodoroLongBreakInterval,
+            isLongBreak: isLongBreak,
+            focusSecondsElapsed: focusSecondsElapsed,
+            breakSecondsElapsed: breakSecondsElapsed,
+            remainingSeconds: remainingSeconds,
+            hasTarget: hasTarget,
+            boundTaskId: boundTaskId,
+            activeSoundId: activeSoundId,
+          );
+
+          _ticker?.cancel();
+          _ticker = Timer.periodic(const Duration(milliseconds: 200), (_) => _tick());
+          AmbientAudioService.instance.onTimerStartOrResume();
+          _updateRealtimeNotification();
+          return;
+        }
+      }
+
+      // ── CASE 3: Count-Up or Break Mode ──────────────────────────────────
+      if (startMs != null) {
+        final elapsedTotal = ((nowMs - startMs) / 1000.0).round();
+        if (phase == TimerPhase.onBreak) {
+          breakSecondsElapsed = elapsedTotal > 0 ? elapsedTotal : breakSecondsElapsed;
+        } else {
+          focusSecondsElapsed = elapsedTotal > 0 ? elapsedTotal : focusSecondsElapsed;
+          remainingSeconds = focusSecondsElapsed;
+        }
+
+        _lastTickWallTime = now;
+        state = state.copyWith(
+          sessionActive: true,
+          isRunning: true,
+          mode: mode,
+          phase: phase,
+          subjectId: subjectId,
+          subjectName: subjectName,
+          topicId: topicId,
+          topicTitle: topicTitle,
+          chapterName: chapterName,
+          topicType: topicType,
+          pomodoroPresetMins: pomodoroPresetMins,
+          pomodoroBreakMins: pomodoroBreakMins,
+          focusSecondsElapsed: focusSecondsElapsed,
+          breakSecondsElapsed: breakSecondsElapsed,
+          remainingSeconds: remainingSeconds,
+          hasTarget: hasTarget,
+          boundTaskId: boundTaskId,
+          activeSoundId: activeSoundId,
+        );
+
+        _ticker?.cancel();
+        _ticker = Timer.periodic(const Duration(milliseconds: 200), (_) => _tick());
+        AmbientAudioService.instance.onTimerStartOrResume();
+        _updateRealtimeNotification();
+      }
+    } catch (e) {
+      debugPrint('[FocusTimerNotifier] _restoreSessionFromDisk error: $e');
+    }
   }
 
   Future<void> _saveKeepAwakePreference(bool value) async {
@@ -425,9 +705,11 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
       AmbientAudioService.instance.onTimerPause();
       StudyPresenceService.instance.stopFocusSession();
       state = state.copyWith(isRunning: false);
+      _persistSessionAnchor();
     } else {
       final newPhase = state.phase == TimerPhase.idle ? TimerPhase.focusing : state.phase;
       final now = DateTime.now();
+      _sessionStartTime ??= now;
       int currentRemaining = state.remainingSeconds;
       if (state.mode == TimerMode.pomodoro && currentRemaining == 0) {
         currentRemaining = state.pomodoroPresetMins * 60;
@@ -470,6 +752,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
           topicTitle: state.topicTitle,
         );
       }
+      _persistSessionAnchor();
     }
   }
 
@@ -516,6 +799,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
         _updateRealtimeNotification();
       }
     }
+    _persistSessionAnchor();
   }
 
   void setTheme(TimerThemeData theme) {
@@ -623,11 +907,13 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
 
     SyncService.instance.schedulePush(_ref);
     StudyPresenceService.instance.stopFocusSession();
+    await _clearPersistedSessionAnchor();
     return log;
   }
 
   void reset() {
     _ticker?.cancel();
+    _sessionStartTime = null;
     _sessionTargetEndTime = null;
     _lastTickWallTime = null;
     NotificationService.instance.cancelFocusTimerEnd();
@@ -641,10 +927,12 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
       remainingSeconds: 0,
       keepScreenAwake: state.keepScreenAwake,
     );
+    _clearPersistedSessionAnchor();
   }
 
   void resetSessionForSameTask() {
     _ticker?.cancel();
+    _sessionStartTime = null;
     _sessionTargetEndTime = null;
     _lastTickWallTime = null;
     NotificationService.instance.cancelFocusTimerEnd();
@@ -663,12 +951,15 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
       remainingSeconds: rem,
       hasTarget: true,
     );
+    _clearPersistedSessionAnchor();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _syncWithWallClock();
+    } else if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _persistSessionAnchor();
     }
   }
 
@@ -742,6 +1033,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
         breakSecondsElapsed: state.breakSecondsElapsed + wholeSeconds,
       );
       _updateRealtimeNotification();
+      _checkPeriodicPersist();
       return;
     }
 
@@ -757,6 +1049,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
         focusSecondsElapsed: state.focusSecondsElapsed + wholeSeconds,
         remainingSeconds: state.remainingSeconds + wholeSeconds,
       );
+      _checkPeriodicPersist();
       return;
     }
 
@@ -780,6 +1073,15 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
       focusSecondsElapsed: state.focusSecondsElapsed + delta,
       remainingSeconds: remaining,
     );
+    _checkPeriodicPersist();
+  }
+
+  void _checkPeriodicPersist() {
+    final totalElapsed = state.focusSecondsElapsed + state.breakSecondsElapsed;
+    if (totalElapsed - _lastPersistSeconds >= 5) {
+      _lastPersistSeconds = totalElapsed;
+      _persistSessionAnchor();
+    }
   }
 
   void _onCountdownComplete() {
@@ -842,6 +1144,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
         _ref.read(dailyTasksProvider.notifier).markTaskComplete(tId);
       }
     }
+    _persistSessionAnchor();
   }
 
   void _updateRealtimeNotification() {

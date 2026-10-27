@@ -22,7 +22,9 @@ import '../../widgets/in_situ_hint_pill.dart';
 import '../../widgets/discovery_pulse.dart';
 import '../../widgets/timer/medical_wave_visualizer.dart';
 import '../../services/study_presence_service.dart';
+import '../../services/battery_optimization_service.dart';
 import '../../widgets/feedback/modulix_toast.dart';
+import '../../widgets/timer/battery_optimization_sheet.dart';
 
 class FocusTimerScreen extends ConsumerStatefulWidget {
   final String? initialSubjectId;
@@ -52,6 +54,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
   bool _initialized = false;
   VideoPlayerController? _videoCtrl;
   String? _currentVideoPath;
+  bool _isBatteryOptimizedExempt = true;
 
   @override
   void initState() {
@@ -64,6 +67,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
     if (keepAwake) {
       WakelockPlus.enable();
     }
+    _checkBatteryOptimization();
     // Seed task from external caller (e.g. module timeline)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _maybeSetTask();
@@ -71,10 +75,18 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
     });
   }
 
+  Future<void> _checkBatteryOptimization() async {
+    final exempt = await BatteryOptimizationService.instance.isIgnoringBatteryOptimizations();
+    if (mounted) {
+      setState(() => _isBatteryOptimizedExempt = exempt);
+    }
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _ensureVideoPlaying();
+      _checkBatteryOptimization();
     }
   }
 
@@ -814,6 +826,23 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                                   ),
                                 ),
                               ),
+                            ),
+                            const SizedBox(height: 10),
+
+                            // 5. Battery Reliability & Doze mode status (below Flip Clock)
+                            _GlassBtn(
+                              icon: _isBatteryOptimizedExempt ? Icons.bolt_rounded : Icons.battery_alert_rounded,
+                              isLight: isLight,
+                              color: _isBatteryOptimizedExempt
+                                  ? (isLight ? const Color(0xFF059669) : Colors.greenAccent)
+                                  : (isLight ? const Color(0xFFD97706) : Colors.amber),
+                              pulsing: !_isBatteryOptimizedExempt,
+                              onTap: () async {
+                                final changed = await BatteryOptimizationSheet.show(context);
+                                if (changed == true) {
+                                  _checkBatteryOptimization();
+                                }
+                              },
                             ),
                           ],
                         ),

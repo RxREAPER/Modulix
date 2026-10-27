@@ -24,6 +24,27 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-094]` — Uninterrupted Focus Timer, Wall-Clock Disk Session Anchor & OEM Battery Optimization Shield
+- **Category:** `timer` / `resilience` / `native`
+- **Files Modified:**
+  - `android/app/src/main/AndroidManifest.xml`
+  - `android/app/src/main/kotlin/com/modulix/app/MainActivity.kt`
+  - `lib/services/battery_optimization_service.dart`
+  - `lib/widgets/timer/battery_optimization_sheet.dart`
+  - `lib/providers/focus_timer_provider.dart`
+  - `lib/screens/timer/focus_timer_screen.dart`
+  - `lib/screens/settings/settings_screen.dart`
+  - `test/battery_optimization_service_test.dart`
+- **Summary:**
+  - **Wall-Clock Disk Session Anchor (`focus_timer_provider.dart`):** Complete immunity to Doze mode, Android 15/16 background thread freezes, and aggressive OEM memory termination. Stores active epoch timestamps (`startTimeMs`, `targetEndTimeMs`, `savedAtMs`) in disk storage (`SharedPreferences`) on start, pause, phase shifts, lifecycle changes, and periodically every 5 seconds. Automatically calculates exact elapsed focus time upon cold launch or auto-finalizes and logs completed study sessions into SQLite if countdown ended while the app was closed or device was asleep.
+  - **Native Android Battery Exemption Bridge (`MainActivity.kt`, `battery_optimization_service.dart`):** Implemented `com.modulix.app/battery_optimization` MethodChannel supporting `isIgnoringBatteryOptimizations`, direct 1-tap Android system dialog `Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`, and `openBatteryOptimizationSettings`.
+  - **Curated OEM Brand Advice (`battery_optimization_service.dart`, `battery_optimization_sheet.dart`):** Auto-detects device hardware manufacturer and displays tailored instructions for OnePlus/Oppo (OxygenOS/ColorOS auto-launch & background activity), Xiaomi/Poco (HyperOS/MIUI no restrictions & autostart), Samsung (One UI never sleeping apps), and Vivo/iQOO (high background consumption toggle) with concise copy and zero emojis.
+  - **Visual Indicator & Settings Integration:** Added dynamic battery status icon in `focus_timer_screen.dart` with gentle pulse warning if restricted and emerald shield when exempt; added "Background Reliability & Battery" tile in `settings_screen.dart`.
+- **Verification:** 10/10 unit tests passed 100% green (`test/battery_optimization_service_test.dart` and `test/focus_timer_idempotency_test.dart`), `flutter analyze` 0 errors, 0 warnings.
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### 🔖 `[CKPT-093]` — Smooth Preserved Monogram in Transparent Box & 58% Safe-Zone Launcher Icon
 - **Category:** `brand` / `ui` / `vector`
 - **Files Modified:**
