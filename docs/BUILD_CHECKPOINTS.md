@@ -4,6 +4,31 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.30.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (275MB)
+- **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)
+- **Compilation Time:** 134.2s | **Static Analysis:** 0 Errors, 0 Warnings
+- **Included Checkpoints:** `[CKPT-084]` (✅ Included in Build)
+
+### Key Highlights & Releases in v1.30.0:
+1. **Theme-Reactive Dynamic Breathing Horizon Gradient:**
+   - Bound liquid metal shader and procedural gradient to active palette accents (Forest Mint, Cosmic Mocha, Atomic Ice).
+   - Replaced static horizon with sinusoidal 55%–65% breathing wave (`0.60 + 0.05 * sin(t * 0.40)`).
+2. **Dedicated Transparent Editorial Greeting:**
+   - Restored pure `Modulix` branding in top bar; placed transparent `FOCUS, DR. [NAME] • DAILY FLOW` typography status line above the flip clock.
+3. **Card-Pile Bevels & 3D Flip Motion (`StudyDeskClock`):**
+   - Added realistic top and bottom leaf margins simulating cards ready to flip.
+   - Upgraded to 3D folding perspective flip animation (`rotateX`) on digit updates.
+4. **Interactive Syllabus Progress Deck (`AutomatedModuleTracker`):**
+   - Unified title, subject icon, unit tags, and circular progress ring into a cohesive single card deck.
+   - Two-line wrapped lesson title (`#138 MPGN and IgA Nephropathy`) with dedicated `Queue →` action button.
+5. **Boxed Task Analytics Container (`AnalyticsScreen`):**
+   - Wrapped Task Analytics in a frosted glass card container matching the Progress screen.
+6. **Physical Device Verification:**
+   - Installed and verified live on OnePlus 13R (`ba009d81`).
+
+---
+
 ## 🚀 Build Manifest v1.29.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (248MB)
 - **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)
