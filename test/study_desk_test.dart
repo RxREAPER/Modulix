@@ -40,9 +40,8 @@ void main() {
     // Verifies no InkWell / interactive link to focus timer screen
     expect(find.byType(InkWell), findsNothing);
 
-    // Verifies greeting and absence of LIVE badge or progress track
+    // Verifies absence of LIVE badge
     expect(find.text('LIVE'), findsNothing);
-    expect(find.text('Focus, Doctor.'), findsOneWidget);
   });
 
   testWidgets('StudyTaskCard renders title, subtitle and triggers toggle', (tester) async {
@@ -156,9 +155,9 @@ void main() {
       ),
     );
 
-    // Verify header matching clean layout with inner Open Queue action
+    // Verify header matching clean layout with inner Queue action
     expect(find.text('Module Based Tasks'), findsOneWidget);
-    expect(find.text('Open Queue'), findsOneWidget);
+    expect(find.text('Queue'), findsOneWidget);
     expect(find.text('Anatomy'), findsOneWidget);
     expect(find.text('Upper Limb'), findsOneWidget);
     // Verifies clutter-free card with no extra progress counter texts
@@ -329,7 +328,7 @@ void main() {
 
     // Verify renamed Hub Cards
     expect(find.text('Module Plan Progress'), findsOneWidget);
-    expect(find.text('Daily Tasks Analytics'), findsOneWidget);
+    expect(find.text('Task analytics'), findsOneWidget);
   });
 
   testWidgets('FocusTimerAnalyticsSheet renders interactive animated fl_chart BarChart with legend', (tester) async {

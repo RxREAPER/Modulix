@@ -72,8 +72,10 @@ void main() {
         liquidCol = mix(lightDeep, vec4(1.0, 1.0, 1.0, 1.0), caustic * 0.40 + crestGleam * 0.16);
     }
 
-    // 50% Viewport Height Horizon Dissolve
-    float horizonFade = smoothstep(0.25, 0.50, uv.y);
+    // Dynamic 60:40 Viewport Horizon Dissolve (Breathing between 55% and 65% of screen height)
+    float dynamicHorizon = 0.60 + 0.05 * sin(t * 0.40);
+    float horizonStart = dynamicHorizon - 0.28;
+    float horizonFade = smoothstep(horizonStart, dynamicHorizon, uv.y);
     vec4 finalColor = mix(liquidCol, uBaseColor, horizonFade);
 
     // Subtle, dimmed, non-intrusive 35mm film grain (reverted heavy/tinted grain addition)

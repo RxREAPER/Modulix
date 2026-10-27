@@ -135,23 +135,31 @@ class _FilmicMetalMeshBackgroundState extends State<FilmicMetalMeshBackground>
   @override
   Widget build(BuildContext context) {
     final isDark = AppTheme.current.isDark;
-    final isAtomicOrange = AppTheme.current.preset == PalettePreset.atomic_ice;
     final canvasColor = AppTheme.paperBackground;
 
-    // Balanced theme accent & highlights (toned down moderately, preserving vibrant liquid motion)
+    // Dynamically derive theme accent from current Modulix theme palette
+    final preset = AppTheme.current.preset;
     final Color themeAccent;
     final Color highlightColor;
-    if (isDark) {
-      // Balanced Dark Mode: Deep sapphire navy with luminous cyan crests
-      themeAccent = const Color(0xFF1E40AF); // Sapphire navy
-      highlightColor = const Color(0xFF38BDF8); // Celestial cyan/silver highlight
-    } else if (isAtomicOrange) {
-      themeAccent = AppTheme.accentPrimary; // Vibrant atomic orange wave
+
+    if (preset == PalettePreset.slate) {
+      // Basic Dark: Deep sapphire navy with luminous cyan crests
+      themeAccent = const Color(0xFF1E40AF);
+      highlightColor = const Color(0xFF38BDF8);
+    } else if (preset == PalettePreset.paper) {
+      // Basic Light: Crisp sky-slate mist with radiant white refraction
+      themeAccent = const Color(0xFF60A5FA);
+      highlightColor = const Color(0xFFFFFFFF);
+    } else if (preset == PalettePreset.atomic_ice) {
+      // Atomic Orange: Energetic flame waves
+      themeAccent = AppTheme.accentPrimary;
       highlightColor = const Color(0xFFFFFFFF);
     } else {
-      // Balanced Light Mode: Crisp sky-slate mist with radiant white refraction
-      themeAccent = const Color(0xFF60A5FA); // Radiant soft cerulean/slate
-      highlightColor = const Color(0xFFFFFFFF);
+      // Bespoke Palettes (Forest Mint, Cosmic Mocha, etc.): Pure theme reactive
+      themeAccent = AppTheme.accentPrimary;
+      highlightColor = isDark
+          ? AppTheme.current.secondaryAccent
+          : const Color(0xFFFFFFFF);
     }
 
     // 24 FPS cinema cadence for film grain jitter
@@ -296,12 +304,13 @@ class _FilmicMetalMeshPainter extends CustomPainter {
       );
     canvas.drawCircle(Offset(size.width * 0.70, waveY2), size.width * 0.80, wave2Paint);
 
-    // 50% Horizon fade into clean base color
+    // Dynamic 60:40 Horizon fade into clean base color (breathing between 55% and 65%)
+    final double breathingHorizon = 0.60 + 0.05 * math.sin(t * 0.40);
     final Paint horizonFadePaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        stops: const [0.0, 0.25, 0.50, 1.0],
+        stops: [0.0, (breathingHorizon - 0.28).clamp(0.0, 1.0), breathingHorizon.clamp(0.0, 1.0), 1.0],
         colors: [
           Colors.transparent,
           Colors.transparent,

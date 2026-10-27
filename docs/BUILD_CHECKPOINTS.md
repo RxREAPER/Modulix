@@ -27,6 +27,27 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ---
 
+### 🔖 `[CKPT-084]` — Theme-Reactive Dynamic Breathing Gradient, Card-Pile Flip Clock, Editorial Greeting, Syllabus Deck & Boxed Task Analytics
+- **Category:** `ui` / `shader` / `clock` / `tasks` / `analytics`
+- **Files Modified:**
+  - `shaders/liquid_metal.frag`
+  - `lib/widgets/animations/filmic_metal_mesh_background.dart`
+  - `lib/screens/home/home_screen.dart`
+  - `lib/widgets/study_desk_clock.dart`
+  - `lib/widgets/automated_module_tracker.dart`
+  - `lib/screens/analytics/analytics_screen.dart`
+  - `test/progress_overhaul_test.dart`
+  - `test/study_desk_test.dart`
+- **Summary:**
+  - Re-bound shader and procedural mesh gradient to active theme palette accents (Forest Mint, Cosmic Mocha, Atomic Ice) with dynamic 55%–65% breathing wave.
+  - Added dedicated transparent editorial status line (`FOCUS, DR. [NAME] • DAILY FLOW`) below top brand bar.
+  - Added realistic stepped card pile bevels and 3D folding perspective flip animation to split-flap clock.
+  - Remodeled module tasks into unified interactive syllabus progress deck with unwrapped multi-line topic titles and circular pacing indicator.
+  - Boxed Task Analytics into frosted glass container on Progress screen.
+- **Verification:** Verified via `flutter analyze` (0 issues), all 24 widget/unit tests passing (`flutter test`).
+
+---
+
 ### 🔖 `[CKPT-083]` — Dual-Card Split-Flap Flip Clock, Top Bar Greeting, Next Line Editorial Remodel & Task Analytics
 - **Category:** `ui` / `clock` / `editorial`
 - **Files Modified:**

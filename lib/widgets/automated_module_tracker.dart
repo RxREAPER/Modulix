@@ -181,6 +181,43 @@ class AutomatedModuleTracker extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Unified Component Header: Title & Status
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Module Based Tasks',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.inkForeground,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0),
+                          width: 0.75,
+                        ),
+                      ),
+                      child: Text(
+                        'Pacing inactive',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     Container(
@@ -222,7 +259,7 @@ class AutomatedModuleTracker extends ConsumerWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Set your target exam date for automated daily pacing',
+                            'Tap to setup daily curriculum pace',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
@@ -348,47 +385,75 @@ class AutomatedModuleTracker extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Unified Component Header: Title & Counter
+                    // 1. Unified Component Header: Title & Counter
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          'Module Based Tasks',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.inkForeground,
-                            letterSpacing: -0.3,
-                          ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Module Based Tasks',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.inkForeground,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          isAllDone
-                              ? 'All done'
-                              : '$completedBatchCount of $totalBatchCount completed',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: isAllDone ? FontWeight.w700 : FontWeight.w600,
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                          decoration: BoxDecoration(
                             color: isAllDone
-                                ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669))
-                                : AppTheme.mutedText,
+                                ? (isDark ? const Color(0xFF064E3B) : const Color(0xFFD1FAE5))
+                                : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isAllDone
+                                  ? (isDark ? const Color(0xFF059669) : const Color(0xFF10B981))
+                                  : (isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0)),
+                              width: 0.75,
+                            ),
+                          ),
+                          child: Text(
+                            isAllDone
+                                ? 'All done'
+                                : '$completedBatchCount of $totalBatchCount today',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: isAllDone
+                                  ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669))
+                                  : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569)),
+                              letterSpacing: 0.2,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 16),
 
-                    // Top Row: Minimal Monochromatic Subject Icon + Name & Unit
+                    // 2. Interactive Subject Deck Hero Row: Icon + Subject & Unit + Radial Ring
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
-                          width: 38,
-                          height: 38,
+                          width: 44,
+                          height: 44,
                           decoration: BoxDecoration(
                             color: isDark
                                 ? const Color(0xFF1E293B)
                                 : const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.08)
+                                  : const Color(0xFFE2E8F0),
+                              width: 0.75,
+                            ),
                           ),
                           child: Center(
                             child: SubjectSketchIcon(
@@ -396,11 +461,11 @@ class AutomatedModuleTracker extends ConsumerWidget {
                               color: isDark
                                   ? const Color(0xFFF8FAFC)
                                   : const Color(0xFF0F172A),
-                              size: 22,
+                              size: 24,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 14),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -408,15 +473,15 @@ class AutomatedModuleTracker extends ConsumerWidget {
                               Text(
                                 subjectName,
                                 style: TextStyle(
-                                  fontSize: 15.5,
-                                  fontWeight: FontWeight.w700,
+                                  fontSize: 16.5,
+                                  fontWeight: FontWeight.w800,
                                   color: AppTheme.inkForeground,
-                                  letterSpacing: -0.2,
+                                  letterSpacing: -0.3,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 1),
+                              const SizedBox(height: 2),
                               Text(
                                 selectedUnitDisplay,
                                 style: TextStyle(
@@ -430,38 +495,63 @@ class AutomatedModuleTracker extends ConsumerWidget {
                             ],
                           ),
                         ),
+                        const SizedBox(width: 12),
+                        // Sleek Segmented Circular Progress Ring
+                        SizedBox(
+                          width: 44,
+                          height: 44,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              CircularProgressIndicator(
+                                value: todayProgressFraction.clamp(0.0, 1.0),
+                                strokeWidth: 3.5,
+                                strokeCap: StrokeCap.round,
+                                backgroundColor: isDark
+                                    ? Colors.white.withValues(alpha: 0.08)
+                                    : Colors.black.withValues(alpha: 0.06),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  isAllDone
+                                      ? const Color(0xFF10B981)
+                                      : AppTheme.accentPrimary,
+                                ),
+                              ),
+                              Text(
+                                '${(todayProgressFraction * 100).round()}%',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.inkForeground,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
 
                     const SizedBox(height: 16),
 
-                    // Continuous 5px Monochromatic Progress Track
-                    Container(
-                      height: 5,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
+                    // Continuous Monochromatic Track
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(2.5),
+                      child: Container(
+                        height: 4.5,
+                        width: double.infinity,
                         color: isDark
                             ? Colors.white.withValues(alpha: 0.08)
                             : Colors.black.withValues(alpha: 0.06),
-                        borderRadius: BorderRadius.circular(2.5),
-                      ),
-                      child: FractionallySizedBox(
-                        alignment: Alignment.centerLeft,
-                        widthFactor: todayProgressFraction.clamp(0.0, 1.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: isDark
-                                  ? const [
-                                      Color(0xFFF8FAFC),
-                                      Color(0xFF94A3B8),
-                                    ]
-                                  : const [
-                                      Color(0xFF334155),
-                                      Color(0xFF0F172A),
-                                    ],
+                        child: FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: todayProgressFraction.clamp(0.0, 1.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: isAllDone
+                                    ? const [Color(0xFF34D399), Color(0xFF059669)]
+                                    : [AppTheme.accentEmerald, AppTheme.accentPrimary],
+                              ),
                             ),
-                            borderRadius: BorderRadius.circular(2.5),
                           ),
                         ),
                       ),
@@ -469,63 +559,108 @@ class AutomatedModuleTracker extends ConsumerWidget {
 
                     const SizedBox(height: 14),
 
-                    // Seamless Editorial Next Line (No inner container, breathable typography)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                    // 3. Fully Visible Next Lesson Tile & Action
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.04)
+                            : Colors.black.withValues(alpha: 0.03),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : Colors.black.withValues(alpha: 0.06),
+                          width: 0.75,
+                        ),
+                      ),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Icon(
-                            isAllDone
-                                ? Icons.check_circle_rounded
-                                : Icons.play_arrow_rounded,
-                            size: 16,
-                            color: isAllDone
-                                ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669))
-                                : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
-                          ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              isAllDone
-                                  ? "All today's modules finished!"
-                                  : (nextVideo != null
-                                      ? 'Next: #${nextVideo.serialNumber} ${nextVideo.title}'
-                                      : 'Open task queue'),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 12.0,
-                                fontWeight: FontWeight.w500,
-                                color: isDark
-                                    ? const Color(0xFFCBD5E1)
-                                    : const Color(0xFF334155),
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: isAllDone
+                                  ? (isDark ? const Color(0xFF064E3B) : const Color(0xFFD1FAE5))
+                                  : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Icon(
+                                isAllDone
+                                    ? Icons.check_rounded
+                                    : Icons.play_arrow_rounded,
+                                size: 18,
+                                color: isAllDone
+                                    ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669))
+                                    : AppTheme.accentPrimary,
                               ),
                             ),
                           ),
                           const SizedBox(width: 10),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Open Queue',
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: isDark
-                                      ? const Color(0xFFF8FAFC)
-                                      : const Color(0xFF0F172A),
-                                  letterSpacing: 0.1,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  isAllDone ? 'MODULES COMPLETE' : 'UP NEXT',
+                                  style: TextStyle(
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.8,
+                                    color: AppTheme.mutedText,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 3),
-                              Icon(
-                                Icons.arrow_forward_rounded,
-                                size: 13,
-                                color: isDark
-                                    ? const Color(0xFFF8FAFC)
-                                    : const Color(0xFF0F172A),
-                              ),
-                            ],
+                                const SizedBox(height: 1),
+                                Text(
+                                  isAllDone
+                                      ? "All scheduled videos completed for today!"
+                                      : (nextVideo != null
+                                          ? '#${nextVideo.serialNumber} ${nextVideo.title}'
+                                          : 'Open task queue'),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.inkForeground,
+                                    height: 1.25,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6.5),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.08)
+                                  : AppTheme.inkForeground,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Queue',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark ? const Color(0xFFF8FAFC) : Colors.white,
+                                    letterSpacing: 0.1,
+                                  ),
+                                ),
+                                const SizedBox(width: 3),
+                                Icon(
+                                  Icons.arrow_forward_rounded,
+                                  size: 12,
+                                  color: isDark ? const Color(0xFFF8FAFC) : Colors.white,
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),

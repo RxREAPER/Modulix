@@ -110,30 +110,14 @@ class HomeScreen extends ConsumerWidget {
                                 ),
                               ),
                               const SizedBox(width: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    'Modulix',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: -0.4,
-                                      color: AppTheme.inkForeground,
-                                      height: 1.1,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Focus, $doctorName',
-                                    style: TextStyle(
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppTheme.mutedText,
-                                      letterSpacing: -0.1,
-                                    ),
-                                  ),
-                                ],
+                              Text(
+                                'Modulix',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.5,
+                                  color: AppTheme.inkForeground,
+                                ),
                               ),
                             ],
                           ),
@@ -149,9 +133,42 @@ class HomeScreen extends ConsumerWidget {
                       ),
                     ),
 
+                    // Dedicated Transparent Editorial Status Line
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(22, 16, 22, 0),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppTheme.accentEmerald,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'FOCUS, ${doctorName.toUpperCase()}  •  DAILY FLOW',
+                              style: TextStyle(
+                                fontSize: 11.0,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1.1,
+                                color: isDark
+                                    ? const Color(0xFF94A3B8)
+                                    : const Color(0xFF64748B),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                     // ② Standout Unified Hero Clock Card (with generous breathing room for the gradient)
                     Padding(
-                      padding: const EdgeInsets.only(top: 26),
+                      padding: const EdgeInsets.only(top: 18),
                       child: RepaintBoundary(child: StudyDeskClock(doctorName: doctorName)),
                     ),
 
