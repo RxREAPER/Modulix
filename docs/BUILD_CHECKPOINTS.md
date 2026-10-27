@@ -52,6 +52,21 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ---
 
+### 🔖 `[CKPT-085]` — True Physical Split-Flap Kinematics, Industrial Chassis Coupler Hook & White Bold Title
+- **Category:** `ui` / `clock` / `animation` / `haptics`
+- **Files Modified:**
+  - `lib/widgets/study_desk_clock.dart`
+  - `lib/screens/home/home_screen.dart`
+- **Summary:**
+  - Overhauled split-flap timepiece to authentic mechanical kinematics: individual upper and lower flap half cards.
+  - Implemented 3D perspective fold: upper flap rotates down 0° to 90° with dynamic shadow overlay, while lower flap drops 90° to 0° onto bottom cushion with tactile haptic click (`HapticFeedback.lightImpact`).
+  - Added tap-to-flip trigger on cards for instant mechanical testing.
+  - Added industrial mechanical bridge coupler hook spanning between the two tiles: top and bottom metallic brackets with twin hex rivets, and central interlocking hook & hinge axle coupling.
+  - Replaced greeting tagline with commanding white bold title format: `Focus, Dr. [Name]` (removed "daily flow" and green status dot).
+- **Verification:** Verified via `flutter analyze` (0 issues), test suite passed (`flutter test`), built debug APK, installed and verified live on OnePlus 13R (`ba009d81`).
+
+---
+
 ### 🔖 `[CKPT-084]` — Theme-Reactive Dynamic Breathing Gradient, Card-Pile Flip Clock, Editorial Greeting, Syllabus Deck & Boxed Task Analytics
 - **Category:** `ui` / `shader` / `clock` / `tasks` / `analytics`
 - **Files Modified:**

@@ -133,36 +133,18 @@ class HomeScreen extends ConsumerWidget {
                       ),
                     ),
 
-                    // Dedicated Transparent Editorial Status Line
+                    // Normal Title: Focus, Dr. [Name] (white bold, no daily flow)
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(22, 16, 22, 0),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: AppTheme.accentEmerald,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'FOCUS, ${doctorName.toUpperCase()}  •  DAILY FLOW',
-                              style: TextStyle(
-                                fontSize: 11.0,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 1.1,
-                                color: isDark
-                                    ? const Color(0xFF94A3B8)
-                                    : const Color(0xFF64748B),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 2),
+                      child: Text(
+                        'Focus, ${_formatDoctorTitle(doctorName)}',
+                        style: const TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: -0.6,
+                          height: 1.15,
+                        ),
                       ),
                     ),
 
@@ -688,4 +670,20 @@ class _HomeModuleTrackerSection extends ConsumerWidget {
       ),
     );
   }
+}
+
+String _formatDoctorTitle(String name) {
+  final trimmed = name.trim();
+  if (trimmed.isEmpty) return 'Doctor';
+  final lower = trimmed.toLowerCase();
+  if (lower == 'doctor') return 'Doctor';
+  if (lower.startsWith('dr.') || lower.startsWith('dr ')) {
+    final rest = trimmed.substring(3).trim();
+    return 'Dr. ${rest.isNotEmpty ? rest[0].toUpperCase() + rest.substring(1) : ''}';
+  }
+  if (lower.startsWith('dr') && trimmed.length > 2) {
+    final rest = trimmed.substring(2).trim();
+    return 'Dr. ${rest.isNotEmpty ? rest[0].toUpperCase() + rest.substring(1) : ''}';
+  }
+  return 'Dr. ${trimmed[0].toUpperCase() + trimmed.substring(1)}';
 }
