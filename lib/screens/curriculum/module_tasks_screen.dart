@@ -65,12 +65,17 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
               }
             },
           ),
-        title: Text(
-          'Module Based Tasks',
-          style: AppTheme.headingStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: AppTheme.inkForeground,
+        titleSpacing: 0,
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Module Based Tasks',
+            style: AppTheme.headingStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.inkForeground,
+            ),
           ),
         ),
         actions: [
@@ -81,11 +86,22 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
               pressedScale: 0.94,
               borderRadius: BorderRadius.circular(10),
               child: Container(
-                decoration: AppTheme.sketchDecoration(
-                  backgroundColor: AppTheme.cardWhite,
-                  borderRadius: 10,
-                  borderWidth: 1.4,
-                  shadowOffset: 1.5,
+                decoration: BoxDecoration(
+                  color: AppTheme.current.isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: AppTheme.current.isDark
+                        ? Colors.white.withValues(alpha: 0.12)
+                        : AppTheme.borderLight.withValues(alpha: 0.8),
+                    width: 0.6,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: AppTheme.current.isDark ? 0.2 : 0.04),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1.5),
+                    ),
+                  ],
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                 child: Row(
@@ -99,8 +115,8 @@ class _ModuleTasksScreenState extends ConsumerState<ModuleTasksScreen> {
                     const SizedBox(width: 4),
                     Text(
                       'Setup',
-                      style: AppTypography.buttonLabel(
-                        fontSize: 12.5,
+                      style: TextStyle(
+                        fontSize: 12.0,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.inkForeground,
                       ),

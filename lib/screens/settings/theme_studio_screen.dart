@@ -146,36 +146,15 @@ class _VisualThemeCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            preset.label,
-                            style: AppTheme.headingStyle(
-                              fontSize: 19,
-                              fontWeight: FontWeight.w700,
-                              color: preset.inkForeground,
-                            ),
-                          ),
-                          if (isSelected) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: themeAccent.withValues(alpha: 0.14),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                'ACTIVE',
-                                style: TextStyle(
-                                  fontSize: 9.5,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.6,
-                                  color: themeAccent,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
+                      Text(
+                        preset.label,
+                        style: AppTheme.headingStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: preset.inkForeground,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 3),
                       Text(

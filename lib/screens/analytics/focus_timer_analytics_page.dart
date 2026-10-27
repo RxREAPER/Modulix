@@ -123,12 +123,17 @@ class _FocusTimerAnalyticsPageState
             }
           },
         ),
-        title: Text(
-          'Focus & Pomodoro Log',
-          style: AppTheme.headingStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: AppTheme.inkForeground,
+        titleSpacing: 0,
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Focus & Pomodoro Log',
+            style: AppTheme.headingStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.inkForeground,
+            ),
           ),
         ),
         actions: [

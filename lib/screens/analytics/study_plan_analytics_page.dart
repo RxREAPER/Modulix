@@ -149,12 +149,17 @@ class _StudyPlanAnalyticsPageState
             }
           },
         ),
-        title: Text(
-          'Module Plan Progress',
-          style: AppTheme.headingStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: AppTheme.inkForeground,
+        titleSpacing: 0,
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Module Plan Progress',
+            style: AppTheme.headingStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.inkForeground,
+            ),
           ),
         ),
         actions: [

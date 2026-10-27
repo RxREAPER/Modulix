@@ -48,12 +48,17 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
             child: Icon(Icons.arrow_back_rounded, color: AppTheme.inkForeground, size: 22),
           ),
         ),
-        title: Text(
-          'Tasks Analytics',
-          style: AppTheme.headingStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: AppTheme.inkForeground,
+        titleSpacing: 0,
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Tasks Analytics',
+            style: AppTheme.headingStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.inkForeground,
+            ),
           ),
         ),
         actions: [

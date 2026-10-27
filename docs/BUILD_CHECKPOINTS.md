@@ -24,6 +24,20 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-088]` — Defensive Hardening, Sub-Page Header Auto-Scaling & Physical Device Screencap Verification
+- **Category:** `ui` / `hardening` / `verification`
+- **Files Modified:**
+  - `lib/screens/analytics/daily_tasks_analytics_page.dart`
+  - `lib/screens/analytics/focus_timer_analytics_page.dart`
+  - `lib/screens/analytics/study_plan_analytics_page.dart`
+  - `lib/screens/curriculum/module_tasks_screen.dart`
+  - `lib/screens/settings/theme_studio_screen.dart`
+- **Summary:**
+  - Eradicated 86px title row overflow in `ThemeStudioScreen` by removing redundant inline `ACTIVE` badge and adding `maxLines: 2` with `TextOverflow.ellipsis`.
+  - Added `titleSpacing: 0` and defensive `FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft)` title auto-scaling across `ModuleTasksScreen`, `StudyPlanAnalyticsPage`, `FocusTimerAnalyticsPage`, and `DailyTasksAnalyticsPage` to permanently prevent header clipping on narrow viewports.
+  - Installed and verified live debug APK on physical hardware (OnePlus 13R `ba009d81`, 1264x2780 resolution). Captured full physical device screenshots across Home, Daily Tasks, Projects list, New Project modal, Module Based Tasks, Study Plan, Library Search Bar, Focus Leaderboard, and Module Plan Progress.
+- **Verification:** Verified via `flutter analyze` (0 issues, ran in 20.1s), test suite (43/43 tests passed, 100% green), physical device screencaps confirmed.
+
 ---
 
 ### 🔖 `[CKPT-087]` — Comprehensive Sub-Screens Luxury Editorial Overhaul & Motion Redesign
