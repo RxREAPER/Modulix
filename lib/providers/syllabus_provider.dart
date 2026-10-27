@@ -55,15 +55,21 @@ final syllabusMetricsProvider = Provider((ref) {
       data: (state) {
         // Returns map of subjectId → completion %
         final result = <String, double>{};
+        final completedVideos = state.currentEdition.completedVideos;
         for (final s in subjects) {
           final total = s.totalVideos;
           if (total == 0) {
             result[s.id] = 0;
             continue;
           }
-          final done = s.allVideos
-              .where((v) => state.currentEdition.completedVideos.containsKey(v.id))
-              .length;
+          int done = 0;
+          for (final c in s.chapters) {
+            for (final v in c.videos) {
+              if (completedVideos.containsKey(v.id)) {
+                done++;
+              }
+            }
+          }
           result[s.id] = done / total;
         }
         return result;

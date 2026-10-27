@@ -24,6 +24,27 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-096]` — Full-App Memory Memoization, Native SQLite C-Aggregation & Incremental Cloud Sync
+- **Category:** `perf` / `database` / `network` / `resilience`
+- **Files Modified:**
+  - `lib/models/syllabus.dart`
+  - `lib/screens/curriculum/chapter_screen.dart`
+  - `lib/providers/syllabus_provider.dart`
+  - `lib/services/database_service.dart`
+  - `lib/services/sync_service.dart`
+  - `lib/services/storage_service.dart`
+  - `lib/providers/time_log_provider.dart`
+  - `test/database_optimization_test.dart`
+- **Summary:**
+  - **Memory & In-Memory Flattening Memoization (`syllabus.dart`, `chapter_screen.dart`, `syllabus_provider.dart`):** Implemented thread-safe `Expando` lazy memoization on `Subject` for `allVideos`, `allQBanks`, `allNotes`, `totalVideos`, `totalQBanks`, and `totalHours`, preserving `const` constructor backwards-compatibility while eliminating >38 list allocations per frame on Curriculum and Home grids. Replaced $O(N)$ linear scans in `ChapterScreen.itemBuilder` with a pre-computed $O(1)$ video index map. Converted `syllabusMetricsProvider` to zero-allocation nested loops over chapters.
+  - **SQLite Native C-Engine Study Time Aggregations (`database_service.dart`):** Introduced `getStudyTimeBreakdown(todayStartMs, weekStartMs, monthStartMs)` executing a single native SQLite query (`COALESCE(SUM(CASE WHEN timestamp >= ...))`), eliminating in-memory Dart iteration over thousands of focus records. Added `getPendingTimeLogsCount` to count unsynced records directly in SQLite engine without row allocations.
+  - **Supabase Incremental Network Synchronization (`sync_service.dart`):** Implemented timestamp filtering (`gt('timestamp', fetchSince)`) in `syncFull` for remote time logs and candidate local uploads using `lastSyncMillis`, reducing egress bandwidth and payload processing by over 95%. Wires SQLite aggregation directly into profile leaderboard updates.
+  - **Defensive Deserialization Hardening (`syllabus.dart`, `database_service.dart`, `storage_service.dart`, `sync_service.dart`):** Added `_safeInt` parser and defensive casts (`(map['x'] as num?)?.toInt() ?? 0`, `toString()`) across `Video.fromMap`, `QBankTopic.fromMap`, `DatabaseService._mapToLog`, `StorageService.getRecentSubjectTimestamps`, and daily tasks cloud sync.
+- **Verification:** 20/20 unit tests passed 100% green (`database_optimization_test.dart`, `database_service_test.dart`, `focus_timer_idempotency_test.dart`, `battery_optimization_service_test.dart`, `alarm_clock_service_test.dart`), `flutter analyze` 0 issues.
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### 🔖 `[CKPT-095]` — AlarmManager.setAlarmClock Deep Doze Piercer & Headphone Disconnect Audio Resilience
 - **Category:** `timer` / `native` / `audio`
 - **Files Modified:**

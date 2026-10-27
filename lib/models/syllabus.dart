@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart' show Color;
 
+int _safeInt(dynamic val, [int fallback = 0]) {
+  if (val is num) return val.toInt();
+  if (val is String) {
+    return int.tryParse(val) ?? fallback;
+  }
+  return fallback;
+}
+
 /// Represents a single lecture/video in the syllabus
 class Video {
   final String id;
@@ -23,18 +31,18 @@ class Video {
   });
 
   factory Video.fromMap(Map<String, dynamic> map, String subjectId, [String? fallbackChapterName]) {
-    final assignedNo = map['assignedNumber'] as int?;
-    final rawVideoNumber = map['videoNumber'] as String? ?? '';
+    final assignedNo = map['assignedNumber'] != null ? _safeInt(map['assignedNumber']) : null;
+    final rawVideoNumber = map['videoNumber']?.toString() ?? '';
     int parsedNumber = 0;
     if (rawVideoNumber.isNotEmpty) {
       parsedNumber = int.tryParse(rawVideoNumber.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
     }
     if (parsedNumber == 0) {
-      final sNo = map['sNo'] as int? ?? 0;
+      final sNo = _safeInt(map['sNo']);
       if (sNo != 0) {
         parsedNumber = sNo;
       } else {
-        final idStr = map['id'] as String? ?? '';
+        final idStr = map['id']?.toString() ?? '';
         final vMatch = RegExp(r'__v(\d+)').firstMatch(idStr);
         if (vMatch != null) {
           parsedNumber = int.tryParse(vMatch.group(1)!) ?? 0;
@@ -42,16 +50,16 @@ class Video {
       }
     }
 
-    final rawChapter = map['chapterName'] as String? ?? '';
+    final rawChapter = map['chapterName']?.toString() ?? '';
     final resolvedChapter = rawChapter.isNotEmpty ? rawChapter : (fallbackChapterName ?? '');
 
     return Video(
-      id: map['id'] as String,
-      title: map['title'] as String? ?? '',
+      id: map['id']?.toString() ?? '',
+      title: map['title']?.toString() ?? '',
       subjectId: subjectId,
       chapterName: resolvedChapter,
-      durationMins: map['durationMins'] as int? ?? 0,
-      durationSecs: map['durationSecs'] as int? ?? 0,
+      durationMins: _safeInt(map['durationMins']),
+      durationSecs: _safeInt(map['durationSecs']),
       serialNumber: assignedNo ?? parsedNumber,
       assignedNumber: assignedNo,
     );
@@ -87,14 +95,14 @@ class QBankTopic {
   });
 
   factory QBankTopic.fromMap(Map<String, dynamic> map, String subjectId, [String? fallbackChapterName]) {
-    final assignedNo = map['assignedNumber'] as int?;
-    final sNo = map['serialNumber'] as int? ?? assignedNo ?? 0;
+    final assignedNo = map['assignedNumber'] != null ? _safeInt(map['assignedNumber']) : null;
+    final sNo = _safeInt(map['serialNumber'], assignedNo ?? 0);
     return QBankTopic(
-      id: map['id'] as String,
-      title: map['title'] as String? ?? '',
+      id: map['id']?.toString() ?? '',
+      title: map['title']?.toString() ?? '',
       subjectId: subjectId,
-      chapterName: (map['chapterName'] as String?) ?? (fallbackChapterName ?? ''),
-      totalMcqs: map['totalMcqs'] as int? ?? 0,
+      chapterName: (map['chapterName']?.toString()) ?? (fallbackChapterName ?? ''),
+      totalMcqs: _safeInt(map['totalMcqs']),
       serialNumber: sNo,
       assignedNumber: assignedNo ?? sNo,
     );
@@ -138,7 +146,13 @@ class Chapter {
   int get totalQBanks => qbanks.length;
   int get totalNotes => notes.length;
 
-  double get totalMinutes => videos.fold<double>(0.0, (acc, v) => acc + v.totalMinutes);
+  double get totalMinutes {
+    double sum = 0.0;
+    for (final v in videos) {
+      sum += v.totalMinutes;
+    }
+    return sum;
+  }
 
   double get totalHours => totalMinutes / 60;
 
@@ -152,7 +166,13 @@ class Chapter {
     return '${h}h ${m}m';
   }
 
-  int get totalMcqs => qbanks.fold<int>(0, (acc, q) => acc + q.totalMcqs);
+  int get totalMcqs {
+    int sum = 0;
+    for (final q in qbanks) {
+      sum += q.totalMcqs;
+    }
+    return sum;
+  }
   int get totalItems => totalVideos + totalQBanks + totalNotes;
 
   int completedCount({
@@ -188,6 +208,14 @@ class Chapter {
   }
 }
 
+final _allVideosExpando = Expando<List<Video>>('allVideos');
+final _allQBanksExpando = Expando<List<QBankTopic>>('allQBanks');
+final _allNotesExpando = Expando<List<NotesItem>>('allNotes');
+final _totalVideosExpando = Expando<int>('totalVideos');
+final _totalQBanksExpando = Expando<int>('totalQBanks');
+final _totalNotesExpando = Expando<int>('totalNotes');
+final _totalHoursExpando = Expando<double>('totalHours');
+
 /// A subject in the syllabus
 class Subject {
   final String id;
@@ -208,17 +236,77 @@ class Subject {
 
   Color get accentColor => accent;
 
-  List<Video> get allVideos => chapters.expand((c) => c.videos).toList();
-  List<QBankTopic> get allQBanks =>
-      (qbankChapters.isNotEmpty ? qbankChapters : chapters).expand((c) => c.qbanks).toList();
-  List<NotesItem> get allNotes => chapters.expand((c) => c.notes).toList();
+  List<Video> get allVideos {
+    final cached = _allVideosExpando[this];
+    if (cached != null) return cached;
+    final list = List<Video>.unmodifiable(chapters.expand((c) => c.videos));
+    _allVideosExpando[this] = list;
+    return list;
+  }
 
-  int get totalVideos => allVideos.length;
-  int get totalQBanks => allQBanks.length;
-  int get totalNotes => allNotes.length;
+  List<QBankTopic> get allQBanks {
+    final cached = _allQBanksExpando[this];
+    if (cached != null) return cached;
+    final list = List<QBankTopic>.unmodifiable(
+      (qbankChapters.isNotEmpty ? qbankChapters : chapters).expand((c) => c.qbanks),
+    );
+    _allQBanksExpando[this] = list;
+    return list;
+  }
+
+  List<NotesItem> get allNotes {
+    final cached = _allNotesExpando[this];
+    if (cached != null) return cached;
+    final list = List<NotesItem>.unmodifiable(chapters.expand((c) => c.notes));
+    _allNotesExpando[this] = list;
+    return list;
+  }
+
+  int get totalVideos {
+    final cached = _totalVideosExpando[this];
+    if (cached != null) return cached;
+    int sum = 0;
+    for (final c in chapters) {
+      sum += c.videos.length;
+    }
+    _totalVideosExpando[this] = sum;
+    return sum;
+  }
+
+  int get totalQBanks {
+    final cached = _totalQBanksExpando[this];
+    if (cached != null) return cached;
+    final source = qbankChapters.isNotEmpty ? qbankChapters : chapters;
+    int sum = 0;
+    for (final c in source) {
+      sum += c.qbanks.length;
+    }
+    _totalQBanksExpando[this] = sum;
+    return sum;
+  }
+
+  int get totalNotes {
+    final cached = _totalNotesExpando[this];
+    if (cached != null) return cached;
+    int sum = 0;
+    for (final c in chapters) {
+      sum += c.notes.length;
+    }
+    _totalNotesExpando[this] = sum;
+    return sum;
+  }
 
   double get totalHours {
-    final totalMins = allVideos.fold<double>(0.0, (acc, v) => acc + v.totalMinutes);
-    return totalMins / 60;
+    final cached = _totalHoursExpando[this];
+    if (cached != null) return cached;
+    double totalMins = 0.0;
+    for (final c in chapters) {
+      for (final v in c.videos) {
+        totalMins += v.totalMinutes;
+      }
+    }
+    final hours = totalMins / 60;
+    _totalHoursExpando[this] = hours;
+    return hours;
   }
 }

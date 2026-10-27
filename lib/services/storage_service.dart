@@ -64,7 +64,14 @@ class StorageService {
     if (raw == null) return {};
     try {
       final decoded = jsonDecode(raw) as Map<String, dynamic>;
-      return decoded.map((k, v) => MapEntry(k, (v as num).toInt()));
+      final result = <String, int>{};
+      for (final entry in decoded.entries) {
+        final val = (entry.value as num?)?.toInt();
+        if (val != null) {
+          result[entry.key.toString()] = val;
+        }
+      }
+      return result;
     } catch (_) {
       return {};
     }

@@ -46,15 +46,8 @@ class SyncService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final lastSyncMillis = prefs.getInt('modulix_last_synced_at_v1') ?? 0;
-      final allLogs = await DatabaseService.instance.getAllTimeLogs();
-      if (lastSyncMillis == 0) {
-        pendingSyncCountNotifier.value = allLogs.length;
-      } else {
-        final pending = allLogs
-            .where((l) => l.timestamp.millisecondsSinceEpoch > lastSyncMillis)
-            .length;
-        pendingSyncCountNotifier.value = pending;
-      }
+      final pending = await DatabaseService.instance.getPendingTimeLogsCount(lastSyncMillis);
+      pendingSyncCountNotifier.value = pending;
     } catch (_) {
       pendingSyncCountNotifier.value = 0;
     }
@@ -180,12 +173,12 @@ class SyncService {
             (row['completed_notes'] as Map<String, dynamic>?) ?? {};
         final remoteDailyHist =
             (row['daily_history'] as Map<String, dynamic>?)?.map(
-                  (k, v) => MapEntry(k, v as int),
+                  (k, v) => MapEntry(k, (v as num?)?.toInt() ?? 0),
                 ) ??
                 {};
         final remoteBulkChapters =
             (row['bulk_completed_chapters'] as List<dynamic>?)
-                    ?.map((e) => e as String)
+                    ?.map((e) => e.toString())
                     .toSet() ??
                 <String>{};
 
@@ -257,38 +250,52 @@ class SyncService {
       }
 
       // ── 3. SYNC TIME LOGS (FOCUS SESSIONS) ─────────────────────────────────
+      final prefs = await SharedPreferences.getInstance();
+      final lastSyncMillis = prefs.getInt('modulix_last_synced_at_v1') ?? 0;
+
       final localLogs = await DatabaseService.instance.getAllTimeLogs();
       final localLogMap = {for (final l in localLogs) l.id: l};
 
-      final remoteLogsRes = await client
-          .from('time_logs')
-          .select()
-          .eq('user_id', userId);
+      var remoteLogsQuery = client.from('time_logs').select().eq('user_id', userId);
+      if (lastSyncMillis > 0) {
+        // Incremental sync: pull only records within or newer than last sync window
+        // (subtract 60s clock skew margin)
+        final fetchSince = (lastSyncMillis - 60000).clamp(0, double.maxFinite).toInt();
+        remoteLogsQuery = remoteLogsQuery.gt('timestamp', fetchSince);
+      }
+      final remoteLogsRes = await remoteLogsQuery;
 
       final List<TimeLog> downloadedLogs = [];
       for (final row in (remoteLogsRes as List)) {
-        final id = row['id'] as String;
+        final id = row['id']?.toString() ?? '';
+        if (id.isEmpty) continue;
         if (!localLogMap.containsKey(id)) {
           // Download remote session that occurred on another device
           downloadedLogs.add(TimeLog(
             id: id,
-            subjectId: row['subject_id'] as String,
-            topicId: row['topic_id'] as String?,
-            topicType: row['topic_type'] as String,
-            topicTitle: row['topic_title'] as String,
-            chapterName: row['chapter_name'] as String,
-            durationSecs: row['duration_secs'] as int,
-            timestamp: DateTime.fromMillisecondsSinceEpoch(row['timestamp'] as int),
+            subjectId: row['subject_id']?.toString() ?? '',
+            topicId: row['topic_id']?.toString(),
+            topicType: row['topic_type']?.toString() ?? 'standalone',
+            topicTitle: row['topic_title']?.toString() ?? '',
+            chapterName: row['chapter_name']?.toString() ?? '',
+            durationSecs: (row['duration_secs'] as num?)?.toInt() ?? 0,
+            timestamp: DateTime.fromMillisecondsSinceEpoch(
+              (row['timestamp'] as num?)?.toInt() ?? DateTime.now().millisecondsSinceEpoch,
+            ),
           ));
         }
       }
       if (downloadedLogs.isNotEmpty) {
         await DatabaseService.instance.insertTimeLogsBatch(downloadedLogs);
+        await ref.read(timeLogsProvider.notifier).reloadFromDatabase();
       }
 
       // Upload any local sessions not yet in the cloud
-      final remoteIds = (remoteLogsRes as List).map((r) => r['id'] as String).toSet();
-      final missingRemote = localLogs.where((l) => !remoteIds.contains(l.id)).toList();
+      final remoteIds = (remoteLogsRes as List).map((r) => r['id']?.toString() ?? '').toSet();
+      final candidateLogs = lastSyncMillis > 0
+          ? localLogs.where((l) => l.timestamp.millisecondsSinceEpoch >= (lastSyncMillis - 60000)).toList()
+          : localLogs;
+      final missingRemote = candidateLogs.where((l) => !remoteIds.contains(l.id)).toList();
 
       if (missingRemote.isNotEmpty) {
         final payload = missingRemote.map((l) => {
@@ -312,11 +319,9 @@ class SyncService {
           await client.from('time_logs').upsert(chunk);
         }
       }
-      await ref.read(timeLogsProvider.notifier).reloadFromDatabase();
 
-      // Aggregate and sync leaderboard stats to profile
+      // Aggregate and sync leaderboard stats to profile via native SQLite engine
       try {
-        final allLogs = await DatabaseService.instance.getAllTimeLogs();
         final startHour = localAppState.dayStartHour;
         final todayStart = MetricsService.studyDayStart(startHour);
         final weekStart = MetricsService.studyWeekStart(startHour);
@@ -326,17 +331,16 @@ class SyncService {
         final dayKey = DateFormat('yyyy-MM-dd').format(adjusted);
         final monthKey = DateFormat('yyyy-MM').format(adjusted);
 
-        int totalSecs = 0;
-        int dailySecs = 0;
-        int weeklySecs = 0;
-        int monthlySecs = 0;
+        final breakdown = await DatabaseService.instance.getStudyTimeBreakdown(
+          todayStartMs: todayStart.millisecondsSinceEpoch,
+          weekStartMs: weekStart.millisecondsSinceEpoch,
+          monthStartMs: monthStart.millisecondsSinceEpoch,
+        );
 
-        for (final l in allLogs) {
-          totalSecs += l.durationSecs;
-          if (l.timestamp.isAfter(todayStart)) dailySecs += l.durationSecs;
-          if (l.timestamp.isAfter(weekStart)) weeklySecs += l.durationSecs;
-          if (l.timestamp.isAfter(monthStart)) monthlySecs += l.durationSecs;
-        }
+        final totalSecs = breakdown['total'] ?? 0;
+        final dailySecs = breakdown['daily'] ?? 0;
+        final weeklySecs = breakdown['weekly'] ?? 0;
+        final monthlySecs = breakdown['monthly'] ?? 0;
 
         await client.from('profiles').update({
           'display_name': localAppState.publicDisplayName,
@@ -354,7 +358,6 @@ class SyncService {
       }
 
       // ── 4. SYNC DAILY DESK TASKS ──────────────────────────────────────────
-      final prefs = await SharedPreferences.getInstance();
       final dailyState = ref.read(dailyTasksProvider);
 
       final remoteDailyRes = await client
@@ -367,15 +370,15 @@ class SyncService {
         final remoteTasksRaw = remoteDailyRes['tasks_json'] as List<dynamic>? ?? [];
         final remoteCompletedIds =
             (remoteDailyRes['completed_ids'] as List<dynamic>? ?? [])
-                .map((e) => e as String)
+                .map((e) => e.toString())
                 .toSet();
         final remoteDeletedIds =
             (remoteDailyRes['deleted_ids'] as List<dynamic>? ?? [])
-                .map((e) => e as String)
+                .map((e) => e.toString())
                 .toSet();
         final remoteHist =
             (remoteDailyRes['date_history'] as Map<String, dynamic>?)?.map(
-                  (k, v) => MapEntry(k, v as int),
+                  (k, v) => MapEntry(k, (v as num?)?.toInt() ?? 0),
                 ) ??
                 {};
         final remoteLastDate = remoteDailyRes['last_active_date'] as String? ?? '';

@@ -40,6 +40,8 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
   String? _activeTab;
   late final ScrollController _scrollController;
   bool _hasAutoScrolled = false;
+  Map<String, int>? _cachedVideoIndexMap;
+  String? _cachedSubjectId;
 
   @override
   void initState() {
@@ -119,6 +121,13 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
               onPrimaryAction: () => context.pop(),
             ),
           );
+        }
+        if (_cachedSubjectId != subject.id || _cachedVideoIndexMap == null) {
+          _cachedSubjectId = subject.id;
+          final allV = subject.allVideos;
+          _cachedVideoIndexMap = {
+            for (int idx = 0; idx < allV.length; idx++) allV[idx].id: idx + 1,
+          };
         }
         final chapter = subject.chapters[widget.chapterIndex];
         final completedVideos = appState?.currentEdition.completedVideos ?? {};
@@ -602,7 +611,7 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
 
         final globalNumber = video.serialNumber > 0
             ? video.serialNumber
-            : (subject.allVideos.indexWhere((v) => v.id == video.id) + 1);
+            : (_cachedVideoIndexMap?[video.id] ?? (i + 1));
 
         final tile = VideoTile(
           video: video,

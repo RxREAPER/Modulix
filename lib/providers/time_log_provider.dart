@@ -50,14 +50,18 @@ class TimeLogsNotifier extends StateNotifier<List<TimeLog>> {
   }
 
   int totalSecsForSubject(String subjectId) {
-    return state
-        .where((l) => l.subjectId == subjectId)
-        .fold<int>(0, (sum, l) => sum + l.durationSecs);
+    int total = 0;
+    for (final l in state) {
+      if (l.subjectId == subjectId) total += l.durationSecs;
+    }
+    return total;
   }
 
   int totalSecsForType(String subjectId, String type) {
-    return state
-        .where((l) => l.subjectId == subjectId && l.topicType == type)
-        .fold<int>(0, (sum, l) => sum + l.durationSecs);
+    int total = 0;
+    for (final l in state) {
+      if (l.subjectId == subjectId && l.topicType == type) total += l.durationSecs;
+    }
+    return total;
   }
 }

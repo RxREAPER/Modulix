@@ -251,15 +251,15 @@ class DatabaseService {
 
   TimeLog _mapToLog(Map<String, dynamic> map) {
     return TimeLog(
-      id: map['id'] as String,
-      subjectId: map['subject_id'] as String,
-      topicId: map['topic_id'] as String?,
-      topicType: map['topic_type'] as String? ?? 'standalone',
-      topicTitle: map['topic_title'] as String? ?? '',
-      chapterName: map['chapter_name'] as String? ?? '',
-      durationSecs: map['duration_secs'] as int? ?? 0,
+      id: map['id']?.toString() ?? '',
+      subjectId: map['subject_id']?.toString() ?? '',
+      topicId: map['topic_id']?.toString(),
+      topicType: map['topic_type']?.toString() ?? 'standalone',
+      topicTitle: map['topic_title']?.toString() ?? '',
+      chapterName: map['chapter_name']?.toString() ?? '',
+      durationSecs: (map['duration_secs'] as num?)?.toInt() ?? 0,
       timestamp: DateTime.fromMillisecondsSinceEpoch(
-        map['timestamp'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+        (map['timestamp'] as num?)?.toInt() ?? DateTime.now().millisecondsSinceEpoch,
       ),
     );
   }
@@ -342,6 +342,51 @@ class DatabaseService {
       }
     } catch (_) {}
     return 0;
+  }
+
+  /// High-performance native SQLite aggregation across study time windows.
+  /// Executes inside SQLite C-engine, avoiding allocating thousands of TimeLog instances in Dart heap.
+  Future<Map<String, int>> getStudyTimeBreakdown({
+    required int todayStartMs,
+    required int weekStartMs,
+    required int monthStartMs,
+  }) async {
+    final db = await database;
+    final results = await db.rawQuery('''
+      SELECT
+        COALESCE(SUM(duration_secs), 0) AS total,
+        COALESCE(SUM(CASE WHEN timestamp >= ? THEN duration_secs ELSE 0 END), 0) AS daily,
+        COALESCE(SUM(CASE WHEN timestamp >= ? THEN duration_secs ELSE 0 END), 0) AS weekly,
+        COALESCE(SUM(CASE WHEN timestamp >= ? THEN duration_secs ELSE 0 END), 0) AS monthly
+      FROM time_logs
+    ''', [todayStartMs, weekStartMs, monthStartMs]);
+
+    if (results.isEmpty) {
+      return {'total': 0, 'daily': 0, 'weekly': 0, 'monthly': 0};
+    }
+
+    final row = results.first;
+    return {
+      'total': (row['total'] as num?)?.toInt() ?? 0,
+      'daily': (row['daily'] as num?)?.toInt() ?? 0,
+      'weekly': (row['weekly'] as num?)?.toInt() ?? 0,
+      'monthly': (row['monthly'] as num?)?.toInt() ?? 0,
+    };
+  }
+
+  /// High-performance count of logs pending sync since given timestamp.
+  /// Executes directly in SQLite without fetching rows.
+  Future<int> getPendingTimeLogsCount(int sinceMs) async {
+    final db = await database;
+    if (sinceMs <= 0) {
+      final res = await db.rawQuery('SELECT COUNT(*) as count FROM time_logs');
+      return (res.first['count'] as num?)?.toInt() ?? 0;
+    }
+    final res = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM time_logs WHERE timestamp > ?',
+      [sinceMs],
+    );
+    return (res.first['count'] as num?)?.toInt() ?? 0;
   }
 
   /// Closes database connection cleanly (useful for tests and teardown)
