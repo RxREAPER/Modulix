@@ -1,103 +1,202 @@
-import { motion } from "framer-motion"
-import { CheckSquare, Clock, Trophy, BarChart3, BookOpen, Palette } from "lucide-react"
+import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import { useTheme } from "../../lib/theme"
+import { ClipboardClip } from "./clinical-clipboard/ClipboardClip"
+import { TaskMotionPreview } from "./clinical-clipboard/TaskMotionPreview"
+import { FlipClockMotionPreview } from "./clinical-clipboard/FlipClockMotionPreview"
+import { LeaderboardMotionPreview } from "./clinical-clipboard/LeaderboardMotionPreview"
+import { AnalyticsMotionPreview } from "./clinical-clipboard/AnalyticsMotionPreview"
+import { SyllabusMotionPreview } from "./clinical-clipboard/SyllabusMotionPreview"
+import { ThemesMotionPreview } from "./clinical-clipboard/ThemesMotionPreview"
 
 export function FeaturesSection() {
-  const features = [
+  const { isDark } = useTheme()
+  const [currentIndex, setCurrentIndex] = useState(0)
+
+  const sheets = [
     {
       number: "01",
-      icon: CheckSquare,
       title: "Tasks with Projects & Module-Based Tasks",
-      subtitle: "Custom study lists and syllabus-linked task workflows.",
-      description: "Modulix lets you plan daily tasks across individual to-dos and custom projects with subject and unit presets, keeping your daily study time clean, structured, and manageable.",
-      highlight: "Daily Desk · Custom Projects · Presets",
+      description:
+        "Modulix lets you plan daily tasks across individual to-dos and custom projects with subject and unit presets, keeping your daily study time clean, structured, and manageable.",
+      motionComponent: <TaskMotionPreview />,
     },
     {
       number: "02",
-      icon: Clock,
       title: "Focus & Pomodoro Timer",
-      subtitle: "Dynamic ambient soundscapes with a fullscreen flip clock.",
-      description: "A lively, highly personalized focus timer with dynamic backgrounds and ambient sounds. Features a science-backed Pomodoro mode and a distraction-free, fullscreen flip clock.",
-      highlight: "Pomodoro · Ambient Sounds · Flip Clock",
+      description:
+        "A lively, highly personalized focus timer with dynamic backgrounds and ambient sounds. Features a science-backed Pomodoro mode and a distraction-free, fullscreen flip clock.",
+      motionComponent: <FlipClockMotionPreview />,
     },
     {
       number: "03",
-      icon: Trophy,
       title: "Leaderboard",
-      subtitle: "Friendly community rankings across daily, weekly, and monthly milestones.",
-      description: "Stay motivated alongside fellow medical aspirants. Track your study consistency and climb verified rankings across daily, weekly, monthly, and all-time leaderboards.",
-      highlight: "Community · Daily · Weekly · Monthly",
+      description:
+        "Stay motivated alongside fellow medical aspirants. Track your study consistency and climb verified rankings across daily, weekly, monthly, and all-time leaderboards.",
+      motionComponent: <LeaderboardMotionPreview />,
     },
     {
       number: "04",
-      icon: BarChart3,
       title: "Analytics",
-      subtitle: "Visual study heatmaps, subject distribution, and streak tracking.",
-      description: "Gain clear insights into your study habits with detailed daily activity heatmaps, subject time distributions, velocity charts, and consistency streaks.",
-      highlight: "Heatmaps · Subject Velocity · Streaks",
+      description:
+        "Gain clear insights into your study habits with detailed daily activity heatmaps, subject time distributions, velocity charts, and consistency streaks.",
+      motionComponent: <AnalyticsMotionPreview />,
     },
     {
       number: "05",
-      icon: BookOpen,
       title: "Gold Standard Syllabus to Track",
-      subtitle: "Preloaded standard medical curriculum across current and previous editions.",
-      description: "Track your preparation, tasks, projects, and goals across a preloaded standard medical syllabus. No need to type every topic—we've got you covered with both latest and previous editions, including video lectures, Q-Banks, and clinical modules.",
-      highlight: "Preloaded Syllabus · Videos · Q-Banks",
+      description:
+        "Track your preparation, tasks, projects, and goals across a preloaded standard medical syllabus. No need to type every topic—we've got you covered with both latest and previous editions, including video lectures, Q-Banks, and clinical modules.",
+      motionComponent: <SyllabusMotionPreview />,
     },
     {
       number: "06",
-      icon: Palette,
       title: "Themes",
-      subtitle: "Advanced Theme Studio with vibrant, curated clinical aesthetics.",
-      description: "Bored with standard light and dark modes? Modulix features an advanced Theme Studio with cool, curated palettes tailored for comfortable daytime study and late-night hospital shifts.",
-      highlight: "Theme Studio · Curated Palettes · OLED",
+      description:
+        "Bored with standard light and dark modes? Modulix features an advanced Theme Studio with cool, curated palettes tailored for comfortable daytime study and late-night hospital shifts.",
+      motionComponent: <ThemesMotionPreview />,
     },
   ]
 
+  const total = sheets.length
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % total)
+  }
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + total) % total)
+  }
+
+  const activeSheet = sheets[currentIndex]
+
   return (
-    <section className="py-12 border-t border-[var(--border-subtle)]">
-      <div className="mb-8">
-        <h2 className="font-editorial text-3xl font-bold tracking-tight text-[var(--ink-foreground)]">
-          Core Features
+    <section className="py-14 border-t border-[var(--border-subtle)] select-none">
+      {/* ── Section Header ── */}
+      <div className="mb-12 text-center max-w-xl mx-auto space-y-2">
+        <h2 className="font-editorial text-3xl sm:text-4xl font-bold tracking-tight text-[var(--ink-foreground)]">
+          Clinical Architecture
         </h2>
-        <p className="text-sm text-[var(--muted-text)] mt-1 max-w-xl">
-          Everything you need for disciplined medical preparation, built without clutter or distraction.
+        <p className="text-xs sm:text-sm text-[var(--muted-text)] font-medium">
+          Physical rounding folios built with pure motion and clinical precision.
         </p>
       </div>
 
-      <div className="divide-y divide-[var(--border-subtle)]">
-        {features.map((feat, idx) => (
+      {/* ── 3D Physical Stacking Viewport ── */}
+      <div className="relative max-w-lg mx-auto min-h-[480px] sm:min-h-[500px] flex items-center justify-center">
+        {/* Layer 3 Behind (Counter rotated) */}
+        <div
+          className={`absolute inset-0 rounded-2xl border transition-all pointer-events-none ${
+            isDark
+              ? "bg-[#0A0A0A] border-white/[0.04] shadow-[0_12px_24px_rgba(0,0,0,0.6)]"
+              : "bg-[#F1F5F9] border-black/[0.04] shadow-[0_12px_24px_rgba(0,0,0,0.06)]"
+          }`}
+          style={{
+            transform: "translateY(24px) scale(0.92) rotate(-2deg)",
+            zIndex: 1,
+          }}
+        />
+
+        {/* Layer 2 Behind (Clockwise rotated) */}
+        <div
+          className={`absolute inset-0 rounded-2xl border transition-all pointer-events-none ${
+            isDark
+              ? "bg-[#101012] border-white/[0.08] shadow-[0_16px_32px_rgba(0,0,0,0.7)]"
+              : "bg-[#FAFAFA] border-black/[0.06] shadow-[0_16px_32px_rgba(0,0,0,0.08)]"
+          }`}
+          style={{
+            transform: "translateY(12px) scale(0.96) rotate(2deg)",
+            zIndex: 2,
+          }}
+        />
+
+        {/* ── Active Draggable Physical Clipboard ── */}
+        <AnimatePresence mode="wait">
           <motion.div
-            key={feat.number}
-            initial={{ opacity: 0, y: 14 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-20px" }}
-            transition={{ duration: 0.3, delay: idx * 0.04 }}
-            className="py-7 flex flex-col md:flex-row md:items-start justify-between gap-5"
+            key={currentIndex}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.65}
+            onDragEnd={(_, info) => {
+              if (info.offset.x < -60) {
+                handleNext()
+              } else if (info.offset.x > 60) {
+                handlePrev()
+              }
+            }}
+            initial={{ opacity: 0, y: 16, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -16, scale: 0.96 }}
+            transition={{ type: "spring", stiffness: 340, damping: 28 }}
+            className={`relative z-10 w-full rounded-2xl p-6 sm:p-8 border pt-11 cursor-grab active:cursor-grabbing shadow-xl ${
+              isDark
+                ? "bg-[#141416] border-white/[0.12] text-white"
+                : "bg-white border-black/[0.09] text-[#0F172A]"
+            }`}
           >
-            <div className="flex items-start gap-4 max-w-xl">
-              <span className="font-editorial text-xl font-bold text-[var(--accent)] opacity-80 pt-0.5">
-                {feat.number}
+            {/* Real Titanium / Steel Mechanical Clip */}
+            <ClipboardClip />
+
+            {/* Folio Header: Serial Number & Title */}
+            <div className="text-center space-y-2 mb-4">
+              <span className="font-mono text-[11px] font-bold tracking-widest text-[var(--accent)] uppercase">
+                FOLIO {activeSheet.number} / 06
               </span>
-              <div>
-                <h3 className="text-base sm:text-lg font-semibold text-[var(--ink-foreground)]">
-                  {feat.title}
-                </h3>
-                <p className="text-xs font-medium text-[var(--accent)] mt-0.5">
-                  {feat.subtitle}
-                </p>
-                <p className="text-xs sm:text-sm text-[var(--muted-text)] mt-2 leading-relaxed">
-                  {feat.description}
-                </p>
-              </div>
+              <h3 className="font-editorial text-2xl sm:text-3xl font-bold tracking-[-0.4px] leading-tight text-[var(--ink-foreground)]">
+                {activeSheet.title}
+              </h3>
+              <p className="text-xs sm:text-sm text-[var(--muted-text)] font-normal leading-relaxed max-w-md mx-auto pt-1">
+                {activeSheet.description}
+              </p>
             </div>
 
-            <div className="self-start md:self-center pl-8 md:pl-0">
-              <span className="inline-block px-3 py-1.5 rounded-full text-[11px] font-semibold bg-[var(--surface-subtle)] border border-[var(--border-subtle)] text-[var(--ink-foreground)]">
-                {feat.highlight}
-              </span>
+            {/* Dedicated Hyper-Realistic Motion Component */}
+            <div className="my-3">
+              {activeSheet.motionComponent}
+            </div>
+
+            {/* Subtle swipe cue on mobile */}
+            <div className="text-center text-[10px] font-mono tracking-widest text-[var(--muted-text)] opacity-40 pt-2">
+              SWIPE OR USE ARROWS
             </div>
           </motion.div>
-        ))}
+        </AnimatePresence>
+      </div>
+
+      {/* ── Minimalist Stepper & Pagination ── */}
+      <div className="max-w-xs mx-auto mt-7 flex items-center justify-between">
+        <button
+          onClick={handlePrev}
+          className="w-9 h-9 rounded-full border border-[var(--border-subtle)] flex items-center justify-center text-[var(--ink-foreground)] hover:bg-[var(--surface-subtle)] transition-colors active:scale-95"
+          aria-label="Previous sheet"
+        >
+          <ChevronLeft size={16} />
+        </button>
+
+        {/* 6 Minimal Pill Dots */}
+        <div className="flex items-center gap-1.5">
+          {sheets.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              className={`h-1.5 rounded-full transition-all ${
+                currentIndex === idx
+                  ? "w-6 bg-[var(--accent)]"
+                  : "w-1.5 bg-[var(--border-subtle)] hover:bg-[var(--muted-text)]"
+              }`}
+              aria-label={`Go to sheet ${idx + 1}`}
+            />
+          ))}
+        </div>
+
+        <button
+          onClick={handleNext}
+          className="w-9 h-9 rounded-full border border-[var(--border-subtle)] flex items-center justify-center text-[var(--ink-foreground)] hover:bg-[var(--surface-subtle)] transition-colors active:scale-95"
+          aria-label="Next sheet"
+        >
+          <ChevronRight size={16} />
+        </button>
       </div>
     </section>
   )

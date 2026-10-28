@@ -24,6 +24,26 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-102]` — Tangible Clinical Clipboards & Hyper-Realistic Motion Overhaul for Features
+- **Category:** `web` / `ui` / `motion` / `realism`
+- **Files Modified:**
+  - `modulix_landing_page/src/components/sections/clinical-clipboard/ClipboardClip.tsx` (realistic brushed titanium SVG clip)
+  - `modulix_landing_page/src/components/sections/clinical-clipboard/TaskMotionPreview.tsx` (ink draw & strikethrough physics)
+  - `modulix_landing_page/src/components/sections/clinical-clipboard/FlipClockMotionPreview.tsx` (authentic 3D split-flap SketchFlipCard)
+  - `modulix_landing_page/src/components/sections/clinical-clipboard/LeaderboardMotionPreview.tsx` (rising metallic pedestals)
+  - `modulix_landing_page/src/components/sections/clinical-clipboard/AnalyticsMotionPreview.tsx` (24h Chronotype Heat Strip)
+  - `modulix_landing_page/src/components/sections/clinical-clipboard/SyllabusMotionPreview.tsx` (stacked medical folio spines)
+  - `modulix_landing_page/src/components/sections/clinical-clipboard/ThemesMotionPreview.tsx` (liquid palette morph pool)
+  - `modulix_landing_page/src/components/sections/FeaturesSection.tsx` (3D stacked clipboard deck with swipe gestures)
+- **Summary:**
+  - Overhauled Section 2 into a hyper-realistic, physical hospital clipboard deck.
+  - Removed all badges, tags, chips, and settings clutter, focusing entirely on pure motion and realistic textures.
+  - Implemented 3D split-flap mechanical flip clock, spring-based task ink strikethroughs, 24h chronotype wave rhythm, and draggable deck physics with 60fps spring transitions.
+- **Verification:** `tsc -b` and `vite build` completed with 0 errors. Live on Vite dev server.
+- **Build Status:** ✅ Verified & Live
+
+---
+
 ### 🔖 `[CKPT-101]` — Grammar Correction & Custom Copy Insertion for Core Features
 - **Category:** `web` / `copy` / `content`
 - **Files Modified:**
