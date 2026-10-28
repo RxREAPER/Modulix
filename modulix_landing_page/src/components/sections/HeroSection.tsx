@@ -1,100 +1,65 @@
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Download, ArrowRight } from "lucide-react"
+import { Download } from "lucide-react"
 import { ApplePressable } from "../primitives/ApplePressable"
-import { GithubIcon } from "../primitives/GithubIcon"
+import { MedicalHeroIllustration } from "./MedicalHeroIllustration"
 import { APP_CONSTANTS } from "../../lib/constants"
 
 export function HeroSection({ navigate }: { navigate: (route: string) => void }) {
-  const doctorNames = ["Doctor", "Safi", "Sharma", "Patel", "Verma", "Rao"]
-  const [nameIndex, setNameIndex] = useState(0)
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setNameIndex((prev) => (prev + 1) % doctorNames.length)
-    }, 3200)
-    return () => clearInterval(timer)
-  }, [])
-
   return (
-    <section className="relative pt-12 pb-14 sm:pt-16 sm:pb-20">
-      <div className="max-w-3xl">
-        <div className="inline-flex items-center gap-2 mb-3">
-          <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-          <span className="text-xs font-semibold tracking-wider uppercase text-[var(--muted-text)]">
-            Medical Study Companion
-          </span>
-        </div>
-
-        <h1 className="font-editorial text-4xl sm:text-6xl font-bold tracking-[-0.6px] leading-[1.12] text-[var(--ink-foreground)]">
-          Focus, Dr.{" "}
-          <motion.span
-            key={doctorNames[nameIndex]}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.35, ease: "easeOut" }}
-            className="text-[var(--accent)] underline decoration-[var(--border-subtle)] decoration-1 underline-offset-8"
-          >
-            {doctorNames[nameIndex]}
-          </motion.span>
+    <section className="relative pt-10 pb-16 sm:pt-14 sm:pb-20 text-center">
+      {/* ── TOP: Centered Headline & Tagline (Switch-Lit Stacked Style) ── */}
+      <div className="max-w-2xl mx-auto space-y-3">
+        <h1 className="font-editorial text-4xl sm:text-6xl font-bold tracking-[-0.6px] leading-[1.1] text-[var(--ink-foreground)]">
+          Introducing Modulix
         </h1>
-
-        <p className="mt-6 text-lg sm:text-xl text-[var(--muted-text)] font-normal leading-relaxed max-w-2xl">
-          The high-performance medical syllabus tracker, habit anchor, and cognitive focus companion engineered for doctors preparing for <strong>NEET-PG</strong>, <strong>INI-CET</strong>, and <strong>USMLE</strong>.
+        <p className="text-base sm:text-lg text-[var(--muted-text)] font-medium tracking-tight">
+          A Planner Curated For Med school
         </p>
+      </div>
 
-        <div className="mt-8 flex flex-wrap items-center gap-3">
-          <a
-            href={APP_CONSTANTS.apkDownloadUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            <ApplePressable className="px-6 py-3.5 rounded-xl bg-[var(--accent)] text-white font-semibold text-sm shadow-sm flex items-center gap-2">
-              <Download size={17} />
-              <span>Download Android APK</span>
-              <span className="text-xs opacity-75 font-normal ml-0.5">v{APP_CONSTANTS.version}</span>
-            </ApplePressable>
-          </a>
+      {/* ── MIDDLE: Interactive 3D Medical Folio Illustration ── */}
+      <div className="my-3 sm:my-5">
+        <MedicalHeroIllustration />
+      </div>
 
-          <a
-            href={APP_CONSTANTS.githubRepoUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            <ApplePressable className="px-5 py-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--card-bg)] text-[var(--ink-foreground)] font-semibold text-sm flex items-center gap-2">
-              <GithubIcon size={16} />
-              <span>View Source Code</span>
-            </ApplePressable>
-          </a>
-
-          <ApplePressable
-            onClick={() => navigate("#/privacy")}
-            className="px-4 py-3.5 text-xs font-semibold text-[var(--muted-text)] hover:text-[var(--accent)] flex items-center gap-1"
-          >
-            <span>Play Store Data Safety</span>
-            <ArrowRight size={13} />
+      {/* ── BOTTOM: Call-to-Action Buttons ── */}
+      <div className="max-w-md mx-auto flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2">
+        {/* Get it on Playstore */}
+        <a
+          href={APP_CONSTANTS.playStoreUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="w-full sm:w-auto"
+        >
+          <ApplePressable className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-[var(--accent)] text-white font-semibold text-xs sm:text-sm shadow-sm flex items-center justify-center gap-2.5">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3.609 1.814L13.792 12 3.61 22.186a1.503 1.503 0 01-.61-.954V2.768c0-.38.225-.72.609-.954zm11.603 11.604l2.585 2.586-12.274 7.087 9.689-9.673zm0-2.836L5.524.909l12.273 7.087-2.585 2.586zm1.414 1.414l3.18 1.836c1.077.622 1.077 1.636 0 2.258l-3.18 1.836-2.185-2.185 2.185-2.185z" />
+            </svg>
+            <span>Get it on Playstore</span>
           </ApplePressable>
-        </div>
+        </a>
 
-        <div className="mt-12 pt-6 border-t border-[var(--border-subtle)] grid grid-cols-2 sm:grid-cols-4 gap-6 text-[var(--ink-foreground)]">
-          <div>
-            <div className="font-editorial text-2xl font-bold">19 Subjects</div>
-            <div className="text-xs text-[var(--muted-text)] mt-0.5">Editions 8 & 6.5</div>
-          </div>
-          <div>
-            <div className="font-editorial text-2xl font-bold">5:00 AM</div>
-            <div className="text-xs text-[var(--muted-text)] mt-0.5">Clinical Rollover</div>
-          </div>
-          <div>
-            <div className="font-editorial text-2xl font-bold">120 FPS</div>
-            <div className="text-xs text-[var(--muted-text)] mt-0.5">ApplePressable Feel</div>
-          </div>
-          <div>
-            <div className="font-editorial text-2xl font-bold">Offline-First</div>
-            <div className="text-xs text-[var(--muted-text)] mt-0.5">SQLite & Cloud Sync</div>
-          </div>
-        </div>
+        {/* Download APK */}
+        <a
+          href={APP_CONSTANTS.apkDownloadUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="w-full sm:w-auto"
+        >
+          <ApplePressable className="w-full sm:w-auto px-6 py-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--card-bg)] text-[var(--ink-foreground)] font-semibold text-xs sm:text-sm flex items-center justify-center gap-2">
+            <Download size={16} />
+            <span>Download</span>
+            <span className="text-[11px] text-[var(--muted-text)] font-normal ml-0.5">v{APP_CONSTANTS.version}</span>
+          </ApplePressable>
+        </a>
+      </div>
+
+      <div className="mt-5 text-center">
+        <button
+          onClick={() => navigate("#/privacy")}
+          className="text-xs text-[var(--muted-text)] hover:text-[var(--accent)] font-medium cursor-pointer transition-colors"
+        >
+          Google Play Data Safety & Privacy Policy →
+        </button>
       </div>
     </section>
   )
