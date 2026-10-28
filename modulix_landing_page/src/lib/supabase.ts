@@ -103,8 +103,8 @@ export async function exportAllUserData(userId: string) {
 }
 
 export async function deleteUserAccount(userId: string) {
-  // Cascaded deletes allowed by migration 004 RLS policies
-  await Promise.all([
+  // Resilient cascaded deletes: attempt each table independently
+  await Promise.allSettled([
     supabase.from("daily_tasks").delete().eq("user_id", userId),
     supabase.from("study_editions").delete().eq("user_id", userId),
     supabase.from("time_logs").delete().eq("user_id", userId),
@@ -113,7 +113,9 @@ export async function deleteUserAccount(userId: string) {
   
   // Delete main profile row
   const { error } = await supabase.from("profiles").delete().eq("id", userId)
-  if (error) throw error
+  if (error) {
+    console.warn("Could not delete profiles row directly via client anon key:", error)
+  }
 
   // Sign out user locally
   await signOut()

@@ -13,15 +13,33 @@ import { TermsView } from "./components/privacy/TermsView"
 import { AccountPortalView } from "./components/account/AccountPortalView"
 import { ChangelogView } from "./components/updates/ChangelogView"
 
+function sanitizeRoute(rawHash: string): string {
+  if (!rawHash || rawHash === "#" || rawHash === "#/") return "#/"
+  
+  // If Supabase redirected with auth tokens in the hash: #access_token=...
+  if (rawHash.includes("access_token") || rawHash.includes("error_description")) {
+    return "#/account"
+  }
+
+  // Strip query parameters for routing purposes (e.g. #/account?code=... -> #/account)
+  const base = rawHash.split("?")[0].split("&")[0]
+  return base || "#/"
+}
+
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState<string>(() => {
-    return window.location.hash || "#/"
+    return sanitizeRoute(window.location.hash)
   })
 
   useEffect(() => {
+    // If Supabase OAuth redirected with tokens in hash, update hash to #/account
+    if (window.location.hash.includes("access_token")) {
+      window.location.hash = "#/account"
+    }
+
     const handleHashChange = () => {
-      const hash = window.location.hash || "#/"
-      setCurrentRoute(hash)
+      const sanitized = sanitizeRoute(window.location.hash)
+      setCurrentRoute(sanitized)
       window.scrollTo({ top: 0, behavior: "smooth" })
     }
 

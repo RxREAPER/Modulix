@@ -28,11 +28,28 @@ export function MedicalHeroIllustration() {
     mouseY.set(0)
   }
 
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!containerRef.current || e.touches.length === 0) return
+    const touch = e.touches[0]
+    const rect = containerRef.current.getBoundingClientRect()
+    const x = (touch.clientX - rect.left) / rect.width - 0.5
+    const y = (touch.clientY - rect.top) / rect.height - 0.5
+    mouseX.set(x)
+    mouseY.set(y)
+  }
+
+  const handleTouchEnd = () => {
+    mouseX.set(0)
+    mouseY.set(0)
+  }
+
   return (
     <div
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
       className="relative w-full max-w-2xl mx-auto h-[320px] sm:h-[400px] flex items-center justify-center cursor-pointer select-none perspective-[1200px]"
     >
       {/* 3D Motion Container */}

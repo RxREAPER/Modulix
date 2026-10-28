@@ -23,7 +23,9 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
   const [leaderboardVisible, setLeaderboardVisible] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [exporting, setExporting] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   useEffect(() => {
@@ -43,16 +45,19 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
 
   const handleSaveProfile = async () => {
     setSaving(true)
+    setSaveError(null)
     try {
-      await updateUserProfile(user.id, {
+      const { error } = await updateUserProfile(user.id, {
         doctor_name: doctorName.trim(),
         display_name: displayName.trim() || null,
         leaderboard_visible: leaderboardVisible,
       })
+      if (error) throw error
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 2500)
-    } catch (err) {
+    } catch (err: any) {
       console.error(err)
+      setSaveError(err.message || "Failed to update profile changes.")
     } finally {
       setSaving(false)
     }
@@ -60,6 +65,7 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
 
   const handleExportData = async () => {
     setExporting(true)
+    setExportError(null)
     try {
       const data = await exportAllUserData(user.id)
       const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -71,8 +77,9 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
       a.download = `modulix_data_export_${new Date().toISOString().split("T")[0]}.json`
       a.click()
       URL.revokeObjectURL(url)
-    } catch (err) {
+    } catch (err: any) {
       console.error(err)
+      setExportError(err.message || "Failed to generate JSON archive.")
     } finally {
       setExporting(false)
     }
@@ -180,6 +187,12 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
           </button>
         </div>
 
+        {saveError && (
+          <div className="p-2.5 rounded-lg text-xs bg-rose-500/10 border border-rose-500/20 text-rose-600">
+            {saveError}
+          </div>
+        )}
+
         <div className="flex justify-end">
           <ApplePressable
             onClick={handleSaveProfile}
@@ -230,6 +243,12 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
         <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-text)]">
           Data Management & Account Deletion
         </h3>
+
+        {exportError && (
+          <div className="p-2.5 rounded-lg text-xs bg-rose-500/10 border border-rose-500/20 text-rose-600">
+            {exportError}
+          </div>
+        )}
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--card-bg)]">
           <div>
