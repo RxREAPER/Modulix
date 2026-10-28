@@ -160,14 +160,14 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: profileAvatarColor(_selectedColorId).withValues(alpha: 0.35),
-                  width: 3.0,
+                  color: activeTheme.borderSubtle,
+                  width: 2.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: profileAvatarColor(_selectedColorId).withValues(alpha: 0.15),
-                    blurRadius: 20,
-                    offset: const Offset(0, 6),
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -226,61 +226,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
           ),
           const SizedBox(height: 28),
 
-          // Color Palette Swatches
-          Text(
-            'ACCENT PALETTE',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.0,
-              color: activeTheme.mutedText,
-            ),
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            height: 48,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              itemCount: kProfilePalette.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 10),
-              itemBuilder: (context, index) {
-                final option = kProfilePalette[index];
-                final isSelected = option.id == _selectedColorId;
-                return ApplePressable(
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    setState(() => _selectedColorId = option.id);
-                  },
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: option.color,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isSelected ? Colors.white : Colors.transparent,
-                        width: 2.5,
-                      ),
-                      boxShadow: [
-                        if (isSelected)
-                          BoxShadow(
-                            color: option.color.withValues(alpha: 0.4),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                      ],
-                    ),
-                    child: isSelected
-                        ? const Icon(Icons.check_rounded, color: Colors.white, size: 22)
-                        : null,
-                  ),
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 28),
-
           // Avatar Character Grid
           Text(
             'AVATAR CHARACTER',
@@ -305,7 +250,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             itemBuilder: (context, index) {
               final item = kProfileAvatars[index];
               final isSelected = item.id == _selectedIconId;
-              final accentColor = profileAvatarColor(_selectedColorId);
+              final selectedHighlight = AppTheme.accentPrimary;
 
               return ApplePressable(
                 onTap: () {
@@ -315,11 +260,11 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                 child: Container(
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? accentColor.withValues(alpha: 0.08)
+                        ? selectedHighlight.withValues(alpha: 0.08)
                         : activeTheme.cardBackground,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: isSelected ? accentColor : activeTheme.borderSubtle,
+                      color: isSelected ? selectedHighlight : activeTheme.borderSubtle,
                       width: isSelected ? 2.0 : 1.0,
                     ),
                   ),
@@ -345,7 +290,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                            color: isSelected ? accentColor : activeTheme.inkForeground,
+                            color: isSelected ? selectedHighlight : activeTheme.inkForeground,
                           ),
                         ),
                       ),

@@ -93,6 +93,19 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### [CKPT-128] — Remove Accent Colour Palette from Profile Edit Sub-Page
+- **Category:** `settings` / `ui` / `profile`
+- **Files Modified:**
+  - `lib/screens/settings/profile_edit_screen.dart`
+- **Summary:**
+  - Stripped the "ACCENT PALETTE" color picker and swatch list from `ProfileEditScreen`.
+  - Replaced custom profile avatar accent color tinting and glow borders on the live avatar preview with clean, subtle theme borders.
+  - Standardized avatar character item selection indicators to `AppTheme.accentPrimary`.
+- **Verification:** `flutter analyze` 0 issues (100% clean).
+- **Build Status:** Pending APK Build
+
+---
+
 ### 🔖 `[CKPT-127]` — Settings Sub-Pages Architecture, Theme & Syllabus Cards, and Global Leaderboard Simplification
 - **Category:** `settings` / `ui` / `sub-pages` / `leaderboard` / `theme` / `backend`
 - **Files Modified:**
