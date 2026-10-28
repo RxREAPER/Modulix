@@ -24,6 +24,19 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-110]` — Phase 2 Extreme Minimalism (Purged Robbins & Units Clutter) & Removed Curated Clinical Themes Section
+- **Category:** `web` / `ui` / `cleanup` / `minimalism`
+- **Files Modified:**
+  - `modulix_landing_page/src/components/sections/study-journey/TopicStation.tsx` (drastically stripped Phase 2 card down to pure essentials: removed Robbins 10th Ed., removed multi-unit completed list; retained clean BookOpen icon, Pathology title, 19 MBBS Subjects meta, smooth crimson progress line, and single quiet Unit 04 line)
+  - `modulix_landing_page/src/App.tsx` (removed Curated Clinical Themes section `ThemeShowcase` from landing page)
+- **Summary:**
+  - Delivered radical minimalism to Phase 2: zero Robbins text, zero clutter, ample negative space.
+  - Streamlined landing page narrative by getting rid of the Curated Clinical Themes section, reducing bundle weight and page length.
+- **Verification:** `bun x tsc -b` (0 errors) and `bun run build` (built cleanly in 20.2s). Verified on live Vite dev server.
+- **Build Status:** ✅ Verified & Live
+
+---
+
 ### 🔖 `[CKPT-109]` — Section 3 Unboxing, Default Autoplay Loop & Spacious MBBS Curriculum Overhaul
 - **Category:** `web` / `ui` / `curriculum` / `motion`
 - **Files Modified:**
