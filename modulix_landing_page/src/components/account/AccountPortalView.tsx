@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Session } from "@supabase/supabase-js"
-import { supabase } from "../../lib/supabase"
+import { supabase, checkBackendHealth, BackendHealth } from "../../lib/supabase"
 import { AuthGate } from "./AuthGate"
 import { ProfileDashboard } from "./ProfileDashboard"
 import { ManualDeleteForm } from "./ManualDeleteForm"
@@ -12,8 +12,11 @@ export function AccountPortalView({ navigate }: { navigate: (route: string) => v
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<"auth" | "manual">("auth")
+  const [health, setHealth] = useState<BackendHealth | null>(null)
 
   useEffect(() => {
+    checkBackendHealth().then(setHealth)
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setLoading(false)
@@ -40,11 +43,30 @@ export function AccountPortalView({ navigate }: { navigate: (route: string) => v
           <span>Back to Overview</span>
         </ApplePressable>
 
-        <div className="flex items-center gap-2 mb-2">
-          <Shield size={16} className="text-[var(--accent)]" />
-          <span className="font-mono text-[10px] font-bold tracking-widest text-[var(--accent)] uppercase">
-            PRIVACY & CLOUD SYNC PORTAL
-          </span>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2">
+            <Shield size={16} className="text-[var(--accent)]" />
+            <span className="font-mono text-[10px] font-bold tracking-widest text-[var(--accent)] uppercase">
+              PRIVACY & CLOUD SYNC PORTAL
+            </span>
+          </div>
+
+          {health && (
+            <div
+              className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium border ${
+                health.connected
+                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                  : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  health.connected ? "bg-emerald-500 animate-pulse" : "bg-rose-500"
+                }`}
+              />
+              <span>{health.connected ? `Supabase Live · ${health.latencyMs}ms` : "Offline"}</span>
+            </div>
+          )}
         </div>
         <h1 className="font-editorial text-3xl sm:text-5xl font-bold tracking-tight text-[var(--ink-foreground)]">
           Account & Cloud Data

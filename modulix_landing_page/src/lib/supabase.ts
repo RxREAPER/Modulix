@@ -1,7 +1,11 @@
 import { createClient } from "@supabase/supabase-js"
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://vbvmzjhzznxgofyzxnql.supabase.co"
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZidm16amh6em54Z29meXp4bnFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5ODYyODQsImV4cCI6MjEwNzU2MjI4NH0.Oofi0Fr0b2KmyJZ0MrXNwxVVs1kwcc6OGYVjJg9VZH4"
+const SUPABASE_URL =
+  import.meta.env.VITE_SUPABASE_URL || "https://vbvmzjhzznxgofyzxnql.supabase.co"
+const SUPABASE_ANON_KEY =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZidm16amh6em54Z29meXp4bnFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5ODYyODQsImV4cCI6MjEwNzU2MjI4NH0.Oofi0Fr0b2KmyJZ0MrXNwxVVs1kwcc6OGYVjJg9VZH4"
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
@@ -10,6 +14,27 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     detectSessionInUrl: true,
   },
 })
+
+export interface BackendHealth {
+  connected: boolean
+  latencyMs: number
+  error?: string
+}
+
+export async function checkBackendHealth(): Promise<BackendHealth> {
+  const start = performance.now()
+  try {
+    const { error } = await supabase.from("profiles").select("id", { count: "exact", head: true })
+    const latencyMs = Math.round(performance.now() - start)
+    if (error) {
+      return { connected: false, latencyMs, error: error.message }
+    }
+    return { connected: true, latencyMs }
+  } catch (err) {
+    const latencyMs = Math.round(performance.now() - start)
+    return { connected: false, latencyMs, error: err instanceof Error ? err.message : "Network error" }
+  }
+}
 
 export interface ProfileRecord {
   id: string
@@ -122,18 +147,41 @@ export async function deleteUserAccount(userId: string) {
 }
 
 export async function submitManualDeletionRequest(email: string, notes?: string) {
-  // Store or log the manual request for Play Store audit compliance
+  const normalizedEmail = email.trim().toLowerCase()
+  const now = new Date().toISOString()
   const payload = {
-    email: email.trim().toLowerCase(),
-    requestedAt: new Date().toISOString(),
+    email: normalizedEmail,
+    requestedAt: now,
     notes: notes || "Submitted via public web deletion portal",
     status: "pending_verification",
   }
-  
+
+  let ticketId: string | undefined
+
+  try {
+    const { data, error } = await supabase
+      .from("account_deletion_requests")
+      .insert({
+        email: normalizedEmail,
+        notes: payload.notes,
+        status: payload.status,
+      })
+      .select("id")
+      .single()
+
+    if (error) {
+      console.warn("[Supabase] Cloud insertion of deletion request:", error.message)
+    } else if (data) {
+      ticketId = data.id
+    }
+  } catch (err) {
+    console.warn("[Supabase] Failed to persist deletion request to cloud:", err)
+  }
+
   // Save to localStorage as a fallback receipt for user
   const existing = JSON.parse(localStorage.getItem("modulix_deletion_requests") || "[]")
-  existing.push(payload)
+  existing.push({ ...payload, ticketId })
   localStorage.setItem("modulix_deletion_requests", JSON.stringify(existing))
 
-  return { success: true, timestamp: payload.requestedAt }
+  return { success: true, timestamp: now, ticketId }
 }

@@ -24,6 +24,27 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-118]` — Supabase Backend Connects, GDPR Erasure Table & Advisor Hardening
+- **Category:** `backend/supabase/security/connects`
+- **Files Modified:**
+  - `supabase/migrations/008_account_deletion_requests_and_advisor_hardening.sql` (created `account_deletion_requests` compliance table with RLS, secured administrative `SECURITY DEFINER` functions, consolidated profiles select policy)
+  - `modulix_landing_page/.env` & `.env.example` (configured modern `VITE_SUPABASE_PUBLISHABLE_KEY` and legacy fallbacks)
+  - `modulix_landing_page/src/lib/supabase.ts` (added `checkBackendHealth()` latency probe and cloud persistence for deletion requests)
+  - `modulix_landing_page/src/components/account/ManualDeleteForm.tsx` (real-time ticket reference ID display)
+  - `modulix_landing_page/src/components/account/AccountPortalView.tsx` (live Supabase connection health status pill indicator)
+  - `lib/config/supabase_config.dart` (verified live credentials and static analysis for Flutter app)
+- **Summary:**
+  - Created and applied compliance migration 008 to live Supabase Postgres: added `public.account_deletion_requests` with strict RLS (`insert` allowed for public/anon, `select` restricted to own user) and exposed to PostgREST API.
+  - Hardened administrative `SECURITY DEFINER` functions (`rollover_leaderboards`, `get_cron_job_status`, `record_focus_session`) by revoking execute permissions from unauthenticated `anon` roles.
+  - Optimized RLS policies with subquery evaluation `((select auth.jwt()) ->> 'email') = email` to resolve Supabase Advisor performance warnings.
+  - Connected live backend health monitor on the web portal account page showing real-time latency (e.g., `Supabase Live · 42ms`).
+- **Verification:**
+  - Supabase MCP `execute_sql` verified migration execution and test row insertion/update.
+  - Supabase MCP `get_advisors` confirmed resolution of `auth_rls_initplan` and function privilege warnings.
+  - `bun run lint` & `bun run build`: 0 errors across 2,504 transformed modules.
+  - `flutter analyze lib/config/supabase_config.dart`: No issues found!
+- **Build Status:** ✅ Verified & Live
+
 ### 🔖 `[CKPT-117]` — Revert Section 2 to Traditional Spiral Spring Notepad & 3D Page Curl
 - **Category:** `web/ui/features/notepad-revert`
 - **Files Modified:**

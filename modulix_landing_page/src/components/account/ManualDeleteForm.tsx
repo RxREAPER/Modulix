@@ -9,6 +9,7 @@ export function ManualDeleteForm() {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [receiptDate, setReceiptDate] = useState("")
+  const [ticketId, setTicketId] = useState<string | undefined>()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -18,6 +19,7 @@ export function ManualDeleteForm() {
       const res = await submitManualDeletionRequest(email, notes)
       setSubmitted(true)
       setReceiptDate(res.timestamp)
+      setTicketId(res.ticketId)
     } catch (err) {
       console.error(err)
     } finally {
@@ -30,12 +32,17 @@ export function ManualDeleteForm() {
       <div className="p-6 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-emerald-900 dark:text-emerald-200">
         <div className="flex items-start gap-3">
           <CheckCircle2 size={20} className="text-emerald-500 shrink-0 mt-0.5" />
-          <div>
+          <div className="space-y-1.5 flex-1">
             <h3 className="font-semibold text-sm">Deletion Request Received</h3>
-            <p className="text-xs mt-1 opacity-90 leading-relaxed">
+            <p className="text-xs opacity-90 leading-relaxed">
               Your request to purge account <strong>{email}</strong> and all cloud study records was logged on <strong>{new Date(receiptDate).toLocaleString()}</strong>.
             </p>
-            <p className="text-xs mt-2 opacity-80">
+            {ticketId && (
+              <p className="text-[11px] font-mono text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded w-fit border border-emerald-500/20">
+                Ticket ID: {ticketId}
+              </p>
+            )}
+            <p className="text-xs opacity-80 pt-1">
               Any active Supabase cloud records linked to this email address will be deleted. Local device records on your phone will remain until uninstalled.
             </p>
           </div>
