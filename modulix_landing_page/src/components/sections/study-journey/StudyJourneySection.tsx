@@ -18,18 +18,18 @@ export function StudyJourneySection() {
       id: "task",
       number: "01",
       icon: CheckSquare,
-      title: "New Task",
-      headline: "Plan & Inscribe Your Task",
-      description: "Quickly capture to-dos on your Daily Desk with subject and unit presets without cluttering your cognitive space.",
+      title: "Daily Desk",
+      headline: "TasksQuickAddSheet · Daily Desk",
+      description: "Rapid study block capture with 4 tactile type presets — Video (35m), Q-Bank (40m), Notes (25m), and Revision (20m).",
       component: <TaskStation isActive={activeStep === 0} />,
     },
     {
       id: "topic",
       number: "02",
       icon: BookOpen,
-      title: "Topic Selection",
-      headline: "Connect to the 19 MBBS Subjects",
-      description: "Link your study block directly to Edition 8 or 6.5 curriculum modules, keeping syllabus coverage tightly aligned.",
+      title: "Curriculum",
+      headline: "SquareSubjectCard · Syllabus Library",
+      description: "Explore all 19 MBBS subjects across 1st to Final Year with live video counts, hours, Edition 8.0 unit locking, and pacing.",
       component: <TopicStation isActive={activeStep === 1} />,
     },
     {
@@ -37,8 +37,8 @@ export function StudyJourneySection() {
       number: "03",
       icon: Clock,
       title: "Focus Timer",
-      headline: "Clock In with Split-Flap Immersion",
-      description: "Enter deep work with procedural ambient audio and a mechanical split-flap flip clock designed for zero distraction.",
+      headline: "SketchFlipCard & Ambient Studio",
+      description: "Mechanical split-flap flip clock ticking down Pomodoro cycles with procedural Rain audio and immersive dark themes.",
       component: <TimerStation isActive={activeStep === 2} />,
     },
     {
@@ -46,8 +46,8 @@ export function StudyJourneySection() {
       number: "04",
       icon: BarChart3,
       title: "Analytics",
-      headline: "Automatic SQLite Aggregation",
-      description: "Focus minutes instantly feed into your 24-hour chronotype rhythm, pacing velocity, and daily study heatmaps.",
+      headline: "Editorial Momentum & Consistency Matrix",
+      description: "Automatic SQLite tracking of 12-day streaks, today's deep work hours, module plan velocity, and 14-day consistency heatmaps.",
       component: <AnalyticsStation isActive={activeStep === 3} />,
     },
     {
@@ -55,8 +55,8 @@ export function StudyJourneySection() {
       number: "05",
       icon: Trophy,
       title: "Leaderboard",
-      headline: "Rise on the Clinical Podium",
-      description: "Verified study hours elevate your standing across Daily, Weekly, and Monthly leaderboards alongside peers.",
+      headline: "EditorialPodium & Career Level Ladder",
+      description: "Real-time rankings across Daily, Weekly, and Monthly scales with rising Top 3 pedestals and Junior Resident promotions.",
       component: <PodiumStation isActive={activeStep === 4} />,
     },
   ]
@@ -66,7 +66,7 @@ export function StudyJourneySection() {
     if (!isPlaying) return
     const interval = setInterval(() => {
       setActiveStep((prev) => (prev + 1) % steps.length)
-    }, 2800)
+    }, 3200)
     return () => clearInterval(interval)
   }, [isPlaying, steps.length])
 

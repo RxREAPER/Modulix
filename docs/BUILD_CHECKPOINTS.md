@@ -24,6 +24,23 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-106]` — Section 3 Clinical Journey Alignment with Exact App Components, Texts & Fluid Motion
+- **Category:** `web` / `ui` / `components` / `motion`
+- **Files Modified:**
+  - `modulix_landing_page/src/components/sections/study-journey/TaskStation.tsx` (`TasksQuickAddSheet`, 4 type pills: Video 35m, Q-Bank 40m, Notes 25m, Revision 20m, typing effect, arrow upward submit, inking line strike)
+  - `modulix_landing_page/src/components/sections/study-journey/TopicStation.tsx` (`SquareSubjectCard` for Pathology, 2nd Year, 124 vids · 48.5 hrs, animated progress bar to 42%, Unit 04 Cell Injury & Necrosis lock)
+  - `modulix_landing_page/src/components/sections/study-journey/TimerStation.tsx` (`Focus & Pomodoro Timer`, `CYCLE 1 OF 4` cycle dots, 3D `SketchFlipCard` mechanical split-flap flip, `Ambient Studio: Rain on Window` 8-bar equalizer)
+  - `modulix_landing_page/src/components/sections/study-journey/AnalyticsStation.tsx` (`_HeroMomentumHeader` 12-day streak, rolling 03h 45m deep work counter, `_ModulePlannerHeroCard` velocity progress bar, 14-day `NeetConsistencyMatrix`)
+  - `modulix_landing_page/src/components/sections/study-journey/PodiumStation.tsx` (`Focus Leaderboard`, 4-way scale switcher, 142 in focus, `EditorialPodium` Top 3 with gold sheen & aura halo, 10-tier `UserLevel` Junior Resident ladder)
+  - `modulix_landing_page/src/components/sections/study-journey/StudyJourneySection.tsx` (updated 5-phase roadmap labels, subtitles, and descriptions matching flowmd_flutter)
+- **Summary:**
+  - Complete overhaul of Section 3's 5 study journey phases to eliminate all generic card boxes and placeholders, replacing them with the exact components, terminology, labels, and color palettes from the Modulix Flutter app (`flowmd_flutter/lib/`).
+  - Added rich micro-interactions and realistic animations: character-by-character typing, tactile task type pill press, upward arrow submit bounce, 3D mechanical split-flap card flipping, rolling counter tally, 14-day consistency heatmap wave, and staggered podium rise with gold sheen sweep.
+- **Verification:** `bun x tsc -b` and `bun run build` completed with 0 errors, 0 warnings. Verified on live Vite dev server at `http://localhost:5173/`.
+- **Build Status:** ✅ Verified & Live
+
+---
+
 ### 🔖 `[CKPT-105]` — Section 3 Kinetic Clinical Study Pipeline & 5-Step Motion Journey
 - **Category:** `web` / `ui` / `motion` / `animation`
 - **Files Modified:**
