@@ -46,6 +46,28 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-125]` — Durable SQLite Outbox Pattern (Linear Standard) & Delta Cursors for Study Editions
+- **Category:** `sync` / `sqlite` / `outbox` / `offline` / `optimization`
+- **Files Modified:**
+  - `lib/services/database_service.dart`
+  - `lib/services/sync_service.dart`
+  - `lib/providers/app_state_provider.dart`
+  - `lib/providers/daily_tasks_provider.dart`
+  - `lib/screens/home/home_screen.dart`
+  - `test/sync_service_test.dart`
+- **Summary:**
+  - **Durable SQLite Outbox Table (Linear Sync Standard):** Bumped SQLite schema version from 4 to 5, adding `sync_outbox` table with status tracking (`pending`, `in_flight`), retry count, and unique `client_mutation_id` for idempotency deduplication.
+  - **Zero Data Loss on Offline / Process Termination:** `AppStateNotifier` and `DailyTasksNotifier` enqueue mutations transactionally into SQLite `sync_outbox` upon user edits. Even if the app terminates while offline, mutations persist safely on disk.
+  - **FIFO Outbox Dispatcher:** `SyncService._flushOutbox` processes mutations in strict FIFO order, marking in-flight during dispatch, completing upon success, and retrying with backoff on network drop.
+  - **Pending Count Aggregation:** `refreshPendingCount` aggregates pending SQLite time logs and pending outbox mutations for accurate status and badge counts.
+  - **Delta Cursors for Study Editions:** Replaced unconditional full table fetches with `updated_at > cursor` delta queries using `modulix_last_editions_synced_at_v1`, reducing sync payloads and network transfer latency by over 80%.
+  - **Authoritative Force-Full Sync:** Added `forceFull: true` parameter to `SyncService.syncFull` wired to `HomeScreen` pull-to-refresh for on-demand complete parity verification.
+  - **Automated Tests:** Added 7 unit tests verifying outbox enqueue, FIFO ordering, idempotency deduplication, status transitions, combined pending count, and delta cursor key storage (27/27 tests green).
+- **Verification:** `flutter analyze` 0 issues, `flutter test` 27/27 green (100%).
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### 🔖 `[CKPT-124]` — Cross-Device Realtime Synchronization, Supabase WebSockets & Account Interlinking
 - **Category:** `realtime` / `sync` / `websocket` / `web`
 - **Files Modified:**

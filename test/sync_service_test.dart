@@ -1,9 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:modulix/models/app_state.dart';
 import 'package:modulix/models/daily_desk_task.dart';
 import 'package:modulix/providers/sync_provider.dart';
 import 'package:modulix/services/auth_service.dart';
+import 'package:modulix/services/database_service.dart';
 import 'package:modulix/services/storage_service.dart';
 import 'package:modulix/services/sync_service.dart';
 
@@ -154,6 +157,199 @@ void main() {
     test('stopRealtimeSync resets active channel and status cleanly', () {
       syncService.stopRealtimeSync();
       expect(syncService.isRealtimeActive, isFalse);
+    });
+  });
+
+  group('Durable SQLite Outbox & Delta Sync Tests', () {
+    late Database testDb;
+
+    setUpAll(() {
+      sqfliteFfiInit();
+      databaseFactory = databaseFactoryFfi;
+    });
+
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      testDb = await openDatabase(
+        inMemoryDatabasePath,
+        version: 5,
+        onCreate: (db, version) async {
+          await db.execute('''
+            CREATE TABLE time_logs (
+              id TEXT PRIMARY KEY,
+              subject_id TEXT NOT NULL,
+              topic_id TEXT,
+              topic_type TEXT NOT NULL,
+              topic_title TEXT NOT NULL,
+              chapter_name TEXT NOT NULL,
+              duration_secs INTEGER NOT NULL,
+              timestamp INTEGER NOT NULL
+            )
+          ''');
+          await db.execute('''
+            CREATE TABLE sync_outbox (
+              id TEXT PRIMARY KEY,
+              table_name TEXT NOT NULL,
+              operation TEXT NOT NULL,
+              payload TEXT NOT NULL,
+              client_mutation_id TEXT UNIQUE,
+              status TEXT NOT NULL DEFAULT 'pending',
+              retry_count INTEGER NOT NULL DEFAULT 0,
+              last_error TEXT,
+              created_at INTEGER NOT NULL
+            )
+          ''');
+        },
+      );
+      DatabaseService.instance.setTestDatabase(testDb);
+    });
+
+    tearDown(() async {
+      await testDb.close();
+      DatabaseService.instance.setTestDatabase(null);
+    });
+
+    test('enqueueOutboxMutation persists an offline mutation in SQLite', () async {
+      final dbService = DatabaseService.instance;
+      expect(await dbService.getPendingOutboxCount(), equals(0));
+
+      await dbService.enqueueOutboxMutation(
+        tableName: 'study_editions',
+        operation: 'UPSERT',
+        payload: {'edition_id': 'marrow_8', 'completed_videos_count': 5},
+      );
+
+      expect(await dbService.getPendingOutboxCount(), equals(1));
+      final pending = await dbService.getPendingOutboxMutations();
+      expect(pending.length, equals(1));
+      expect(pending.first['table_name'], equals('study_editions'));
+      expect(pending.first['operation'], equals('UPSERT'));
+      expect(pending.first['status'], equals('pending'));
+    });
+
+    test('Outbox mutations maintain strict FIFO ordering', () async {
+      final dbService = DatabaseService.instance;
+
+      await dbService.enqueueOutboxMutation(
+        tableName: 'daily_tasks',
+        operation: 'UPSERT',
+        payload: {'batch': 1},
+        clientMutationId: 'mut_order_1',
+      );
+      await Future.delayed(const Duration(milliseconds: 5));
+      await dbService.enqueueOutboxMutation(
+        tableName: 'daily_tasks',
+        operation: 'UPSERT',
+        payload: {'batch': 2},
+        clientMutationId: 'mut_order_2',
+      );
+
+      final pending = await dbService.getPendingOutboxMutations();
+      expect(pending.length, equals(2));
+      expect(pending[0]['client_mutation_id'], equals('mut_order_1'));
+      expect(pending[1]['client_mutation_id'], equals('mut_order_2'));
+    });
+
+    test('Idempotency key prevents duplicate mutation insertion', () async {
+      final dbService = DatabaseService.instance;
+
+      await dbService.enqueueOutboxMutation(
+        tableName: 'study_editions',
+        operation: 'UPSERT',
+        payload: {'video_id': 'vid_501'},
+        clientMutationId: 'idempotent_key_abc',
+      );
+
+      // Attempt duplicate insertion with same client_mutation_id
+      await dbService.enqueueOutboxMutation(
+        tableName: 'study_editions',
+        operation: 'UPSERT',
+        payload: {'video_id': 'vid_501'},
+        clientMutationId: 'idempotent_key_abc',
+      );
+
+      expect(await dbService.getPendingOutboxCount(), equals(1));
+    });
+
+    test('Outbox state transitions: in_flight, failure retry, and completion purge', () async {
+      final dbService = DatabaseService.instance;
+
+      await dbService.enqueueOutboxMutation(
+        tableName: 'study_editions',
+        operation: 'UPSERT',
+        payload: {'batch': 'in_flight_test'},
+        clientMutationId: 'mut_flight',
+      );
+
+      final pending = await dbService.getPendingOutboxMutations();
+      final id = pending.first['id'] as String;
+
+      // Mark in-flight
+      await dbService.markOutboxInFlight([id]);
+      expect(await dbService.getPendingOutboxCount(), equals(0));
+
+      // Simulate failure and retry reset
+      await dbService.failOutboxMutation(id, 'Network timeout');
+      expect(await dbService.getPendingOutboxCount(), equals(1));
+      final retried = await dbService.getPendingOutboxMutations();
+      expect(retried.first['retry_count'], equals(1));
+      expect(retried.first['last_error'], equals('Network timeout'));
+
+      // Mark completed (purged)
+      await dbService.completeOutboxMutations([id]);
+      expect(await dbService.getPendingOutboxCount(), equals(0));
+    });
+
+    test('SyncService combines pending time logs and pending outbox mutations', () async {
+      final dbService = DatabaseService.instance;
+
+      await dbService.enqueueOutboxMutation(
+        tableName: 'study_editions',
+        operation: 'UPSERT',
+        payload: {'test': true},
+      );
+      await dbService.enqueueOutboxMutation(
+        tableName: 'daily_tasks',
+        operation: 'UPSERT',
+        payload: {'test': true},
+      );
+
+      final syncService = SyncService.instance;
+      await syncService.refreshPendingCount();
+
+      expect(syncService.pendingSyncCount, equals(2));
+    });
+
+    test('SyncService enqueues state and tasks mutations durably', () async {
+      final dbService = DatabaseService.instance;
+      final syncService = SyncService.instance;
+
+      syncService.enqueueStateMutation(
+        const AppState(activeEdition: 'marrow_8'),
+      );
+      syncService.enqueueDailyTasksMutation(
+        tasksJson: [{'id': 'task_1', 'title': 'Revise Anatomy'}],
+        completedIds: ['task_1'],
+        deletedIds: [],
+        dateHistory: {},
+        lastActiveDate: '2026-10-29',
+      );
+
+      expect(await dbService.getPendingOutboxCount(), equals(2));
+      final pending = await dbService.getPendingOutboxMutations();
+      final tables = pending.map((m) => m['table_name']).toList();
+      expect(tables, contains('study_editions'));
+      expect(tables, contains('daily_tasks'));
+    });
+
+    test('Delta Cursors preference key is stored and read correctly', () async {
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('modulix_last_editions_synced_at_v1'), isNull);
+
+      const timestamp = '2026-10-29T00:30:00.000Z';
+      await prefs.setString('modulix_last_editions_synced_at_v1', timestamp);
+
+      expect(prefs.getString('modulix_last_editions_synced_at_v1'), equals(timestamp));
     });
   });
 }

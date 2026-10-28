@@ -464,6 +464,13 @@ class DailyTasksNotifier extends StateNotifier<DailyTasksState> {
       await prefs.setString(_kDeletedTasksKey, jsonEncode(boundedDeleted.toList()));
       await prefs.setString(_kLegacyDeletedTasksKey, jsonEncode(boundedDeleted.toList()));
       if (_ref != null) {
+        SyncService.instance.enqueueDailyTasksMutation(
+          tasksJson: state.tasks.map((t) => t.toMap()).toList(),
+          completedIds: state.completedIds.toList(),
+          deletedIds: boundedDeleted.toList(),
+          dateHistory: state.dateHistory,
+          lastActiveDate: _todayKey(),
+        );
         SyncService.instance.schedulePush(_ref);
       }
     } catch (_) {}

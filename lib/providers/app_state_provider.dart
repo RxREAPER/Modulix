@@ -38,12 +38,14 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
     final updated = updater(current);
     state = AsyncData(updated);
     unawaited(StorageService.instance.save(updated));
+    SyncService.instance.enqueueStateMutation(updated);
     SyncService.instance.schedulePush(ref);
   }
 
   Future<void> updateState(AppState updated) async {
     state = AsyncData(updated);
     unawaited(StorageService.instance.save(updated));
+    SyncService.instance.enqueueStateMutation(updated);
     SyncService.instance.schedulePush(ref);
   }
 

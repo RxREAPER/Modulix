@@ -60,11 +60,60 @@ class SyncService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final lastSyncMillis = prefs.getInt('modulix_last_synced_at_v1') ?? 0;
-      final pending = await DatabaseService.instance.getPendingTimeLogsCount(lastSyncMillis);
-      pendingSyncCountNotifier.value = pending;
+      final pendingLogs = await DatabaseService.instance.getPendingTimeLogsCount(lastSyncMillis);
+      final pendingOutbox = await DatabaseService.instance.getPendingOutboxCount();
+      pendingSyncCountNotifier.value = pendingLogs + pendingOutbox;
     } catch (_) {
       pendingSyncCountNotifier.value = 0;
     }
+  }
+
+  /// Enqueues a durable study edition mutation in the SQLite outbox
+  void enqueueStateMutation(AppState updated) {
+    try {
+      final ed = updated.currentEdition;
+      final payload = {
+        'edition_id': updated.activeEdition,
+        'plan_json': ed.plan.toJson(),
+        'completed_videos': ed.completedVideos,
+        'completed_qbanks': ed.completedQBanks,
+        'completed_notes': ed.completedNotes,
+        'daily_history': ed.dailyHistory,
+        'bulk_completed_chapters': ed.bulkCompletedChapters,
+        'queue_batch_video_ids': ed.queueBatchVideoIds,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      };
+      DatabaseService.instance.enqueueOutboxMutation(
+        tableName: 'study_editions',
+        operation: 'UPSERT',
+        payload: payload,
+      );
+    } catch (_) {}
+  }
+
+  /// Enqueues a durable daily tasks mutation in the SQLite outbox
+  void enqueueDailyTasksMutation({
+    required List<Map<String, dynamic>> tasksJson,
+    required List<String> completedIds,
+    required List<String> deletedIds,
+    required Map<String, dynamic> dateHistory,
+    required String lastActiveDate,
+  }) {
+    try {
+      final payload = {
+        'tasks_json': tasksJson,
+        'completed_ids': completedIds,
+        'deleted_ids': deletedIds,
+        'date_history': dateHistory,
+        'last_active_date': lastActiveDate,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      };
+      DatabaseService.instance.enqueueOutboxMutation(
+        tableName: 'daily_tasks',
+        operation: 'UPSERT',
+        payload: payload,
+      );
+    } catch (_) {}
   }
 
   /// Trigger debounced sync to push local changes to cloud
@@ -78,7 +127,7 @@ class SyncService {
   }
 
   /// Full bi-directional sync (pull remote changes, merge, push unified state)
-  Future<bool> syncFull(dynamic ref) async {
+  Future<bool> syncFull(dynamic ref, {bool forceFull = false}) async {
     final auth = AuthService.instance;
     if (!auth.isAuthenticated || auth.client == null) {
       statusNotifier.value = SyncStatus.idle;
@@ -101,6 +150,10 @@ class SyncService {
     try {
       final client = auth.client!;
       final userId = auth.currentUserId!;
+      final prefs = await SharedPreferences.getInstance();
+
+      // ── 0. FLUSH DURABLE SQLITE OUTBOX MUTATIONS (LINEAR-STYLE) ─────────
+      await _flushOutbox(client, userId);
 
       // ── 1. SYNC PROFILE & PREFERENCES ─────────────────────────────────────
       final profileRes = await client
@@ -165,10 +218,15 @@ class SyncService {
       }
 
       // ── 2. SYNC STUDY EDITIONS (COMPLETIONS & STUDY PLAN) ──────────────────
-      final remoteEditions = await client
+      final lastEditionsSync = prefs.getString('modulix_last_editions_synced_at_v1');
+      var editionsQuery = client
           .from('study_editions')
           .select()
           .eq('user_id', userId);
+      if (!forceFull && lastEditionsSync != null && lastEditionsSync.isNotEmpty) {
+        editionsQuery = editionsQuery.gt('updated_at', lastEditionsSync);
+      }
+      final remoteEditions = await editionsQuery;
 
       final Map<String, EditionState> updatedEditions =
           Map<String, EditionState>.from(workingState.editions);
@@ -258,19 +316,22 @@ class SyncService {
         updatedEditions[edId] = mergedEd;
       }
 
-      // Check local editions that were never recorded remotely
-      final remoteEditionIds = (remoteEditions as List)
-          .map((r) => r['edition_id']?.toString() ?? '')
-          .toSet();
-      for (final entry in updatedEditions.entries) {
-        if (!remoteEditionIds.contains(entry.key)) {
-          if (entry.value.completedVideos.isNotEmpty ||
-              entry.value.completedQBanks.isNotEmpty ||
-              entry.value.completedNotes.isNotEmpty ||
-              entry.value.bulkCompletedChapters.isNotEmpty ||
-              entry.value.queueBatchVideoIds.isNotEmpty ||
-              entry.value.plan.isConfigured) {
-            dirtyEditionIds.add(entry.key);
+      // Check local editions that were never recorded remotely (only on initial or forced full sync)
+      final isFullOrInitialSync = forceFull || lastEditionsSync == null || lastEditionsSync.isEmpty;
+      if (isFullOrInitialSync) {
+        final remoteEditionIds = (remoteEditions as List)
+            .map((r) => r['edition_id']?.toString() ?? '')
+            .toSet();
+        for (final entry in updatedEditions.entries) {
+          if (!remoteEditionIds.contains(entry.key)) {
+            if (entry.value.completedVideos.isNotEmpty ||
+                entry.value.completedQBanks.isNotEmpty ||
+                entry.value.completedNotes.isNotEmpty ||
+                entry.value.bulkCompletedChapters.isNotEmpty ||
+                entry.value.queueBatchVideoIds.isNotEmpty ||
+                entry.value.plan.isConfigured) {
+              dirtyEditionIds.add(entry.key);
+            }
           }
         }
       }
@@ -310,7 +371,6 @@ class SyncService {
       }
 
       // ── 3. SYNC TIME LOGS (FOCUS SESSIONS) ─────────────────────────────────
-      final prefs = await SharedPreferences.getInstance();
       final lastSyncMillis = prefs.getInt('modulix_last_synced_at_v1') ?? 0;
 
       // Incremental SQLite query: only load candidate local logs created since last sync window
@@ -550,7 +610,8 @@ class SyncService {
 
       lastSyncedAt = DateTime.now();
       await prefs.setInt('modulix_last_synced_at_v1', lastSyncedAt!.millisecondsSinceEpoch);
-      pendingSyncCountNotifier.value = 0;
+      await prefs.setString('modulix_last_editions_synced_at_v1', lastSyncedAt!.toUtc().toIso8601String());
+      await refreshPendingCount();
       statusNotifier.value = SyncStatus.synced;
       debugPrint('[SyncService] Cloud synchronization completed successfully.');
 
@@ -564,6 +625,57 @@ class SyncService {
       return false;
     } finally {
       _isSyncing = false;
+    }
+  }
+
+  // ─── DURABLE SQLITE OUTBOX DISPATCHER ──────────────────────────────────────
+
+  Future<void> _flushOutbox(SupabaseClient client, String userId) async {
+    try {
+      final pendingMutations = await DatabaseService.instance.getPendingOutboxMutations(limit: 50);
+      if (pendingMutations.isEmpty) return;
+
+      final ids = pendingMutations
+          .map((m) => m['id']?.toString() ?? '')
+          .where((id) => id.isNotEmpty)
+          .toList();
+      await DatabaseService.instance.markOutboxInFlight(ids);
+
+      final completedIds = <String>[];
+
+      for (final mutation in pendingMutations) {
+        final id = mutation['id']?.toString() ?? '';
+        final table = mutation['table_name']?.toString() ?? '';
+        final op = mutation['operation']?.toString() ?? '';
+        final payloadRaw = mutation['payload']?.toString() ?? '{}';
+
+        try {
+          final payload = jsonDecode(payloadRaw) as Map<String, dynamic>;
+          final enrichedPayload = Map<String, dynamic>.from(payload);
+          if (table != 'profiles' && !enrichedPayload.containsKey('user_id')) {
+            enrichedPayload['user_id'] = userId;
+          }
+
+          if (op == 'UPSERT') {
+            await client.from(table).upsert(enrichedPayload);
+          } else if (op == 'DELETE') {
+            final filterCol = enrichedPayload['filter_column']?.toString() ?? 'id';
+            final filterVal = enrichedPayload['filter_value'];
+            await client.from(table).delete().eq(filterCol, filterVal);
+          }
+          completedIds.add(id);
+        } catch (err) {
+          debugPrint('[SyncService] Failed to flush outbox mutation $id: $err');
+          await DatabaseService.instance.failOutboxMutation(id, err.toString());
+        }
+      }
+
+      if (completedIds.isNotEmpty) {
+        await DatabaseService.instance.completeOutboxMutations(completedIds);
+        debugPrint('[SyncService] Flushed ${completedIds.length} durable outbox mutations.');
+      }
+    } catch (e) {
+      debugPrint('[SyncService] Error during outbox flush: $e');
     }
   }
 

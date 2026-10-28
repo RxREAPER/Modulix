@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -9,7 +10,7 @@ import '../models/time_log.dart';
 
 const String _kDbName = 'modulix.db';
 const String _kLegacyDbName = 'flowmd.db';
-const int _kDbVersion = 4;
+const int _kDbVersion = 5;
 const String _kLegacyTimeLogsKey = 'flowmd_time_logs_v1';
 const String _kMetaLegacyMigrated = 'migrated_legacy_time_logs';
 
@@ -99,6 +100,7 @@ class DatabaseService {
           )
         ''');
         await _createTasksTables(db);
+        await _createOutboxTable(db);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -133,6 +135,9 @@ class DatabaseService {
           try {
             await db.execute('ALTER TABLE task_items ADD COLUMN module_id TEXT');
           } catch (_) {}
+        }
+        if (oldVersion < 5) {
+          await _createOutboxTable(db);
         }
       },
     );
@@ -192,6 +197,27 @@ class DatabaseService {
         'CREATE INDEX IF NOT EXISTS idx_task_items_project_id ON task_items(project_id)');
     await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_task_items_is_completed ON task_items(is_completed)');
+  }
+
+  /// Creates the durable sync_outbox table for the Linear-style outbox pattern.
+  /// Called both in onCreate (fresh install) and onUpgrade v4→v5.
+  static Future<void> _createOutboxTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS sync_outbox (
+        id TEXT PRIMARY KEY,
+        table_name TEXT NOT NULL,
+        operation TEXT NOT NULL,
+        payload TEXT NOT NULL,
+        client_mutation_id TEXT UNIQUE,
+        status TEXT NOT NULL DEFAULT 'pending',
+        retry_count INTEGER NOT NULL DEFAULT 0,
+        last_error TEXT,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_sync_outbox_status_created ON sync_outbox(status, created_at ASC)');
   }
 
   Future<void> _migrateLegacyPreferences(Database db) async {
@@ -422,6 +448,102 @@ class DatabaseService {
       [sinceMs],
     );
     return (res.first['count'] as num?)?.toInt() ?? 0;
+  }
+
+  /// Enqueues an offline mutation into the durable SQLite outbox (Linear-style).
+  Future<void> enqueueOutboxMutation({
+    required String tableName,
+    required String operation,
+    required Map<String, dynamic> payload,
+    String? clientMutationId,
+  }) async {
+    final db = await database;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final id = 'mut_${now}_${math.Random().nextInt(999999)}';
+    final mutId = clientMutationId ?? id;
+
+    await db.insert(
+      'sync_outbox',
+      {
+        'id': id,
+        'table_name': tableName,
+        'operation': operation,
+        'payload': jsonEncode(payload),
+        'client_mutation_id': mutId,
+        'status': 'pending',
+        'retry_count': 0,
+        'last_error': null,
+        'created_at': now,
+      },
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
+  /// Retrieves pending outbox mutations ordered chronologically (FIFO).
+  Future<List<Map<String, dynamic>>> getPendingOutboxMutations({int limit = 50}) async {
+    final db = await database;
+    final rows = await db.query(
+      'sync_outbox',
+      where: 'status = ?',
+      whereArgs: ['pending'],
+      orderBy: 'created_at ASC',
+      limit: limit,
+    );
+    return rows;
+  }
+
+  /// Marks outbox items as in-flight during sync dispatch.
+  Future<void> markOutboxInFlight(List<String> ids) async {
+    if (ids.isEmpty) return;
+    final db = await database;
+    final placeholders = List.filled(ids.length, '?').join(',');
+    await db.rawUpdate(
+      'UPDATE sync_outbox SET status = ? WHERE id IN ($placeholders)',
+      ['in_flight', ...ids],
+    );
+  }
+
+  /// Completes outbox mutations (purges processed items so the outbox remains lean).
+  Future<void> completeOutboxMutations(List<String> ids) async {
+    if (ids.isEmpty) return;
+    final db = await database;
+    final placeholders = List.filled(ids.length, '?').join(',');
+    await db.delete(
+      'sync_outbox',
+      where: 'id IN ($placeholders)',
+      whereArgs: ids,
+    );
+  }
+
+  /// Records mutation failure and resets status to pending for backoff retry.
+  Future<void> failOutboxMutation(String id, String error) async {
+    final db = await database;
+    await db.rawUpdate(
+      'UPDATE sync_outbox SET status = ?, retry_count = retry_count + 1, last_error = ? WHERE id = ?',
+      ['pending', error, id],
+    );
+  }
+
+  /// High-performance count of pending outbox mutations.
+  Future<int> getPendingOutboxCount() async {
+    try {
+      final db = await database;
+      final result = await db.rawQuery(
+        'SELECT COUNT(*) as count FROM sync_outbox WHERE status = ?',
+        ['pending'],
+      );
+      return Sqflite.firstIntValue(result) ?? 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// Purges old completed outbox rows if any remain.
+  Future<void> purgeCompletedOutbox() async {
+    try {
+      final db = await database;
+      await db.delete('sync_outbox', where: 'status = ?', whereArgs: ['completed']);
+    } catch (_) {}
   }
 
   /// Closes database connection cleanly (useful for tests and teardown)

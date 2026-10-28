@@ -64,7 +64,7 @@ class HomeScreen extends ConsumerWidget {
                 backgroundColor: AppTheme.cardWhite,
                 onRefresh: () async {
                   HapticFeedback.lightImpact();
-                  await SyncService.instance.syncFull(ref);
+                  await SyncService.instance.syncFull(ref, forceFull: true);
                 },
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(
