@@ -24,6 +24,24 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-108]` — Study Timeline Section 3 Hardening: Preserved Step Header, Shoved Phase Out of Card, Dual-Flap Non-Overlapping Flip Timer & Secured Fixed Geometry
+- **Category:** `web` / `ui` / `timeline` / `animation`
+- **Files Modified:**
+  - `modulix_landing_page/src/components/sections/study-journey/StudyJourneySection.tsx` (renamed title to "Modulix-Based Study Timeline", shoved `PHASE 01 / 05` and step headlines outside the station card into a stable, fixed-height header, purged auto-play loop and pause button, locked stage dimensions to prevent geometric overlap)
+  - `modulix_landing_page/src/components/sections/study-journey/TimerStation.tsx` (engineered dual 90-degree mechanical Solari split flaps with mathematical half-height clipping, completely eliminating text overlapping and upside-down collision artifacts)
+  - `modulix_landing_page/src/components/sections/study-journey/TaskStation.tsx` (standardized wrapper geometry to match secured stage bounds)
+  - `modulix_landing_page/src/components/sections/study-journey/TopicStation.tsx` (standardized wrapper geometry to match secured stage bounds)
+  - `modulix_landing_page/src/components/sections/study-journey/AnalyticsStation.tsx` (standardized wrapper geometry to match secured stage bounds)
+  - `modulix_landing_page/src/components/sections/study-journey/PodiumStation.tsx` (standardized wrapper geometry to match secured stage bounds)
+- **Summary:**
+  - Preserved step heading in one stable, non-dynamic container above the stage to stop layout jumping on device resize or step switching.
+  - Re-architected mechanical split-flap timer with isolated falling upper and lower flaps (0°→-90° and 90°→0°) ensuring zero text collision or bleed.
+  - Eliminated auto-scroll and pause button clutter, making navigation purely manual and calm.
+- **Verification:** `bun x tsc -b` (0 errors) and `bun run build` (built in 19.8s). Verified on live Vite dev server.
+- **Build Status:** ✅ Verified & Live
+
+---
+
 ### 🔖 `[CKPT-107]` — Section 3 Radical Minimalist Purge: Zero Tags, Zero Badges, Less Buttons & Uncluttered Motion
 - **Category:** `web` / `ui` / `minimalism` / `realism`
 - **Files Modified:**

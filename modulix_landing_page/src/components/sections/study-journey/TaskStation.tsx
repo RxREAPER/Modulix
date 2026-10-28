@@ -43,7 +43,7 @@ export function TaskStation({ isActive }: StationProps) {
   }, [isActive])
 
   return (
-    <div className="w-full flex items-center justify-center p-4 sm:p-6 select-none">
+    <div className="w-full flex items-center justify-center select-none">
       {/* ── Minimalist Daily Desk Card (Zero Tags, Zero Badges) ── */}
       <motion.div
         layout

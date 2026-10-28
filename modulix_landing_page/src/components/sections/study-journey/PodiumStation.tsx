@@ -10,7 +10,7 @@ export function PodiumStation({ isActive }: StationProps) {
   const { isDark } = useTheme()
 
   return (
-    <div className="w-full flex items-center justify-center p-4 sm:p-6 select-none">
+    <div className="w-full flex items-center justify-center select-none">
       {/* ── Minimalist Podium Stage (Zero Tags, Zero Badges, Zero Buttons) ── */}
       <motion.div
         layout

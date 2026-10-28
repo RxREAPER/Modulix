@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { CheckSquare, BookOpen, Clock, BarChart3, Trophy, Play, Pause } from "lucide-react"
+import { CheckSquare, BookOpen, Clock, BarChart3, Trophy } from "lucide-react"
 import { useTheme } from "../../../lib/theme"
 import { TaskStation } from "./TaskStation"
 import { TopicStation } from "./TopicStation"
@@ -11,7 +11,6 @@ import { PodiumStation } from "./PodiumStation"
 export function StudyJourneySection() {
   const { isDark } = useTheme()
   const [activeStep, setActiveStep] = useState(0)
-  const [isPlaying, setIsPlaying] = useState(true)
 
   const steps = [
     {
@@ -61,24 +60,15 @@ export function StudyJourneySection() {
     },
   ]
 
-  // Auto-play kinetic flow cycle
-  useEffect(() => {
-    if (!isPlaying) return
-    const interval = setInterval(() => {
-      setActiveStep((prev) => (prev + 1) % steps.length)
-    }, 3400)
-    return () => clearInterval(interval)
-  }, [isPlaying, steps.length])
-
   return (
     <section className="py-16 sm:py-20 border-t border-[var(--border-subtle)] select-none">
       {/* ── Section Title ── */}
-      <div className="mb-12 text-center max-w-xl mx-auto space-y-2">
+      <div className="mb-10 text-center max-w-xl mx-auto space-y-2 px-4">
         <span className="font-mono text-[10px] tracking-widest text-[var(--accent)] font-semibold uppercase">
           THE COMPLETE DAILY LOOP
         </span>
         <h2 className="font-editorial text-3xl sm:text-4xl font-bold tracking-tight text-[var(--ink-foreground)]">
-          Clinical Study Pipeline
+          Modulix-Based Study Timeline
         </h2>
         <p className="text-xs sm:text-sm text-[var(--muted-text)] font-medium">
           Watch how a single study thought moves through the Modulix kinetic engine.
@@ -86,16 +76,16 @@ export function StudyJourneySection() {
       </div>
 
       {/* ── Interactive 5-Step Pipeline Roadmap Bar ── */}
-      <div className="max-w-3xl mx-auto mb-10 px-4">
+      <div className="max-w-3xl mx-auto mb-8 px-4">
         <div className="relative flex items-center justify-between">
-          {/* Animated Glowing Connection Line */}
+          {/* Animated Connecting Line */}
           <div className="absolute top-1/2 left-4 right-4 -translate-y-1/2 h-[2px] bg-[var(--border-subtle)] z-0">
             <motion.div
               className="h-full bg-[var(--accent)] origin-left"
               animate={{
                 width: `${(activeStep / (steps.length - 1)) * 100}%`,
               }}
-              transition={{ duration: 0.4, ease: "easeInOut" }}
+              transition={{ duration: 0.35, ease: "easeInOut" }}
             />
           </div>
 
@@ -108,16 +98,13 @@ export function StudyJourneySection() {
             return (
               <button
                 key={st.id}
-                onClick={() => {
-                  setActiveStep(idx)
-                  setIsPlaying(false)
-                }}
+                onClick={() => setActiveStep(idx)}
                 className="relative z-10 flex flex-col items-center group cursor-pointer focus:outline-none"
               >
                 {/* Node Button Circle */}
                 <motion.div
                   animate={{
-                    scale: isCurrent ? 1.2 : 1,
+                    scale: isCurrent ? 1.18 : 1,
                     borderColor: isCurrent || isCompleted ? "var(--accent)" : "var(--border-subtle)",
                     backgroundColor: isCurrent ? "var(--accent)" : isDark ? "#18191D" : "#FFFFFF",
                   }}
@@ -150,56 +137,51 @@ export function StudyJourneySection() {
         </div>
       </div>
 
-      {/* ── The Kinetic Showcase Stage ── */}
-      <div className="max-w-2xl mx-auto px-4">
+      {/* ── Preserved Step Heading & Phase Indicator (Secured, Zero Geometry Shift) ── */}
+      <div className="max-w-xl mx-auto px-4 mb-4 text-center">
+        {/* Shoved out of the card: Phase indicator */}
+        <div className="flex items-center justify-center gap-2 mb-1.5">
+          <span className="font-mono text-xs font-bold tracking-widest text-[var(--accent)] uppercase">
+            PHASE {steps[activeStep].number} / 05
+          </span>
+          <span className="text-[var(--muted-text)] opacity-40">·</span>
+          <span className="font-mono text-xs font-semibold text-[var(--ink-foreground)] uppercase tracking-wider">
+            {steps[activeStep].headline}
+          </span>
+        </div>
+
+        {/* Preserved description with locked min-height so switching never jumps vertical layout */}
+        <div className="h-10 sm:h-8 flex items-center justify-center">
+          <p className="text-xs sm:text-sm text-[var(--muted-text)] font-normal leading-relaxed max-w-md">
+            {steps[activeStep].description}
+          </p>
+        </div>
+      </div>
+
+      {/* ── Secured Stage Box (Fixed Geometry, Zero Overlap Across Devices) ── */}
+      <div className="max-w-xl mx-auto px-4">
         <div
-          className={`rounded-2xl border p-6 sm:p-8 relative shadow-xl overflow-hidden transition-colors ${
+          className={`rounded-2xl border p-4 sm:p-5 relative shadow-lg overflow-hidden transition-colors flex items-center justify-center ${
             isDark
               ? "bg-[#141518] border-white/10 shadow-[0_16px_40px_rgba(0,0,0,0.5)]"
               : "bg-white border-black/8 shadow-[0_12px_36px_rgba(0,0,0,0.06)]"
           }`}
         >
-          {/* Active Step Indicator Pill & Play/Pause */}
-          <div className="flex items-center justify-between pb-4 mb-4 border-b border-black/[0.05] dark:border-white/[0.05]">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-bold text-[var(--accent)]">
-                PHASE {steps[activeStep].number} // 05
-              </span>
-              <span className="text-[var(--muted-text)] opacity-40">·</span>
-              <span className="text-xs font-semibold text-[var(--ink-foreground)]">
-                {steps[activeStep].headline}
-              </span>
-            </div>
-
-            <button
-              onClick={() => setIsPlaying(!isPlaying)}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[var(--border-subtle)] text-[10px] font-mono text-[var(--muted-text)] hover:text-[var(--ink-foreground)] transition-colors"
-            >
-              {isPlaying ? <Pause size={10} /> : <Play size={10} />}
-              <span>{isPlaying ? "AUTO-LOOP" : "PAUSED"}</span>
-            </button>
-          </div>
-
-          {/* Dedicated High-Motion Station Component */}
-          <div className="min-h-[220px] sm:min-h-[240px] flex items-center justify-center">
+          {/* Dedicated Fixed Stage (230px fixed height) */}
+          <div className="w-full h-[220px] sm:h-[230px] flex items-center justify-center overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeStep}
-                initial={{ opacity: 0, y: 12, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -12, scale: 0.98 }}
-                transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 className="w-full flex items-center justify-center"
               >
                 {steps[activeStep].component}
               </motion.div>
             </AnimatePresence>
           </div>
-
-          {/* Description Footer */}
-          <p className="text-center text-xs sm:text-sm text-[var(--muted-text)] font-normal leading-relaxed max-w-md mx-auto pt-3">
-            {steps[activeStep].description}
-          </p>
         </div>
       </div>
     </section>

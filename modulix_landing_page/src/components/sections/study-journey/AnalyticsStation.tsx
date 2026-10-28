@@ -13,7 +13,7 @@ export function AnalyticsStation({ isActive }: StationProps) {
   const days = [3, 4, 2, 4, 4, 3, 4]
 
   return (
-    <div className="w-full flex items-center justify-center p-4 sm:p-6 select-none">
+    <div className="w-full flex items-center justify-center select-none">
       {/* ── Minimalist Analytics Card (Zero Tags, Zero Badges) ── */}
       <motion.div
         layout
