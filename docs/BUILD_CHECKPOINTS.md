@@ -24,6 +24,23 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-111]` — Switch-Lit Style Live Video Hero Card Integration (`FINAL.mp4` / `FINAL.gif`)
+- **Category:** `web` / `ui` / `hero` / `media`
+- **Files Modified:**
+  - `modulix_landing_page/public/hero/FINAL.mp4` (deployed 1080p 24fps looping clinical illustration animation)
+  - `modulix_landing_page/public/hero/FINAL.gif` (deployed 8.4MB fallback animation)
+  - `modulix_landing_page/public/hero/poster.jpg` (generated zero-CLS instant poster frame)
+  - `modulix_landing_page/src/components/sections/MedicalHeroIllustration.tsx` (replaced 440 lines of static SVG code with responsive 16:9 Switch-Lit style live video hero card with subtle 3D mouse parallax)
+  - `modulix_landing_page/src/components/sections/HeroSection.tsx` (adjusted vertical breathing margins around hero card to match Switch-Lit layout)
+- **Summary:**
+  - Integrated the living medical animation centerpiece into the hero section with zero layout shift and hardware acceleration.
+  - Ensured seamless mobile autoplay compliance with `muted`, `playsInline`, `autoPlay`, and `loop`.
+  - Maintained interactive mouse/touch perspective tilt for a tactile, physical card feel.
+- **Verification:** `bun x tsc -b` (0 errors) and `bun run build` (built in 21.8s, reduced bundle by ~9KB). Verified live on Vite dev server at `http://localhost:5173/`.
+- **Build Status:** ✅ Verified & Live
+
+---
+
 ### 🔖 `[CKPT-110]` — Phase 2 Extreme Minimalism (Purged Robbins & Units Clutter) & Removed Curated Clinical Themes Section
 - **Category:** `web` / `ui` / `cleanup` / `minimalism`
 - **Files Modified:**

@@ -16,8 +16,8 @@ export function HeroSection({ navigate }: { navigate: (route: string) => void })
         </p>
       </div>
 
-      {/* ── MIDDLE: Interactive 3D Medical Folio Illustration ── */}
-      <div className="my-3 sm:my-5">
+      {/* ── MIDDLE: Interactive Live Medical Hero Card (Switch-Lit Style) ── */}
+      <div className="my-6 sm:my-9">
         <MedicalHeroIllustration />
       </div>
 
