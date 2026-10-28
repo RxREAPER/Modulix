@@ -65,60 +65,68 @@ export function ChangelogView({ navigate }: { navigate: (route: string) => void 
   ]
 
   return (
-    <div className="py-8 max-w-3xl">
-      <div className="mb-6">
+    <div className="py-10 sm:py-16 max-w-3xl mx-auto select-none">
+      {/* ── Header ── */}
+      <div className="mb-8">
         <ApplePressable
           onClick={() => navigate("#/")}
-          className="text-xs font-semibold text-[var(--muted-text)] hover:text-[var(--accent)] flex items-center gap-1.5 py-1 mb-3"
+          className="text-xs font-semibold text-[var(--muted-text)] hover:text-[var(--accent)] flex items-center gap-1.5 py-1 mb-4 w-fit"
         >
           <ArrowLeft size={14} />
           <span>Back to Overview</span>
         </ApplePressable>
 
         <div className="flex items-center gap-2 mb-2">
-          <Clock size={18} className="text-[var(--accent)]" />
-          <span className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-text)]">
-            Release Notes & Development History
+          <Clock size={16} className="text-[var(--accent)]" />
+          <span className="font-mono text-[10px] font-bold tracking-widest text-[var(--accent)] uppercase">
+            RELEASE LEDGER & UPDATES
           </span>
         </div>
-        <h1 className="font-editorial text-3xl sm:text-4xl font-bold text-[var(--ink-foreground)]">
-          Changelog & Updates
+        <h1 className="font-editorial text-3xl sm:text-5xl font-bold tracking-tight text-[var(--ink-foreground)]">
+          Changelog & Milestones
         </h1>
-        <p className="text-xs text-[var(--muted-text)] mt-1">
-          Tracking the incremental evolution of the Modulix Flutter companion and clinical tools.
+        <p className="text-xs sm:text-sm text-[var(--muted-text)] mt-2 leading-relaxed max-w-lg">
+          A continuous engineering record tracking every performance breakthrough, architectural hardening, and clinical curriculum release.
         </p>
       </div>
 
       <HairlineDivider />
 
-      <div className="space-y-10 my-8">
+      {/* ── Release Timeline Cards ── */}
+      <div className="space-y-6 my-10">
         {releases.map((rel, i) => (
-          <div key={rel.version} className="relative pl-6 border-l border-[var(--border-subtle)]">
-            {/* Version timeline dot */}
-            <div
-              className={`absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full ${
-                i === 0 ? "bg-[var(--accent)] ring-4 ring-[var(--accent-subtle)]" : "bg-[var(--border-subtle)]"
-              }`}
-            />
-
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-editorial text-xl font-bold text-[var(--ink-foreground)]">
-                {rel.version}
-              </span>
-              <span className="text-xs text-[var(--muted-text)]">· {rel.date}</span>
-              <span className="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--surface-subtle)] text-[var(--ink-foreground)] border border-[var(--border-subtle)]">
+          <div
+            key={rel.version}
+            className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--card-bg)] p-6 sm:p-7 shadow-sm transition-all hover:border-[var(--accent)]/40"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-4 border-b border-[var(--border-subtle)]">
+              <div className="flex items-center gap-3">
+                <span className="font-editorial text-2xl font-bold text-[var(--ink-foreground)]">
+                  {rel.version}
+                </span>
+                <span className="font-mono text-xs text-[var(--muted-text)]">
+                  · {rel.date}
+                </span>
+              </div>
+              <span
+                className={`text-[10px] font-mono font-bold tracking-wider uppercase px-2.5 py-1 rounded-full border ${
+                  i === 0
+                    ? "bg-[var(--accent-subtle)] text-[var(--accent)] border-[var(--accent)]/30"
+                    : "bg-[var(--surface-subtle)] text-[var(--muted-text)] border-[var(--border-subtle)]"
+                }`}
+              >
                 {rel.tag}
               </span>
             </div>
 
-            <h3 className="text-xs font-semibold text-[var(--accent)] mb-2">
+            <h3 className="font-editorial text-xl font-bold text-[var(--ink-foreground)] mb-3">
               {rel.title}
             </h3>
 
-            <ul className="space-y-1.5 text-xs sm:text-sm text-[var(--muted-text)]">
+            <ul className="space-y-2 text-xs sm:text-sm text-[var(--muted-text)] leading-relaxed">
               {rel.changes.map((change, idx) => (
-                <li key={idx} className="flex items-start gap-2">
-                  <span className="text-[var(--accent)] shrink-0 select-none">·</span>
+                <li key={idx} className="flex items-start gap-2.5">
+                  <span className="text-[var(--accent)] font-bold mt-0.5 select-none">•</span>
                   <span>{change}</span>
                 </li>
               ))}

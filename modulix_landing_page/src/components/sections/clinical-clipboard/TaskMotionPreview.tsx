@@ -3,7 +3,7 @@ import { motion } from "framer-motion"
 
 export function TaskMotionPreview() {
   const [tasks, setTasks] = useState([
-    { id: 1, title: "Robbins Pathology · Neoplasia & Cellular Adaptations", done: true },
+    { id: 1, title: "General Pathology · Cellular Adaptations", done: true },
     { id: 2, title: "General Pharmacology · Autonomic Receptors & Kinetics", done: false },
   ])
 

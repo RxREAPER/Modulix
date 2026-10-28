@@ -42,7 +42,7 @@ export function AuthGate({ onManualRequest }: { onManualRequest: () => void }) {
       <ApplePressable
         onClick={handleGoogleLogin}
         disabled={loading}
-        className="w-full py-3 px-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--card-bg)] hover:bg-[var(--surface-subtle)] text-[var(--ink-foreground)] font-semibold text-xs sm:text-sm flex items-center justify-center gap-3 transition-colors shadow-sm"
+        className="w-full py-3.5 px-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--card-bg)] hover:bg-[var(--surface-subtle)] text-[var(--ink-foreground)] font-semibold text-xs sm:text-sm flex items-center justify-center gap-3 transition-colors shadow-sm"
       >
         <svg width="18" height="18" viewBox="0 0 24 24">
           <path
@@ -67,46 +67,46 @@ export function AuthGate({ onManualRequest }: { onManualRequest: () => void }) {
 
       <div className="relative flex items-center justify-center">
         <div className="w-full border-t border-[var(--border-subtle)]" />
-        <span className="absolute bg-[var(--card-bg)] px-3 text-[11px] uppercase tracking-wider text-[var(--muted-text)] font-semibold">
-          or sign in with email
+        <span className="absolute bg-[var(--card-bg)] px-3 text-[10px] uppercase font-mono tracking-widest text-[var(--muted-text)] font-semibold">
+          or magic email link
         </span>
       </div>
 
-      <form onSubmit={handleEmailOtp} className="space-y-3">
+      <form onSubmit={handleEmailOtp} className="space-y-3.5">
         <div>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="doctor@example.com"
-            className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--card-bg)] text-xs text-[var(--ink-foreground)] focus:outline-none focus:border-[var(--accent)]"
+            placeholder="doctor@hospital.edu"
+            className="w-full px-4 py-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-subtle)] focus:bg-[var(--card-bg)] text-xs sm:text-sm text-[var(--ink-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)] transition-all"
           />
         </div>
 
         <ApplePressable
           type="submit"
           disabled={loading || !email}
-          className="w-full py-2.5 rounded-lg bg-[var(--accent)] text-white font-semibold text-xs flex items-center justify-center gap-1.5"
+          className="w-full py-3 rounded-xl bg-[var(--accent)] text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm"
         >
-          <Mail size={13} />
-          <span>Send Magic Sign-In Link</span>
+          <Mail size={14} />
+          <span>{loading ? "Sending..." : "Send Magic Sign-In Link"}</span>
         </ApplePressable>
       </form>
 
       {message && (
-        <div className="p-3 rounded-lg text-xs bg-[var(--surface-subtle)] text-[var(--ink-foreground)] border border-[var(--border-subtle)]">
+        <div className="p-3.5 rounded-xl text-xs bg-[var(--surface-subtle)] text-[var(--ink-foreground)] border border-[var(--border-subtle)] leading-relaxed">
           {message}
         </div>
       )}
 
-      <div className="pt-4 border-t border-[var(--border-subtle)] text-center">
+      <div className="pt-3 border-t border-[var(--border-subtle)] text-center">
         <button
           type="button"
           onClick={onManualRequest}
-          className="text-xs text-[var(--muted-text)] hover:text-rose-600 font-medium underline underline-offset-4 cursor-pointer"
+          className="text-xs text-[var(--muted-text)] hover:text-rose-600 font-medium transition-colors cursor-pointer"
         >
-          Cannot sign in? Submit a manual account deletion request →
+          Cannot sign in? Submit manual account deletion request →
         </button>
       </div>
     </div>

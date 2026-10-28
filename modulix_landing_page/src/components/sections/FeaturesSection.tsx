@@ -1,7 +1,5 @@
-import { useRef } from "react"
-import { motion, useScroll, useTransform } from "framer-motion"
+import { motion } from "framer-motion"
 import { useTheme } from "../../lib/theme"
-import { SpiralSpringBinding } from "./clinical-clipboard/SpiralSpringBinding"
 import { TaskMotionPreview } from "./clinical-clipboard/TaskMotionPreview"
 import { FlipClockMotionPreview } from "./clinical-clipboard/FlipClockMotionPreview"
 import { LeaderboardMotionPreview } from "./clinical-clipboard/LeaderboardMotionPreview"
@@ -9,183 +7,126 @@ import { AnalyticsMotionPreview } from "./clinical-clipboard/AnalyticsMotionPrev
 import { SyllabusMotionPreview } from "./clinical-clipboard/SyllabusMotionPreview"
 import { ThemesMotionPreview } from "./clinical-clipboard/ThemesMotionPreview"
 
-interface SheetItem {
+interface FeatureItem {
   number: string
+  tag: string
   title: string
   description: string
-  motionComponent: JSX.Element
-  nextCue: string
-}
-
-function NotepadCard({
-  sheet,
-  index,
-  total,
-}: {
-  sheet: SheetItem
-  index: number
-  total: number
-}) {
-  const { isDark } = useTheme()
-  const cardTrackRef = useRef<HTMLDivElement>(null)
-
-  // Track scroll through this card's section
-  const { scrollYProgress } = useScroll({
-    target: cardTrackRef,
-    offset: ["start start", "end start"],
-  })
-
-  // When the next card glides over this one, subtly scale down and dim
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.94])
-  const opacity = useTransform(scrollYProgress, [0, 0.85], [1, 0.5])
-  // Page curl / flip upwards around top spiral spring
-  const rotateX = useTransform(scrollYProgress, [0, 1], [0, -18])
-  const y = useTransform(scrollYProgress, [0, 1], [0, -28])
-
-  return (
-    <div
-      ref={cardTrackRef}
-      className={`relative w-full ${
-        index === total - 1 ? "min-h-[70vh] sm:min-h-[75vh]" : "min-h-[85vh] sm:min-h-[92vh]"
-      }`}
-      style={{ perspective: 1200 }}
-    >
-      <motion.div
-        style={{
-          scale,
-          opacity,
-          rotateX,
-          y,
-          zIndex: 10 + index,
-          transformOrigin: "top center",
-          transformStyle: "preserve-3d",
-        }}
-        className={`sticky top-24 sm:top-28 w-full max-w-lg mx-auto rounded-2xl p-6 sm:p-8 border shadow-xl overflow-hidden transition-colors ${
-          isDark
-            ? "bg-[#16171A] border-[#2A2B30] text-white shadow-[0_16px_40px_rgba(0,0,0,0.6)]"
-            : "bg-[#FCFAF5] border-[#E5DFD5] text-[#0F172A] shadow-[0_12px_36px_rgba(0,0,0,0.09)]"
-        }`}
-      >
-        {/* Paper Ruled Background Lines */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: isDark
-              ? "repeating-linear-gradient(transparent, transparent 31px, rgba(255,255,255,0.016) 31px, rgba(255,255,255,0.016) 32px)"
-              : "repeating-linear-gradient(transparent, transparent 31px, rgba(0,0,0,0.026) 31px, rgba(0,0,0,0.026) 32px)",
-          }}
-        />
-
-        {/* Doctor Pad Vertical Red/Amber Margin Line */}
-        <div className="absolute left-8 sm:left-12 top-0 bottom-0 w-[1px] bg-red-400/20 dark:bg-rose-500/[0.15] pointer-events-none" />
-
-        {/* Realistic Coiled Spiral Springs & Punched Tear Holes */}
-        <SpiralSpringBinding />
-
-        {/* Folio Text Content */}
-        <div className="text-center space-y-1.5 mb-3 relative z-10">
-          <span className="font-mono text-[10px] font-bold tracking-widest text-[var(--accent)] uppercase">
-            PAGE {sheet.number} OF 06
-          </span>
-          <h3 className="font-editorial text-2xl sm:text-3xl font-bold tracking-[-0.4px] leading-tight text-[var(--ink-foreground)]">
-            {sheet.title}
-          </h3>
-          <p className="text-xs sm:text-sm text-[var(--muted-text)] font-normal leading-relaxed max-w-md mx-auto pt-0.5">
-            {sheet.description}
-          </p>
-        </div>
-
-        {/* Hyper-Realistic Dedicated Motion Component */}
-        <div className="my-3 relative z-10">
-          {sheet.motionComponent}
-        </div>
-
-        {/* Bottom Folio Stamp & Peeking Hint */}
-        <div className="mt-4 pt-2 border-t border-black/[0.04] dark:border-white/[0.04] flex items-center justify-between text-[10px] font-mono tracking-widest text-[var(--muted-text)] opacity-50 relative z-10">
-          <span>{sheet.nextCue}</span>
-          <span>FOLIO {sheet.number} // 06</span>
-        </div>
-      </motion.div>
-    </div>
-  )
+  component: JSX.Element
 }
 
 export function FeaturesSection() {
-  const sheets: SheetItem[] = [
+  const { isDark } = useTheme()
+
+  const features: FeatureItem[] = [
     {
       number: "01",
-      title: "Tasks with Projects & Module-Based Tasks",
+      tag: "DAILY DESK",
+      title: "Daily Tasks & Module Projects",
       description:
-        "Modulix lets you plan daily tasks across individual to-dos and custom projects with subject and unit presets, keeping your daily study time clean, structured, and manageable.",
-      motionComponent: <TaskMotionPreview />,
-      nextCue: "↓ SCROLL DOWN FOR TIMER",
+        "Plan your study day with ink-strike checklists and subject-aligned project queues. The 5:00 AM rollover and 4-task cap prevent backlog overwhelm.",
+      component: <TaskMotionPreview />,
     },
     {
       number: "02",
-      title: "Focus & Pomodoro Timer",
+      tag: "DEEP WORK",
+      title: "Split-Flap Focus & Pomodoro Timer",
       description:
-        "A lively, highly personalized focus timer with dynamic backgrounds and ambient sounds. Features a science-backed Pomodoro mode and a distraction-free, fullscreen flip clock.",
-      motionComponent: <FlipClockMotionPreview />,
-      nextCue: "↓ SCROLL DOWN FOR LEADERBOARD",
+        "Tactile split-flap numbers and procedural audio. Integrated with Android Exact Alarms to wake deep Doze at the exact scheduled second.",
+      component: <FlipClockMotionPreview />,
     },
     {
       number: "03",
-      title: "Leaderboard",
+      tag: "COMMUNITY",
+      title: "Verified Study Leaderboard",
       description:
-        "Stay motivated alongside fellow medical aspirants. Track your study consistency and climb verified rankings across daily, weekly, monthly, and all-time leaderboards.",
-      motionComponent: <LeaderboardMotionPreview />,
-      nextCue: "↓ SCROLL DOWN FOR ANALYTICS",
+        "Compare consistency against fellow medical aspirants across daily, weekly, monthly, and all-time podiums with verified anti-tamper hours.",
+      component: <LeaderboardMotionPreview />,
     },
     {
       number: "04",
-      title: "Analytics",
+      tag: "INSIGHTS",
+      title: "Cognitive Analytics & Velocity",
       description:
-        "Gain clear insights into your study habits with detailed daily activity heatmaps, subject time distributions, velocity charts, and consistency streaks.",
-      motionComponent: <AnalyticsMotionPreview />,
-      nextCue: "↓ SCROLL DOWN FOR SYLLABUS",
+        "High-performance study analytics calculated directly inside on-device SQLite. Track subject distributions, pace, and revision streaks with zero cloud latency.",
+      component: <AnalyticsMotionPreview />,
     },
     {
       number: "05",
-      title: "Gold Standard Syllabus to Track",
+      tag: "CURRICULUM",
+      title: "19 MBBS Subjects Preloaded",
       description:
-        "Track your preparation, tasks, projects, and goals across a preloaded standard medical syllabus. No need to type every topic—we've got you covered with both latest and previous editions, including video lectures, Q-Banks, and clinical modules.",
-      motionComponent: <SyllabusMotionPreview />,
-      nextCue: "↓ SCROLL DOWN FOR THEMES",
+        "Complete medical syllabus structured across Marrow Editions 6.5 and 8. Pre-indexed video lectures, Q-Banks, and clinical notes with zero manual data entry.",
+      component: <SyllabusMotionPreview />,
     },
     {
       number: "06",
-      title: "Themes",
+      tag: "AESTHETICS",
+      title: "Theme Studio & Clinical Palettes",
       description:
-        "Bored with standard light and dark modes? Modulix features an advanced Theme Studio with cool, curated palettes tailored for comfortable daytime study and late-night hospital shifts.",
-      motionComponent: <ThemesMotionPreview />,
-      nextCue: "↓ SCROLL DOWN FOR THEME SHOWCASE",
+        "Calibrated color systems engineered for long study marathons: high-contrast Daybreak for bright libraries and deep Midnight for late-night hospital shifts.",
+      component: <ThemesMotionPreview />,
     },
   ]
 
   return (
-    <section className="py-14 border-t border-[var(--border-subtle)] select-none">
+    <section className="py-16 sm:py-24 border-t border-[var(--border-subtle)] select-none">
       {/* ── Section Title ── */}
-      <div className="mb-14 text-center max-w-xl mx-auto space-y-2">
+      <div className="mb-14 text-center max-w-xl mx-auto space-y-2 px-4">
         <span className="font-mono text-[10px] tracking-widest text-[var(--accent)] font-semibold uppercase">
-          CURATED CLINICAL SUITE
+          CLINICAL ARCHITECTURE
         </span>
-        <h2 className="font-editorial text-3xl sm:text-4xl font-bold tracking-tight text-[var(--ink-foreground)]">
-          Clinical Architecture
+        <h2 className="font-editorial text-3xl sm:text-5xl font-bold tracking-tight text-[var(--ink-foreground)]">
+          Core Systems & Capabilities
         </h2>
-        <p className="text-xs sm:text-sm text-[var(--muted-text)] font-medium">
-          Traditional rounding memo pad sheets stacked in continuous vertical study flow.
+        <p className="text-xs sm:text-sm text-[var(--muted-text)] font-medium max-w-md mx-auto">
+          Minimalist, offline-first tools engineered with clinical precision for medical school and residency.
         </p>
       </div>
 
-      {/* ── Vertical Stacking Notepad Track ── */}
-      <div className="relative w-full max-w-lg mx-auto">
-        {sheets.map((sheet, index) => (
-          <NotepadCard
-            key={sheet.number}
-            sheet={sheet}
-            index={index}
-            total={sheets.length}
-          />
+      {/* ── Responsive Luxury Editorial Grid ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+        {features.map((feat, idx) => (
+          <motion.div
+            key={feat.number}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.4, delay: idx * 0.06 }}
+            className={`rounded-2xl border p-6 sm:p-7 flex flex-col justify-between transition-all duration-200 ${
+              isDark
+                ? "bg-[#141518] border-white/[0.08] hover:border-white/[0.18] shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
+                : "bg-white border-[#E7E3D8] hover:border-[#D5CFBF] shadow-[0_4px_20px_rgba(0,0,0,0.03)]"
+            }`}
+          >
+            {/* Header: Tag + Title + Description */}
+            <div className="space-y-2 mb-5">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[10px] font-bold tracking-widest text-[var(--accent)] uppercase">
+                  {feat.number} · {feat.tag}
+                </span>
+              </div>
+              <h3 className="font-editorial text-2xl sm:text-3xl font-bold tracking-[-0.3px] text-[var(--ink-foreground)]">
+                {feat.title}
+              </h3>
+              <p className="text-xs sm:text-sm text-[var(--muted-text)] font-normal leading-relaxed pt-0.5">
+                {feat.description}
+              </p>
+            </div>
+
+            {/* Live Interactive Preview Container */}
+            <div
+              className={`w-full rounded-xl border p-4 sm:p-5 flex items-center justify-center overflow-hidden ${
+                isDark
+                  ? "bg-[#0E0F12] border-white/[0.06]"
+                  : "bg-[#FAF7F0] border-[#ECE7DA]"
+              }`}
+            >
+              <div className="w-full flex items-center justify-center">
+                {feat.component}
+              </div>
+            </div>
+          </motion.div>
         ))}
       </div>
     </section>

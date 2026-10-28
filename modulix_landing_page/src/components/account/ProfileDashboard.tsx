@@ -94,18 +94,18 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header with User Info */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--border-subtle)]">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[var(--accent-subtle)] text-[var(--accent)] flex items-center justify-center font-bold text-sm">
+    <div className="space-y-8 select-none">
+      {/* ── Header with Doctor Profile Alias & Sign Out ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[var(--border-subtle)]">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-[var(--surface-subtle)] border border-[var(--border-subtle)] text-[var(--accent)] flex items-center justify-center font-editorial font-bold text-xl shadow-sm">
             Dr
           </div>
           <div>
-            <div className="font-semibold text-sm text-[var(--ink-foreground)]">
+            <div className="font-editorial text-xl font-bold text-[var(--ink-foreground)]">
               {doctorName ? `Dr. ${doctorName}` : user.email}
             </div>
-            <div className="text-xs text-[var(--muted-text)]">{user.email}</div>
+            <div className="text-xs text-[var(--muted-text)] font-mono">{user.email}</div>
           </div>
         </div>
 
@@ -114,22 +114,24 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
             await signOut()
             onSignedOut()
           }}
-          className="self-start sm:self-center px-3 py-1.5 rounded-lg border border-[var(--border-subtle)] text-xs text-[var(--muted-text)] hover:text-rose-600 flex items-center gap-1.5"
+          className="self-start sm:self-center px-3.5 py-2 rounded-xl border border-[var(--border-subtle)] text-xs font-semibold text-[var(--muted-text)] hover:text-rose-600 flex items-center gap-1.5 transition-colors shadow-sm"
         >
           <LogOut size={13} />
           <span>Sign Out</span>
         </ApplePressable>
       </div>
 
-      {/* Profile Form */}
-      <div className="space-y-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-text)]">
-          Profile & Personalization
-        </h3>
+      {/* ── Profile Configuration Form ── */}
+      <div className="space-y-5">
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-[10px] font-bold tracking-widest text-[var(--accent)] uppercase">
+            PROFILE ALIASES & IDENTITY
+          </span>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-medium text-[var(--ink-foreground)] mb-1">
+            <label className="block text-xs font-semibold text-[var(--ink-foreground)] mb-1.5">
               Doctor Title / Surname
             </label>
             <input
@@ -137,12 +139,12 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
               value={doctorName}
               onChange={(e) => setDoctorName(e.target.value)}
               placeholder="e.g. Safi"
-              className="w-full px-3 py-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--card-bg)] text-xs text-[var(--ink-foreground)] focus:outline-none focus:border-[var(--accent)]"
+              className="w-full px-4 py-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-subtle)] focus:bg-[var(--card-bg)] text-xs sm:text-sm text-[var(--ink-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)] transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[var(--ink-foreground)] mb-1">
+            <label className="block text-xs font-semibold text-[var(--ink-foreground)] mb-1.5">
               Public Alias (Leaderboard)
             </label>
             <input
@@ -150,24 +152,24 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="e.g. NeuroIntern"
-              className="w-full px-3 py-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--card-bg)] text-xs text-[var(--ink-foreground)] focus:outline-none focus:border-[var(--accent)]"
+              className="w-full px-4 py-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-subtle)] focus:bg-[var(--card-bg)] text-xs sm:text-sm text-[var(--ink-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)] transition-all"
             />
           </div>
         </div>
 
         {/* Leaderboard Visibility Switch */}
-        <div className="p-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-subtle)] flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+        <div className="p-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-subtle)] flex items-center justify-between">
+          <div className="flex items-center gap-3">
             {leaderboardVisible ? (
-              <Eye size={16} className="text-[var(--accent)]" />
+              <Eye size={18} className="text-[var(--accent)]" />
             ) : (
-              <EyeOff size={16} className="text-[var(--muted-text)]" />
+              <EyeOff size={18} className="text-[var(--muted-text)]" />
             )}
             <div>
               <div className="text-xs font-semibold text-[var(--ink-foreground)]">
                 Community Leaderboard Visibility
               </div>
-              <div className="text-[11px] text-[var(--muted-text)]">
+              <div className="text-[11px] text-[var(--muted-text)] mt-0.5">
                 {leaderboardVisible
                   ? "Your study hours are displayed on competitive leaderboards."
                   : "Your study hours are strictly private and hidden."}
@@ -191,18 +193,18 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
         </div>
 
         {saveError && (
-          <div className="p-2.5 rounded-lg text-xs bg-rose-500/10 border border-rose-500/20 text-rose-600">
+          <div className="p-3 rounded-xl text-xs bg-rose-500/10 border border-rose-500/20 text-rose-600 leading-relaxed">
             {saveError}
           </div>
         )}
 
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-1">
           <ApplePressable
             onClick={handleSaveProfile}
             disabled={saving}
-            className="px-4 py-2 rounded-lg bg-[var(--accent)] text-white text-xs font-semibold flex items-center gap-1.5"
+            className="px-5 py-2.5 rounded-xl bg-[var(--accent)] text-white text-xs font-semibold flex items-center gap-2 shadow-sm"
           >
-            {saveSuccess ? <Check size={13} /> : <Save size={13} />}
+            {saveSuccess ? <Check size={14} /> : <Save size={14} />}
             <span>{saving ? "Saving..." : saveSuccess ? "Saved Successfully" : "Save Changes"}</span>
           </ApplePressable>
         </div>
@@ -210,28 +212,28 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
 
       <HairlineDivider />
 
-      {/* Cloud Study Aggregates */}
+      {/* ── Cloud Study Aggregates (Editorial Stat Chips) ── */}
       {profile && (
-        <div className="space-y-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-text)]">
-            Cloud Study Metrics
-          </h3>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="p-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--card-bg)]">
-              <div className="text-[11px] text-[var(--muted-text)]">Today</div>
-              <div className="text-sm font-semibold text-[var(--ink-foreground)] mt-0.5">
+        <div className="space-y-4">
+          <span className="font-mono text-[10px] font-bold tracking-widest text-[var(--accent)] uppercase">
+            CLOUD STUDY METRICS
+          </span>
+          <div className="grid grid-cols-3 gap-3 sm:gap-4">
+            <div className="p-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--card-bg)] text-center shadow-sm">
+              <div className="font-mono text-[10px] uppercase tracking-wider text-[var(--muted-text)]">Today</div>
+              <div className="font-editorial text-2xl sm:text-3xl font-bold text-[var(--ink-foreground)] mt-1">
                 {formatHours(profile.daily_study_secs || 0)}
               </div>
             </div>
-            <div className="p-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--card-bg)]">
-              <div className="text-[11px] text-[var(--muted-text)]">This Week</div>
-              <div className="text-sm font-semibold text-[var(--ink-foreground)] mt-0.5">
+            <div className="p-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--card-bg)] text-center shadow-sm">
+              <div className="font-mono text-[10px] uppercase tracking-wider text-[var(--muted-text)]">This Week</div>
+              <div className="font-editorial text-2xl sm:text-3xl font-bold text-[var(--ink-foreground)] mt-1">
                 {formatHours(profile.weekly_study_secs || 0)}
               </div>
             </div>
-            <div className="p-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--card-bg)]">
-              <div className="text-[11px] text-[var(--muted-text)]">All-Time</div>
-              <div className="text-sm font-semibold text-[var(--ink-foreground)] mt-0.5">
+            <div className="p-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--card-bg)] text-center shadow-sm">
+              <div className="font-mono text-[10px] uppercase tracking-wider text-[var(--muted-text)]">All-Time</div>
+              <div className="font-editorial text-2xl sm:text-3xl font-bold text-[var(--ink-foreground)] mt-1">
                 {formatHours(profile.total_study_secs || 0)}
               </div>
             </div>
@@ -241,51 +243,51 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
 
       <HairlineDivider />
 
-      {/* GDPR Data Portability & Account Deletion */}
+      {/* ── GDPR Data Portability & Account Erasure ── */}
       <div className="space-y-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-text)]">
-          Data Management & Account Deletion
-        </h3>
+        <span className="font-mono text-[10px] font-bold tracking-widest text-[var(--muted-text)] uppercase">
+          DATA MANAGEMENT & PRIVACY
+        </span>
 
         {exportError && (
-          <div className="p-2.5 rounded-lg text-xs bg-rose-500/10 border border-rose-500/20 text-rose-600">
+          <div className="p-3 rounded-xl text-xs bg-rose-500/10 border border-rose-500/20 text-rose-600">
             {exportError}
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--card-bg)]">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--card-bg)] shadow-sm">
           <div>
-            <div className="text-xs font-semibold text-[var(--ink-foreground)]">
-              Export All Study Data (GDPR Portability)
+            <div className="text-xs sm:text-sm font-semibold text-[var(--ink-foreground)]">
+              Export Study Archive (GDPR Portability)
             </div>
-            <div className="text-[11px] text-[var(--muted-text)]">
-              Download a complete JSON archive of all your cloud-synced study milestones.
+            <div className="text-xs text-[var(--muted-text)] mt-0.5">
+              Download complete JSON archive of all cloud study milestones and logs.
             </div>
           </div>
           <ApplePressable
             onClick={handleExportData}
             disabled={exporting}
-            className="px-3.5 py-2 rounded-lg border border-[var(--border-subtle)] text-xs font-semibold text-[var(--ink-foreground)] flex items-center justify-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl border border-[var(--border-subtle)] text-xs font-semibold text-[var(--ink-foreground)] flex items-center justify-center gap-1.5 shadow-sm"
           >
-            <Download size={13} />
-            <span>{exporting ? "Generating JSON..." : "Download JSON Archive"}</span>
+            <Download size={14} />
+            <span>{exporting ? "Generating JSON..." : "Download Archive"}</span>
           </ApplePressable>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 rounded-xl border border-rose-500/20 bg-rose-500/5">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-5 rounded-2xl border border-rose-500/20 bg-rose-500/5">
           <div>
-            <div className="text-xs font-semibold text-rose-600">
+            <div className="text-xs sm:text-sm font-semibold text-rose-600">
               Permanently Delete Modulix Account
             </div>
-            <div className="text-[11px] text-[var(--muted-text)]">
-              Purges profile, syllabus milestones, and focus records from Supabase.
+            <div className="text-xs text-[var(--muted-text)] mt-0.5">
+              Permanently purges profile, syllabus milestones, and focus records from cloud.
             </div>
           </div>
           <ApplePressable
             onClick={() => setDeleteDialogOpen(true)}
-            className="px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm"
           >
-            <Trash2 size={13} />
+            <Trash2 size={14} />
             <span>Delete Account</span>
           </ApplePressable>
         </div>

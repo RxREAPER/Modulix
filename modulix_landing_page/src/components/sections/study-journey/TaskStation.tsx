@@ -12,7 +12,7 @@ export function TaskStation({ isActive }: StationProps) {
   const [typedText, setTypedText] = useState("")
   const [isCompleted, setIsCompleted] = useState(false)
 
-  const fullText = "Robbins Pathology · Neoplasia"
+  const fullText = "General Pathology · Neoplasia"
 
   useEffect(() => {
     if (!isActive) {

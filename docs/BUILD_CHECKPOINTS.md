@@ -24,6 +24,31 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-114]` — Adaptation of All Screens and Sub-Pages to Minimalist Luxury Editorial Aesthetic
+- **Category:** `web/ui/editorial/adaptation`
+- **Files Modified:**
+  - `modulix_landing_page/src/components/sections/FeaturesSection.tsx` (purged 500vh spiral notepad skeuomorphism; rebuilt into 2-column luxury editorial architecture grid)
+  - `modulix_landing_page/src/components/sections/clinical-clipboard/TaskMotionPreview.tsx` (eliminated Robbins text; updated to General Pathology)
+  - `modulix_landing_page/src/components/sections/study-journey/TaskStation.tsx` (eliminated Robbins text; updated to General Pathology)
+  - `modulix_landing_page/src/components/sections/EcosystemSection.tsx` (added 3 architecture pillar cards, refined hairline styling and tactile ApplePressable buttons)
+  - `modulix_landing_page/src/components/account/AccountPortalView.tsx` (animated capsule tab switcher, hairline borders, editorial header)
+  - `modulix_landing_page/src/components/account/AuthGate.tsx` (modernized Google and Magic Email form with luxury inputs and ApplePressable)
+  - `modulix_landing_page/src/components/account/ProfileDashboard.tsx` (serif Dr monogram avatar, refined inputs, and 3 luxury editorial stat chips)
+  - `modulix_landing_page/src/components/account/ManualDeleteForm.tsx` (translucent alert, monospace inputs, destructive ApplePressable submit button)
+  - `modulix_landing_page/src/components/account/AccountDeletionDialog.tsx` (serif title, hairline inputs, refined confirmation modal)
+  - `modulix_landing_page/src/components/privacy/PrivacyView.tsx` (editorial serif headings, monospace regulatory metadata, and hairline Supabase table card)
+  - `modulix_landing_page/src/components/privacy/TermsView.tsx` (editorial typography, amber disclaimer callout, comfortable reading margins)
+  - `modulix_landing_page/src/components/updates/ChangelogView.tsx` (structured release timeline cards with glowing latest-release nodes and monospace pills)
+  - `modulix_landing_page/src/components/updates/SupportSection.tsx` (airy 2-column FAQ cards with 0.6px hairline borders and GitHub triage banner)
+- **Summary:**
+  - Adapted all remaining pages and sub-screens (`#/account`, `#/updates`, `#/privacy`, `#/terms`, Features, and Ecosystem) to the Switch-Lit / Apple / Linear luxury editorial design system.
+  - Eliminated box fatigue, heavy borders, and skeuomorphic coil bindings.
+  - Cleaned all references to "Robbins Pathology" across the entire codebase.
+- **Verification:**
+  - `bun run lint`: 0 errors, 0 warnings.
+  - `bun run build`: Built production bundle cleanly in 19.62s.
+- **Build Status:** ✅ Verified & Live
+
 ### 🔖 `[CKPT-113]` — Comprehensive Bug & UI Hunt Hardening (Landing Page & Flutter Core)
 - **Category:** `hardening` / `ui` / `types` / `defensive`
 - **Files Modified:**

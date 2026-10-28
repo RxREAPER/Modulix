@@ -47,10 +47,10 @@ export function ManualDeleteForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 text-amber-900 dark:text-amber-200 text-xs leading-relaxed">
-        <div className="flex items-start gap-2">
+        <div className="flex items-start gap-2.5">
           <AlertTriangle size={16} className="text-amber-500 shrink-0 mt-0.5" />
           <span>
-            Google Play Account Deletion Portal: If you uninstalled the app or lost access to your device, you can request full erasure of your cloud account using this form.
+            Google Play Account Erasure: If you uninstalled the app or lost access to your device, you can request full erasure of your cloud account using this form.
           </span>
         </div>
       </div>
@@ -64,8 +64,8 @@ export function ManualDeleteForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="doctor@example.com"
-          className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--card-bg)] text-xs text-[var(--ink-foreground)] focus:outline-none focus:border-[var(--accent)]"
+          placeholder="doctor@hospital.edu"
+          className="w-full px-4 py-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-subtle)] focus:bg-[var(--card-bg)] text-xs sm:text-sm text-[var(--ink-foreground)] focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all font-mono"
         />
       </div>
 
@@ -74,21 +74,21 @@ export function ManualDeleteForm() {
           Additional Notes (Optional)
         </label>
         <textarea
-          rows={2}
+          rows={3}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="e.g. Please purge all synced time logs and daily tasks."
-          className="w-full px-3.5 py-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--card-bg)] text-xs text-[var(--ink-foreground)] focus:outline-none focus:border-[var(--accent)] resize-none"
+          placeholder="e.g. Please purge all synced time logs and daily tasks from Supabase."
+          className="w-full px-4 py-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-subtle)] focus:bg-[var(--card-bg)] text-xs sm:text-sm text-[var(--ink-foreground)] focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all resize-none"
         />
       </div>
 
       <ApplePressable
         type="submit"
         disabled={submitting || !email}
-        className="w-full py-2.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5"
+        className="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm"
       >
-        <Trash2 size={13} />
-        <span>{submitting ? "Submitting Request..." : "Submit Account Deletion Request"}</span>
+        <Trash2 size={14} />
+        <span>{submitting ? "Submitting Request..." : "Submit Account Erasure Request"}</span>
       </ApplePressable>
     </form>
   )
