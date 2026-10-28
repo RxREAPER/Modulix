@@ -43,3 +43,47 @@ class PendingSyncCountNotifier extends StateNotifier<int> {
     super.dispose();
   }
 }
+
+final lastSyncedAtProvider =
+    StateNotifierProvider<LastSyncedAtNotifier, DateTime?>((ref) {
+  return LastSyncedAtNotifier();
+});
+
+class LastSyncedAtNotifier extends StateNotifier<DateTime?> {
+  LastSyncedAtNotifier() : super(SyncService.instance.lastSyncedAtNotifier.value) {
+    SyncService.instance.lastSyncedAtNotifier.addListener(_onChanged);
+  }
+
+  void _onChanged() {
+    state = SyncService.instance.lastSyncedAtNotifier.value;
+  }
+
+  @override
+  void dispose() {
+    SyncService.instance.lastSyncedAtNotifier.removeListener(_onChanged);
+    super.dispose();
+  }
+}
+
+final isRealtimeActiveProvider =
+    StateNotifierProvider<IsRealtimeActiveNotifier, bool>((ref) {
+  return IsRealtimeActiveNotifier();
+});
+
+class IsRealtimeActiveNotifier extends StateNotifier<bool> {
+  IsRealtimeActiveNotifier()
+      : super(SyncService.instance.realtimeStatusNotifier.value) {
+    SyncService.instance.realtimeStatusNotifier.addListener(_onChanged);
+  }
+
+  void _onChanged() {
+    state = SyncService.instance.realtimeStatusNotifier.value;
+  }
+
+  @override
+  void dispose() {
+    SyncService.instance.realtimeStatusNotifier.removeListener(_onChanged);
+    super.dispose();
+  }
+}
+

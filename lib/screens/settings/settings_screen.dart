@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,9 +8,11 @@ import '../../providers/app_state_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/modulix_theme.dart';
 import '../../widgets/profile/profile_customization.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show User;
 import 'data_privacy_sheet.dart';
 import 'about_support_sheet.dart';
 import 'learn_the_app_sheet.dart';
+import 'sync_diagnostics_sheet.dart';
 import '../../services/auth_service.dart';
 import '../../services/sync_service.dart';
 import '../../providers/auth_provider.dart';
@@ -615,183 +618,24 @@ class _CloudCommunityGroup extends ConsumerWidget {
     final notifier = ref.read(appStateProvider.notifier);
 
     final isAuthenticated = ref.watch(isAuthenticatedProvider);
+    final user = ref.watch(currentUserProvider);
     final syncStatus = ref.watch(syncStatusProvider);
     final pendingCount = ref.watch(pendingSyncCountProvider);
-
-    // Compute status info
-    final IconData syncIcon;
-    final Color syncIconColor;
-    final String syncSubtitle;
-
-    if (isAuthenticated) {
-      if (syncStatus == SyncStatus.syncing) {
-        syncIcon = Icons.cloud_sync_rounded;
-        syncIconColor = AppTheme.accentPrimary;
-        syncSubtitle = 'Syncing study sessions...';
-      } else if (pendingCount > 0) {
-        syncIcon = Icons.cloud_upload_outlined;
-        syncIconColor = const Color(0xFFF59E0B);
-        syncSubtitle = '$pendingCount sessions waiting backup';
-      } else {
-        syncIcon = Icons.cloud_done_rounded;
-        syncIconColor = AppTheme.accentEmerald;
-        syncSubtitle = 'All study sessions backed up';
-      }
-    } else {
-      syncIcon = Icons.cloud_off_rounded;
-      syncIconColor = AppTheme.mutedText;
-      syncSubtitle = pendingCount > 0
-          ? '$pendingCount sessions stored locally'
-          : 'Guest Mode · Stored locally';
-    }
+    final isRealtime = ref.watch(isRealtimeActiveProvider);
+    final lastSyncedAt = ref.watch(lastSyncedAtProvider);
 
     return _InsetGroupContainer(
       children: [
-        // 1. Cloud Backup
-        _SettingsItemRow(
-          leading: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: syncIconColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(syncIcon, color: syncIconColor, size: 20),
-          ),
-          title: 'Cloud Backup',
-          subtitle: syncSubtitle,
-          trailing: isAuthenticated
-              ? (syncStatus == SyncStatus.syncing
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ApplePressable(
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            SyncService.instance.syncFull(ref);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 9, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: AppTheme.accentPrimary.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: AppTheme.accentPrimary.withValues(alpha: 0.3),
-                                width: 0.8,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.sync_rounded,
-                                  size: 12,
-                                  color: AppTheme.accentPrimary,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  pendingCount > 0
-                                      ? 'Back Up ($pendingCount)'
-                                      : 'Sync Now',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppTheme.accentPrimary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        ApplePressable(
-                          onTap: () async {
-                            final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (ctx) => AlertDialog(
-                                backgroundColor: AppTheme.cardWhite,
-                                title: Text('Sign Out',
-                                    style: AppTypography.dialogTitle(fontSize: 18.0)),
-                                content: Text(
-                                  'Your study progress will remain safely on this device and in the cloud.',
-                                  style: AppTypography.dialogBody(fontSize: 13.5),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(ctx, false),
-                                    child: Text('Cancel',
-                                        style: AppTypography.buttonLabel(
-                                            fontSize: 13.0, color: AppTheme.mutedText)),
-                                  ),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.redAccent,
-                                      foregroundColor: Colors.white,
-                                    ),
-                                    onPressed: () => Navigator.pop(ctx, true),
-                                    child: Text('Sign Out',
-                                        style: AppTypography.buttonLabel(
-                                            fontSize: 13.0, color: Colors.white)),
-                                  ),
-                                ],
-                              ),
-                            );
-                            if (confirm == true) {
-                              await AuthService.instance.signOut();
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 9, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: Colors.red.withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Text(
-                              'Sign Out',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.redAccent,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ))
-              : ApplePressable(
-                  onTap: () => context.push('/settings/auth'),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: AppTheme.accentPrimary,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'Sign In',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.onAccent,
-                      ),
-                    ),
-                  ),
-                ),
-          onTap: () {
-            if (isAuthenticated) {
-              SyncService.instance.syncFull(ref);
-            } else {
-              context.push('/settings/auth');
-            }
-          },
-        ),
+        if (isAuthenticated && user != null)
+          _AuthenticatedAccountCard(
+            user: user,
+            syncStatus: syncStatus,
+            pendingCount: pendingCount,
+            isRealtime: isRealtime,
+            lastSyncedAt: lastSyncedAt,
+          )
+        else
+          const _GuestAccountCard(),
         _groupDivider(),
         // 2. Leaderboard Toggle
         _SettingsItemRow(
@@ -1020,3 +864,508 @@ class _ResourcesGroup extends StatelessWidget {
     );
   }
 }
+
+// ── Authenticated Account & Cloud Sync Card ─────────────────────────────────
+class _AuthenticatedAccountCard extends ConsumerWidget {
+  final User user;
+  final SyncStatus syncStatus;
+  final int pendingCount;
+  final bool isRealtime;
+  final DateTime? lastSyncedAt;
+
+  const _AuthenticatedAccountCard({
+    required this.user,
+    required this.syncStatus,
+    required this.pendingCount,
+    required this.isRealtime,
+    required this.lastSyncedAt,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final activeTheme = context.modulixTheme;
+    final email = user.email ?? 'Authenticated Account';
+    final provider =
+        user.appMetadata['provider']?.toString().toLowerCase() ?? 'google';
+    final isGoogle = provider == 'google';
+
+    final Color statusColor;
+    final String statusLabel;
+
+    if (isRealtime) {
+      statusColor = const Color(0xFF059669);
+      statusLabel = 'Realtime Interlinked';
+    } else if (syncStatus == SyncStatus.syncing) {
+      statusColor = AppTheme.accentPrimary;
+      statusLabel = 'Syncing...';
+    } else if (syncStatus == SyncStatus.offline) {
+      statusColor = const Color(0xFFD97706);
+      statusLabel = 'Offline Mode';
+    } else {
+      statusColor = const Color(0xFF059669);
+      statusLabel = 'Cloud Connected';
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1. Identity Header Row
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: isGoogle
+                      ? const Color(0xFF4285F4).withValues(alpha: 0.12)
+                      : AppTheme.accentPrimary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isGoogle
+                        ? const Color(0xFF4285F4).withValues(alpha: 0.3)
+                        : AppTheme.accentPrimary.withValues(alpha: 0.3),
+                    width: 1.0,
+                  ),
+                ),
+                child: Icon(
+                  isGoogle
+                      ? Icons.account_circle_rounded
+                      : Icons.alternate_email_rounded,
+                  color:
+                      isGoogle ? const Color(0xFF1A73E8) : AppTheme.accentPrimary,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      email,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w700,
+                        color: activeTheme.inkForeground,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${isGoogle ? 'Google Account' : 'Email OTP'} · ID: ${user.id.substring(0, math.min(8, user.id.length))}',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                        color: activeTheme.mutedText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                      color: statusColor.withValues(alpha: 0.3), width: 0.8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: statusColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      statusLabel,
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        color: statusColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
+          // 2. Telemetry Quick Grid
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: activeTheme.surfaceSubtle,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: activeTheme.borderSubtle, width: 0.8),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _TelemetryMiniItem(
+                  label: 'LAST SYNCED',
+                  value: _formatRelativeTime(lastSyncedAt),
+                  theme: activeTheme,
+                ),
+                Container(
+                  width: 1,
+                  height: 22,
+                  color: activeTheme.borderSubtle,
+                ),
+                _TelemetryMiniItem(
+                  label: 'OUTBOX QUEUE',
+                  value:
+                      pendingCount == 0 ? 'Clean (0)' : '$pendingCount queued',
+                  valueColor: pendingCount == 0
+                      ? const Color(0xFF059669)
+                      : const Color(0xFFD97706),
+                  theme: activeTheme,
+                ),
+                Container(
+                  width: 1,
+                  height: 22,
+                  color: activeTheme.borderSubtle,
+                ),
+                ApplePressable(
+                  onTap: () => SyncDiagnosticsSheet.show(context),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Diagnostics',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.accentPrimary,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        size: 14,
+                        color: AppTheme.accentPrimary,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // 3. Action Buttons
+          Row(
+            children: [
+              Expanded(
+                child: ApplePressable(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    SyncService.instance.syncFull(ref);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentPrimary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: AppTheme.accentPrimary.withValues(alpha: 0.3),
+                        width: 0.8,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (syncStatus == SyncStatus.syncing)
+                          const SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: CircularProgressIndicator(strokeWidth: 1.8),
+                          )
+                        else
+                          Icon(
+                            Icons.sync_rounded,
+                            size: 14,
+                            color: AppTheme.accentPrimary,
+                          ),
+                        const SizedBox(width: 6),
+                        Text(
+                          pendingCount > 0
+                              ? 'Sync Outbox ($pendingCount)'
+                              : 'Sync Now',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.accentPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              ApplePressable(
+                onTap: () => SyncDiagnosticsSheet.show(context),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: activeTheme.surfaceSubtle,
+                    borderRadius: BorderRadius.circular(10),
+                    border:
+                        Border.all(color: activeTheme.borderSubtle, width: 0.8),
+                  ),
+                  child: Icon(
+                    Icons.tune_rounded,
+                    size: 15,
+                    color: activeTheme.inkForeground,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              ApplePressable(
+                onTap: () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      backgroundColor: AppTheme.cardWhite,
+                      title: Text('Sign Out',
+                          style: AppTypography.dialogTitle(fontSize: 18.0)),
+                      content: Text(
+                        'Your study progress will remain safely on this device and in the cloud.',
+                        style: AppTypography.dialogBody(fontSize: 13.5),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: Text('Cancel',
+                              style: AppTypography.buttonLabel(
+                                  fontSize: 13.0, color: AppTheme.mutedText)),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.redAccent,
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: Text('Sign Out',
+                              style: AppTypography.buttonLabel(
+                                  fontSize: 13.0, color: Colors.white)),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirm == true) {
+                    await AuthService.instance.signOut();
+                  }
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Text(
+                    'Sign Out',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.redAccent,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatRelativeTime(DateTime? dt) {
+    if (dt == null) return 'Never';
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+    if (diff.inSeconds < 45) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${dt.day}/${dt.month}';
+  }
+}
+
+// ── Guest Account & Offline Sync Card ───────────────────────────────────────
+class _GuestAccountCard extends StatelessWidget {
+  const _GuestAccountCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final activeTheme = context.modulixTheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppTheme.accentPrimary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.accentPrimary.withValues(alpha: 0.25),
+                    width: 1.0,
+                  ),
+                ),
+                child: Icon(
+                  Icons.cloud_off_rounded,
+                  color: AppTheme.accentPrimary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Guest Account · Local Storage',
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w700,
+                        color: activeTheme.inkForeground,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Saved on device · Not synced to cloud',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                        color: activeTheme.mutedText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Your study progress is saved only on this phone. Sign in with Google to enable real-time cross-device sync with the web portal and protect your study history.',
+            style: TextStyle(
+              fontSize: 12.0,
+              height: 1.4,
+              color: activeTheme.mutedText,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: ApplePressable(
+                  onTap: () => context.push('/settings/auth'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 9),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentPrimary,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      'Sign In with Google / Email',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.onAccent,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              ApplePressable(
+                onTap: () => SyncDiagnosticsSheet.show(context),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                  decoration: BoxDecoration(
+                    color: activeTheme.surfaceSubtle,
+                    borderRadius: BorderRadius.circular(10),
+                    border:
+                        Border.all(color: activeTheme.borderSubtle, width: 0.8),
+                  ),
+                  child: Text(
+                    'Diagnostics',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: activeTheme.inkForeground,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Mini Telemetry Pill Widget ──────────────────────────────────────────────
+class _TelemetryMiniItem extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color? valueColor;
+  final ModulixThemeExtension theme;
+
+  const _TelemetryMiniItem({
+    required this.label,
+    required this.value,
+    this.valueColor,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 9.0,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.6,
+            color: theme.mutedText,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 11.5,
+            fontWeight: FontWeight.w700,
+            color: valueColor ?? theme.inkForeground,
+          ),
+        ),
+      ],
+    );
+  }
+}
+

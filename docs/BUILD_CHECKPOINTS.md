@@ -46,6 +46,26 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-126]` — Account Identity & Cloud Sync Diagnostics Suite in Settings
+- **Category:** `settings` / `sync` / `account` / `diagnostics` / `ui`
+- **Files Modified:**
+  - `lib/screens/settings/settings_screen.dart`
+  - `lib/screens/settings/sync_diagnostics_sheet.dart`
+  - `lib/services/sync_service.dart`
+  - `lib/providers/sync_provider.dart`
+- **Summary:**
+  - **Account & Cloud Sync Card:** Replaced the uninformative single "Cloud Backup" row with a dedicated account card.
+    - **Authenticated State:** Displays user email (e.g. `flowmd04@gmail.com`), auth provider badge ("Google Account" or "Email OTP"), user ID slug, and live status indicator ("Realtime Interlinked" with pulsing green beacon or "Cloud Connected").
+    - **Telemetry Strip:** Shows relative last synced timestamp ("Just now", "2m ago"), durable SQLite outbox queue depth ("Clean (0)" or "$N queued"), and direct diagnostics link.
+    - **Tactile Actions:** "Sync Now" with active loading spinner, "Diagnostics" inspection button, and clean "Sign Out" confirmation.
+    - **Guest Mode:** Clean, non-intrusive card explaining local storage safety and the benefits of Google sign-in for real-time web portal sync and leaderboard ranking, with a prominent "Sign In" button.
+  - **Cloud Sync Diagnostics Sheet (`SyncDiagnosticsSheet`):** Added a modal diagnostics inspector displaying live roundtrip latency to Supabase cloud, Supabase Realtime WebSocket status, SQLite outbox queue depth, local vs cloud study logs count, authoritative "Force Full Cloud Parity Sync" trigger, and one-tap web portal link copy.
+  - **Reactive Telemetry Notifiers:** Added `lastSyncedAtNotifier` and `realtimeStatusNotifier` to `SyncService` and mapped them to Riverpod providers `lastSyncedAtProvider` and `isRealtimeActiveProvider`.
+- **Verification:** `flutter analyze` 0 issues, `flutter test test/sync_service_test.dart test/cloud_sync_resilience_test.dart` 27/27 green (100%).
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### 🔖 `[CKPT-125]` — Durable SQLite Outbox Pattern (Linear Standard) & Delta Cursors for Study Editions
 - **Category:** `sync` / `sqlite` / `outbox` / `offline` / `optimization`
 - **Files Modified:**

@@ -51,15 +51,37 @@ class SyncService {
   final ValueNotifier<int> pendingSyncCountNotifier = ValueNotifier<int>(0);
   int get pendingSyncCount => pendingSyncCountNotifier.value;
 
+  final ValueNotifier<DateTime?> lastSyncedAtNotifier =
+      ValueNotifier<DateTime?>(null);
+
+  final ValueNotifier<bool> realtimeStatusNotifier =
+      ValueNotifier<bool>(false);
+
   DateTime? lastSyncedAt;
   Timer? _debounceTimer;
   bool _isSyncing = false;
+
+  /// Probes roundtrip latency to Supabase in milliseconds
+  Future<int?> probeLatency() async {
+    try {
+      final sw = Stopwatch()..start();
+      final ok = await NetworkResilienceService.instance.checkConnectivity();
+      sw.stop();
+      return ok ? sw.elapsedMilliseconds : null;
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// Recalculates the number of local items pending upload to cloud
   Future<void> refreshPendingCount() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final lastSyncMillis = prefs.getInt('modulix_last_synced_at_v1') ?? 0;
+      if (lastSyncMillis > 0 && lastSyncedAt == null) {
+        lastSyncedAt = DateTime.fromMillisecondsSinceEpoch(lastSyncMillis);
+        lastSyncedAtNotifier.value = lastSyncedAt;
+      }
       final pendingLogs = await DatabaseService.instance.getPendingTimeLogsCount(lastSyncMillis);
       final pendingOutbox = await DatabaseService.instance.getPendingOutboxCount();
       pendingSyncCountNotifier.value = pendingLogs + pendingOutbox;
@@ -609,6 +631,7 @@ class SyncService {
       }
 
       lastSyncedAt = DateTime.now();
+      lastSyncedAtNotifier.value = lastSyncedAt;
       await prefs.setInt('modulix_last_synced_at_v1', lastSyncedAt!.millisecondsSinceEpoch);
       await prefs.setString('modulix_last_editions_synced_at_v1', lastSyncedAt!.toUtc().toIso8601String());
       await refreshPendingCount();
@@ -753,6 +776,12 @@ class SyncService {
 
       channel.subscribe((status, [error]) {
         debugPrint('[SyncService] Realtime channel status: $status ${error ?? ""}');
+        if (status == RealtimeSubscribeStatus.subscribed) {
+          realtimeStatusNotifier.value = true;
+        } else if (status == RealtimeSubscribeStatus.closed ||
+            status == RealtimeSubscribeStatus.channelError) {
+          realtimeStatusNotifier.value = false;
+        }
       });
     } catch (e) {
       debugPrint('[SyncService] Error starting Realtime subscription: $e');
@@ -834,5 +863,6 @@ class SyncService {
       _realtimeChannel = null;
     }
     _subscribedUserId = null;
+    realtimeStatusNotifier.value = false;
   }
 }
