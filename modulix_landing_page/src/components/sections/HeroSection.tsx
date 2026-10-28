@@ -11,8 +11,8 @@ export function HeroSection({ navigate }: { navigate: (route: string) => void })
         <h1 className="font-editorial text-4xl sm:text-6xl font-bold tracking-[-0.6px] leading-[1.1] text-[var(--ink-foreground)]">
           Introducing Modulix
         </h1>
-        <p className="text-base sm:text-lg text-[var(--muted-text)] font-medium tracking-tight">
-          A Planner Curated For Med school
+        <p className="text-xs sm:text-sm text-[var(--muted-text)] font-semibold tracking-widest uppercase">
+          A PLANNER CURATED FOR MED SCHOOL
         </p>
       </div>
 

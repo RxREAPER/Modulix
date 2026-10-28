@@ -24,6 +24,26 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-100]` — All-Capitals Hero Tagline & Curated 6-Pillar Core Features
+- **Category:** `web` / `copy` / `features`
+- **Files Modified:**
+  - `modulix_landing_page/src/components/sections/HeroSection.tsx`
+  - `modulix_landing_page/src/components/sections/FeaturesSection.tsx`
+- **Summary:**
+  - Updated Hero tagline to all capitals: `"A PLANNER CURATED FOR MED SCHOOL"` with wide letter-spacing (`tracking-widest`).
+  - Implemented user's verbatim 6-pillar feature list in Section 2:
+    1. Tasks with Projects & Module-Based Tasks
+    2. Focus & Pomodoro Timer
+    3. Leaderboard
+    4. Analytics
+    5. Gold Standard Syllabus to Track
+    6. Themes
+  - Replaced technical engineering jargon with clear, doctor-friendly descriptions and high-contrast pill highlights.
+- **Verification:** `tsc -b` passed with 0 errors; Vite HMR live updated seamlessly.
+- **Build Status:** ✅ Verified & Live
+
+---
+
 ### 🔖 `[CKPT-099]` — Landing Page Pure Static Surface Hardening & Gradient Elimination
 - **Category:** `web` / `ui` / `styling`
 - **Files Modified:**

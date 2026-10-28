@@ -1,47 +1,55 @@
 import { motion } from "framer-motion"
-import { BookOpen, Clock, CalendarDays, BellRing, Database } from "lucide-react"
+import { CheckSquare, Clock, Trophy, BarChart3, BookOpen, Palette } from "lucide-react"
 
 export function FeaturesSection() {
   const features = [
     {
       number: "01",
-      icon: BookOpen,
-      title: "Comprehensive 19 MBBS Subjects Curriculum",
-      subtitle: "Multi-modal tracking across Videos, Q-Banks (MCQs), and High-Yield Clinical Notes.",
-      description: "Full syllabus mapping across Editions 6.5 and 8 with instant search across all modules, unit numbers, titles, and clinical topics. Features elastic swipe-to-complete and bulk unit marking that does not skew your daily study history.",
-      highlight: "800+ Videos · 19 Subjects",
+      icon: CheckSquare,
+      title: "Tasks with Projects & Module-Based Tasks",
+      subtitle: "Custom study lists and syllabus-linked task workflows.",
+      description: "Organize your daily study desk across custom personal projects or link tasks directly to syllabus modules and video units, keeping your daily workload clear and manageable.",
+      highlight: "Daily Desk · Projects · Modules",
     },
     {
       number: "02",
       icon: Clock,
-      title: "Deep Focus Timer & Ambient Studio",
-      subtitle: "Immersion study modes with procedural ambient audio and lock screen alarms.",
-      description: "Supports Pomodoro, Count-Up stopwatch, and Module-Linked study modes. Includes synthesized background sounds (forest rain, brown noise, crackling fireplace, deep stream). Integrated with Android AlarmManager.setAlarmClock to pierce Deep Doze.",
-      highlight: "Lock Screen · Deep Doze Piercer",
+      title: "Focus & Pomodoro Timer",
+      subtitle: "Distraction-free study timer with ambient background audio.",
+      description: "Dedicated immersion timer with Pomodoro, Count-Up, and module-linked modes. Built-in ambient sounds (forest rain, brown noise, crackling fireplace) keep you focused during long study sessions.",
+      highlight: "Pomodoro · Stopwatch · Ambient Audio",
     },
     {
       number: "03",
-      icon: CalendarDays,
-      title: "Daily Desk & Intelligent 5:00 AM Rollover",
-      subtitle: "Automated '2 Stale + 2 Fresh = 4' quota engine preventing backlog overload.",
-      description: "Medical doctors frequently study past midnight. Modulix offsets the study day to 5:00 AM instead of calendar midnight. Incomplete tasks carry over marked with amber [Stale] tags, while your daily quota remains strictly capped.",
-      highlight: "5 AM Boundary · Anti-Snowball",
+      icon: Trophy,
+      title: "Leaderboard",
+      subtitle: "Friendly community rankings across daily, weekly, and monthly milestones.",
+      description: "Stay motivated alongside fellow medical aspirants. Track your study consistency and climb verified rankings across daily, weekly, monthly, and all-time leaderboards.",
+      highlight: "Community · Daily · Weekly · Monthly",
     },
     {
       number: "04",
-      icon: BellRing,
-      title: "Hardware Audio & Battery Resilience",
-      subtitle: "Headphone disconnect protection and OEM battery optimization guard.",
-      description: "Features a native ACTION_AUDIO_BECOMING_NOISY receiver that automatically pauses ambient sounds when Bluetooth headphones disconnect in quiet study libraries. Built-in battery optimization whitelist checker prevents Android task-killing.",
-      highlight: "Library Safe · Earbud Sensor",
+      icon: BarChart3,
+      title: "Analytics",
+      subtitle: "Visual study heatmaps, subject distribution, and streak tracking.",
+      description: "Gain clear insights into your study habits with detailed daily activity heatmaps, subject time distributions, velocity charts, and consistency streaks.",
+      highlight: "Heatmaps · Subject Velocity · Streaks",
     },
     {
       number: "05",
-      icon: Database,
-      title: "Native SQLite C-Engine Study Analytics",
-      subtitle: "Instant SQL aggregations, activity heatmaps, and tamper-proof session logs.",
-      description: "Study session analytics are calculated inside the SQLite engine via C-level SUM(CASE WHEN ...) aggregations, eliminating memory heap allocation. Features active streak calculations, subject velocities, and optional public leaderboards.",
-      highlight: "Zero Heap Churn · Instant Analytics",
+      icon: BookOpen,
+      title: "Gold Standard Syllabus to Track",
+      subtitle: "Complete coverage across all 19 MBBS subjects.",
+      description: "Track your preparation across the standard medical curriculum. Seamlessly log your progress through video lectures, Q-Banks (MCQs), and high-yield clinical revision notes.",
+      highlight: "19 Subjects · Videos · MCQs · Notes",
+    },
+    {
+      number: "06",
+      icon: Palette,
+      title: "Themes",
+      subtitle: "Five clinical aesthetics tailored for hospital duties and late-night reading.",
+      description: "Switch seamlessly between Daylight Scholar, Midnight Scholar, Atomic Ice, Forest Mint, and Cosmic Mocha—engineered for maximum readability and zero eye fatigue.",
+      highlight: "5 Curated Palettes · OLED Black",
     },
   ]
 
@@ -49,10 +57,10 @@ export function FeaturesSection() {
     <section className="py-12 border-t border-[var(--border-subtle)]">
       <div className="mb-8">
         <h2 className="font-editorial text-3xl font-bold tracking-tight text-[var(--ink-foreground)]">
-          Engineering & Clinical Architecture
+          Core Features
         </h2>
         <p className="text-sm text-[var(--muted-text)] mt-1 max-w-xl">
-          Designed without boxed card clutter or repetitive wrappers. Built specifically around the cognitive demands of medical post-graduate preparation.
+          Everything you need for disciplined medical preparation, built without clutter or distraction.
         </p>
       </div>
 
