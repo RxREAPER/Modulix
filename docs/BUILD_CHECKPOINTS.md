@@ -24,6 +24,19 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-112]` — Native Animated Vector SVG Hero Illustration Overhaul (Clean Vector from Artwork)
+- **Category:** `web` / `ui` / `hero` / `vector`
+- **Files Modified:**
+  - `modulix_landing_page/src/components/sections/MedicalHeroIllustration.tsx` (completely eliminated HTML5 video tag and video player embed; created pure React vector SVG composition with Framer Motion, dynamic gradients, interactive 3D parallax tilt, climbing anatomical écorché figure, pulsing ECG trace, open textbook with flutter, skull, syringes, and stethoscopes)
+- **Summary:**
+  - Completely purged video player, controls, raster artifacts, and buffering overhead.
+  - Reconstructed every visual asset from the source artwork (`FINAL.gif` / `FINAL.mp4`) as clean mathematical SVG vector paths: stacked medical textbooks with bookmark ribbons, anatomical skull, precision-milled glass syringes, curved notebook with map pushpins, iPad with live looping ECG trace (`pathLength: [0, 1, 1]`), wooden ladder, and animated anatomical écorché climbing hero figure.
+  - Interactive mouse perspective tilt (`rotateX`, `rotateY` via `useSpring` and `useTransform`) provides tactile 3D responsiveness.
+- **Verification:** `bun x tsc -b` (0 errors) and `bun run build` (built cleanly in 20.56s). Verified on Vite dev server at `http://localhost:5173/`.
+- **Build Status:** ✅ Verified & Live
+
+---
+
 ### 🔖 `[CKPT-111]` — Switch-Lit Style Live Video Hero Card Integration (`FINAL.mp4` / `FINAL.gif`)
 - **Category:** `web` / `ui` / `hero` / `media`
 - **Files Modified:**
