@@ -5,6 +5,7 @@ import { Navbar } from "./components/layout/Navbar"
 import { Footer } from "./components/layout/Footer"
 import { HeroSection } from "./components/sections/HeroSection"
 import { FeaturesSection } from "./components/sections/FeaturesSection"
+import { StudyJourneySection } from "./components/sections/study-journey/StudyJourneySection"
 import { ThemeShowcase } from "./components/sections/ThemeShowcase"
 import { EcosystemSection } from "./components/sections/EcosystemSection"
 import { PrivacyView } from "./components/privacy/PrivacyView"
@@ -63,6 +64,7 @@ export default function App() {
           <>
             <HeroSection navigate={navigate} />
             <FeaturesSection />
+            <StudyJourneySection />
             <ThemeShowcase />
             <EcosystemSection navigate={navigate} />
           </>

@@ -24,6 +24,24 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-105]` — Section 3 Kinetic Clinical Study Pipeline & 5-Step Motion Journey
+- **Category:** `web` / `ui` / `motion` / `animation`
+- **Files Modified:**
+  - `modulix_landing_page/src/components/sections/study-journey/TaskStation.tsx` (real-time fountain pen sweep, drawing ink line, discharge pulse)
+  - `modulix_landing_page/src/components/sections/study-journey/TopicStation.tsx` (magnetic syllabus turntable dial, crosshair reticle lock)
+  - `modulix_landing_page/src/components/sections/study-journey/TimerStation.tsx` (split-flap counting ticks, dancing ambient equalizer waveforms)
+  - `modulix_landing_page/src/components/sections/study-journey/AnalyticsStation.tsx` (rolling digit surge +02:30h, 24h heatmap dot cascade)
+  - `modulix_landing_page/src/components/sections/study-journey/PodiumStation.tsx` (pedestal spring launch, #1 gold metallic sheen sweep)
+  - `modulix_landing_page/src/components/sections/study-journey/StudyJourneySection.tsx` (master 5-node circuit pipeline, auto-loop cycle, interactive controls)
+  - `modulix_landing_page/src/App.tsx` (integrated as Section 3)
+- **Summary:**
+  - Reimagined Section 3 into a high-motion clinical study journey demonstrating the continuous daily loop: New Task ➔ Topic Selection ➔ Focus Timer ➔ Analytics ➔ Leaderboard.
+  - Implemented continuous 60fps kinetic pipeline connecting 5 interactive stations with real-time vector animations and auto-play loop.
+- **Verification:** `tsc -b` and `vite build` completed with 0 errors. Verified on dev server.
+- **Build Status:** ✅ Verified & Live
+
+---
+
 ### 🔖 `[CKPT-104]` — Traditional Spiral Spring Binding, Punched Tear Holes & 3D Top Page Curl
 - **Category:** `web` / `ui` / `realism` / `motion`
 - **Files Modified:**
