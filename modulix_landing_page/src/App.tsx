@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ThemeProvider } from "./lib/theme"
-import { FilmicBackground } from "./components/layout/FilmicBackground"
 import { Navbar } from "./components/layout/Navbar"
 import { Footer } from "./components/layout/Footer"
 import { HeroSection } from "./components/sections/HeroSection"
@@ -16,12 +15,10 @@ import { ChangelogView } from "./components/updates/ChangelogView"
 function sanitizeRoute(rawHash: string): string {
   if (!rawHash || rawHash === "#" || rawHash === "#/") return "#/"
   
-  // If Supabase redirected with auth tokens in the hash: #access_token=...
   if (rawHash.includes("access_token") || rawHash.includes("error_description")) {
     return "#/account"
   }
 
-  // Strip query parameters for routing purposes (e.g. #/account?code=... -> #/account)
   const base = rawHash.split("?")[0].split("&")[0]
   return base || "#/"
 }
@@ -32,7 +29,6 @@ export default function App() {
   })
 
   useEffect(() => {
-    // If Supabase OAuth redirected with tokens in hash, update hash to #/account
     if (window.location.hash.includes("access_token")) {
       window.location.hash = "#/account"
     }
@@ -76,8 +72,7 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <div className="min-h-screen flex flex-col relative selection:bg-blue-500/20 selection:text-blue-500">
-        <FilmicBackground />
+      <div className="min-h-screen flex flex-col bg-[var(--scaffold-bg)] text-[var(--ink-foreground)] selection:bg-blue-500/20 selection:text-blue-500">
         <Navbar currentRoute={currentRoute} navigate={navigate} />
 
         <main className="flex-1 w-full max-w-5xl mx-auto px-5 sm:px-8">
@@ -87,7 +82,7 @@ export default function App() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1.0] }}
+              transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1.0] }}
             >
               {renderContent()}
             </motion.div>

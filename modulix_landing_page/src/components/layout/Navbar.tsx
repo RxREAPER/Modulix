@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Sun, Moon, Menu, X, Shield, User, Clock, ExternalLink } from "lucide-react"
 import { MxMonogram } from "../primitives/MxMonogram"
@@ -14,16 +14,7 @@ interface NavbarProps {
 
 export function Navbar({ currentRoute, navigate }: NavbarProps) {
   const { isDark, toggleTheme } = useTheme()
-  const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
-  useEffect(() => {
-    const onScroll = () => {
-      setIsScrolled(window.scrollY > 20)
-    }
-    window.addEventListener("scroll", onScroll)
-    return () => window.removeEventListener("scroll", onScroll)
-  }, [])
 
   const navItems = [
     { label: "Showcase", hash: "#/", icon: null },
@@ -38,13 +29,7 @@ export function Navbar({ currentRoute, navigate }: NavbarProps) {
   }
 
   return (
-    <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-[var(--scaffold-bg)]/85 backdrop-blur-md border-b border-[var(--border-subtle)]"
-          : "bg-transparent border-b border-transparent"
-      }`}
-    >
+    <header className="sticky top-0 z-50 bg-[var(--scaffold-bg)] border-b border-[var(--border-subtle)] transition-colors duration-200">
       <div className="max-w-5xl mx-auto px-5 sm:px-8 h-18 flex items-center justify-between">
         {/* Brand Bar with 46x44mm sleek container */}
         <div

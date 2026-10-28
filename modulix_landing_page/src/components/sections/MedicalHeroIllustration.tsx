@@ -69,17 +69,6 @@ export function MedicalHeroIllustration() {
         }}
         className="relative w-[340px] sm:w-[480px] h-[280px] sm:h-[350px] flex items-center justify-center"
       >
-        {/* Ambient Glow Base beneath workstation */}
-        <div
-          className="absolute -bottom-4 w-72 sm:w-96 h-16 rounded-full blur-2xl opacity-40 transition-colors pointer-events-none"
-          style={{
-            background: isDark
-              ? "radial-gradient(circle, rgba(10, 132, 255, 0.45) 0%, transparent 70%)"
-              : "radial-gradient(circle, rgba(0, 122, 255, 0.3) 0%, transparent 70%)",
-            transform: "translateZ(-40px)",
-          }}
-        />
-
         {/* Master SVG Composition */}
         <svg
           viewBox="0 0 520 380"

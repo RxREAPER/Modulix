@@ -24,6 +24,23 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-099]` — Landing Page Pure Static Surface Hardening & Gradient Elimination
+- **Category:** `web` / `ui` / `styling`
+- **Files Modified:**
+  - `modulix_landing_page/src/App.css` (deleted unused CRA artifact)
+  - `modulix_landing_page/src/App.tsx` (solid static surface layout)
+  - `modulix_landing_page/src/components/layout/FilmicBackground.tsx` (deleted leftover gradient overlay)
+  - `modulix_landing_page/src/components/layout/Navbar.tsx` (solid opaque background, removed scroll blur)
+  - `modulix_landing_page/src/components/sections/MedicalHeroIllustration.tsx` (removed ambient glow gradient)
+- **Summary:**
+  - Completely eliminated all background gradient overlays, blur filters, and atmospheric glows across the entire web application to prevent text washouts or visual occlusion.
+  - Converted navigation header to a solid, 100% opaque surface (`var(--scaffold-bg)` with `border-b border-[var(--border-subtle)]`), ensuring scrolling text never bleeds or gets obscured underneath.
+  - Hardened pure static rendering matching Modulix's authentic Daylight Scholar (`#F8F9FA`) and Midnight Scholar (`#000000`) surfaces.
+- **Verification:** `tsc -b` and `vite build` completed with 0 errors and 0 warnings.
+- **Build Status:** ✅ Verified & Static
+
+---
+
 ### 🔖 `[CKPT-098]` — Modulix Web Landing Page, Google Play Privacy Policy & Self-Service Account Deletion Portal
 - **Category:** `web` / `privacy` / `compliance` / `showcase`
 - **Files Modified:**
