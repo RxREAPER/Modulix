@@ -24,6 +24,21 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-120]` — Live Production Deployment on Cloudflare Pages (`https://modulix.pages.dev`)
+- **Category:** `web/deploy/production-live`
+- **Files Modified:**
+  - `docs/BUILD_CHECKPOINTS.md` (registered successful live edge deployment)
+- **Summary:**
+  - Authenticated Cloudflare API Token with Account `40e5b79d2d9668d2e6618a3196e44134`.
+  - Created Cloudflare Pages project `modulix` with production branch `main`.
+  - Successfully deployed all 19 production assets to Cloudflare Global Edge network.
+  - Live production URL: `https://modulix.pages.dev` (Preview: `https://9faa9543.modulix.pages.dev`).
+  - Verified `HTTP/2 200` response and edge-cached video asset `hero_transparent.webm` with immutable cache headers.
+- **Verification:**
+  - `curl -I https://modulix.pages.dev`: `HTTP/2 200`, `server: cloudflare`, `cf-ray` verified live.
+  - `curl -I https://modulix.pages.dev/hero/hero_transparent.webm`: `HTTP/2 200`, `cache-control: public, max-age=31536000, immutable`.
+- **Build Status:** ✅ Verified & Live
+
 ### 🔖 `[CKPT-119]` — Cloudflare Pages Production Deployment Configuration & Edge Optimization
 - **Category:** `web/deploy/cloudflare-pages`
 - **Files Modified:**
