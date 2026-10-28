@@ -24,6 +24,20 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-103]` — Sticky Scroll-Driven Folio Pagination & Classical Archival Notepad Paper
+- **Category:** `web` / `ui` / `interaction` / `realism`
+- **Files Modified:**
+  - `modulix_landing_page/src/components/sections/clinical-clipboard/TraditionalNotepadHeader.tsx` (cloth tape binding, brass staples, perforated tear line)
+  - `modulix_landing_page/src/components/sections/FeaturesSection.tsx` (sticky scroll-jacking container, 160ms snappy transitions, ruled paper lines, red margin guide, multi-sheet stack)
+- **Summary:**
+  - Implemented sticky scroll-driven folio pagination: scrolling down naturally locks the viewport and flips through Folios 01 to 06 with instant feedback before smoothly continuing down to the rest of the site (works on both Android touch and Desktop wheel).
+  - Reduced animation duration from sluggish 600ms to ultra-crisp 160ms (`ease: [0.16, 1, 0.3, 1]`) with concurrent transition mode to eliminate perceptible wait times.
+  - Infused authentic traditional notepad textures: archival ivory paper (`#FCFAF5`), subtle horizontal notebook rulings, physician pad red margin guide, dark textured cloth tape binding header, dual brass staples, and micro-perforated tear lines with paper punch cutouts.
+- **Verification:** `tsc -b` and `vite build` completed with 0 errors. Verified on dev server.
+- **Build Status:** ✅ Verified & Live
+
+---
+
 ### 🔖 `[CKPT-102]` — Tangible Clinical Clipboards & Hyper-Realistic Motion Overhaul for Features
 - **Category:** `web` / `ui` / `motion` / `realism`
 - **Files Modified:**
