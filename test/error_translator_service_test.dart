@@ -13,7 +13,7 @@ void main() {
       expect(t.headline, 'Account Setup in Progress');
       expect(
         t.explanation,
-        contains('Google Play authentication is temporarily unavailable'),
+        contains('Google Play sign-in is temporarily unavailable'),
       );
       expect(t.primaryActionLabel, 'Continue as Guest');
       expect(t.domain, 'Authentication');
@@ -24,22 +24,22 @@ void main() {
       final t = ErrorTranslatorService.translate(
         'PlatformException(sign_in_failed, com.google.android.gms.common.api.ApiException: 12500: , null, null)',
       );
-      expect(t.headline, 'Sign-In Deferred');
-      expect(t.explanation, contains('You closed the Google authentication window'));
+      expect(t.headline, 'Sign-In Cancelled');
+      expect(t.explanation, contains('You closed the Google sign-in window'));
       expect(t.primaryActionLabel, 'Try Again');
       expect(t.icon, Icons.lock_clock_outlined);
     });
 
     test('Domain A: Invalid credentials', () {
       final t = ErrorTranslatorService.translate('auth/invalid-credential');
-      expect(t.headline, 'Credentials Unrecognized');
+      expect(t.headline, 'Account Not Recognized');
       expect(t.primaryActionLabel, 'Reset Password');
       expect(t.icon, Icons.password_outlined);
     });
 
     test('Domain A: Too many requests cooldown', () {
       final t = ErrorTranslatorService.translate('auth/too-many-requests');
-      expect(t.headline, 'Sign-In Cooldown Active');
+      expect(t.headline, 'Take a Quick Breath');
       expect(t.primaryActionLabel, 'Wait & Retry');
       expect(t.icon, Icons.timer_outlined);
     });
@@ -49,7 +49,7 @@ void main() {
         'auth/network-request-failed',
         domain: 'auth',
       );
-      expect(t.headline, 'Authentication Server Unreachable');
+      expect(t.headline, 'Sign-In Server Offline');
       expect(t.primaryActionLabel, 'Retry Connection');
       expect(t.icon, Icons.wifi_off_outlined);
     });
@@ -59,9 +59,9 @@ void main() {
       final t = ErrorTranslatorService.translate(
         const SocketException('Failed host lookup: api.supabase.co'),
       );
-      expect(t.headline, 'Offline Mode Active');
+      expect(t.headline, "You're Offline");
       expect(t.explanation, contains('Modulix has saved your study hours locally'));
-      expect(t.primaryActionLabel, 'Got It');
+      expect(t.primaryActionLabel, 'Keep Studying');
       expect(t.icon, Icons.cloud_off_outlined);
     });
 
@@ -78,7 +78,7 @@ void main() {
       final t = ErrorTranslatorService.translate(
         const FormatException('Unexpected character in backup archive'),
       );
-      expect(t.headline, 'Backup Archive Unreadable');
+      expect(t.headline, 'File Unreadable');
       expect(t.primaryActionLabel, 'Choose Another File');
       expect(t.icon, Icons.folder_delete_outlined);
     });
@@ -87,7 +87,7 @@ void main() {
       final t = ErrorTranslatorService.translate(
         'GoogleDrive quotaExceeded: storage full',
       );
-      expect(t.headline, 'Cloud Storage Filled');
+      expect(t.headline, 'Cloud Storage Full');
       expect(t.primaryActionLabel, 'Manage Storage');
       expect(t.icon, Icons.cloud_queue_outlined);
     });
@@ -97,8 +97,8 @@ void main() {
       final t = ErrorTranslatorService.translate(
         RangeError('Index 45 out of range for chapters'),
       );
-      expect(t.headline, 'Topic Being Refreshed');
-      expect(t.explanation, contains('not indexed in the active curriculum'));
+      expect(t.headline, 'Topic Not Found');
+      expect(t.explanation, contains("isn't in your current curriculum edition"));
       expect(t.primaryActionLabel, 'Browse All Units');
       expect(t.icon, Icons.auto_stories_outlined);
     });
@@ -108,7 +108,7 @@ void main() {
         'GoException: no route for /curriculum/unknown_subject',
         domain: 'route',
       );
-      expect(t.headline, 'Destination Not in Syllabus');
+      expect(t.headline, 'Page Not Found');
       expect(t.primaryActionLabel, 'Return to Home Desk');
       expect(t.icon, Icons.alt_route_outlined);
     });
@@ -126,7 +126,7 @@ void main() {
       final t = ErrorTranslatorService.translate(
         'no clinical notes yet for this unit',
       );
-      expect(t.headline, 'No Clinical Notes Yet');
+      expect(t.headline, 'No Notes Yet');
       expect(t.primaryActionLabel, '+ Add First Note');
       expect(t.icon, Icons.note_add_outlined);
     });
@@ -136,7 +136,7 @@ void main() {
       final t = ErrorTranslatorService.translate(
         'AudioPlayerException: audio codec unsupported',
       );
-      expect(t.headline, 'Ambient Audio Paused');
+      expect(t.headline, 'Audio Paused');
       expect(t.primaryActionLabel, 'Pick Another Sound');
       expect(t.icon, Icons.volume_off_outlined);
     });
@@ -145,7 +145,7 @@ void main() {
       final t = ErrorTranslatorService.translate(
         'Wakelock error: device battery killed process',
       );
-      expect(t.headline, 'Study Session Preserved');
+      expect(t.headline, 'Timer Recovered');
       expect(t.primaryActionLabel, 'Resume Session');
       expect(t.icon, Icons.battery_saver_outlined);
     });
@@ -154,7 +154,7 @@ void main() {
       final t = ErrorTranslatorService.translate(
         'PlatformException(permission_denied, notification privileges)',
       );
-      expect(t.headline, 'Quiet Timer Enabled');
+      expect(t.headline, 'Quiet Timer Mode');
       expect(t.primaryActionLabel, 'Enable in Settings');
       expect(t.icon, Icons.notifications_off_outlined);
     });
@@ -164,7 +164,7 @@ void main() {
       final t = ErrorTranslatorService.translate(
         'DatabaseException: disk I/O error or database locked',
       );
-      expect(t.headline, 'Data Re-Verified');
+      expect(t.headline, 'Data Protected');
       expect(t.primaryActionLabel, 'Reload Desk');
       expect(t.icon, Icons.verified_user_outlined);
     });
@@ -174,22 +174,21 @@ void main() {
         'A RenderFlex overflowed by 42 pixels on the bottom.',
       );
       expect(t.headline, 'Study Session Protected');
-      expect(t.explanation, contains('Your logged hours, notes, and task progress remain safely cached'));
+      expect(t.explanation, contains("all your notes and study time are safe"));
       expect(t.primaryActionLabel, 'Reopen Home Desk');
       expect(t.icon, Icons.shield_outlined);
     });
 
     test('Telemetry integrity: Stack trace preserved in technicalDetails only', () {
-      final stack = StackTrace.current;
+      final stack = StackTrace.fromString('line 1\nline 2');
       final t = ErrorTranslatorService.translate(
-        'Null check operator used on a null value',
+        Exception('Fatal DB crash'),
         stackTrace: stack,
       );
-      expect(t.technicalDetails, contains('StackTrace:'));
-      expect(t.technicalDetails, contains('Null check operator'));
-      // Guarantee body copy doesn't expose technical terms
-      expect(t.headline, isNot(contains('Null check')));
-      expect(t.explanation, isNot(contains('Null check')));
+      expect(t.explanation, isNot(contains('line 1')));
+      expect(t.explanation, isNot(contains('Fatal DB crash')));
+      expect(t.technicalDetails, contains('Fatal DB crash'));
+      expect(t.technicalDetails, contains('line 1'));
     });
   });
 }
