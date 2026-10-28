@@ -4,6 +4,28 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.33.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (277MB)
+- **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
+- **Compilation Time:** 196.0s | **Static Analysis:** 0 Errors, 0 Warnings | **Test Suite:** 100% Green (14/14 Sync Tests Passed)
+- **Included Checkpoints:** `[CKPT-121]`, `[CKPT-122]` (✅ Included in Build)
+
+### Key Highlights & Releases in v1.33.0:
+1. **Cloud Sync Architecture Fix & Riverpod State Reactivity (`[CKPT-122]`):**
+   - Eliminated the in-memory state overwrite in `SyncService.syncFull` by maintaining a single unified `workingState` that preserves remote `doctor_name` and `display_name` changes.
+   - Added synchronous `applySyncedState` and `reload` methods to `AppStateNotifier` so remote updates push into active UI widgets immediately without triggering infinite loop pushes.
+   - Added `RefreshIndicator` with haptic feedback to `HomeScreen` for intuitive pull-to-refresh cloud synchronization.
+   - Added a permanent `Sync Now` (or `Back Up (N)`) button next to `Sign Out` on `SettingsScreen` Cloud Backup row.
+2. **Cloudflare Pages Edge Reverse Proxy Integration (`modulix.pages.dev`):**
+   - Deployed high-performance edge reverse proxy via Cloudflare Pages Functions (`functions/_middleware.ts`) routing all `/auth/*`, `/rest/*`, `/storage/*`, and `/realtime/*` requests to Supabase backend with edge CORS and WebSocket support at zero cost.
+3. **Google Sign-In Web Client ID Synchronization (`[CKPT-121]`):**
+   - Synchronized verified Web Application Client ID `1016283702399-a05lhshurf9l14ifpkvfiijovsqk7au6.apps.googleusercontent.com` and mapped OnePlus 13R debug SHA-1 keystore fingerprint to eliminate Android `ApiException: 10`.
+4. **Physical Device Live Verification:**
+   - Verified Google Sign-In as `flowmd04@gmail.com`.
+   - Verified real-time pull-to-refresh sync on OnePlus 13R updating doctor alias from `Dr. 6s` to `Dr. TEST  01` with matching avatar badge.
+
+---
+
 ## 🚀 Build Manifest v1.32.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (276MB)
 - **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)
@@ -39,7 +61,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - Added permanent, discoverable `Sync Now` (or `Back Up (N)`) button next to `Sign Out` in `SettingsScreen` Cloud Backup row.
   - Deployed Cloudflare Pages edge reverse proxy (`functions/_middleware.ts`) at `https://modulix.pages.dev` routing `/auth/*`, `/rest/*`, `/storage/*`, and `/realtime/*` to Supabase backend with edge CORS and WebSocket support.
 - **Verification:** `flutter analyze` 0 issues, `flutter test test/sync_service_test.dart test/cloud_sync_resilience_test.dart` 14/14 tests green, `curl` edge reverse proxy verified HTTP 200/204.
-- **Build Status:** ⏳ Pending APK Build
+- **Build Status:** ✅ Included in Build (v1.33.0)
 
 ---
 
@@ -51,7 +73,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - Configured Google OAuth 2.0 Web Application Client ID (`1016283702399-a05lhshurf9l14ifpkvfiijovsqk7au6.apps.googleusercontent.com`) matching Google Cloud Console and Supabase Dashboard Auth Provider.
   - Linked Android Application ID `com.modulix.app` with debug keystore SHA-1 `B4:FA:F9:8F:91:04:5E:CC:D4:49:84:00:AB:2E:24:DA:CA:49:79:33` to eliminate Android `ApiException: 10` (Developer Error).
 - **Verification:** `flutter analyze` 0 issues across the entire codebase.
-- **Build Status:** ⏳ Pending APK Build
+- **Build Status:** ✅ Included in Build (v1.33.0)
 
 ---
 
