@@ -1,0 +1,46 @@
+name: Deploy Modulix Landing Page to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'modulix_landing_page/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Cloudflare Pages
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: modulix_landing_page
+        run: npm ci
+
+      - name: Build
+        working-directory: modulix_landing_page
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://vbvmzjhzznxgofyzxnql.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZidm16amh6em54Z29meXp4bnFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5ODYyODQsImV4cCI6MjEwNzU2MjI4NH0.Oofi0Fr0b2KmyJZ0MrXNwxVVs1kwcc6OGYVjJg9VZH4' }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_JJvE8O5n_ilc9V35GIFgdg_xDHA1LX6' }}
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy modulix_landing_page/dist --project-name=modulix

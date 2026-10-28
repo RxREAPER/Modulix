@@ -24,6 +24,23 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-119]` — Cloudflare Pages Production Deployment Configuration & Edge Optimization
+- **Category:** `web/deploy/cloudflare-pages`
+- **Files Modified:**
+  - `modulix_landing_page/public/_headers` (configured immutable 1-year cache headers for `/assets/*` and `/hero/*`, no-cache for `/index.html`, and strict security headers)
+  - `modulix_landing_page/public/_redirects` (ensured SPA fallback rewrite `/* /index.html 200` for client-side routing)
+  - `modulix_landing_page/package.json` (added `"deploy"` script using `wrangler pages deploy dist --project-name=modulix`)
+  - `modulix_landing_page/package-lock.json` (generated deterministic package-lock for Cloudflare build environments)
+  - `.github/workflows/deploy_cloudflare_pages.yml` (automated CI/CD deployment pipeline for Cloudflare Pages on push to main)
+- **Summary:**
+  - Configured Modulix for Cloudflare Pages edge deployment with unlimited media bandwidth.
+  - Implemented edge caching rules in `_headers` to optimize video and vector asset delivery with zero egress costs.
+  - Set up one-command CLI deployment via `wrangler` and automated GitHub Action workflow.
+- **Verification:**
+  - `bun run build` & `npm run build`: Verified 100% clean production bundle in `dist/` with `_headers` and `_redirects` copied.
+  - `wrangler --version`: Verified `wrangler 4.154.0` ready.
+- **Build Status:** ✅ Verified & Live
+
 ### 🔖 `[CKPT-118]` — Supabase Backend Connects, GDPR Erasure Table & Advisor Hardening
 - **Category:** `backend/supabase/security/connects`
 - **Files Modified:**
