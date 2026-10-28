@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/app_state.dart';
@@ -669,26 +670,45 @@ class _CloudCommunityGroup extends ConsumerWidget {
                   : Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (pendingCount > 0)
-                          ApplePressable(
-                            onTap: () => SyncService.instance.syncFull(ref),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 9, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: AppTheme.accentPrimary,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                'Back Up',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppTheme.onAccent,
-                                ),
+                        ApplePressable(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            SyncService.instance.syncFull(ref);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 9, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: AppTheme.accentPrimary.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: AppTheme.accentPrimary.withValues(alpha: 0.3),
+                                width: 0.8,
                               ),
                             ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.sync_rounded,
+                                  size: 12,
+                                  color: AppTheme.accentPrimary,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  pendingCount > 0
+                                      ? 'Back Up ($pendingCount)'
+                                      : 'Sync Now',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppTheme.accentPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
+                        ),
                         const SizedBox(width: 8),
                         ApplePressable(
                           onTap: () async {

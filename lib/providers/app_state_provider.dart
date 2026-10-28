@@ -47,6 +47,21 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
     SyncService.instance.schedulePush(ref);
   }
 
+  /// Applies incoming state from cloud synchronization without triggering a recursive push.
+  void applySyncedState(AppState updated) {
+    final preset = PalettePreset.fromId(updated.palettePresetId);
+    AppTheme.current = ModulixThemeExtension.from(preset: preset);
+    state = AsyncData(updated);
+  }
+
+  /// Reloads state directly from persistent storage.
+  Future<void> reload() async {
+    final loaded = StorageService.instance.load();
+    final preset = PalettePreset.fromId(loaded.palettePresetId);
+    AppTheme.current = ModulixThemeExtension.from(preset: preset);
+    state = AsyncData(loaded);
+  }
+
   Future<void> updateLeaderboardIdentity({
     String? displayName,
     bool? isAnonymous,

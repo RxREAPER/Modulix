@@ -24,6 +24,25 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-122]` — Cross-Device Cloud Sync State Consolidation & Cloudflare Edge Reverse Proxy
+- **Category:** `cloud` / `sync` / `network` / `cloudflare`
+- **Files Modified:**
+  - `lib/providers/app_state_provider.dart`
+  - `lib/services/sync_service.dart`
+  - `lib/screens/home/home_screen.dart`
+  - `lib/screens/settings/settings_screen.dart`
+  - `modulix_landing_page/functions/_middleware.ts`
+- **Summary:**
+  - Fixed in-memory profile state overwrite bug in `SyncService.syncFull` by maintaining a single unified `workingState` that preserves merged remote attributes (`doctor_name`, `display_name`).
+  - Added `applySyncedState` and `reload` methods to `AppStateNotifier` to synchronously emit merged cloud state directly to active UI widgets without recursive push loops.
+  - Wrapped `HomeScreen` body in `RefreshIndicator` with haptic feedback to enable intuitive pull-to-refresh cloud synchronization.
+  - Added permanent, discoverable `Sync Now` (or `Back Up (N)`) button next to `Sign Out` in `SettingsScreen` Cloud Backup row.
+  - Deployed Cloudflare Pages edge reverse proxy (`functions/_middleware.ts`) at `https://modulix.pages.dev` routing `/auth/*`, `/rest/*`, `/storage/*`, and `/realtime/*` to Supabase backend with edge CORS and WebSocket support.
+- **Verification:** `flutter analyze` 0 issues, `flutter test test/sync_service_test.dart test/cloud_sync_resilience_test.dart` 14/14 tests green, `curl` edge reverse proxy verified HTTP 200/204.
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### 🔖 `[CKPT-121]` — Google Cloud Console OAuth 2.0 Integration & Web Client ID Synchronization
 - **Category:** `auth` / `cloud` / `google`
 - **Files Modified:**

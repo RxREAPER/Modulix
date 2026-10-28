@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -95,12 +96,12 @@ class SyncService {
           .eq('id', userId)
           .maybeSingle();
 
-      AppState localAppState;
+      AppState workingState;
       try {
         final appStateAsync = ref.read(appStateProvider) as AsyncValue<AppState>?;
-        localAppState = appStateAsync?.asData?.value ?? StorageService.instance.load();
+        workingState = appStateAsync?.asData?.value ?? StorageService.instance.load();
       } catch (_) {
-        localAppState = StorageService.instance.load();
+        workingState = StorageService.instance.load();
       }
 
       if (profileRes != null) {
@@ -120,9 +121,9 @@ class SyncService {
         if (themeStr == 'light') pref = ThemePref.light;
         if (themeStr == 'dark') pref = ThemePref.dark;
 
-        final mergedAppState = localAppState.copyWith(
-          doctorName: docName.isNotEmpty ? docName : localAppState.doctorName,
-          leaderboardDisplayName: displayName ?? localAppState.leaderboardDisplayName,
+        workingState = workingState.copyWith(
+          doctorName: docName.isNotEmpty ? docName : workingState.doctorName,
+          leaderboardDisplayName: displayName ?? workingState.leaderboardDisplayName,
           leaderboardVisible: lbVisible,
           avatarIconId: avatarIcon,
           avatarColorId: avatarColor,
@@ -132,22 +133,20 @@ class SyncService {
           activeEdition: activeEd,
           dayStartHour: startHour,
         );
-
-        await StorageService.instance.save(mergedAppState);
       } else {
         // First-time profile creation from local guest data
         await client.from('profiles').upsert({
           'id': userId,
-          'doctor_name': localAppState.doctorName,
-          'display_name': localAppState.publicDisplayName,
-          'leaderboard_visible': localAppState.leaderboardVisible,
-          'avatar_icon_id': localAppState.avatarIconId,
-          'avatar_color_id': localAppState.avatarColorId,
-          'palette_preset_id': localAppState.palettePresetId,
-          'accent_color_id': localAppState.accentColorId,
-          'theme_pref': localAppState.themePref.name,
-          'active_edition': localAppState.activeEdition,
-          'day_start_hour': localAppState.dayStartHour,
+          'doctor_name': workingState.doctorName,
+          'display_name': workingState.publicDisplayName,
+          'leaderboard_visible': workingState.leaderboardVisible,
+          'avatar_icon_id': workingState.avatarIconId,
+          'avatar_color_id': workingState.avatarColorId,
+          'palette_preset_id': workingState.palettePresetId,
+          'accent_color_id': workingState.accentColorId,
+          'theme_pref': workingState.themePref.name,
+          'active_edition': workingState.activeEdition,
+          'day_start_hour': workingState.dayStartHour,
           'updated_at': DateTime.now().toUtc().toIso8601String(),
         });
       }
@@ -159,7 +158,7 @@ class SyncService {
           .eq('user_id', userId);
 
       final Map<String, EditionState> updatedEditions =
-          Map<String, EditionState>.from(localAppState.editions);
+          Map<String, EditionState>.from(workingState.editions);
 
       for (final row in (remoteEditions as List)) {
         final edId = row['edition_id'] as String;
@@ -217,21 +216,18 @@ class SyncService {
         );
       }
 
-      // Persist merged local edition state
-      AppState currentLocal;
-      try {
-        final latestAsync = ref.read(appStateProvider) as AsyncValue<AppState>?;
-        currentLocal = latestAsync?.asData?.value ?? localAppState;
-      } catch (_) {
-        currentLocal = localAppState;
-      }
-      final currentLocalWithMergedEditions = currentLocal.copyWith(
+      // Persist merged local edition state and immediately notify Riverpod
+      workingState = workingState.copyWith(
         editions: updatedEditions,
       );
-      await StorageService.instance.save(currentLocalWithMergedEditions);
+      await StorageService.instance.save(workingState);
       try {
-        ref.invalidate(appStateProvider);
-      } catch (_) {}
+        ref.read(appStateProvider.notifier).applySyncedState(workingState);
+      } catch (_) {
+        try {
+          ref.invalidate(appStateProvider);
+        } catch (_) {}
+      }
 
       // Push merged local edition state back to Supabase
       for (final entry in updatedEditions.entries) {
@@ -322,7 +318,7 @@ class SyncService {
 
       // Aggregate and sync leaderboard stats to profile via native SQLite engine
       try {
-        final startHour = localAppState.dayStartHour;
+        final startHour = workingState.dayStartHour;
         final todayStart = MetricsService.studyDayStart(startHour);
         final weekStart = MetricsService.studyWeekStart(startHour);
         final monthStart = MetricsService.studyMonthStart(startHour);
@@ -342,15 +338,20 @@ class SyncService {
         final weeklySecs = breakdown['weekly'] ?? 0;
         final monthlySecs = breakdown['monthly'] ?? 0;
 
+        // Defensive retention: do not downgrade remote total study seconds if higher
+        final remoteTotalSecs = (profileRes?['total_study_secs'] as num?)?.toInt() ?? 0;
+        final effectiveTotalSecs = math.max(totalSecs, remoteTotalSecs);
+
         await client.from('profiles').update({
-          'display_name': localAppState.publicDisplayName,
-          'total_study_secs': totalSecs,
+          'doctor_name': workingState.doctorName,
+          'display_name': workingState.publicDisplayName,
+          'total_study_secs': effectiveTotalSecs,
           'daily_study_secs': dailySecs,
           'weekly_study_secs': weeklySecs,
           'monthly_study_secs': monthlySecs,
           'last_study_day': dayKey,
           'last_study_month': monthKey,
-          'leaderboard_visible': localAppState.leaderboardVisible,
+          'leaderboard_visible': workingState.leaderboardVisible,
           'updated_at': DateTime.now().toUtc().toIso8601String(),
         }).eq('id', userId);
       } catch (e) {

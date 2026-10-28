@@ -21,6 +21,7 @@ import '../../widgets/errors/app_error_state_view.dart';
 import '../../widgets/loading/app_shimmer.dart';
 import '../../widgets/feedback/modulix_toast.dart';
 import '../../widgets/brand/modulix_logo.dart';
+import '../../services/sync_service.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -58,105 +59,115 @@ class HomeScreen extends ConsumerWidget {
           body: FilmicMetalMeshBackground(
             child: SafeArea(
               bottom: false,
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                padding: EdgeInsets.only(
-                  top: 14,
-                  bottom: MediaQuery.paddingOf(context).bottom + 100.0,
-                ),
-                child: PageEntrance(
-                  staggerMs: 35,
-                  durationMs: 220,
-                  slideY: 12.0,
-                  children: [
-                    // ① Sleek Brand Bar (without sync tag)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // Sleek brand mark inside smooth transparent container
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 46,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? Colors.white.withValues(alpha: 0.06)
-                                      : Colors.black.withValues(alpha: 0.035),
-                                  borderRadius: BorderRadius.circular(11),
-                                  border: Border.all(
+              child: RefreshIndicator(
+                color: AppTheme.accentPrimary,
+                backgroundColor: AppTheme.cardWhite,
+                onRefresh: () async {
+                  HapticFeedback.lightImpact();
+                  await SyncService.instance.syncFull(ref);
+                },
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  padding: EdgeInsets.only(
+                    top: 14,
+                    bottom: MediaQuery.paddingOf(context).bottom + 100.0,
+                  ),
+                  child: PageEntrance(
+                    staggerMs: 35,
+                    durationMs: 220,
+                    slideY: 12.0,
+                    children: [
+                      // ① Sleek Brand Bar (without sync tag)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Sleek brand mark inside smooth transparent container
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 46,
+                                  height: 44,
+                                  decoration: BoxDecoration(
                                     color: isDark
-                                        ? Colors.white.withValues(alpha: 0.12)
-                                        : Colors.black.withValues(alpha: 0.07),
-                                    width: 0.6,
+                                        ? Colors.white.withValues(alpha: 0.06)
+                                        : Colors.black.withValues(alpha: 0.035),
+                                    borderRadius: BorderRadius.circular(11),
+                                    border: Border.all(
+                                      color: isDark
+                                          ? Colors.white.withValues(alpha: 0.12)
+                                          : Colors.black.withValues(alpha: 0.07),
+                                      width: 0.6,
+                                    ),
+                                  ),
+                                  child: const Center(
+                                    child: ModulixLogo(
+                                      size: 30,
+                                    ),
                                   ),
                                 ),
-                                child: const Center(
-                                  child: ModulixLogo(
-                                    size: 30,
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Modulix',
+                                  style: AppTheme.headingStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.3,
+                                    color: AppTheme.inkForeground,
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                'Modulix',
-                                style: AppTheme.headingStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: -0.3,
-                                  color: AppTheme.inkForeground,
-                                ),
-                              ),
-                            ],
-                          ),
-                          // Right profile avatar (purged sync tag for pure minimalism)
-                          ProfileAvatar(
-                            size: 40,
-                            colorId: state.avatarColorId,
-                            iconId: state.avatarIconId,
-                            doctorName: doctorName,
-                            onTap: () => context.go('/settings?from=/'),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Editorial Title: Focus, Dr. [Name] in EBGaramond Italic
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 22, 20, 4),
-                      child: Text(
-                        'Focus, ${_formatDoctorTitle(doctorName)}',
-                        style: AppTheme.headingStyle(
-                          fontSize: 29,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          letterSpacing: -0.3,
-                          height: 1.15,
+                              ],
+                            ),
+                            // Right profile avatar (purged sync tag for pure minimalism)
+                            ProfileAvatar(
+                              size: 40,
+                              colorId: state.avatarColorId,
+                              iconId: state.avatarIconId,
+                              doctorName: doctorName,
+                              onTap: () => context.go('/settings?from=/'),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
 
-                    // ② Standout Unified Hero Clock Card (with generous breathing room for the gradient)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 18),
-                      child: RepaintBoundary(child: StudyDeskClock(doctorName: doctorName)),
-                    ),
+                      // Editorial Title: Focus, Dr. [Name] in EBGaramond Italic
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 22, 20, 4),
+                        child: Text(
+                          'Focus, ${_formatDoctorTitle(doctorName)}',
+                          style: AppTheme.headingStyle(
+                            fontSize: 29,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: -0.3,
+                            height: 1.15,
+                          ),
+                        ),
+                      ),
 
-                    // ③ Today's Tasks Section
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
-                      child: RepaintBoundary(child: _HomeTasksSection()),
-                    ),
+                      // ② Standout Unified Hero Clock Card (with generous breathing room for the gradient)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 18),
+                        child: RepaintBoundary(child: StudyDeskClock(doctorName: doctorName)),
+                      ),
 
-                    // ④ Module Based Tasks Section
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
-                      child: RepaintBoundary(child: _HomeModuleTrackerSection()),
-                    ),
-                  ],
+                      // ③ Today's Tasks Section
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
+                        child: RepaintBoundary(child: _HomeTasksSection()),
+                      ),
+
+                      // ④ Module Based Tasks Section
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
+                        child: RepaintBoundary(child: _HomeModuleTrackerSection()),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
