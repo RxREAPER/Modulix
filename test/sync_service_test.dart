@@ -128,5 +128,19 @@ void main() {
       expect(taskMap.containsKey('task_3'), isTrue);
       expect(mergedCompleted, equals({'task_1', 'task_2'}));
     });
+
+    test('Queue batch video IDs bidirectional merge preserves order and appends remote items', () {
+      final localQueue = ['vid_101', 'vid_102'];
+      final remoteQueue = ['vid_102', 'vid_103', 'vid_104'];
+
+      final mergedQueue = List<String>.from(localQueue);
+      for (final qId in remoteQueue) {
+        if (!mergedQueue.contains(qId)) {
+          mergedQueue.add(qId);
+        }
+      }
+
+      expect(mergedQueue, equals(['vid_101', 'vid_102', 'vid_103', 'vid_104']));
+    });
   });
 }

@@ -24,8 +24,11 @@ class BackupService {
   static const int currentSchemaVersion = 1;
 
   /// Creates a complete JSON backup string representing all student data
-  static Future<String> createBackupPayload(WidgetRef ref) async {
-    final appState = ref.read(appStateProvider).valueOrNull ?? AppState.empty;
+  static Future<String> createBackupPayload(dynamic ref, {bool formatted = true}) async {
+    final appStateVal = ref.read(appStateProvider);
+    final appState = (appStateVal is AsyncValue<AppState>)
+        ? (appStateVal.valueOrNull ?? AppState.empty)
+        : (appStateVal is AppState ? appStateVal : AppState.empty);
     final timeLogs = await DatabaseService.instance.getAllTimeLogs();
     final dailyState = ref.read(dailyTasksProvider);
     final prefs = await SharedPreferences.getInstance();
@@ -46,7 +49,10 @@ class BackupService {
       },
     };
 
-    return const JsonEncoder.withIndent('  ').convert(payload);
+    if (formatted) {
+      return const JsonEncoder.withIndent('  ').convert(payload);
+    }
+    return jsonEncode(payload);
   }
 
   /// Exports backup to a temporary file and opens the system Share sheet
@@ -224,8 +230,8 @@ class BackupService {
   // ── CLOUD SNAPSHOT VAULT (SUPABASE STORAGE) ───────────────────────────────
 
   /// Creates a compressed (.json.gz) backup payload byte array
-  static Future<Uint8List> createCompressedBackupBytes(WidgetRef ref) async {
-    final jsonStr = await createBackupPayload(ref);
+  static Future<Uint8List> createCompressedBackupBytes(dynamic ref) async {
+    final jsonStr = await createBackupPayload(ref, formatted: false);
     final utf8Bytes = utf8.encode(jsonStr);
     final compressed = gzip.encode(utf8Bytes);
     return Uint8List.fromList(compressed);
@@ -238,7 +244,7 @@ class BackupService {
   }
 
   /// Uploads a compressed snapshot archive to the user's private Supabase Storage vault
-  static Future<bool> uploadSnapshotToCloud(WidgetRef ref) async {
+  static Future<bool> uploadSnapshotToCloud(dynamic ref) async {
     try {
       final auth = AuthService.instance;
       if (!auth.isAuthenticated || auth.client == null || auth.currentUserId == null) {

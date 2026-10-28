@@ -159,9 +159,11 @@ class SyncService {
 
       final Map<String, EditionState> updatedEditions =
           Map<String, EditionState>.from(workingState.editions);
+      final Set<String> dirtyEditionIds = <String>{};
 
       for (final row in (remoteEditions as List)) {
-        final edId = row['edition_id'] as String;
+        final edId = row['edition_id']?.toString() ?? '';
+        if (edId.isEmpty) continue;
         final localEd = updatedEditions[edId] ?? const EditionState();
 
         final remoteCompletedVideos =
@@ -172,7 +174,7 @@ class SyncService {
             (row['completed_notes'] as Map<String, dynamic>?) ?? {};
         final remoteDailyHist =
             (row['daily_history'] as Map<String, dynamic>?)?.map(
-                  (k, v) => MapEntry(k, (v as num?)?.toInt() ?? 0),
+                  (k, v) => MapEntry(k.toString(), (v as num?)?.toInt() ?? 0),
                 ) ??
                 {};
         final remoteBulkChapters =
@@ -180,6 +182,11 @@ class SyncService {
                     ?.map((e) => e.toString())
                     .toSet() ??
                 <String>{};
+        final remoteQueueBatch =
+            (row['queue_batch_video_ids'] as List<dynamic>?)
+                    ?.map((e) => e.toString())
+                    .toList() ??
+                <String>[];
 
         // Additive Union Merging for completions (Progress is NEVER lost)
         final mergedVideos = Map<String, dynamic>.from(localEd.completedVideos)
@@ -199,6 +206,14 @@ class SyncService {
               ..addAll(remoteBulkChapters))
             .toList();
 
+        // Bidirectional merge of queued batch video IDs
+        final mergedQueue = List<String>.from(localEd.queueBatchVideoIds);
+        for (final qId in remoteQueueBatch) {
+          if (!mergedQueue.contains(qId)) {
+            mergedQueue.add(qId);
+          }
+        }
+
         StudyPlan mergedPlan = localEd.plan;
         if (!mergedPlan.isConfigured && row['plan_json'] != null) {
           try {
@@ -206,14 +221,45 @@ class SyncService {
           } catch (_) {}
         }
 
-        updatedEditions[edId] = localEd.copyWith(
+        final mergedEd = localEd.copyWith(
           completedVideos: mergedVideos,
           completedQBanks: mergedQBanks,
           completedNotes: mergedNotes,
           dailyHistory: mergedHistory,
           bulkCompletedChapters: mergedBulkChapters,
+          queueBatchVideoIds: mergedQueue,
           plan: mergedPlan,
         );
+
+        final hasLocalChanges = localEd.completedVideos.length != remoteCompletedVideos.length ||
+            localEd.completedQBanks.length != remoteCompletedQBanks.length ||
+            localEd.completedNotes.length != remoteCompletedNotes.length ||
+            localEd.bulkCompletedChapters.length != remoteBulkChapters.length ||
+            localEd.queueBatchVideoIds.length != remoteQueueBatch.length ||
+            (localEd.plan.isConfigured && row['plan_json'] == null);
+
+        if (hasLocalChanges || mergedEd != localEd) {
+          dirtyEditionIds.add(edId);
+        }
+
+        updatedEditions[edId] = mergedEd;
+      }
+
+      // Check local editions that were never recorded remotely
+      final remoteEditionIds = (remoteEditions as List)
+          .map((r) => r['edition_id']?.toString() ?? '')
+          .toSet();
+      for (final entry in updatedEditions.entries) {
+        if (!remoteEditionIds.contains(entry.key)) {
+          if (entry.value.completedVideos.isNotEmpty ||
+              entry.value.completedQBanks.isNotEmpty ||
+              entry.value.completedNotes.isNotEmpty ||
+              entry.value.bulkCompletedChapters.isNotEmpty ||
+              entry.value.queueBatchVideoIds.isNotEmpty ||
+              entry.value.plan.isConfigured) {
+            dirtyEditionIds.add(entry.key);
+          }
+        }
       }
 
       // Persist merged local edition state and immediately notify Riverpod
@@ -229,69 +275,81 @@ class SyncService {
         } catch (_) {}
       }
 
-      // Push merged local edition state back to Supabase
-      for (final entry in updatedEditions.entries) {
-        await client.from('study_editions').upsert({
-          'user_id': userId,
-          'edition_id': entry.key,
-          'plan_json': entry.value.plan.toJson(),
-          'completed_videos': entry.value.completedVideos,
-          'completed_qbanks': entry.value.completedQBanks,
-          'completed_notes': entry.value.completedNotes,
-          'daily_history': entry.value.dailyHistory,
-          'bulk_completed_chapters': entry.value.bulkCompletedChapters,
-          'queue_batch_video_ids': entry.value.queueBatchVideoIds,
-          'updated_at': DateTime.now().toUtc().toIso8601String(),
-        });
+      // High-performance batch upsert: ONLY push dirty / modified editions in a single call
+      if (dirtyEditionIds.isNotEmpty) {
+        final payloads = dirtyEditionIds.map((edId) {
+          final ed = updatedEditions[edId]!;
+          return {
+            'user_id': userId,
+            'edition_id': edId,
+            'plan_json': ed.plan.toJson(),
+            'completed_videos': ed.completedVideos,
+            'completed_qbanks': ed.completedQBanks,
+            'completed_notes': ed.completedNotes,
+            'daily_history': ed.dailyHistory,
+            'bulk_completed_chapters': ed.bulkCompletedChapters,
+            'queue_batch_video_ids': ed.queueBatchVideoIds,
+            'updated_at': DateTime.now().toUtc().toIso8601String(),
+          };
+        }).toList();
+
+        await client.from('study_editions').upsert(payloads);
       }
 
       // ── 3. SYNC TIME LOGS (FOCUS SESSIONS) ─────────────────────────────────
       final prefs = await SharedPreferences.getInstance();
       final lastSyncMillis = prefs.getInt('modulix_last_synced_at_v1') ?? 0;
 
-      final localLogs = await DatabaseService.instance.getAllTimeLogs();
-      final localLogMap = {for (final l in localLogs) l.id: l};
+      // Incremental SQLite query: only load candidate local logs created since last sync window
+      final fetchSinceMs = lastSyncMillis > 0
+          ? (lastSyncMillis - 60000).clamp(0, double.maxFinite).toInt()
+          : 0;
+
+      final candidateLogs = lastSyncMillis > 0
+          ? await DatabaseService.instance.getTimeLogsSince(fetchSinceMs)
+          : await DatabaseService.instance.getAllTimeLogs();
 
       var remoteLogsQuery = client.from('time_logs').select().eq('user_id', userId);
       if (lastSyncMillis > 0) {
         // Incremental sync: pull only records within or newer than last sync window
-        // (subtract 60s clock skew margin)
-        final fetchSince = (lastSyncMillis - 60000).clamp(0, double.maxFinite).toInt();
-        remoteLogsQuery = remoteLogsQuery.gt('timestamp', fetchSince);
+        remoteLogsQuery = remoteLogsQuery.gt('timestamp', fetchSinceMs);
       }
       final remoteLogsRes = await remoteLogsQuery;
 
+      final List<dynamic> remoteRows = (remoteLogsRes as List<dynamic>?) ?? [];
+      final remoteRowIds = remoteRows
+          .map((r) => r['id']?.toString() ?? '')
+          .where((id) => id.isNotEmpty)
+          .toList();
+
+      // Check which remote IDs already exist in local SQLite without loading all logs
+      final existingLocalIds = await DatabaseService.instance.getExistingLogIds(remoteRowIds);
+
       final List<TimeLog> downloadedLogs = [];
-      for (final row in (remoteLogsRes as List)) {
+      for (final row in remoteRows) {
         final id = row['id']?.toString() ?? '';
-        if (id.isEmpty) continue;
-        if (!localLogMap.containsKey(id)) {
-          // Download remote session that occurred on another device
-          downloadedLogs.add(TimeLog(
-            id: id,
-            subjectId: row['subject_id']?.toString() ?? '',
-            topicId: row['topic_id']?.toString(),
-            topicType: row['topic_type']?.toString() ?? 'standalone',
-            topicTitle: row['topic_title']?.toString() ?? '',
-            chapterName: row['chapter_name']?.toString() ?? '',
-            durationSecs: (row['duration_secs'] as num?)?.toInt() ?? 0,
-            timestamp: DateTime.fromMillisecondsSinceEpoch(
-              (row['timestamp'] as num?)?.toInt() ?? DateTime.now().millisecondsSinceEpoch,
-            ),
-          ));
-        }
+        if (id.isEmpty || existingLocalIds.contains(id)) continue;
+        downloadedLogs.add(TimeLog(
+          id: id,
+          subjectId: row['subject_id']?.toString() ?? '',
+          topicId: row['topic_id']?.toString(),
+          topicType: row['topic_type']?.toString() ?? 'standalone',
+          topicTitle: row['topic_title']?.toString() ?? '',
+          chapterName: row['chapter_name']?.toString() ?? '',
+          durationSecs: (row['duration_secs'] as num?)?.toInt() ?? 0,
+          timestamp: DateTime.fromMillisecondsSinceEpoch(
+            (row['timestamp'] as num?)?.toInt() ?? DateTime.now().millisecondsSinceEpoch,
+          ),
+        ));
       }
       if (downloadedLogs.isNotEmpty) {
         await DatabaseService.instance.insertTimeLogsBatch(downloadedLogs);
         await ref.read(timeLogsProvider.notifier).reloadFromDatabase();
       }
 
-      // Upload any local sessions not yet in the cloud
-      final remoteIds = (remoteLogsRes as List).map((r) => r['id']?.toString() ?? '').toSet();
-      final candidateLogs = lastSyncMillis > 0
-          ? localLogs.where((l) => l.timestamp.millisecondsSinceEpoch >= (lastSyncMillis - 60000)).toList()
-          : localLogs;
-      final missingRemote = candidateLogs.where((l) => !remoteIds.contains(l.id)).toList();
+      // Upload local sessions not yet in the cloud
+      final remoteIdsSet = remoteRowIds.toSet();
+      final missingRemote = candidateLogs.where((l) => !remoteIdsSet.contains(l.id)).toList();
 
       if (missingRemote.isNotEmpty) {
         final payload = missingRemote.map((l) => {
@@ -367,6 +425,8 @@ class SyncService {
           .eq('user_id', userId)
           .maybeSingle();
 
+      bool dailyTasksDirty = false;
+
       if (remoteDailyRes != null) {
         final remoteTasksRaw = remoteDailyRes['tasks_json'] as List<dynamic>? ?? [];
         final remoteCompletedIds =
@@ -413,8 +473,22 @@ class SyncService {
 
         final tasksJson = jsonEncode(taskMap.values.map((t) => t.toMap()).toList());
         final completedJson = jsonEncode(mergedCompleted.toList());
-        final deletedJson = jsonEncode(mergedDeleted.toList());
+        final boundedDeleted = mergedDeleted.length > 100
+            ? mergedDeleted.toList().sublist(mergedDeleted.length - 100).toSet()
+            : mergedDeleted;
+        final deletedJson = jsonEncode(boundedDeleted.toList());
         final histJson = jsonEncode(mergedDailyHist);
+
+        final localTasksJson = jsonEncode(localTasks.map((t) => t.toMap()).toList());
+        final localCompletedJson = jsonEncode(localCompleted.toList());
+
+        if (tasksJson != jsonEncode(remoteTasksRaw) ||
+            completedJson != jsonEncode(remoteDailyRes['completed_ids']) ||
+            boundedDeleted.length != remoteDeletedIds.length ||
+            localTasksJson != tasksJson ||
+            localCompletedJson != completedJson) {
+          dailyTasksDirty = true;
+        }
 
         await prefs.setString('modulix_daily_tasks_v1', tasksJson);
         await prefs.setString('flowmd_daily_tasks_v2', tasksJson);
@@ -434,22 +508,32 @@ class SyncService {
         }
 
         await ref.read(dailyTasksProvider.notifier).reload();
+      } else {
+        dailyTasksDirty = dailyState.tasks.isNotEmpty ||
+            dailyState.completedIds.isNotEmpty ||
+            dailyState.dateHistory.isNotEmpty;
       }
 
-      // Push final merged tasks back to Supabase
-      final finalDaily = ref.read(dailyTasksProvider);
-      final finalLastDate = prefs.getString('modulix_tasks_last_date_v1') ??
-          prefs.getString('flowmd_tasks_last_date_v1') ??
-          '';
-      await client.from('daily_tasks').upsert({
-        'user_id': userId,
-        'tasks_json': finalDaily.tasks.map((t) => t.toMap()).toList(),
-        'completed_ids': finalDaily.completedIds.toList(),
-        'deleted_ids': finalDaily.deletedIds.toList(),
-        'date_history': finalDaily.dateHistory,
-        'last_active_date': finalLastDate,
-        'updated_at': DateTime.now().toUtc().toIso8601String(),
-      });
+      // Push final merged tasks back to Supabase only if changes occurred
+      if (dailyTasksDirty) {
+        final finalDaily = ref.read(dailyTasksProvider);
+        final finalLastDate = prefs.getString('modulix_tasks_last_date_v1') ??
+            prefs.getString('flowmd_tasks_last_date_v1') ??
+            '';
+        final boundedFinalDeleted = finalDaily.deletedIds.length > 100
+            ? finalDaily.deletedIds.toList().sublist(finalDaily.deletedIds.length - 100).toList()
+            : finalDaily.deletedIds.toList();
+
+        await client.from('daily_tasks').upsert({
+          'user_id': userId,
+          'tasks_json': finalDaily.tasks.map((t) => t.toMap()).toList(),
+          'completed_ids': finalDaily.completedIds.toList(),
+          'deleted_ids': boundedFinalDeleted,
+          'date_history': finalDaily.dateHistory,
+          'last_active_date': finalLastDate,
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        });
+      }
 
       lastSyncedAt = DateTime.now();
       await prefs.setInt('modulix_last_synced_at_v1', lastSyncedAt!.millisecondsSinceEpoch);

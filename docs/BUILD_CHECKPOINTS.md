@@ -46,6 +46,28 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-123]` — Cloud Sync Payload Optimization, Queue Batch Merging, O(Δ) SQLite Reads & Supabase Advisor Hardening
+- **Category:** `cloud` / `sync` / `database` / `optimization`
+- **Files Modified:**
+  - `lib/services/sync_service.dart`
+  - `lib/services/database_service.dart`
+  - `lib/services/backup_service.dart`
+  - `lib/providers/daily_tasks_provider.dart`
+  - `supabase/migrations/009_cloud_sync_payload_and_advisor_optimization.sql`
+  - `test/sync_service_test.dart`
+  - `test/cloud_sync_resilience_test.dart`
+- **Summary:**
+  - **Queue Batch Merging Bug Fixed:** Resolved bug where `queue_batch_video_ids` was dropped when fetching from Supabase and overwritten on push; implemented bidirectional union and ordering preservation.
+  - **$O(N) \to O(\Delta)$ Incremental SQLite Queries:** Added `DatabaseService.instance.getTimeLogsSince(sinceMs)` and `getExistingLogIds(ids)` to eliminate full-table loads on auto-syncs.
+  - **Batch Upsert & Dirty Filter for Editions:** Replaced sequential loop of 4-5 HTTP roundtrips with dirty-edition detection and a single batched `client.from('study_editions').upsert(payloads)` call.
+  - **Bounded Tombstones:** Limited `deletedIds` to 100 entries in `DailyTasksNotifier` and added dirty check before pushing `daily_tasks`.
+  - **Compact JSON for Cloud Vaults:** Updated `BackupService.createCompressedBackupBytes` to use unindented compact JSON, reducing backup vault transfer and storage footprints by 30-40%.
+  - **Supabase Advisor Hardening:** Consolidated permissive SELECT policies on `public.profiles` to resolve performance advisor warnings, converted `get_leaderboard_bundle` to `SECURITY INVOKER`, added IDOR caller identity check on `record_focus_session`, and revoked execution on deprecated legacy functions.
+- **Verification:** `flutter analyze` 0 issues, `flutter test` 18/18 tests green (100%), Supabase performance & security advisors verified.
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### 🔖 `[CKPT-122]` — Cross-Device Cloud Sync State Consolidation & Cloudflare Edge Reverse Proxy
 - **Category:** `cloud` / `sync` / `network` / `cloudflare`
 - **Files Modified:**

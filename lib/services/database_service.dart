@@ -322,6 +322,41 @@ class DatabaseService {
     return results.map(_mapToLog).toList();
   }
 
+  /// High-performance incremental fetch: queries only logs on or after given timestamp
+  /// utilizing SQLite index `idx_time_logs_timestamp`.
+  Future<List<TimeLog>> getTimeLogsSince(int sinceTimestampMs) async {
+    final db = await database;
+    final results = await db.query(
+      'time_logs',
+      where: 'timestamp >= ?',
+      whereArgs: [sinceTimestampMs],
+      orderBy: 'timestamp ASC',
+    );
+    return results.map(_mapToLog).toList();
+  }
+
+  /// Fast ID check without instantiating full TimeLog model objects
+  Future<Set<String>> getExistingLogIds(List<String> ids) async {
+    if (ids.isEmpty) return <String>{};
+    final db = await database;
+    final existing = <String>{};
+    const chunkSize = 500;
+    for (var i = 0; i < ids.length; i += chunkSize) {
+      final end = (i + chunkSize < ids.length) ? i + chunkSize : ids.length;
+      final chunk = ids.sublist(i, end);
+      final placeholders = List.filled(chunk.length, '?').join(',');
+      final res = await db.rawQuery(
+        'SELECT id FROM time_logs WHERE id IN ($placeholders)',
+        chunk,
+      );
+      for (final row in res) {
+        final id = row['id']?.toString();
+        if (id != null) existing.add(id);
+      }
+    }
+    return existing;
+  }
+
   Future<void> deleteTimeLog(String id) async {
     final db = await database;
     await db.delete('time_logs', where: 'id = ?', whereArgs: [id]);

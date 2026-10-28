@@ -391,12 +391,16 @@ class DailyTasksNotifier extends StateNotifier<DailyTasksState> {
     await _loadFuture;
     if (incomingDeletedIds.isEmpty) return;
     final updatedDeleted = Set<String>.from(state.deletedIds)..addAll(incomingDeletedIds);
+    // Bounded tombstone retention: retain up to 100 most recent tombstones
+    final boundedDeleted = updatedDeleted.length > 100
+        ? updatedDeleted.toList().sublist(updatedDeleted.length - 100).toSet()
+        : updatedDeleted;
     final updatedTasks = state.tasks.where((t) => !incomingDeletedIds.contains(t.id)).toList();
     final updatedCompleted = state.completedIds.where((id) => !incomingDeletedIds.contains(id)).toSet();
     state = state.copyWith(
       tasks: updatedTasks,
       completedIds: updatedCompleted,
-      deletedIds: updatedDeleted,
+      deletedIds: boundedDeleted,
     );
     await _persist();
   }
@@ -450,12 +454,15 @@ class DailyTasksNotifier extends StateNotifier<DailyTasksState> {
     try {
       final prefs = _cachedPrefs ?? await SharedPreferences.getInstance();
       _cachedPrefs = prefs;
+      final boundedDeleted = state.deletedIds.length > 100
+          ? state.deletedIds.toList().sublist(state.deletedIds.length - 100).toSet()
+          : state.deletedIds;
       await prefs.setString(_kLastActiveDateKey, _todayKey());
       await prefs.setString(_kDailyTasksKey, jsonEncode(state.tasks.map((t) => t.toMap()).toList()));
       await prefs.setString(_kCompletedTasksKey, jsonEncode(state.completedIds.toList()));
       await prefs.setString(_kTasksHistoryKey, jsonEncode(state.dateHistory));
-      await prefs.setString(_kDeletedTasksKey, jsonEncode(state.deletedIds.toList()));
-      await prefs.setString(_kLegacyDeletedTasksKey, jsonEncode(state.deletedIds.toList()));
+      await prefs.setString(_kDeletedTasksKey, jsonEncode(boundedDeleted.toList()));
+      await prefs.setString(_kLegacyDeletedTasksKey, jsonEncode(boundedDeleted.toList()));
       if (_ref != null) {
         SyncService.instance.schedulePush(_ref);
       }

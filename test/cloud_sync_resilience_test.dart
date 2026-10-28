@@ -5,7 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:modulix/models/daily_desk_task.dart';
+import 'package:modulix/models/time_log.dart';
 import 'package:modulix/services/backup_service.dart';
+import 'package:modulix/services/database_service.dart';
 import 'package:modulix/services/network_resilience_service.dart';
 import 'package:modulix/providers/daily_tasks_provider.dart';
 
@@ -90,6 +92,17 @@ void main() {
       expect(decodedFromService['app_state'], isNotNull);
     });
 
+    test('Compact JSON payload creates smaller byte size than formatted JSON', () async {
+      final container = ProviderContainer();
+      final ref = TestWidgetRef(container);
+
+      final compact = await BackupService.createBackupPayload(ref, formatted: false);
+      final formatted = await BackupService.createBackupPayload(ref, formatted: true);
+
+      expect(compact.length, lessThan(formatted.length));
+      expect(compact.contains('\n'), isFalse);
+    });
+
     test('CloudSnapshot formattedSize formats byte ranges correctly', () {
       const s1 = CloudSnapshot(name: 's1', path: 'p1', sizeBytes: 512);
       expect(s1.formattedSize, '512 B');
@@ -158,6 +171,90 @@ void main() {
       await notifier.clearTasks();
       expect(notifier.state.tasks, isEmpty);
       expect(notifier.state.deletedIds, containsAll(['task_1', 'task_2']));
+    });
+
+    test('mergeTombstones bounds deletedIds set to maximum 100 entries', () async {
+      SharedPreferences.setMockInitialValues({});
+      final notifier = DailyTasksNotifier();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      final largeTombstones = List.generate(150, (i) => 'old_task_$i').toSet();
+      await notifier.mergeTombstones(largeTombstones);
+
+      expect(notifier.state.deletedIds.length, 100);
+      expect(notifier.state.deletedIds, contains('old_task_149'));
+    });
+  });
+
+  group('DatabaseService Incremental Sync Query Tests', () {
+    late Database testDb;
+
+    setUp(() async {
+      testDb = await openDatabase(
+        inMemoryDatabasePath,
+        version: 4,
+        onCreate: (db, version) async {
+          await db.execute('''
+            CREATE TABLE time_logs (
+              id TEXT PRIMARY KEY,
+              subject_id TEXT NOT NULL,
+              topic_id TEXT,
+              topic_type TEXT NOT NULL,
+              topic_title TEXT NOT NULL,
+              chapter_name TEXT NOT NULL,
+              duration_secs INTEGER NOT NULL,
+              timestamp INTEGER NOT NULL
+            )
+          ''');
+          await db.execute(
+              'CREATE INDEX IF NOT EXISTS idx_time_logs_timestamp ON time_logs(timestamp)');
+        },
+      );
+      DatabaseService.instance.setTestDatabase(testDb);
+    });
+
+    tearDown(() async {
+      await testDb.close();
+      DatabaseService.instance.setTestDatabase(null);
+    });
+
+    test('getTimeLogsSince filters logs by timestamp and preserves order', () async {
+      final log1 = TimeLog(
+        id: 'l1',
+        subjectId: 'anat',
+        topicType: 'video',
+        topicTitle: 'Heart',
+        chapterName: 'Thorax',
+        durationSecs: 1000,
+        timestamp: DateTime.fromMillisecondsSinceEpoch(100000),
+      );
+      final log2 = TimeLog(
+        id: 'l2',
+        subjectId: 'phys',
+        topicType: 'video',
+        topicTitle: 'ECG',
+        chapterName: 'CVS',
+        durationSecs: 1200,
+        timestamp: DateTime.fromMillisecondsSinceEpoch(200000),
+      );
+      final log3 = TimeLog(
+        id: 'l3',
+        subjectId: 'bio',
+        topicType: 'qbank',
+        topicTitle: 'Enzymes',
+        chapterName: 'Biochem',
+        durationSecs: 1500,
+        timestamp: DateTime.fromMillisecondsSinceEpoch(300000),
+      );
+
+      await DatabaseService.instance.insertTimeLogsBatch([log1, log2, log3]);
+
+      final logsSince150k = await DatabaseService.instance.getTimeLogsSince(150000);
+      expect(logsSince150k.length, 2);
+      expect(logsSince150k.map((l) => l.id), equals(['l2', 'l3']));
+
+      final existingIds = await DatabaseService.instance.getExistingLogIds(['l1', 'l3', 'l999']);
+      expect(existingIds, equals({'l1', 'l3'}));
     });
   });
 }
