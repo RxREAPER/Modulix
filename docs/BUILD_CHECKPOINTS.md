@@ -24,6 +24,24 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-109]` — Section 3 Unboxing, Default Autoplay Loop & Spacious MBBS Curriculum Overhaul
+- **Category:** `web` / `ui` / `curriculum` / `motion`
+- **Files Modified:**
+  - `modulix_landing_page/src/components/sections/study-journey/StudyJourneySection.tsx` (unboxed the stage completely by removing outer enclosing white box, letting motion cards sit directly on canvas; re-enabled smooth auto-play kinetic loop by default with click-to-reset interval)
+  - `modulix_landing_page/src/components/sections/study-journey/TopicStation.tsx` (complete overhaul from cramped layout to spacious MBBS curriculum card: added prominent Microscope sketch emblem, Robbins 10th Ed. metadata, full-width gradient progress bar, and 2 distinct breathable syllabus rows for completed Unit 03 Hemodynamics & active Unit 04 Cell Injury)
+  - `modulix_landing_page/src/components/sections/study-journey/TaskStation.tsx` (standardized to max-w-md and p-6 sm:p-7 for unified unboxed footprint)
+  - `modulix_landing_page/src/components/sections/study-journey/TimerStation.tsx` (standardized to max-w-md and p-6 sm:p-7 for unified unboxed footprint)
+  - `modulix_landing_page/src/components/sections/study-journey/AnalyticsStation.tsx` (standardized to max-w-md and p-6 sm:p-7 for unified unboxed footprint)
+  - `modulix_landing_page/src/components/sections/study-journey/PodiumStation.tsx` (standardized to max-w-md and p-6 sm:p-7 for unified unboxed footprint)
+- **Summary:**
+  - Eradicated "box-within-a-box" double enclosing container, allowing the kinetic cards to float seamlessly on the page surface.
+  - Restored frictionless background auto-play (4.0s cycle) as default while allowing instant manual node navigation.
+  - Eliminated cramped UI in Phase 2 by expanding spacing, adding medical syllabus breadcrumbs, and introducing an active pulsing focus beacon.
+- **Verification:** `bun x tsc -b` (0 errors) and `bun run build` (built in 20.6s). Verified on live Vite dev server.
+- **Build Status:** ✅ Verified & Live
+
+---
+
 ### 🔖 `[CKPT-108]` — Study Timeline Section 3 Hardening: Preserved Step Header, Shoved Phase Out of Card, Dual-Flap Non-Overlapping Flip Timer & Secured Fixed Geometry
 - **Category:** `web` / `ui` / `timeline` / `animation`
 - **Files Modified:**

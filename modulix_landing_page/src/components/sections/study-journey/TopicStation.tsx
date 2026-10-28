@@ -1,5 +1,5 @@
 import { motion } from "framer-motion"
-import { Check } from "lucide-react"
+import { Microscope, Check } from "lucide-react"
 import { useTheme } from "../../../lib/theme"
 
 interface StationProps {
@@ -11,64 +11,83 @@ export function TopicStation({ isActive }: StationProps) {
 
   return (
     <div className="w-full flex items-center justify-center select-none">
-      {/* ── Minimalist Subject Card (Zero Tags, Zero Badges) ── */}
+      {/* ── Spacious MBBS Curriculum Card (Zero Cramped UI) ── */}
       <motion.div
         layout
-        className={`w-full max-w-sm rounded-2xl border p-6 transition-colors relative overflow-hidden ${
+        className={`w-full max-w-md rounded-2xl border p-6 sm:p-7 transition-colors relative overflow-hidden ${
           isDark
             ? "bg-[#16171B] border-white/8 shadow-[0_12px_36px_rgba(0,0,0,0.4)]"
             : "bg-[#FCFAF5] border-[#EAE3D2] shadow-[0_8px_24px_rgba(0,0,0,0.04)]"
         }`}
       >
-        {/* Subject Header */}
+        {/* Top Header: Subject Icon & Title */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            {/* Subject Sketch Icon Bubble */}
-            <div className="w-9 h-9 rounded-xl bg-[#DC2626]/10 flex items-center justify-center flex-shrink-0">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="3" />
-                <path d="M12 2v3m0 14v3M2 12h3m14 0h3" />
-                <path d="M4.93 4.93l2.12 2.12m9.9 9.9l2.12 2.12M4.93 19.07l2.12-2.12m9.9-9.9l2.12-2.12" />
-              </svg>
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-[#DC2626]/10 flex items-center justify-center flex-shrink-0 text-[#DC2626]">
+              <Microscope size={20} strokeWidth={2.2} />
             </div>
-
             <div>
-              <h4 className="font-editorial text-base sm:text-lg font-bold text-[var(--ink-foreground)] leading-none">
+              <h4 className="font-editorial text-lg font-bold text-[var(--ink-foreground)] leading-tight">
                 Pathology
               </h4>
               <span className="font-mono text-xs text-[var(--muted-text)] opacity-70">
-                124 videos · 48.5 hours
+                2nd Prof MBBS · Robbins 10th Ed.
               </span>
             </div>
           </div>
 
-          {/* Minimal Percentage Text (No Badge) */}
-          <span className="font-mono text-sm font-bold text-[var(--ink-foreground)] opacity-90">
-            42%
-          </span>
+          <div className="text-right">
+            <span className="font-mono text-base font-bold text-[var(--accent)] block leading-none">
+              42%
+            </span>
+            <span className="font-mono text-[10px] text-[var(--muted-text)] opacity-60">
+              18/42 units
+            </span>
+          </div>
         </div>
 
-        {/* Minimal Progress Line */}
-        <div className="w-full h-1.5 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden mb-4">
+        {/* Smooth Crimson Progress Bar */}
+        <div className="w-full h-2 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden mb-5">
           <motion.div
-            className="h-full rounded-full bg-[#DC2626]"
-            animate={{ width: isActive ? "42%" : "15%" }}
+            className="h-full rounded-full bg-gradient-to-r from-[#DC2626] to-[#EF4444]"
+            animate={{ width: isActive ? "42%" : "12%" }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           />
         </div>
 
-        {/* Active Unit Row */}
-        <div className="flex items-center justify-between pt-3 border-t border-black/5 dark:border-white/5 text-xs">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-[11px] text-[var(--accent)] font-semibold">04</span>
-            <span className="text-[var(--ink-foreground)] font-medium">Cell Injury & Necrosis</span>
+        {/* Breathable Syllabus Track (2 Distinct Units with Generous Spacing) */}
+        <div className="space-y-2.5">
+          {/* Completed Unit */}
+          <div className="flex items-center justify-between text-xs py-2 px-3 rounded-lg bg-black/[0.02] dark:bg-white/[0.02]">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="font-mono text-[11px] text-[var(--muted-text)] opacity-60">03</span>
+              <span className="text-[var(--muted-text)] line-through truncate opacity-70">
+                Hemodynamics & Shock
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-[11px] font-mono text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+              <Check size={13} className="stroke-[2.5]" />
+              <span>Done</span>
+            </div>
           </div>
-          <motion.div
-            animate={{ scale: isActive ? [0.8, 1.15, 1] : 0.8 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Check size={14} className="text-[var(--accent)] stroke-[2.5]" />
-          </motion.div>
+
+          {/* Active Unit Focus */}
+          <div className="flex items-center justify-between text-xs py-2 px-3 rounded-lg bg-[#DC2626]/[0.05] border border-[#DC2626]/20">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="font-mono text-[11px] text-[#DC2626] font-bold">04</span>
+              <span className="text-[var(--ink-foreground)] font-semibold truncate">
+                Cell Injury & Necrosis
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 font-mono text-[10px] text-[#DC2626] font-medium flex-shrink-0">
+              <motion.span
+                animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="w-1.5 h-1.5 rounded-full bg-[#DC2626]"
+              />
+              <span>In Focus</span>
+            </div>
+          </div>
         </div>
       </motion.div>
     </div>

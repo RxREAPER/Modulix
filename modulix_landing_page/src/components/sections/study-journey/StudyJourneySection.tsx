@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { CheckSquare, BookOpen, Clock, BarChart3, Trophy } from "lucide-react"
 import { useTheme } from "../../../lib/theme"
@@ -11,6 +11,14 @@ import { PodiumStation } from "./PodiumStation"
 export function StudyJourneySection() {
   const { isDark } = useTheme()
   const [activeStep, setActiveStep] = useState(0)
+
+  // Auto-play kinetic flow cycle by default
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % 5)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [activeStep])
 
   const steps = [
     {
@@ -158,30 +166,21 @@ export function StudyJourneySection() {
         </div>
       </div>
 
-      {/* ── Secured Stage Box (Fixed Geometry, Zero Overlap Across Devices) ── */}
-      <div className="max-w-xl mx-auto px-4">
-        <div
-          className={`rounded-2xl border p-4 sm:p-5 relative shadow-lg overflow-hidden transition-colors flex items-center justify-center ${
-            isDark
-              ? "bg-[#141518] border-white/10 shadow-[0_16px_40px_rgba(0,0,0,0.5)]"
-              : "bg-white border-black/8 shadow-[0_12px_36px_rgba(0,0,0,0.06)]"
-          }`}
-        >
-          {/* Dedicated Fixed Stage (230px fixed height) */}
-          <div className="w-full h-[220px] sm:h-[230px] flex items-center justify-center overflow-hidden">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeStep}
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full flex items-center justify-center"
-              >
-                {steps[activeStep].component}
-              </motion.div>
-            </AnimatePresence>
-          </div>
+      {/* ── Unboxed Kinetic Showcase Stage (Motion Cards Sit Directly on Canvas) ── */}
+      <div className="max-w-xl mx-auto px-4 flex items-center justify-center">
+        <div className="w-full min-h-[220px] sm:min-h-[230px] flex items-center justify-center">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeStep}
+              initial={{ opacity: 0, y: 8, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.98 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full flex items-center justify-center"
+            >
+              {steps[activeStep].component}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </section>

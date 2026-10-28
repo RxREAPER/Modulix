@@ -137,7 +137,7 @@ export function TimerStation({ isActive }: StationProps) {
     <div className="w-full flex items-center justify-center select-none">
       {/* ── Minimalist Split-Flap Clock Stage (Zero Tags, Zero Badges) ── */}
       <div
-        className={`w-full max-w-sm h-[190px] rounded-2xl border p-5 transition-colors relative flex flex-col items-center justify-center ${
+        className={`w-full max-w-md h-[200px] rounded-2xl border p-6 sm:p-7 transition-colors relative flex flex-col items-center justify-center ${
           isDark
             ? "bg-[#16171B] border-white/8 shadow-[0_12px_36px_rgba(0,0,0,0.4)]"
             : "bg-[#FCFAF5] border-[#EAE3D2] shadow-[0_8px_24px_rgba(0,0,0,0.04)]"
