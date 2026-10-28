@@ -24,6 +24,20 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-104]` — Traditional Spiral Spring Binding, Punched Tear Holes & 3D Top Page Curl
+- **Category:** `web` / `ui` / `realism` / `motion`
+- **Files Modified:**
+  - `modulix_landing_page/src/components/sections/clinical-clipboard/SpiralSpringBinding.tsx` (14 metallic 3D coiled spring loops, punched oval paper holes with inner shadows, micro-perforated tear line with notch cutouts)
+  - `modulix_landing_page/src/components/sections/FeaturesSection.tsx` (vertical 1:1 scroll stack, 3D top-anchored page curl `rotateX: -18deg` around spiral spring coils)
+- **Summary:**
+  - Replaced horizontal-feeling controls with a 100% vertical, native scroll-stacked notepad where sheets naturally overlap and peek from below to instinctively guide downward scrolling.
+  - Crafted realistic metallic spiral spring coils with 3D wire specular gradients looping through punched paper holes.
+  - Added a 3D page curl/peel effect pivoting directly around the top coils as each folio transitions.
+- **Verification:** `tsc -b` and `vite build` completed with 0 errors. Verified on dev server.
+- **Build Status:** ✅ Verified & Live
+
+---
+
 ### 🔖 `[CKPT-103]` — Sticky Scroll-Driven Folio Pagination & Classical Archival Notepad Paper
 - **Category:** `web` / `ui` / `interaction` / `realism`
 - **Files Modified:**
