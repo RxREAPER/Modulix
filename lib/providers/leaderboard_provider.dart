@@ -551,26 +551,26 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
       int secs;
       switch (scale) {
         case LeaderboardScale.daily:
-          secs = p['daily'] as int;
+          secs = (p['daily'] as num?)?.toInt() ?? 0;
           break;
         case LeaderboardScale.weekly:
-          secs = p['weekly'] as int;
+          secs = (p['weekly'] as num?)?.toInt() ?? 0;
           break;
         case LeaderboardScale.monthly:
-          secs = ((p['weekly'] as int) * 4.2).round();
+          secs = (((p['weekly'] as num?)?.toDouble() ?? 0.0) * 4.2).round();
           break;
         case LeaderboardScale.yearly:
-          secs = ((p['allTime'] as int) * 0.45).round();
+          secs = (((p['allTime'] as num?)?.toDouble() ?? 0.0) * 0.45).round();
           break;
       }
       candidates.add({
         'id': 'peer_${p['name'].hashCode}',
-        'displayName': p['name'],
+        'displayName': p['name']?.toString() ?? 'Peer',
         'totalSeconds': secs,
-        'avatarColorId': p['color'],
-        'avatarIconId': p['icon'],
+        'avatarColorId': p['color']?.toString() ?? 'blue',
+        'avatarIconId': p['icon']?.toString() ?? 'brain',
         'isCurrentUser': false,
-        'level': UserLevel.fromSeconds(p['allTime'] as int),
+        'level': UserLevel.fromSeconds((p['allTime'] as num?)?.toInt() ?? 0),
       });
     }
 
@@ -586,7 +586,7 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
     });
 
     // Sort descending by focus time
-    candidates.sort((a, b) => (b['totalSeconds'] as int).compareTo(a['totalSeconds'] as int));
+    candidates.sort((a, b) => ((b['totalSeconds'] as num?)?.toInt() ?? 0).compareTo((a['totalSeconds'] as num?)?.toInt() ?? 0));
 
     // Scoped strictly to Top 20
     final top20 = candidates.take(20).toList();
@@ -595,13 +595,13 @@ class LeaderboardNotifier extends StateNotifier<LeaderboardState> {
     for (int i = 0; i < top20.length; i++) {
       final item = top20[i];
       result.add(LeaderboardEntry(
-        id: item['id'] as String,
-        displayName: item['displayName'] as String,
-        totalSeconds: item['totalSeconds'] as int,
+        id: item['id']?.toString() ?? '',
+        displayName: item['displayName']?.toString() ?? '',
+        totalSeconds: (item['totalSeconds'] as num?)?.toInt() ?? 0,
         rank: i + 1,
-        avatarColorId: item['avatarColorId'] as String,
-        avatarIconId: item['avatarIconId'] as String,
-        isCurrentUser: item['isCurrentUser'] as bool,
+        avatarColorId: item['avatarColorId']?.toString() ?? 'blue',
+        avatarIconId: item['avatarIconId']?.toString() ?? 'brain',
+        isCurrentUser: item['isCurrentUser'] == true,
         level: item['level'] as UserLevel,
       ));
     }

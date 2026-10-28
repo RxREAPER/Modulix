@@ -30,7 +30,7 @@ export function TraditionalNotepadHeader() {
         {/* Left notch cut */}
         <div className="w-2.5 h-2.5 rounded-full -ml-1.5 bg-[var(--scaffold-bg)]" />
         {/* Dotted perforation */}
-        <div className="flex-1 border-b-[1.5px] border-dashed border-black/15 dark:border-white/15 mx-2" />
+        <div className="flex-1 border-b-[1.5px] border-dashed border-black/[0.15] dark:border-white/[0.15] mx-2" />
         {/* Right notch cut */}
         <div className="w-2.5 h-2.5 rounded-full -mr-1.5 bg-[var(--scaffold-bg)]" />
       </div>

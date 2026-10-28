@@ -12,9 +12,10 @@ export function AuthGate({ onManualRequest }: { onManualRequest: () => void }) {
     try {
       setLoading(true)
       await signInWithGoogle()
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err)
-      setMessage(err.message || "Failed to initialize Google Sign-In")
+      const msg = err instanceof Error ? err.message : "Failed to initialize Google Sign-In"
+      setMessage(msg)
     } finally {
       setLoading(false)
     }
@@ -28,8 +29,9 @@ export function AuthGate({ onManualRequest }: { onManualRequest: () => void }) {
       const { error } = await signInWithEmailOtp(email)
       if (error) throw error
       setMessage("Magic login link sent! Check your inbox.")
-    } catch (err: any) {
-      setMessage(err.message || "Failed to send magic link.")
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to send magic link."
+      setMessage(msg)
     } finally {
       setLoading(false)
     }

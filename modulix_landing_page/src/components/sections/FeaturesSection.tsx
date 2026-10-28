@@ -77,7 +77,7 @@ function NotepadCard({
         />
 
         {/* Doctor Pad Vertical Red/Amber Margin Line */}
-        <div className="absolute left-8 sm:left-12 top-0 bottom-0 w-[1px] bg-red-400/20 dark:bg-rose-500/15 pointer-events-none" />
+        <div className="absolute left-8 sm:left-12 top-0 bottom-0 w-[1px] bg-red-400/20 dark:bg-rose-500/[0.15] pointer-events-none" />
 
         {/* Realistic Coiled Spiral Springs & Punched Tear Holes */}
         <SpiralSpringBinding />

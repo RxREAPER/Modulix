@@ -49,7 +49,7 @@ export function TaskStation({ isActive }: StationProps) {
         layout
         className={`w-full max-w-md rounded-2xl border p-6 sm:p-7 transition-colors relative overflow-hidden ${
           isDark
-            ? "bg-[#16171B] border-white/8 shadow-[0_12px_36px_rgba(0,0,0,0.4)]"
+            ? "bg-[#16171B] border-white/[0.08] shadow-[0_12px_36px_rgba(0,0,0,0.4)]"
             : "bg-[#FCFAF5] border-[#EAE3D2] shadow-[0_8px_24px_rgba(0,0,0,0.04)]"
         }`}
       >

@@ -50,7 +50,7 @@ export function SyllabusMotionPreview() {
             className={`p-2.5 rounded-lg border flex items-center justify-between text-xs transition-colors ${
               isDark
                 ? "bg-[#18181B] border-white/10"
-                : "bg-white border-black/8 shadow-sm"
+                : "bg-white border-black/[0.08] shadow-sm"
             }`}
           >
             <div className="flex items-center gap-2.5">

@@ -24,6 +24,43 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-113]` — Comprehensive Bug & UI Hunt Hardening (Landing Page & Flutter Core)
+- **Category:** `hardening` / `ui` / `types` / `defensive`
+- **Files Modified:**
+  - `modulix_landing_page/src/components/account/AccountDeletionDialog.tsx` (resolved TypeScript `any` catch block with safe `unknown` Error check)
+  - `modulix_landing_page/src/components/account/AccountPortalView.tsx` (typed session state as `Session | null` from `@supabase/supabase-js`)
+  - `modulix_landing_page/src/components/account/AuthGate.tsx` (typed Google & Email OTP catch blocks with `unknown` and Error instance checks)
+  - `modulix_landing_page/src/components/account/ProfileDashboard.tsx` (typed `User` prop, added `user.user_metadata?.full_name` to hook dependencies, safe error messages)
+  - `modulix_landing_page/src/components/sections/study-journey/PodiumStation.tsx` (corrected invalid Tailwind opacity `border-white/8` to `border-white/[0.08]`)
+  - `modulix_landing_page/src/components/sections/study-journey/TaskStation.tsx` (corrected invalid Tailwind opacity `border-white/8` to `border-white/[0.08]`)
+  - `modulix_landing_page/src/components/sections/study-journey/AnalyticsStation.tsx` (corrected invalid Tailwind opacity `border-white/8` to `border-white/[0.08]`)
+  - `modulix_landing_page/src/components/sections/study-journey/TopicStation.tsx` (corrected invalid Tailwind opacity `border-white/8` to `border-white/[0.08]`)
+  - `modulix_landing_page/src/components/sections/study-journey/TimerStation.tsx` (corrected invalid Tailwind opacity `border-white/8` to `border-white/[0.08]`)
+  - `modulix_landing_page/src/components/sections/FeaturesSection.tsx` (corrected invalid opacity `dark:bg-rose-500/15` to `dark:bg-rose-500/[0.15]`)
+  - `modulix_landing_page/src/components/sections/clinical-clipboard/TraditionalNotepadHeader.tsx` (corrected perforation border opacities)
+  - `modulix_landing_page/src/components/sections/clinical-clipboard/SyllabusMotionPreview.tsx` (corrected invalid `border-black/8` to `border-black/[0.08]`)
+  - `modulix_landing_page/src/index.css` (added `overflow-x: hidden;` to `html, body` to eliminate 3D perspective scroll jitter on mobile viewports)
+  - `modulix_landing_page/src/components/sections/MedicalHeroIllustration.tsx` (added `onTouchEnd` and `onTouchCancel` touch reset handlers)
+  - `lib/screens/analytics/subject_mastery_analytics_page.dart` (enforced Flutter 3.41+ Rule 4D defensive deserialization with `num?` conversions)
+  - `lib/screens/analytics/study_plan_analytics_page.dart` (safe num conversions in chapter sort and chapter listing)
+  - `lib/screens/analytics/focus_timer_analytics_page.dart` (safe num conversions in chart tooltips)
+  - `lib/screens/analytics/daily_tasks_analytics_page.dart` (safe num conversions in streak calculation and past days bar rendering)
+  - `lib/widgets/curriculum/curriculum_search_bar.dart` (safe num conversions and toString fallbacks for search results)
+  - `lib/providers/leaderboard_provider.dart` (defensive deserialization of peer and user metrics in Top 20 leaderboard)
+- **Summary:**
+  - Resolved 7 TypeScript `any` errors and 1 React Hook exhaustive-deps warning in landing page; `eslint .` passed with 0 errors, 0 warnings.
+  - Eliminated 8 invalid Tailwind opacity classes that silently dropped border/background styling.
+  - Hardened mobile viewport against 3D transform scroll bleed and touch release tilt lock.
+  - Hardened Flutter models and analytics pages against fatal runtime `TypeError` crashes per Rule 4D.
+- **Verification:**
+  - `flutter analyze`: Passed with 0 issues found in 34.4s.
+  - `flutter test`: 21/21 core unit/widget tests passed 100% green in 16s.
+  - `bun run lint`: 0 problems across landing page.
+  - `bun run build`: Built production bundle cleanly in 23.69s.
+- **Build Status:** ✅ Verified & Live
+
+---
+
 ### 🔖 `[CKPT-112]` — Native Animated Vector SVG Hero Illustration Overhaul (Clean Vector from Artwork)
 - **Category:** `web` / `ui` / `hero` / `vector`
 - **Files Modified:**

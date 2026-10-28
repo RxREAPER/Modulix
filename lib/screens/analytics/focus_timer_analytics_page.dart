@@ -329,7 +329,7 @@ class _FocusTimerAnalyticsPageState
                                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
                                       final item = dailyData[group.x.toInt()];
                                       return BarTooltipItem(
-                                        '${item['dateStr']}\n${_formatDuration(item['secs'] as int)}',
+                                        '${item['dateStr']}\n${_formatDuration((item['secs'] as num?)?.toInt() ?? 0)}',
                                         const TextStyle(
                                           color: Colors.white,
                                           fontWeight: FontWeight.w800,
@@ -443,7 +443,7 @@ class _FocusTimerAnalyticsPageState
                                         if (idx < 0 || idx >= dailyData.length) return null;
                                         final item = dailyData[idx];
                                         return LineTooltipItem(
-                                          '${item['dateStr']}\n${_formatDuration(item['secs'] as int)}',
+                                          '${item['dateStr']}\n${_formatDuration((item['secs'] as num?)?.toInt() ?? 0)}',
                                           const TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.w800,

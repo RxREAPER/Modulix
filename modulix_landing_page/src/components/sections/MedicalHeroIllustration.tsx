@@ -33,6 +33,8 @@ export function MedicalHeroIllustration() {
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onTouchEnd={handleMouseLeave}
+      onTouchCancel={handleMouseLeave}
       className="relative w-full max-w-4xl mx-auto flex items-center justify-center select-none perspective-[1200px]"
     >
       <motion.div

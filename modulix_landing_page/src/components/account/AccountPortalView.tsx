@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { Session } from "@supabase/supabase-js"
 import { supabase } from "../../lib/supabase"
 import { AuthGate } from "./AuthGate"
 import { ProfileDashboard } from "./ProfileDashboard"
@@ -8,7 +9,7 @@ import { HairlineDivider } from "../primitives/HairlineDivider"
 import { Shield, ArrowLeft, User, Trash2 } from "lucide-react"
 
 export function AccountPortalView({ navigate }: { navigate: (route: string) => void }) {
-  const [session, setSession] = useState<any>(null)
+  const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<"auth" | "manual">("auth")
 

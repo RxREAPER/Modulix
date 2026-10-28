@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { User } from "@supabase/supabase-js"
 import { ApplePressable } from "../primitives/ApplePressable"
 import { HairlineDivider } from "../primitives/HairlineDivider"
 import { AccountDeletionDialog } from "./AccountDeletionDialog"
@@ -12,7 +13,7 @@ import {
 import { Download, Trash2, LogOut, Save, Eye, EyeOff, Check } from "lucide-react"
 
 interface ProfileDashboardProps {
-  user: any
+  user: User
   onSignedOut: () => void
 }
 
@@ -41,7 +42,7 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
       }
     }
     load()
-  }, [user.id])
+  }, [user.id, user.user_metadata?.full_name])
 
   const handleSaveProfile = async () => {
     setSaving(true)
@@ -55,9 +56,10 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
       if (error) throw error
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 2500)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err)
-      setSaveError(err.message || "Failed to update profile changes.")
+      const msg = err instanceof Error ? err.message : "Failed to update profile changes."
+      setSaveError(msg)
     } finally {
       setSaving(false)
     }
@@ -77,9 +79,10 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
       a.download = `modulix_data_export_${new Date().toISOString().split("T")[0]}.json`
       a.click()
       URL.revokeObjectURL(url)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err)
-      setExportError(err.message || "Failed to generate JSON archive.")
+      const msg = err instanceof Error ? err.message : "Failed to generate JSON archive."
+      setExportError(msg)
     } finally {
       setExporting(false)
     }

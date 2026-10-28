@@ -28,9 +28,10 @@ export function AccountDeletionDialog({
       setError(null)
       await deleteUserAccount(userId)
       onSuccess()
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err)
-      setError(err.message || "Failed to purge account records.")
+      const message = err instanceof Error ? err.message : "Failed to purge account records."
+      setError(message)
     } finally {
       setDeleting(false)
     }

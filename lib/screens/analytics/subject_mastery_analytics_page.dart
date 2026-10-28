@@ -204,13 +204,13 @@ class _SubjectMasteryAnalyticsPageState
             // ── 2. Subject Cards List (1st Year to Final Year) ─────────────
             ...subjectCards.map((item) {
               final s = item['subject'] as Subject;
-              final double pct = item['pct'] as double;
-              final int vDone = item['videosDone'] as int;
-              final int vTot = item['videos'] as int;
-              final int qDone = item['qbanksDone'] as int;
-              final int qTot = item['qbanks'] as int;
-              final int nDone = item['notesDone'] as int;
-              final int nTot = item['notes'] as int;
+              final double pct = (item['pct'] as num?)?.toDouble() ?? 0.0;
+              final int vDone = (item['videosDone'] as num?)?.toInt() ?? 0;
+              final int vTot = (item['videos'] as num?)?.toInt() ?? 0;
+              final int qDone = (item['qbanksDone'] as num?)?.toInt() ?? 0;
+              final int qTot = (item['qbanks'] as num?)?.toInt() ?? 0;
+              final int nDone = (item['notesDone'] as num?)?.toInt() ?? 0;
+              final int nTot = (item['notes'] as num?)?.toInt() ?? 0;
 
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),

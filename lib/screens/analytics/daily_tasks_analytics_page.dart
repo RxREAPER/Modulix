@@ -149,10 +149,14 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
             });
           }
 
-          final maxDayCount = pastDays.fold<int>(1, (max, d) => (d['count'] as int) > max ? (d['count'] as int) : max);
+          final maxDayCount = pastDays.fold<int>(1, (max, d) {
+            final c = (d['count'] as num?)?.toInt() ?? 0;
+            return c > max ? c : max;
+          });
           int streak = 0;
           for (int i = pastDays.length - 1; i >= 0; i--) {
-            if ((pastDays[i]['count'] as int) > 0) {
+            final c = (pastDays[i]['count'] as num?)?.toInt() ?? 0;
+            if (c > 0) {
               streak++;
             } else if (i != pastDays.length - 1) {
               break;
@@ -414,8 +418,8 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: pastDays.map((d) {
-                          final count = d['count'] as int;
-                          final isToday = d['isToday'] as bool;
+                          final count = (d['count'] as num?)?.toInt() ?? 0;
+                          final isToday = d['isToday'] == true;
                           final double height = count > 0
                               ? (18 + (46 * (count / maxDayCount))).clamp(18.0, 64.0)
                               : 6.0;

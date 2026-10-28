@@ -94,8 +94,11 @@ class _StudyPlanAnalyticsPageState
       }
     }
 
-    chapterStats.sort((a, b) => ((b['total'] as int) - (b['done'] as int))
-        .compareTo((a['total'] as int) - (a['done'] as int)));
+    chapterStats.sort((a, b) {
+      final bRemaining = ((b['total'] as num?)?.toInt() ?? 0) - ((b['done'] as num?)?.toInt() ?? 0);
+      final aRemaining = ((a['total'] as num?)?.toInt() ?? 0) - ((a['done'] as num?)?.toInt() ?? 0);
+      return bRemaining.compareTo(aRemaining);
+    });
 
     final double progress =
         totalVideos > 0 ? completedVideos / totalVideos : 0.0;
@@ -534,10 +537,10 @@ class _StudyPlanAnalyticsPageState
               )
             else
               ...filteredChapters.map((ch) {
-                final String name = ch['name'] as String;
-                final int total = ch['total'] as int;
-                final int done = ch['done'] as int;
-                final double chPct = ch['percent'] as double;
+                final String name = ch['name']?.toString() ?? '';
+                final int total = (ch['total'] as num?)?.toInt() ?? 0;
+                final int done = (ch['done'] as num?)?.toInt() ?? 0;
+                final double chPct = (ch['percent'] as num?)?.toDouble() ?? 0.0;
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 10),

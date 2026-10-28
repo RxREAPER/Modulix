@@ -418,9 +418,9 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
       );
       for (final item in matchedChapters.take(5)) {
         final s = item['subject'] as Subject;
-        final chName = item['chapterName'] as String;
-        final chIndex = item['chapterIndex'] as int;
-        final vCount = item['videosCount'] as int;
+        final chName = item['chapterName']?.toString() ?? '';
+        final chIndex = (item['chapterIndex'] as num?)?.toInt() ?? 0;
+        final vCount = (item['videosCount'] as num?)?.toInt() ?? 0;
         items.add(
           _CascadingItem(
             index: cascadeIndex++,
@@ -472,7 +472,7 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
       for (final item in matchedVideos.take(8)) {
         final s = item['subject'] as Subject;
         final v = item['video'] as Video;
-        final chIndex = item['chapterIndex'] as int;
+        final chIndex = (item['chapterIndex'] as num?)?.toInt() ?? 0;
         items.add(
           _CascadingItem(
             index: cascadeIndex++,
@@ -531,7 +531,7 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
       for (final item in matchedQBanks.take(6)) {
         final s = item['subject'] as Subject;
         final q = item['qbank'] as QBankTopic;
-        final chIndex = item['chapterIndex'] as int;
+        final chIndex = (item['chapterIndex'] as num?)?.toInt() ?? 0;
         items.add(
           _CascadingItem(
             index: cascadeIndex++,
@@ -586,7 +586,7 @@ class _CurriculumSearchBarState extends State<CurriculumSearchBar> {
       for (final item in matchedNotes.take(6)) {
         final s = item['subject'] as Subject;
         final n = item['note'] as NotesItem;
-        final chIndex = item['chapterIndex'] as int;
+        final chIndex = (item['chapterIndex'] as num?)?.toInt() ?? 0;
         items.add(
           _CascadingItem(
             index: cascadeIndex++,
