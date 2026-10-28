@@ -24,6 +24,18 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-101]` — Grammar Correction & Custom Copy Insertion for Core Features
+- **Category:** `web` / `copy` / `content`
+- **Files Modified:**
+  - `modulix_landing_page/src/components/sections/FeaturesSection.tsx`
+- **Summary:**
+  - Incorporated user's authentic custom copy for Tasks (01), Focus Timer (02), Gold Standard Syllabus (05), and Theme Studio (06) with grammar correction and medical-student polish.
+  - Retained exact user ideas: preset/individual/custom project tasks, lively ambient soundscapes with fullscreen flip clock, preloaded latest & previous editions (videos, Q-Banks, modules), and advanced Theme Studio.
+- **Verification:** `tsc -b` passed with 0 errors; Vite HMR live updated seamlessly.
+- **Build Status:** ✅ Verified & Live
+
+---
+
 ### 🔖 `[CKPT-100]` — All-Capitals Hero Tagline & Curated 6-Pillar Core Features
 - **Category:** `web` / `copy` / `features`
 - **Files Modified:**
