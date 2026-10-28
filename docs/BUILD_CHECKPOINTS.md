@@ -4,6 +4,33 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.34.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk`
+- **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)
+- **Static Analysis:** 0 Errors, 0 Warnings | **Test Suite:** 100% Green (27/27 Tests Passed)
+- **Included Checkpoints:** `[CKPT-123]`, `[CKPT-124]`, `[CKPT-125]`, `[CKPT-126]` (✅ Included in Build)
+
+### Key Highlights & Releases in v1.34.0:
+1. **Account Identity & Cloud Sync Diagnostics Suite in Settings (`[CKPT-126]`):**
+   - Upgraded the settings sync area into a complete **Account Hub**: displays authenticated user email (`flowmd04@gmail.com`), auth provider badge ("Google Account" or "Email OTP"), user ID slug, and live connection indicator ("Realtime Interlinked" with animated emerald beacon).
+   - Added an actionable telemetry strip showing relative last synced timestamp ("Just now", "2m ago") and durable SQLite outbox pending depth ("Clean (0)").
+   - Added `SyncDiagnosticsSheet` modal inspector showing live roundtrip latency to Supabase cloud (`Connected · X ms`), WebSocket channel status, SQLite outbox inspection, and authoritative "Force Full Cloud Parity Sync" trigger.
+   - Designed a non-intrusive Guest Account card explaining local storage safety and the benefits of Google sign-in.
+2. **Durable SQLite Outbox Pattern (Linear Sync Standard, `[CKPT-125]`):**
+   - SQLite v5 `sync_outbox` table ensuring zero loss of mutations during offline periods or sudden process termination.
+   - FIFO outbox dispatcher with exponential backoff and retry tracking.
+   - Delta cursors (`modulix_last_editions_synced_at_v1`) reducing sync bandwidth by over 80%.
+   - Authoritative `forceFull: true` parameter wired to pull-to-refresh on `HomeScreen`.
+3. **Cross-Device Real-Time Sync & Web Portal Interlinking (`[CKPT-124]`):**
+   - Enabled `REPLICA IDENTITY FULL` on `public.profiles`, `public.study_editions`, and `public.daily_tasks` and registered in `supabase_realtime` publication.
+   - Real-time WebSockets synchronization between the mobile app and the landing page account portal (`https://modulix.pages.dev/#/account`), updating Doctor alias, display name, and study stats live with zero app restarts.
+4. **Cloud Payload Optimization & Database Advisor Hardening (`[CKPT-123]`):**
+   - Fixed queue batch video ID drop bug with order-preserving bidirectional set-union merge.
+   - Converted SQLite time log queries to $O(\Delta)$ incremental fetch (`getTimeLogsSince`).
+   - Bounded task tombstones to 100 entries and compacted cloud vault backup archives.
+
+---
+
 ## 🚀 Build Manifest v1.33.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (277MB)
 - **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36)
@@ -62,7 +89,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - **Cloud Sync Diagnostics Sheet (`SyncDiagnosticsSheet`):** Added a modal diagnostics inspector displaying live roundtrip latency to Supabase cloud, Supabase Realtime WebSocket status, SQLite outbox queue depth, local vs cloud study logs count, authoritative "Force Full Cloud Parity Sync" trigger, and one-tap web portal link copy.
   - **Reactive Telemetry Notifiers:** Added `lastSyncedAtNotifier` and `realtimeStatusNotifier` to `SyncService` and mapped them to Riverpod providers `lastSyncedAtProvider` and `isRealtimeActiveProvider`.
 - **Verification:** `flutter analyze` 0 issues, `flutter test test/sync_service_test.dart test/cloud_sync_resilience_test.dart` 27/27 green (100%).
-- **Build Status:** ⏳ Pending APK Build
+- **Build Status:** ✅ Included in Build (v1.34.0)
 
 ---
 
@@ -84,7 +111,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - **Authoritative Force-Full Sync:** Added `forceFull: true` parameter to `SyncService.syncFull` wired to `HomeScreen` pull-to-refresh for on-demand complete parity verification.
   - **Automated Tests:** Added 7 unit tests verifying outbox enqueue, FIFO ordering, idempotency deduplication, status transitions, combined pending count, and delta cursor key storage (27/27 tests green).
 - **Verification:** `flutter analyze` 0 issues, `flutter test` 27/27 green (100%).
-- **Build Status:** ⏳ Pending APK Build
+- **Build Status:** ✅ Included in Build (v1.34.0)
 
 ---
 
@@ -102,7 +129,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - **Web Portal Realtime Interlinking:** Added Supabase Realtime channel subscription in `ProfileDashboard.tsx` to reflect mobile doctor alias, display name, leaderboard visibility, and study metric changes live without browser reload. Added a sleek Apple-style `Realtime Interlinked` status badge.
   - **Automated Verification:** Added unit tests verifying unauthenticated safety and clean channel teardown.
 - **Verification:** `flutter analyze` 0 issues, `flutter test` 20/20 green (100%), Vite React web production build clean (`bun run build`).
-- **Build Status:** ⏳ Pending APK Build
+- **Build Status:** ✅ Included in Build (v1.34.0)
 
 ---
 
@@ -124,7 +151,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - **Compact JSON for Cloud Vaults:** Updated `BackupService.createCompressedBackupBytes` to use unindented compact JSON, reducing backup vault transfer and storage footprints by 30-40%.
   - **Supabase Advisor Hardening:** Consolidated permissive SELECT policies on `public.profiles` to resolve performance advisor warnings, converted `get_leaderboard_bundle` to `SECURITY INVOKER`, added IDOR caller identity check on `record_focus_session`, and revoked execution on deprecated legacy functions.
 - **Verification:** `flutter analyze` 0 issues, `flutter test` 18/18 tests green (100%), Supabase performance & security advisors verified.
-- **Build Status:** ⏳ Pending APK Build
+- **Build Status:** ✅ Included in Build (v1.34.0)
 
 ---
 
