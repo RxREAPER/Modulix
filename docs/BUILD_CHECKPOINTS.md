@@ -24,6 +24,18 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-117]` — Revert Section 2 to Traditional Spiral Spring Notepad & 3D Page Curl
+- **Category:** `web/ui/features/notepad-revert`
+- **Files Modified:**
+  - `modulix_landing_page/src/components/sections/FeaturesSection.tsx` (reverted Section 2 from 2-column grid back to the traditional vertical scroll-stacked notepad with metallic spiral spring coils and 3D top page curl physics)
+- **Summary:**
+  - Restored the beloved Section 2 physical notepad design originally from `[CKPT-104]` per user request.
+  - Implemented 100% vertical scroll-stacked folios with realistic metallic coiled spring loops (`SpiralSpringBinding`), punched oval tear holes, paper ruled backgrounds, red/amber physician margin line, and 3D top page curls (`rotateX: -18deg`, `scale`, `y`, `opacity`) as the user scrolls.
+- **Verification:**
+  - `bun run lint`: 0 errors, 0 warnings.
+  - `bun run build`: Built production bundle cleanly in 20.43s (2,504 modules transformed).
+- **Build Status:** ✅ Verified & Live
+
 ### 🔖 `[CKPT-116]` — Responsive Adaptive Hybrid Navigation Overhaul (Mobile Capsule Dock & Tablet Floating Pill)
 - **Category:** `web/ui/navigation/adaptive-hybrid`
 - **Files Modified:**
