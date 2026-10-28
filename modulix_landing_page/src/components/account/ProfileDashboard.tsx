@@ -9,6 +9,7 @@ import {
   updateUserProfile,
   exportAllUserData,
   signOut,
+  supabase,
 } from "../../lib/supabase"
 import { Download, Trash2, LogOut, Save, Eye, EyeOff, Check } from "lucide-react"
 
@@ -22,6 +23,7 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
   const [doctorName, setDoctorName] = useState("")
   const [displayName, setDisplayName] = useState("")
   const [leaderboardVisible, setLeaderboardVisible] = useState(true)
+  const [realtimeConnected, setRealtimeConnected] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -30,6 +32,8 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null
+
     async function load() {
       const data = await fetchUserProfile(user.id)
       if (data) {
@@ -42,6 +46,46 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
       }
     }
     load()
+
+    channel = supabase
+      .channel(`web_profile_realtime_${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "profiles",
+          filter: `id=eq.${user.id}`,
+        },
+        (payload) => {
+          if (payload.new && typeof payload.new === "object") {
+            const updated = payload.new as ProfileRecord
+            setProfile(updated)
+            if (updated.doctor_name !== undefined) {
+              setDoctorName(updated.doctor_name || "")
+            }
+            if (updated.display_name !== undefined) {
+              setDisplayName(updated.display_name || "")
+            }
+            if (updated.leaderboard_visible !== undefined) {
+              setLeaderboardVisible(updated.leaderboard_visible)
+            }
+          }
+        }
+      )
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          setRealtimeConnected(true)
+        } else if (status === "CLOSED" || status === "CHANNEL_ERROR") {
+          setRealtimeConnected(false)
+        }
+      })
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
+    }
   }, [user.id, user.user_metadata?.full_name])
 
   const handleSaveProfile = async () => {
@@ -123,10 +167,24 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
 
       {/* ── Profile Configuration Form ── */}
       <div className="space-y-5">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-2">
           <span className="font-mono text-[10px] font-bold tracking-widest text-[var(--accent)] uppercase">
             PROFILE ALIASES & IDENTITY
           </span>
+          <div
+            className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium border ${
+              realtimeConnected
+                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                : "bg-neutral-500/10 text-neutral-500 border-neutral-500/20"
+            }`}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                realtimeConnected ? "bg-emerald-500 animate-pulse" : "bg-neutral-400"
+              }`}
+            />
+            <span>{realtimeConnected ? "Realtime Interlinked" : "Connecting Realtime..."}</span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

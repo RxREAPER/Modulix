@@ -142,5 +142,18 @@ void main() {
 
       expect(mergedQueue, equals(['vid_101', 'vid_102', 'vid_103', 'vid_104']));
     });
+
+    test('startRealtimeSync is safely a no-op when unauthenticated', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      syncService.startRealtimeSync(container);
+      expect(syncService.isRealtimeActive, isFalse);
+    });
+
+    test('stopRealtimeSync resets active channel and status cleanly', () {
+      syncService.stopRealtimeSync();
+      expect(syncService.isRealtimeActive, isFalse);
+    });
   });
 }

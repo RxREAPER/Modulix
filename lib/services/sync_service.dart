@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/app_state.dart';
 import '../models/daily_desk_task.dart';
 import '../models/time_log.dart';
@@ -29,7 +30,19 @@ class SyncService {
   static SyncService? _instance;
   static SyncService get instance => _instance ??= SyncService._();
 
-  SyncService._();
+  SyncService._() {
+    _initAuthListener();
+  }
+
+  void _initAuthListener() {
+    try {
+      AuthService.instance.authStateChanges.listen((data) {
+        if (data.event == AuthChangeEvent.signedOut) {
+          stopRealtimeSync();
+        }
+      });
+    } catch (_) {}
+  }
 
   final ValueNotifier<SyncStatus> statusNotifier =
       ValueNotifier<SyncStatus>(SyncStatus.idle);
@@ -540,6 +553,10 @@ class SyncService {
       pendingSyncCountNotifier.value = 0;
       statusNotifier.value = SyncStatus.synced;
       debugPrint('[SyncService] Cloud synchronization completed successfully.');
+
+      // Maintain active Realtime cross-device channel
+      startRealtimeSync(ref);
+
       return true;
     } catch (e) {
       debugPrint('[SyncService] Sync error: $e');
@@ -548,5 +565,162 @@ class SyncService {
     } finally {
       _isSyncing = false;
     }
+  }
+
+  // ─── REALTIME CROSS-DEVICE SYNCHRONIZATION ─────────────────────────────────
+
+  RealtimeChannel? _realtimeChannel;
+  String? _subscribedUserId;
+  Timer? _realtimePullDebounce;
+
+  /// Returns true if WebSocket channel for cross-device events is currently active
+  bool get isRealtimeActive => _realtimeChannel != null && _subscribedUserId != null;
+
+  /// Starts listening to Supabase Realtime changes for cross-device synchronization
+  void startRealtimeSync(dynamic ref) {
+    if (!AuthService.instance.isAuthenticated) return;
+    final client = AuthService.instance.client;
+    final userId = AuthService.instance.currentUserId;
+    if (client == null || userId == null || userId.isEmpty) return;
+
+    if (_subscribedUserId == userId && _realtimeChannel != null) {
+      return; // Already actively subscribed to current user
+    }
+
+    stopRealtimeSync();
+    _subscribedUserId = userId;
+
+    try {
+      final channel = client.channel('public:user_sync_$userId');
+      _realtimeChannel = channel;
+
+      channel.onPostgresChanges(
+        event: PostgresChangeEvent.all,
+        schema: 'public',
+        table: 'profiles',
+        filter: PostgresChangeFilter(
+          type: PostgresChangeFilterType.eq,
+          column: 'id',
+          value: userId,
+        ),
+        callback: (payload) {
+          debugPrint('[SyncService] Realtime profile change: ${payload.eventType}');
+          _handleRealtimeProfileUpdate(ref, payload.newRecord);
+        },
+      );
+
+      channel.onPostgresChanges(
+        event: PostgresChangeEvent.all,
+        schema: 'public',
+        table: 'study_editions',
+        filter: PostgresChangeFilter(
+          type: PostgresChangeFilterType.eq,
+          column: 'user_id',
+          value: userId,
+        ),
+        callback: (payload) {
+          debugPrint('[SyncService] Realtime study_editions change: ${payload.eventType}');
+          _triggerDebouncedRealtimePull(ref);
+        },
+      );
+
+      channel.onPostgresChanges(
+        event: PostgresChangeEvent.all,
+        schema: 'public',
+        table: 'daily_tasks',
+        filter: PostgresChangeFilter(
+          type: PostgresChangeFilterType.eq,
+          column: 'user_id',
+          value: userId,
+        ),
+        callback: (payload) {
+          debugPrint('[SyncService] Realtime daily_tasks change: ${payload.eventType}');
+          _triggerDebouncedRealtimePull(ref);
+        },
+      );
+
+      channel.subscribe((status, [error]) {
+        debugPrint('[SyncService] Realtime channel status: $status ${error ?? ""}');
+      });
+    } catch (e) {
+      debugPrint('[SyncService] Error starting Realtime subscription: $e');
+    }
+  }
+
+  void _triggerDebouncedRealtimePull(dynamic ref) {
+    _realtimePullDebounce?.cancel();
+    _realtimePullDebounce = Timer(const Duration(milliseconds: 1500), () {
+      if (!_isSyncing) {
+        syncFull(ref);
+      }
+    });
+  }
+
+  void _handleRealtimeProfileUpdate(dynamic ref, Map<String, dynamic> row) {
+    if (row.isEmpty) return;
+    try {
+      final docName = row['doctor_name']?.toString();
+      final displayName = row['display_name']?.toString();
+      final lbVisible = row['leaderboard_visible'] as bool?;
+      final avatarIcon = row['avatar_icon_id']?.toString();
+      final avatarColor = row['avatar_color_id']?.toString();
+      final palette = row['palette_preset_id']?.toString();
+      final accent = row['accent_color_id']?.toString();
+      final themeStr = row['theme_pref']?.toString();
+      final activeEd = row['active_edition']?.toString();
+      final startHour = (row['day_start_hour'] as num?)?.toInt();
+
+      ThemePref? pref;
+      if (themeStr != null) {
+        if (themeStr == 'light') pref = ThemePref.light;
+        if (themeStr == 'dark') pref = ThemePref.dark;
+        if (themeStr == 'system') pref = ThemePref.system;
+      }
+
+      AppState? current;
+      try {
+        current = ref.read(appStateProvider).value;
+      } catch (_) {}
+      current ??= StorageService.instance.load();
+
+      final updated = current.copyWith(
+        doctorName: (docName != null && docName.isNotEmpty) ? docName : null,
+        leaderboardDisplayName: displayName,
+        leaderboardVisible: lbVisible,
+        avatarIconId: avatarIcon,
+        avatarColorId: avatarColor,
+        palettePresetId: palette,
+        accentColorId: accent,
+        themePref: pref,
+        activeEdition: activeEd,
+        dayStartHour: startHour,
+      );
+
+      if (updated != current) {
+        unawaited(StorageService.instance.save(updated));
+        try {
+          ref.read(appStateProvider.notifier).applySyncedState(updated);
+        } catch (_) {
+          try {
+            ref.invalidate(appStateProvider);
+          } catch (_) {}
+        }
+        debugPrint('[SyncService] Realtime profile updated from cross-device event.');
+      }
+    } catch (e) {
+      debugPrint('[SyncService] Error applying realtime profile update: $e');
+    }
+  }
+
+  /// Stops Realtime subscription and frees active channels
+  void stopRealtimeSync() {
+    _realtimePullDebounce?.cancel();
+    if (_realtimeChannel != null) {
+      try {
+        AuthService.instance.client?.removeChannel(_realtimeChannel!);
+      } catch (_) {}
+      _realtimeChannel = null;
+    }
+    _subscribedUserId = null;
   }
 }

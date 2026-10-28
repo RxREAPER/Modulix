@@ -46,6 +46,24 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-124]` — Cross-Device Realtime Synchronization, Supabase WebSockets & Account Interlinking
+- **Category:** `realtime` / `sync` / `websocket` / `web`
+- **Files Modified:**
+  - `lib/services/sync_service.dart`
+  - `supabase/migrations/010_enable_realtime_for_user_sync.sql`
+  - `modulix_landing_page/src/components/account/ProfileDashboard.tsx`
+  - `test/sync_service_test.dart`
+- **Summary:**
+  - **Supabase Realtime Publication:** Configured `REPLICA IDENTITY FULL` on `public.profiles`, `public.study_editions`, and `public.daily_tasks` and registered all three in `supabase_realtime` publication for instant row-level WebSocket broadcast.
+  - **Flutter Realtime Sync Engine:** Implemented `startRealtimeSync(ref)`, `stopRealtimeSync()`, and `isRealtimeActive` in `SyncService`. Subscribed to `profiles`, `study_editions`, and `daily_tasks` via `onPostgresChanges`. Implemented `_handleRealtimeProfileUpdate` to apply remote alias, doctor name, and settings changes into Riverpod `appStateProvider` with instant UI updates and zero restarts. Added debounced pulling (`_triggerDebouncedRealtimePull`) for cross-device multi-phone task/progress parity.
+  - **Auth Lifecycle Management:** Hooked `authStateChanges` listener in `SyncService` constructor to automatically teardown active WebSocket channels upon user sign-out.
+  - **Web Portal Realtime Interlinking:** Added Supabase Realtime channel subscription in `ProfileDashboard.tsx` to reflect mobile doctor alias, display name, leaderboard visibility, and study metric changes live without browser reload. Added a sleek Apple-style `Realtime Interlinked` status badge.
+  - **Automated Verification:** Added unit tests verifying unauthenticated safety and clean channel teardown.
+- **Verification:** `flutter analyze` 0 issues, `flutter test` 20/20 green (100%), Vite React web production build clean (`bun run build`).
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### 🔖 `[CKPT-123]` — Cloud Sync Payload Optimization, Queue Batch Merging, O(Δ) SQLite Reads & Supabase Advisor Hardening
 - **Category:** `cloud` / `sync` / `database` / `optimization`
 - **Files Modified:**
