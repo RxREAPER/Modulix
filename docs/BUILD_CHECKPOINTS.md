@@ -24,6 +24,18 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-121]` — Google Cloud Console OAuth 2.0 Integration & Web Client ID Synchronization
+- **Category:** `auth` / `cloud` / `google`
+- **Files Modified:**
+  - `lib/config/supabase_config.dart`
+- **Summary:**
+  - Configured Google OAuth 2.0 Web Application Client ID (`1016283702399-a05lhshurf9l14ifpkvfiijovsqk7au6.apps.googleusercontent.com`) matching Google Cloud Console and Supabase Dashboard Auth Provider.
+  - Linked Android Application ID `com.modulix.app` with debug keystore SHA-1 `B4:FA:F9:8F:91:04:5E:CC:D4:49:84:00:AB:2E:24:DA:CA:49:79:33` to eliminate Android `ApiException: 10` (Developer Error).
+- **Verification:** `flutter analyze` 0 issues across the entire codebase.
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### 🔖 `[CKPT-120]` — Live Production Deployment on Cloudflare Pages (`https://modulix.pages.dev`)
 - **Category:** `web/deploy/production-live`
 - **Files Modified:**
