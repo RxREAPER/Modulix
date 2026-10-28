@@ -24,6 +24,21 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-115]` — Authentic Looping Hero Card Component Integration (Zero 3D Tilt)
+- **Category:** `web/ui/hero/vector-loop`
+- **Files Modified:**
+  - `modulix_landing_page/src/components/sections/MedicalHeroIllustration.tsx` (purged dummy manual SVG and interactive 3D perspective tilt; implemented calm, stable live looping component)
+  - `modulix_landing_page/public/hero/master_vector.svg` (extracted and cleaned authentic master vector artwork from `FINAL.mp4`/`FINAL.gif`)
+  - `modulix_landing_page/public/hero/hero_transparent.webm` (optimized alpha-transparent looping animation without stipple dot noise)
+- **Summary:**
+  - Extracted authentic medical illustration components from `FINAL.mp4`/`FINAL.gif` (anatomical écorché figure climbing ladder, cardiac ECG monitor tablet, clinical skull, textbooks, stethoscope, dual syringes, histology map).
+  - Eliminated mouse/pointer 3D tilt tracking (`rotateX`, `rotateY`, `perspective-[1200px]`, `preserve-3d`) to ensure stable, calm, non-overlapping geometry.
+  - Deployed non-interactive live looping hero card with authentic vector artwork poster and transparent video fallback.
+- **Verification:**
+  - `bun run lint`: 0 errors, 0 warnings.
+  - `bun run build`: Built production bundle cleanly in 20.81s.
+- **Build Status:** ✅ Verified & Live
+
 ### 🔖 `[CKPT-114]` — Adaptation of All Screens and Sub-Pages to Minimalist Luxury Editorial Aesthetic
 - **Category:** `web/ui/editorial/adaptation`
 - **Files Modified:**
