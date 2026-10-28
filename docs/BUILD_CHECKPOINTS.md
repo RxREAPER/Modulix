@@ -24,6 +24,22 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-116]` — Responsive Adaptive Hybrid Navigation Overhaul (Mobile Capsule Dock & Tablet Floating Pill)
+- **Category:** `web/ui/navigation/adaptive-hybrid`
+- **Files Modified:**
+  - `modulix_landing_page/src/components/layout/Navbar.tsx` (implemented Option 4 Responsive Adaptive Hybrid navigation with floating bottom dock for phones and floating header pill for tablets/desktop)
+  - `modulix_landing_page/src/App.tsx` (adjusted main content mobile bottom padding `pb-20 md:pb-8`)
+  - `modulix_landing_page/src/components/layout/Footer.tsx` (adjusted mobile bottom padding `pb-28 md:pb-20`)
+- **Summary:**
+  - **Mobile (< 768px):** Implemented an ergonomic floating bottom capsule dock (`fixed bottom-5`) with frosted glass blur (`backdrop-blur-2xl`), tactile spring tab highlight (`layoutId="mobileActiveDockPill"`), Day/Night toggle, and smart auto-tuck on fast downward scroll.
+  - **Tablet & Desktop (>= 768px):** Implemented a detached, floating header capsule pill (`sticky top-4`) with brand monogram, segmented navigation pill switcher, spring active indicators, and quick GitHub link.
+  - Eliminated awkward mobile top hamburger menus and 2-tap navigation friction.
+- **Verification:**
+  - `bun run lint`: 0 errors, 0 warnings.
+  - `bun run build`: Built production bundle cleanly in 22.46s.
+  - Verified with mobile (390x844) and tablet (1024x768) screenshot captures.
+- **Build Status:** ✅ Verified & Live
+
 ### 🔖 `[CKPT-115]` — Authentic Looping Hero Card Component Integration (Zero 3D Tilt)
 - **Category:** `web/ui/hero/vector-loop`
 - **Files Modified:**

@@ -8,7 +8,7 @@ interface FooterProps {
 
 export function Footer({ navigate }: FooterProps) {
   return (
-    <footer className="w-full max-w-5xl mx-auto px-5 sm:px-8 pt-16 pb-20 mt-12 text-[var(--ink-foreground)]">
+    <footer className="w-full max-w-5xl mx-auto px-5 sm:px-8 pt-16 pb-28 md:pb-20 mt-12 text-[var(--ink-foreground)]">
       <HairlineDivider />
 
       <div className="pt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">

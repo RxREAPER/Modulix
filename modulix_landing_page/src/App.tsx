@@ -75,7 +75,7 @@ export default function App() {
       <div className="min-h-screen flex flex-col bg-[var(--scaffold-bg)] text-[var(--ink-foreground)] selection:bg-blue-500/20 selection:text-blue-500">
         <Navbar currentRoute={currentRoute} navigate={navigate} />
 
-        <main className="flex-1 w-full max-w-5xl mx-auto px-5 sm:px-8">
+        <main className="flex-1 w-full max-w-5xl mx-auto px-5 sm:px-8 pb-20 md:pb-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentRoute}
