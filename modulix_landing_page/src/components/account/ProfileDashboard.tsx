@@ -11,7 +11,7 @@ import {
   signOut,
   supabase,
 } from "../../lib/supabase"
-import { Download, Trash2, LogOut, Save, Eye, EyeOff, Check } from "lucide-react"
+import { Download, Trash2, LogOut, Save, Check } from "lucide-react"
 
 interface ProfileDashboardProps {
   user: User
@@ -21,8 +21,6 @@ interface ProfileDashboardProps {
 export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
   const [profile, setProfile] = useState<ProfileRecord | null>(null)
   const [doctorName, setDoctorName] = useState("")
-  const [displayName, setDisplayName] = useState("")
-  const [leaderboardVisible, setLeaderboardVisible] = useState(true)
   const [realtimeConnected, setRealtimeConnected] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
@@ -39,8 +37,6 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
       if (data) {
         setProfile(data)
         setDoctorName(data.doctor_name || "")
-        setDisplayName(data.display_name || "")
-        setLeaderboardVisible(data.leaderboard_visible ?? true)
       } else {
         setDoctorName(user.user_metadata?.full_name || "Doctor")
       }
@@ -64,12 +60,6 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
             if (updated.doctor_name !== undefined) {
               setDoctorName(updated.doctor_name || "")
             }
-            if (updated.display_name !== undefined) {
-              setDisplayName(updated.display_name || "")
-            }
-            if (updated.leaderboard_visible !== undefined) {
-              setLeaderboardVisible(updated.leaderboard_visible)
-            }
           }
         }
       )
@@ -92,10 +82,12 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
     setSaving(true)
     setSaveError(null)
     try {
+      const cleanName = doctorName.trim()
+      const fallbackDisplayName = cleanName || `User ${user.id.slice(-4)}`
       const { error } = await updateUserProfile(user.id, {
-        doctor_name: doctorName.trim(),
-        display_name: displayName.trim() || null,
-        leaderboard_visible: leaderboardVisible,
+        doctor_name: cleanName,
+        display_name: fallbackDisplayName,
+        leaderboard_visible: true,
       })
       if (error) throw error
       setSaveSuccess(true)
@@ -187,67 +179,20 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-semibold text-[var(--ink-foreground)] mb-1.5">
-              Doctor Title / Surname
-            </label>
-            <input
-              type="text"
-              value={doctorName}
-              onChange={(e) => setDoctorName(e.target.value)}
-              placeholder="e.g. Safi"
-              className="w-full px-4 py-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-subtle)] focus:bg-[var(--card-bg)] text-xs sm:text-sm text-[var(--ink-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)] transition-all"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-[var(--ink-foreground)] mb-1.5">
-              Public Alias (Leaderboard)
-            </label>
-            <input
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="e.g. NeuroIntern"
-              className="w-full px-4 py-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-subtle)] focus:bg-[var(--card-bg)] text-xs sm:text-sm text-[var(--ink-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)] transition-all"
-            />
-          </div>
-        </div>
-
-        {/* Leaderboard Visibility Switch */}
-        <div className="p-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-subtle)] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {leaderboardVisible ? (
-              <Eye size={18} className="text-[var(--accent)]" />
-            ) : (
-              <EyeOff size={18} className="text-[var(--muted-text)]" />
-            )}
-            <div>
-              <div className="text-xs font-semibold text-[var(--ink-foreground)]">
-                Community Leaderboard Visibility
-              </div>
-              <div className="text-[11px] text-[var(--muted-text)] mt-0.5">
-                {leaderboardVisible
-                  ? "Your study hours are displayed on competitive leaderboards."
-                  : "Your study hours are strictly private and hidden."}
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setLeaderboardVisible(!leaderboardVisible)}
-            className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${
-              leaderboardVisible ? "bg-[var(--accent)]" : "bg-neutral-300 dark:bg-neutral-700"
-            }`}
-          >
-            <span
-              className={`block w-4 h-4 rounded-full bg-white transition-transform ${
-                leaderboardVisible ? "translate-x-6" : "translate-x-1"
-              }`}
-            />
-          </button>
+        <div>
+          <label className="block text-xs font-semibold text-[var(--ink-foreground)] mb-1.5">
+            Doctor Name / Title
+          </label>
+          <input
+            type="text"
+            value={doctorName}
+            onChange={(e) => setDoctorName(e.target.value)}
+            placeholder="e.g. Safi or Dr. House"
+            className="w-full px-4 py-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-subtle)] focus:bg-[var(--card-bg)] text-xs sm:text-sm text-[var(--ink-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)] transition-all"
+          />
+          <p className="text-[11px] text-[var(--muted-text)] mt-1.5">
+            Your name showcased across your study desk and the community focus leaderboard.
+          </p>
         </div>
 
         {saveError && (

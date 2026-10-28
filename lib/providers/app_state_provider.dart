@@ -122,6 +122,20 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
   Future<void> setAvatarIcon(String iconId) =>
       _update((s) => s.copyWith(avatarIconId: iconId));
 
+  Future<void> saveProfile({
+    required String doctorName,
+    required String avatarColorId,
+    required String avatarIconId,
+  }) async {
+    final cleanName = doctorName.trim().isEmpty ? 'Doctor' : doctorName.trim();
+    await _update((s) => s.copyWith(
+          doctorName: cleanName,
+          avatarColorId: avatarColorId,
+          avatarIconId: avatarIconId,
+        ));
+    CrashReportingService.instance.setDoctorName(cleanName);
+  }
+
   // Day start hour
   Future<void> setDayStartHour(int hour) =>
       _update((s) => s.copyWith(dayStartHour: hour));

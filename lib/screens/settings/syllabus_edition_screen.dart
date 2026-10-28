@@ -53,7 +53,7 @@ class SyllabusEditionScreen extends ConsumerWidget {
           // Edition 8 Card
           _EditionCard(
             editionId: 'marrow_8',
-            title: 'Marrow Edition 8',
+            title: 'Edition 8',
             editionTag: 'CURRENT STANDARD (2024–2026)',
             subjectsCount: 19,
             videosCount: 848,
@@ -64,7 +64,7 @@ class SyllabusEditionScreen extends ConsumerWidget {
                 notifier.switchEdition('marrow_8');
                 ModulixToast.showSuccess(
                   context,
-                  message: 'Switched active syllabus to Marrow Edition 8',
+                  message: 'Switched active syllabus to Edition 8',
                 );
               }
             },
@@ -75,7 +75,7 @@ class SyllabusEditionScreen extends ConsumerWidget {
           // Edition 6.5 Card
           _EditionCard(
             editionId: 'marrow_6_5',
-            title: 'Marrow Edition 6.5',
+            title: 'Edition 6.5',
             editionTag: 'CLASSIC FOUNDATION',
             subjectsCount: 19,
             videosCount: 792,
@@ -86,7 +86,7 @@ class SyllabusEditionScreen extends ConsumerWidget {
                 notifier.switchEdition('marrow_6_5');
                 ModulixToast.showSuccess(
                   context,
-                  message: 'Switched active syllabus to Marrow Edition 6.5',
+                  message: 'Switched active syllabus to Edition 6.5',
                 );
               }
             },

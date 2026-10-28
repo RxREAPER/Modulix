@@ -210,11 +210,14 @@ class AppState {
     this.editions = const {},
   });
 
-  String get publicDisplayName => isLeaderboardAnonymous
-      ? 'Dr. Anonymous'
-      : (leaderboardDisplayName != null && leaderboardDisplayName!.trim().isNotEmpty
-          ? leaderboardDisplayName!.trim()
-          : doctorName);
+  String get publicDisplayName {
+    final clean = doctorName.trim();
+    if (clean.isEmpty || clean.toLowerCase() == 'doctor') {
+      final code = (clean.isEmpty ? 'flowmd' : clean).hashCode.abs() % 9000 + 1000;
+      return 'User $code';
+    }
+    return clean.startsWith('Dr') ? clean : 'Dr. $clean';
+  }
 
   EditionState get currentEdition =>
       editions[activeEdition] ?? const EditionState();

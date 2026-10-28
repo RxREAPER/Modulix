@@ -24,6 +24,8 @@ import 'screens/daily_tasks/daily_tasks_screen.dart';
 import 'screens/settings/syllabus_edition_screen.dart';
 import 'screens/settings/notifications_preferences_screen.dart';
 import 'screens/settings/settings_screen.dart';
+import 'screens/settings/profile_edit_screen.dart';
+import 'screens/settings/account_settings_screen.dart';
 import 'screens/settings/theme_studio_screen.dart';
 import 'screens/timer/focus_timer_screen.dart';
 import 'services/auth_service.dart';
@@ -252,6 +254,20 @@ final routerProvider = Provider<GoRouter>((ref) {
                   ),
                 ),
                 routes: [
+                  GoRoute(
+                    path: 'profile',
+                    pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+                      state: state,
+                      child: const ProfileEditScreen(),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'account',
+                    pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+                      state: state,
+                      child: const AccountSettingsScreen(),
+                    ),
+                  ),
                   GoRoute(
                     path: 'theme-studio',
                     pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(

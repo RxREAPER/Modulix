@@ -73,6 +73,32 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-127]` — Settings Sub-Pages Architecture, Theme & Syllabus Cards, and Global Leaderboard Simplification
+- **Category:** `settings` / `ui` / `sub-pages` / `leaderboard` / `theme` / `backend`
+- **Files Modified:**
+  - `lib/screens/settings/settings_screen.dart`
+  - `lib/screens/settings/profile_edit_screen.dart`
+  - `lib/screens/settings/account_settings_screen.dart`
+  - `lib/screens/settings/syllabus_edition_screen.dart`
+  - `lib/models/app_state.dart`
+  - `lib/providers/app_state_provider.dart`
+  - `lib/app.dart`
+  - `supabase/migrations/011_simplify_leaderboard_identity.sql`
+  - `modulix_landing_page/src/components/account/ProfileDashboard.tsx`
+- **Summary:**
+  - **Stylized Profile Hero Card & Sub-Page:** Replaced cluttered profile card with a minimalist card (NO EXTRA TEXTS) featuring doctor avatar, name, and right chevron. Navigates to `/settings/profile` (`ProfileEditScreen`) with top AppBar "Save" button, real-time avatar preview, doctor name input, accent palette selector (`kProfilePalette`), and avatar character picker (`kProfileAvatars`).
+  - **Account Card & Dedicated Sub-Page:** Added modern, uncluttered account card navigating to `/settings/account` (`AccountSettingsScreen`) displaying authenticated email, doctor name, last synced relative timestamp, tactile "Sync Now" button, and clean "Sign Out" confirmation with zero telemetry clutter.
+  - **Theme Studio Preview Card:** Replaced list tile with an eye-catching card featuring a live 3-circle palette swatch preview (scaffold, accent, secondary accent) and active atmosphere name.
+  - **Syllabus Edition Modernization:** Removed all occurrences of "Marrow" across settings cards, titles, tags, and toasts. Displays clean "Edition 8" and "Edition 6.5" with module count summaries (19 Subjects, 848 vs 792 modules).
+  - **Global Leaderboard Identity Simplification:**
+    - Eliminated leaderboard opt-out toggles, podium aliases, and incognito mode across Flutter app, Supabase backend RPC (`get_leaderboard_bundle`), and Web Portal account dashboard.
+    - All users participate on the leaderboard under their real doctor name.
+    - Added deterministic non-colliding fallback `User XXXX` for users without a custom name.
+- **Verification:** `flutter analyze` 0 issues, `flutter test` 27/27 green (100%), web production build `bun run build` clean.
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### 🔖 `[CKPT-126]` — Account Identity & Cloud Sync Diagnostics Suite in Settings
 - **Category:** `settings` / `sync` / `account` / `diagnostics` / `ui`
 - **Files Modified:**
