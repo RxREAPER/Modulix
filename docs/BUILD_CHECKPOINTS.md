@@ -4,6 +4,26 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.35.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk`
+- **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)
+- **Static Analysis:** 0 Errors, 0 Warnings | **Test Suite:** 100% Green (27/27 Tests Passed)
+- **Included Checkpoints:** `[CKPT-127]` (✅ Included in Build)
+
+### Key Highlights & Releases in v1.35.0:
+1. **Settings Redo & Sub-Pages Navigation Architecture (`[CKPT-127]`):**
+   - **Profile Card:** Highly stylized, minimalist hero card with zero redundant text (no subtitles or extra action buttons). Displays user avatar, Doctor name, and navigation chevron leading to `/settings/profile` (`ProfileEditScreen`).
+   - **Profile Edit Sub-Page (`ProfileEditScreen`):** Features top AppBar "Save" button, real-time avatar preview, clean text field for Doctor Name, 8-color accent palette selector (`kProfilePalette`), and 17-character avatar grid (`kProfileAvatars`).
+   - **Account Card & Sub-Page (`AccountSettingsScreen`):** Displays account email, relative last synced timestamp, tactile "Sync Now" button, and clean "Sign Out" confirmation with zero telemetry clutter.
+2. **Visual Theme Studio & Modernized Syllabus Cards:**
+   - **Theme Studio Card:** Redesigned into a prominent preview card displaying active theme name and a 3-circle palette swatch mockup (scaffold background, accent, secondary accent).
+   - **Syllabus Edition Card & Sub-Page:** Stripped all occurrences of "Marrow" from cards, titles, tags, and toasts. Minimal, modern overview of "Edition 8" and "Edition 6.5" with 19 Subjects and module counts.
+3. **Global Leaderboard Identity Simplification:**
+   - Removed all leaderboard opt-out toggles, custom podium aliases, and incognito anonymity modes from mobile app, Supabase backend functions (`get_leaderboard_bundle`), and web portal account dashboard.
+   - All users participate on the leaderboard under their real doctor name, with a deterministic non-colliding fallback `User XXXX` for users without a custom name.
+
+---
+
 ## 🚀 Build Manifest v1.34.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk`
 - **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)
@@ -95,7 +115,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
     - All users participate on the leaderboard under their real doctor name.
     - Added deterministic non-colliding fallback `User XXXX` for users without a custom name.
 - **Verification:** `flutter analyze` 0 issues, `flutter test` 27/27 green (100%), web production build `bun run build` clean.
-- **Build Status:** ⏳ Pending APK Build
+- **Build Status:** ✅ Included in Build (v1.35.0)
 
 ---
 
