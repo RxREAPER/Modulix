@@ -19,8 +19,8 @@ export function StudyJourneySection() {
       number: "01",
       icon: CheckSquare,
       title: "Daily Desk",
-      headline: "TasksQuickAddSheet · Daily Desk",
-      description: "Rapid study block capture with 4 tactile type presets — Video (35m), Q-Bank (40m), Notes (25m), and Revision (20m).",
+      headline: "Daily Desk",
+      description: "Capture study to-dos with ink and clean paper aesthetics.",
       component: <TaskStation isActive={activeStep === 0} />,
     },
     {
@@ -28,8 +28,8 @@ export function StudyJourneySection() {
       number: "02",
       icon: BookOpen,
       title: "Curriculum",
-      headline: "SquareSubjectCard · Syllabus Library",
-      description: "Explore all 19 MBBS subjects across 1st to Final Year with live video counts, hours, Edition 8.0 unit locking, and pacing.",
+      headline: "Curriculum",
+      description: "Align daily focus blocks with 19 MBBS subjects.",
       component: <TopicStation isActive={activeStep === 1} />,
     },
     {
@@ -37,8 +37,8 @@ export function StudyJourneySection() {
       number: "03",
       icon: Clock,
       title: "Focus Timer",
-      headline: "SketchFlipCard & Ambient Studio",
-      description: "Mechanical split-flap flip clock ticking down Pomodoro cycles with procedural Rain audio and immersive dark themes.",
+      headline: "Focus Timer",
+      description: "Deep work with split-flap mechanics and procedural rain audio.",
       component: <TimerStation isActive={activeStep === 2} />,
     },
     {
@@ -46,8 +46,8 @@ export function StudyJourneySection() {
       number: "04",
       icon: BarChart3,
       title: "Analytics",
-      headline: "Editorial Momentum & Consistency Matrix",
-      description: "Automatic SQLite tracking of 12-day streaks, today's deep work hours, module plan velocity, and 14-day consistency heatmaps.",
+      headline: "Analytics",
+      description: "Automatic local aggregation of focus hours and study streaks.",
       component: <AnalyticsStation isActive={activeStep === 3} />,
     },
     {
@@ -55,8 +55,8 @@ export function StudyJourneySection() {
       number: "05",
       icon: Trophy,
       title: "Leaderboard",
-      headline: "EditorialPodium & Career Level Ladder",
-      description: "Real-time rankings across Daily, Weekly, and Monthly scales with rising Top 3 pedestals and Junior Resident promotions.",
+      headline: "Leaderboard",
+      description: "Verified study hours reflected on the daily clinical podium.",
       component: <PodiumStation isActive={activeStep === 4} />,
     },
   ]
@@ -66,7 +66,7 @@ export function StudyJourneySection() {
     if (!isPlaying) return
     const interval = setInterval(() => {
       setActiveStep((prev) => (prev + 1) % steps.length)
-    }, 3200)
+    }, 3400)
     return () => clearInterval(interval)
   }, [isPlaying, steps.length])
 

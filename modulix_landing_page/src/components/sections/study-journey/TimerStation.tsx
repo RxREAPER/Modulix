@@ -35,54 +35,31 @@ export function TimerStation({ isActive }: StationProps) {
   const sStr = seconds.toString().padStart(2, "0")
   const mStr = minutes.toString().padStart(2, "0")
 
-  // Soundwave Equalizer Heights from medical_wave_visualizer.dart
+  // Soundwave Equalizer Heights
   const waveHeights = [0.35, 0.75, 1.0, 0.6, 0.9, 0.7, 0.45, 0.8]
 
   return (
-    <div className="w-full flex flex-col items-center justify-center p-2 sm:p-4 select-none">
-      <div
-        className={`w-full max-w-xs rounded-2xl border p-4 shadow-lg transition-colors relative ${
+    <div className="w-full flex items-center justify-center p-4 sm:p-6 select-none">
+      {/* ── Minimalist Split-Flap Clock Stage (Zero Tags, Zero Badges) ── */}
+      <motion.div
+        layout
+        className={`w-full max-w-sm rounded-2xl border p-6 transition-colors relative flex flex-col items-center justify-center ${
           isDark
-            ? "bg-[#18191D] border-white/10 shadow-[0_12px_32px_rgba(0,0,0,0.5)]"
-            : "bg-[#FCFAF5] border-[#E8DEC8] shadow-[0_10px_28px_rgba(0,0,0,0.06)]"
+            ? "bg-[#16171B] border-white/8 shadow-[0_12px_36px_rgba(0,0,0,0.4)]"
+            : "bg-[#FCFAF5] border-[#EAE3D2] shadow-[0_8px_24px_rgba(0,0,0,0.04)]"
         }`}
       >
-        {/* Header: Mode & Pomodoro Cycle Row (from _buildPomodoroCycleRow) */}
-        <div className="flex items-center justify-between pb-3 mb-3 border-b border-black/[0.06] dark:border-white/[0.06]">
-          <div className="flex items-center gap-1.5 text-[10px] font-mono tracking-wider font-bold text-[var(--accent)]">
-            <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse" />
-            <span>POMODORO · 25 MIN</span>
-          </div>
-
-          {/* CYCLE 1 OF 4 indicator with 4 cycle pips */}
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10">
-            <span className="font-mono text-[9px] font-bold text-[var(--muted-text)]">
-              CYCLE 1/4
-            </span>
-            <div className="flex items-center gap-1">
-              {/* Pip 1 (Active) */}
-              <div className="w-2 h-2 rounded-full bg-[var(--accent)]" />
-              {/* Pip 2 */}
-              <div className="w-2 h-2 rounded-full bg-black/20 dark:bg-white/20" />
-              {/* Pip 3 */}
-              <div className="w-2 h-2 rounded-full bg-black/20 dark:bg-white/20" />
-              {/* Pip 4 (Long break interval) */}
-              <div className="w-2 h-2 rounded-full border border-amber-500 bg-transparent" />
-            </div>
-          </div>
-        </div>
-
         {/* ── Mechanical Split-Flap Clock Display (SketchFlipCard) ── */}
-        <div className="flex items-center justify-center gap-2.5 py-1">
+        <div className="flex items-center justify-center gap-3 py-2">
           {/* Minutes Split-Flap Card */}
           <div
-            className={`w-16 h-20 sm:w-18 sm:h-22 rounded-xl border relative flex flex-col shadow-inner overflow-hidden ${
-              isDark ? "bg-[#111215] border-white/15" : "bg-[#F3EFE6] border-[#DCD3C0]"
+            className={`w-16 h-20 sm:w-20 sm:h-24 rounded-xl border relative flex flex-col shadow-inner overflow-hidden ${
+              isDark ? "bg-[#111215] border-white/12" : "bg-[#F3EFE6] border-[#DCD3C0]"
             }`}
           >
             {/* Top Half */}
             <div className="flex-1 flex items-end justify-center pb-0 overflow-hidden relative">
-              <span className="font-mono text-3xl sm:text-4xl font-bold tracking-tight text-[var(--ink-foreground)] translate-y-3.5">
+              <span className="font-mono text-3xl sm:text-4xl font-bold tracking-tight text-[var(--ink-foreground)] translate-y-3.5 sm:translate-y-4">
                 {mStr}
               </span>
             </div>
@@ -93,19 +70,19 @@ export function TimerStation({ isActive }: StationProps) {
             </div>
             {/* Bottom Half */}
             <div className="flex-1 flex items-start justify-center pt-0 overflow-hidden relative bg-black/[0.02] dark:bg-black/20">
-              <span className="font-mono text-3xl sm:text-4xl font-bold tracking-tight text-[var(--ink-foreground)] -translate-y-3.5">
+              <span className="font-mono text-3xl sm:text-4xl font-bold tracking-tight text-[var(--ink-foreground)] -translate-y-3.5 sm:-translate-y-4">
                 {mStr}
               </span>
             </div>
           </div>
 
           {/* Pulsing Colon Separator */}
-          <span className="font-mono text-2xl font-bold text-[var(--accent)] animate-pulse">:</span>
+          <span className="font-mono text-2xl font-bold text-[var(--accent)] opacity-80 animate-pulse">:</span>
 
           {/* Seconds Split-Flap Card with 3D Flip */}
           <div
-            className={`w-16 h-20 sm:w-18 sm:h-22 rounded-xl border relative flex flex-col shadow-inner overflow-hidden ${
-              isDark ? "bg-[#111215] border-white/15" : "bg-[#F3EFE6] border-[#DCD3C0]"
+            className={`w-16 h-20 sm:w-20 sm:h-24 rounded-xl border relative flex flex-col shadow-inner overflow-hidden ${
+              isDark ? "bg-[#111215] border-white/12" : "bg-[#F3EFE6] border-[#DCD3C0]"
             }`}
           >
             {/* Top Half */}
@@ -117,7 +94,7 @@ export function TimerStation({ isActive }: StationProps) {
                   animate={{ rotateX: 0, opacity: 1 }}
                   exit={{ rotateX: 90, opacity: 0 }}
                   transition={{ duration: 0.35, ease: "easeOut" }}
-                  className="font-mono text-3xl sm:text-4xl font-bold tracking-tight text-[var(--ink-foreground)] translate-y-3.5 origin-bottom"
+                  className="font-mono text-3xl sm:text-4xl font-bold tracking-tight text-[var(--ink-foreground)] translate-y-3.5 sm:translate-y-4 origin-bottom"
                 >
                   {sStr}
                 </motion.span>
@@ -130,39 +107,35 @@ export function TimerStation({ isActive }: StationProps) {
             </div>
             {/* Bottom Half */}
             <div className="flex-1 flex items-start justify-center pt-0 overflow-hidden relative bg-black/[0.02] dark:bg-black/20">
-              <span className="font-mono text-3xl sm:text-4xl font-bold tracking-tight text-[var(--ink-foreground)] -translate-y-3.5">
+              <span className="font-mono text-3xl sm:text-4xl font-bold tracking-tight text-[var(--ink-foreground)] -translate-y-3.5 sm:-translate-y-4">
                 {sStr}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Ambient Sound Dock (from ambient_sound_sheet.dart) */}
-        <div className="mt-3 pt-2.5 border-t border-black/[0.05] dark:border-white/[0.05] flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-[10px] font-mono text-[var(--muted-text)]">
-            <Headphones size={11} className="text-[var(--accent)]" />
-            <span>Ambient: Rain on Window</span>
-          </div>
-
-          {/* Equalizer Waveform */}
-          <div className="flex items-end gap-1 h-3.5">
+        {/* Ambient Sound (Minimal Waveform + Quiet Text) */}
+        <div className="mt-4 flex items-center gap-2 text-xs font-mono text-[var(--muted-text)] opacity-70">
+          <Headphones size={13} className="text-[var(--accent)]" />
+          <span>Rain on Window</span>
+          <div className="flex items-end gap-0.5 h-3 ml-1">
             {waveHeights.map((h, i) => (
               <motion.div
                 key={i}
                 animate={{
-                  height: isActive ? [`${h * 30}%`, `${h * 100}%`, `${h * 40}%`] : "20%",
+                  height: isActive ? [`${h * 30}%`, `${h * 100}%`, `${h * 40}%`] : "25%",
                 }}
                 transition={{
                   repeat: Infinity,
                   duration: 0.6 + i * 0.08,
                   ease: "easeInOut",
                 }}
-                className="w-1 rounded-full bg-[var(--accent)] origin-bottom"
+                className="w-0.5 rounded-full bg-[var(--accent)] origin-bottom"
               />
             ))}
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }

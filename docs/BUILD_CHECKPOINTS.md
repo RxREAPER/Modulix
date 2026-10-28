@@ -24,6 +24,23 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### 🔖 `[CKPT-107]` — Section 3 Radical Minimalist Purge: Zero Tags, Zero Badges, Less Buttons & Uncluttered Motion
+- **Category:** `web` / `ui` / `minimalism` / `realism`
+- **Files Modified:**
+  - `modulix_landing_page/src/components/sections/study-journey/TaskStation.tsx` (purged tag accessory bar, type pills, and extra buttons; refined down to pure ink typing, checkmark spring, and fountain strikethrough line)
+  - `modulix_landing_page/src/components/sections/study-journey/TopicStation.tsx` (purged "2ND YEAR", "42%", "SYLLABUS LOCKED", and "ROBBINS 10TH ED" badges; kept clean subject icon, title, percentage text, hairline crimson progress bar, and single active unit line)
+  - `modulix_landing_page/src/components/sections/study-journey/TimerStation.tsx` (purged "POMODORO · 25 MIN" badge and "CYCLE 1/4" dot capsule; kept authentic 3D split-flap cards and minimal rain waveform)
+  - `modulix_landing_page/src/components/sections/study-journey/AnalyticsStation.tsx` (purged 10 nested text boxes, deadline chips, and breakdowns; kept pure rolling 03:45 focus tally, glowing 7-day consistency strip, and 12-day streak flame)
+  - `modulix_landing_page/src/components/sections/study-journey/PodiumStation.tsx` (purged scale filter buttons, "142 FOCUSING" badge, and career ladder progress bar; kept 3 pure rising pedestals with gold metallic sheen sweep)
+  - `modulix_landing_page/src/components/sections/study-journey/StudyJourneySection.tsx` (replaced long text paragraphs and technical class names with short, poetic 1-line descriptions and breathable spacing)
+- **Summary:**
+  - Stripped out all tag clutter, badge pills, nested card boxes, and dense walls of text across Section 3, restoring true clinical minimalism and calm negative space.
+  - Reduced CSS and JS bundle sizes significantly while preserving high-motion vector physics and authentic tactile feel.
+- **Verification:** `bun x tsc -b` and `bun run build` passed with 0 errors. Verified on live Vite dev server.
+- **Build Status:** ✅ Verified & Live
+
+---
+
 ### 🔖 `[CKPT-106]` — Section 3 Clinical Journey Alignment with Exact App Components, Texts & Fluid Motion
 - **Category:** `web` / `ui` / `components` / `motion`
 - **Files Modified:**
