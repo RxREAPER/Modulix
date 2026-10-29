@@ -4,27 +4,26 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
-## 🚀 Build Manifest v1.37.0
-- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (278MB)
-- **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)
-- **Compilation Time:** 182.8s | **Static Analysis:** 0 Errors, 0 Warnings | **Test Suite:** 100% Green (24/24 Notification & Sync Tests Passed)
-- **Included Checkpoints:** `[CKPT-130]` (✅ Included in Build)
+## 🚀 Build Manifest v1.38.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (276MB)
+- **Compilation Time:** 188.2s | **Static Analysis:** 0 Errors, 0 Warnings | **Test Suite:** 100% Green (22/22 Sync & Resilience Tests Passed)
+- **Included Checkpoints:** `[CKPT-131]`, `[CKPT-132]`, `[CKPT-133]`, `[CKPT-134]` (✅ Included in Build)
 
-### Key Highlights & Releases in v1.37.0:
-1. **Settings Screen Simplification & Solid Names (`[CKPT-130]`):**
-   - Eliminated verbose explanatory subtitles and multi-line descriptions beneath every card on the Profile Settings screen.
-   - Refined every card into a clean, confident, solid name paired with subtle trailing status chips/badges: `Account & Sync` (`Connected` / `Guest`), `Theme Studio` (3-circle swatch palette stack), `Syllabus Edition` (`Edition 8` / `Edition 6.5`), `Notifications`, `Battery Reliability`, `Feature Tour`, `App Guide & Reference`, `Data & Privacy`, and `About Modulix` (`v1.36.0`).
-2. **App Guide & Reference Overhaul (`/settings/guide`):**
-   - Promoted the former modal bottom sheet into a dedicated, first-class native sub-page (`AppGuideScreen`) structured strictly around Modulix's 6 major architectural pillars:
-     - **Focus Timer Suite:** Pomodoro intervals with customizable blocks, dynamic live wallpapers, ambient audio, task-linked clocks, and landscape flip clock desk mode.
-     - **Tasks & Projects Management:** Daily desk tasks with clinical modalities (MCQ, Revision, Notes, Video), project stream grouping, tactile haptic checkoff feedback, and 5:00 AM study day boundary.
-     - **Module Planner & Deadlines:** High-stakes exam target deadlines (NEET-PG, INI-CET, University finals), dynamic daily module quotas, home desk queue, and accurate ETA projections.
-     - **Syllabus & Curriculum Tracker:** Multi-track Edition 8 (848 modules) and Edition 6.5 (792 modules), 19 MBBS subjects, tri-modal completion (Videos, Q-Banks, Notes), and single-tap bulk completion.
-     - **Global Focus Leaderboard:** Real Doctor Name identity with deterministic fallback handles, verified focus rankings across Daily, Weekly, Monthly, and All-Time, and podium recognition.
-     - **Cloud Sync & Data Sovereignty:** 100% offline-first durability with SQLite, linear append-only outbox, instant multi-device Google account synchronization, and manual backup export/import.
-3. **High-Performance Authentic Visual Showcases (WebP Micro-Loops):**
-   - Generated and integrated 6 authentic, screen-recorded micro-loop WebP animations in `assets/gifs/` (under 850KB total across all 6 animations) with native hardware decoding, zero CPU overhead, and silky-smooth visual demonstration of real app workflows.
-   - Preserved strict aesthetic rules: strictly zero emojis, explanations limited to 3-4 concise lines of text, zero mentions of "Marrow", and full theme conformance.
+### Key Highlights & Releases in v1.38.0:
+1. **Multi-Layered Sync Hardening & Zero Resurrection Traps (`[CKPT-134]`):**
+   - Eliminated state resurrection traps across time logs, daily desk tasks, and syllabus completions.
+   - Guarded against Realtime echo loops and race conditions between local edits and remote sync pulls.
+   - Ensured daily tasks rollover checks run immediately upon app resume from background before sync triggers.
+2. **Durable Dirty Tracking & Dead-Letter Queue (`[CKPT-134]`):**
+   - Dirty edition sets and mutation timestamps are now durably persisted across app reboots in SharedPreferences.
+   - Outbox mutations transition to Dead Letter Queue (`'failed'`) after 5 retries to prevent endless retry loops from poison pills.
+3. **Data Sovereignty & Leak Prevention (`[CKPT-134]`):**
+   - Emptied outbox and purged sync cursors on account sign-out to guarantee zero cross-account mutation leak.
+   - Full GDPR device-side wipe (`DatabaseService.resetAllDatabases()` + `StorageService.clear()`) on account purge.
+   - Included Tasks Hub projects and items in full JSON backups and authoritative restores.
+4. **Minimal Native Settings & About Sub-Pages (`[CKPT-132]`, `[CKPT-133]`):**
+   - Promoted Data & Privacy and About screens to native GoRouter routes with clean, minimalist design and zero emojis.
+   - Linked official Cloudflare Pages production domain `https://modulix.pages.dev`.
 
 ---
 
@@ -47,7 +46,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Verification:**
   - `flutter analyze`: 0 issues found (22.5s).
   - Unit tests: 22/22 tests passing green in `test/sync_service_test.dart`.
-- **Build Status:** ⏳ Pending APK Build
+- **Build Status:** ✅ Included in Build
 
 ---
 
