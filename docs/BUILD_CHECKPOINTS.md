@@ -28,6 +28,20 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ---
 
+### 🔖 `[CKPT-131]` — App Guide Streamlining: Text-Only Architectural Explanations
+- **Category:** `settings` / `guide` / `ui`
+- **Files Modified:**
+  - `lib/screens/settings/app_guide_screen.dart` (removed preview container and asset dependencies, streamlined cards to concise text explanations and direct action buttons)
+  - `assets/gifs/` (removed unused WebP preview files)
+- **Summary:**
+  - Streamlined `AppGuideScreen` to focus purely on high-density, readable text explanations (4 concise bullets per pillar) and tactile direct action triggers.
+  - Eliminated media container clutter and reduced asset footprint.
+- **Verification:**
+  - `flutter analyze`: 0 issues found.
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### 🔖 `[CKPT-130]` — App Guide & Reference Overhaul, Authentic WebP Micro-Loops & Settings Solid Names
 - **Category:** `settings` / `guide` / `micro-loops` / `ui`
 - **Files Modified:**

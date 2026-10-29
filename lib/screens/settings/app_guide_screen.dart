@@ -88,7 +88,6 @@ class AppGuideScreen extends ConsumerWidget {
             title: 'Focus Timer Suite',
             icon: Icons.timer_outlined,
             accentColor: const Color(0xFFEA580C),
-            previewAssetPath: 'assets/gifs/guide_timer.webp',
             bullets: const [
               'Pomodoro intervals with customizable study blocks and structured rest breaks.',
               'Dynamic live wallpapers and ambient soundscapes to induce deep focus.',
@@ -109,7 +108,6 @@ class AppGuideScreen extends ConsumerWidget {
             title: 'Tasks & Projects Management',
             icon: Icons.check_circle_outline_rounded,
             accentColor: const Color(0xFF2563EB),
-            previewAssetPath: 'assets/gifs/guide_tasks.webp',
             bullets: const [
               'Daily desk tasks categorized by clinical modalities: MCQ, Revision, Notes, Video.',
               'Project and stream grouping for focused clerkship, clinical wards, and Grand Tests.',
@@ -130,7 +128,6 @@ class AppGuideScreen extends ConsumerWidget {
             title: 'Module Planner & Deadlines',
             icon: Icons.auto_graph_rounded,
             accentColor: const Color(0xFF7C3AED),
-            previewAssetPath: 'assets/gifs/guide_planner.webp',
             bullets: const [
               'Set high-stakes exam targets including NEET-PG, INI-CET, and University finals.',
               'Dynamic daily module quotas with automatic recalibration if study days are missed.',
@@ -151,7 +148,6 @@ class AppGuideScreen extends ConsumerWidget {
             title: 'Syllabus & Curriculum Tracker',
             icon: Icons.menu_book_rounded,
             accentColor: const Color(0xFF0D9488),
-            previewAssetPath: 'assets/gifs/guide_curriculum.webp',
             bullets: const [
               'Multi-track support for standard Edition 8 (848 modules) and classic Edition 6.5 (792 modules).',
               'Comprehensive 19 MBBS subjects structured with units, chapters, and high-yield topics.',
@@ -172,7 +168,6 @@ class AppGuideScreen extends ConsumerWidget {
             title: 'Global Focus Leaderboard',
             icon: Icons.leaderboard_outlined,
             accentColor: const Color(0xFFD97706),
-            previewAssetPath: 'assets/gifs/guide_leaderboard.webp',
             bullets: const [
               'Real Doctor Name identity with deterministic non-colliding fallback handles.',
               'Verified focus tracking across Daily, Weekly, Monthly, and All-Time leaderboards.',
@@ -193,7 +188,6 @@ class AppGuideScreen extends ConsumerWidget {
             title: 'Cloud Sync & Data Sovereignty',
             icon: Icons.cloud_sync_outlined,
             accentColor: const Color(0xFF059669),
-            previewAssetPath: 'assets/gifs/guide_sync.webp',
             bullets: const [
               '100% offline-first durability powered by high-performance local SQLite storage.',
               'Linear append-only SQLite outbox queues modifications safely without data loss.',
@@ -302,7 +296,6 @@ class _GuideFeatureCard extends StatelessWidget {
   final String title;
   final IconData icon;
   final Color accentColor;
-  final String previewAssetPath;
   final List<String> bullets;
   final String actionLabel;
   final VoidCallback onActionPressed;
@@ -312,7 +305,6 @@ class _GuideFeatureCard extends StatelessWidget {
     required this.title,
     required this.icon,
     required this.accentColor,
-    required this.previewAssetPath,
     required this.bullets,
     required this.actionLabel,
     required this.onActionPressed,
@@ -387,38 +379,7 @@ class _GuideFeatureCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
 
-          // Micro-Loop Preview Container
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: activeTheme.borderSubtle.withValues(alpha: 0.15),
-                  width: 1,
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: AspectRatio(
-                aspectRatio: 2.0,
-                child: Image.asset(
-                  previewAssetPath,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: activeTheme.mutedText.withValues(alpha: 0.08),
-                    child: Center(
-                      child: Icon(
-                        icon,
-                        size: 32,
-                        color: activeTheme.mutedText.withValues(alpha: 0.5),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
           const SizedBox(height: 14),
 
           // 3-4 Concise Bullet Points
