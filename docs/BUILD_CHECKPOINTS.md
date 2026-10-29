@@ -28,6 +28,32 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ---
 
+### 🔖 `[CKPT-132]` — Data & Privacy & About Modulix Modernization into Native Sub-Pages
+- **Category:** `settings` / `privacy` / `about` / `ui`
+- **Files Modified:**
+  - `lib/screens/settings/data_privacy_screen.dart` (new native sub-page at `/settings/privacy`: live SQLite storage footprint, session count, JSON backup export/import, clean legal reader modal, and data reset actions; purged cloud vault and clear desk tasks)
+  - `lib/screens/settings/about_screen.dart` (new native sub-page at `/settings/about`: brand hero emblem, package version v1.36.0, production website link to Cloudflare Pages https://modulix.pages.dev, direct mail support, share app action, and medical disclaimer)
+  - `lib/screens/settings/account_settings_screen.dart` (relocated Delete Cloud Account & Remote Data for authenticated users to satisfy app store policies without cluttering local data sovereignty screen)
+  - `lib/screens/settings/settings_screen.dart` (updated Data & Privacy and About Modulix tiles to push native sub-pages)
+  - `lib/screens/settings/sync_diagnostics_sheet.dart` (updated Data & Privacy reference to push native sub-page)
+  - `lib/app.dart` (registered `/settings/privacy` and `/settings/about` routes under `/settings`)
+  - `android/app/src/main/AndroidManifest.xml` (added package visibility queries for https and mailto intents)
+  - `pubspec.yaml` (promoted url_launcher: ^6.3.0 to direct dependencies)
+  - `lib/screens/settings/data_privacy_sheet.dart` (deleted legacy bottom sheet)
+  - `lib/screens/settings/about_support_sheet.dart` (deleted legacy bottom sheet)
+- **Summary:**
+  - Replaced legacy modal bottom sheets with native GoRouter sub-pages for Data & Privacy and About Modulix.
+  - Purged Cloud Vault and Clear Desk Tasks entirely.
+  - Linked official production domain `https://modulix.pages.dev` for website and share triggers.
+  - Strictly followed minimalist design standards: 0 emojis, 1-2 line concise subtitles, solid names, zero mentions of "Marrow" (strictly Edition 8 and Edition 6.5).
+- **Verification:**
+  - `flutter analyze`: 0 issues found (22.6s).
+  - Unit tests: 24/24 green (`notification_service_test.dart`, `sync_service_test.dart`).
+  - Full APK built (`app-debug.apk`), installed and verified on OnePlus 13R (`ba009d81`, Android 16).
+- **Build Status:** ✅ Included in Build / Verified on Device
+
+---
+
 ### 🔖 `[CKPT-131]` — App Guide Streamlining: Text-Only Architectural Explanations
 - **Category:** `settings` / `guide` / `ui`
 - **Files Modified:**

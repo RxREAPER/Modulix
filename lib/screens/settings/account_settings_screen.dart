@@ -130,6 +130,96 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
     );
   }
 
+  void _confirmDeleteAccount(BuildContext context) {
+    HapticFeedback.heavyImpact();
+    final activeTheme = context.modulixTheme;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: activeTheme.cardBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFEF4444), width: 1.4),
+        ),
+        title: const Text(
+          'Delete Cloud Account?',
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFFEF4444),
+          ),
+        ),
+        content: Text(
+          'This will permanently delete your remote cloud account and all synchronized records from our servers. Your local study progress on this device will remain safely preserved in Guest mode.',
+          style: TextStyle(
+            fontSize: 13,
+            color: activeTheme.mutedText,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w600,
+                color: activeTheme.mutedText,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              ModulixToast.showInfo(
+                context,
+                message: 'Deleting cloud account...',
+              );
+              final success =
+                  await AuthService.instance.purgeRemoteDataAndAccount();
+              if (context.mounted) {
+                if (success) {
+                  ModulixToast.showSuccess(
+                    context,
+                    message: 'Cloud account deleted successfully',
+                  );
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go('/settings');
+                  }
+                } else {
+                  ModulixToast.showError(
+                    context,
+                    message:
+                        'Failed to delete cloud account. Check your network connection.',
+                  );
+                }
+              }
+            },
+            child: const Text(
+              'Delete Account',
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _formatRelativeTime(DateTime? timestamp) {
     if (timestamp == null) return 'Never';
     final now = DateTime.now();
@@ -360,6 +450,25 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFFDC2626),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ApplePressable(
+              onTap: () => _confirmDeleteAccount(context),
+              pressedScale: 0.98,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Center(
+                  child: Text(
+                    'Delete Cloud Account & Data',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: activeTheme.mutedText,
                     ),
                   ),
                 ),

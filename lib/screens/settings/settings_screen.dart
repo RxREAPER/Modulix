@@ -9,8 +9,7 @@ import '../../theme/modulix_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/profile/profile_customization.dart';
 import '../../widgets/timer/battery_optimization_sheet.dart';
-import 'data_privacy_sheet.dart';
-import 'about_support_sheet.dart';
+
 
 /// Clean, minimalistic Modulix Settings & Profile Screen.
 /// Features stylized profile card, account sub-page entry, theme studio preview card,
@@ -694,7 +693,7 @@ class _ResourcesGroup extends StatelessWidget {
             ),
           ),
           title: 'Data & Privacy',
-          onTap: () => DataPrivacySheet.show(context),
+          onTap: () => context.push('/settings/privacy'),
         ),
         _groupDivider(context),
         _SettingsItemRow(
@@ -727,7 +726,7 @@ class _ResourcesGroup extends StatelessWidget {
               ),
             ),
           ),
-          onTap: () => AboutSupportSheet.show(context),
+          onTap: () => context.push('/settings/about'),
         ),
       ],
     );

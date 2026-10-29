@@ -9,7 +9,7 @@ import '../../theme/app_theme.dart';
 import '../../theme/modulix_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/feedback/modulix_toast.dart';
-import 'data_privacy_sheet.dart';
+import 'package:go_router/go_router.dart';
 
 class SyncDiagnosticsSheet extends ConsumerStatefulWidget {
   const SyncDiagnosticsSheet({super.key});
@@ -480,7 +480,7 @@ class _SyncDiagnosticsSheetState extends ConsumerState<SyncDiagnosticsSheet> {
                       child: ApplePressable(
                         onTap: () {
                           Navigator.pop(context);
-                          DataPrivacySheet.show(context);
+                          context.push('/settings/privacy');
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 11),
