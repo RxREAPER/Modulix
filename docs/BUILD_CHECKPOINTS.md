@@ -93,6 +93,31 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Test suites: All targeted tests (`progress_overhaul_test.dart`, `study_desk_test.dart`, `medical_planner_test.dart`, `leaderboard_test.dart`, `tasks_hub_test.dart`, `plan_screen_test.dart`) passed 100% green.
    - Debug APK compiled successfully (`app-debug.apk`, 276MB).
 
+### [CKPT-129] — Notification System Overhaul, Smart Streak Suppression & Minimalist Sub-Page
+- **Category:** `notifications` / `settings` / `permissions` / `privacy`
+- **Files Modified:**
+  - `lib/services/notification_service.dart`
+  - `lib/models/app_state.dart`
+  - `lib/providers/app_state_provider.dart`
+  - `lib/providers/focus_timer_provider.dart`
+  - `lib/providers/daily_tasks_provider.dart`
+  - `lib/screens/settings/notifications_settings_screen.dart`
+  - `lib/screens/settings/settings_screen.dart`
+  - `lib/app.dart`
+  - `test/notification_service_test.dart`
+  - `modulix_landing_page/src/components/privacy/PrivacyView.tsx`
+- **Summary:**
+  - Streamlined notification architecture: eliminated redundant `flowmd_module_tasks_v2` channel and instant system notifications on in-app task completions.
+  - Implemented Smart Streak Suppression: evening streak reminder (fixed 8:30 PM) is automatically cancelled if the user has already studied today.
+  - Eliminated unconditional startup permission prompt; added soft-ask banner in Notifications sub-page to request permissions on explicit intent.
+  - Built minimalist `NotificationsSettingsScreen` (`/settings/notifications`) with pure on/off toggles for Timer Alarms, Live Shade Stopwatch, Morning Kickoff (8:30 AM), and Streak Guard (8:30 PM).
+  - Added direct test notification delivery button and battery optimization shortcut for OnePlus, Xiaomi, and Samsung devices.
+  - Updated web Privacy Policy confirming 100% on-device local alarms with zero push tokens, zero tracking, and zero remote data ingress.
+- **Verification:** `flutter analyze` 0 issues (100% clean), unit tests passed (35/35 green), web build clean.
+- **Build Status:** Pending APK Build
+
+---
+
 ### [CKPT-128] — Remove Accent Colour Palette from Profile Edit Sub-Page
 - **Category:** `settings` / `ui` / `profile`
 - **Files Modified:**

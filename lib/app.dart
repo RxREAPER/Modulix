@@ -22,7 +22,7 @@ import 'screens/auth/auth_screen.dart';
 import 'screens/planner/planner_screen.dart';
 import 'screens/daily_tasks/daily_tasks_screen.dart';
 import 'screens/settings/syllabus_edition_screen.dart';
-import 'screens/settings/notifications_preferences_screen.dart';
+import 'screens/settings/notifications_settings_screen.dart';
 import 'screens/settings/settings_screen.dart';
 import 'screens/settings/profile_edit_screen.dart';
 import 'screens/settings/account_settings_screen.dart';
@@ -283,11 +283,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                     ),
                   ),
                   GoRoute(
-                    path: 'notifications-preferences',
+                    path: 'notifications',
                     pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
                       state: state,
-                      child: const NotificationsPreferencesScreen(),
+                      child: const NotificationsSettingsScreen(),
                     ),
+                  ),
+                  GoRoute(
+                    path: 'notifications-preferences',
+                    redirect: (_, __) => '/settings/notifications',
                   ),
                   GoRoute(
                     path: 'auth',
@@ -334,8 +338,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         redirect: (_, __) => '/settings/syllabus-edition',
       ),
       GoRoute(
+        path: '/notifications',
+        redirect: (_, __) => '/settings/notifications',
+      ),
+      GoRoute(
         path: '/notifications-preferences',
-        redirect: (_, __) => '/settings/notifications-preferences',
+        redirect: (_, __) => '/settings/notifications',
       ),
     ],
   );

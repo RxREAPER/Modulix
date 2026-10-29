@@ -23,13 +23,6 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
     final preset = PalettePreset.fromId(loaded.palettePresetId);
     AppTheme.current = ModulixThemeExtension.from(preset: preset);
     NotificationService.instance.syncAllReminders(loaded);
-    // Trigger standard system permission popup ("Allow Modulix to send you notifications?")
-    if (loaded.dailyReminderEnabled ||
-        loaded.streakReminderEnabled ||
-        loaded.moduleTasksReminderEnabled ||
-        loaded.focusTimerAlertsEnabled) {
-      Future.microtask(() => NotificationService.instance.requestPermissions());
-    }
     return loaded;
   }
 
@@ -178,6 +171,13 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
   Future<void> setFocusTimerAlerts(bool enabled) =>
       _update((s) => s.copyWith(focusTimerAlertsEnabled: enabled));
 
+  Future<void> setLiveTimerNotification(bool enabled) async {
+    await _update((s) => s.copyWith(liveTimerNotificationEnabled: enabled));
+    if (!enabled) {
+      await NotificationService.instance.cancelFocusTimerRunning();
+    }
+  }
+
   // Reset all progress
   Future<void> resetAllProgress() async {
     final current = state.value ?? AppState.empty;
@@ -214,19 +214,12 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
           final newCount = (history[today] ?? 0) + 1;
           history[today] = newCount;
 
-          // Check if today's module task goal is crushed
-          final target = e.plan.videosPerDay;
-          if (target != null && target > 0 && newCount == target) {
-            NotificationService.instance.showModuleTaskCompletedNotification(
-              subjectName: e.plan.targetSubject.isNotEmpty
-                  ? e.plan.targetSubject
-                  : 'today\'s module',
-              count: newCount,
-            );
-          }
-
           return e.copyWith(completedVideos: updated, dailyHistory: history);
         }));
+    // Smart streak suppression update
+    if (state.value != null) {
+      unawaited(NotificationService.instance.syncAllReminders(state.value!, hasStudiedToday: true));
+    }
     AnalyticsService.instance.logModuleCompleted(
       subject: state.value?.currentEdition.plan.targetSubject ?? '',
       type: 'video',

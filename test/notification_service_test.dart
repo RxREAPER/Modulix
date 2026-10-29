@@ -11,15 +11,13 @@ void main() {
     test('Notification channels and IDs are defined correctly', () {
       expect(NotificationService.channelStudyReminders, 'flowmd_study_reminders_v2');
       expect(NotificationService.channelStreakReminders, 'flowmd_streak_reminders_v2');
-      expect(NotificationService.channelModuleTasks, 'flowmd_module_tasks_v2');
       expect(NotificationService.channelFocusTimer, 'flowmd_focus_timer_v2');
+      expect(NotificationService.channelFocusTimerLive, 'flowmd_focus_timer_live_v2');
 
       expect(NotificationService.idStudyReminder, 1001);
       expect(NotificationService.idStreakReminder, 1002);
-      expect(NotificationService.idModuleTasksBriefing, 1003);
       expect(NotificationService.idFocusTimerRunning, 2000);
       expect(NotificationService.idFocusTimerEnd, 2001);
-      expect(NotificationService.idTaskCompleteInstant, 3001);
       expect(NotificationService.idTestNotification, 9999);
     });
 
@@ -28,18 +26,22 @@ void main() {
       final s2 = NotificationService.instance;
       expect(identical(s1, s2), isTrue);
     });
+
+    test('NotificationService.hasStudiedToday accurately detects progress', () {
+      const emptyState = AppState();
+      expect(NotificationService.hasStudiedToday(emptyState), isFalse);
+    });
   });
 
   group('AppState notification preferences serialization tests', () {
     test('Default AppState has notification defaults configured', () {
       const state = AppState();
       expect(state.dailyReminderEnabled, isTrue);
-      expect(state.studyReminderTime, '09:00');
+      expect(state.studyReminderTime, '08:30');
       expect(state.streakReminderEnabled, isTrue);
-      expect(state.streakReminderTime, '20:00');
-      expect(state.moduleTasksReminderEnabled, isTrue);
-      expect(state.moduleTasksReminderTime, '08:00');
+      expect(state.streakReminderTime, '20:30');
       expect(state.focusTimerAlertsEnabled, isTrue);
+      expect(state.liveTimerNotificationEnabled, isTrue);
     });
 
     test('AppState toJson and fromJson round-trips notification preferences', () {
@@ -48,9 +50,8 @@ void main() {
         studyReminderTime: '07:30',
         streakReminderEnabled: true,
         streakReminderTime: '21:15',
-        moduleTasksReminderEnabled: false,
-        moduleTasksReminderTime: '08:45',
         focusTimerAlertsEnabled: false,
+        liveTimerNotificationEnabled: false,
       );
 
       final json = state.toJson();
@@ -58,18 +59,16 @@ void main() {
       expect(json['studyReminderTime'], '07:30');
       expect(json['streakReminderEnabled'], isTrue);
       expect(json['streakReminderTime'], '21:15');
-      expect(json['moduleTasksReminderEnabled'], isFalse);
-      expect(json['moduleTasksReminderTime'], '08:45');
       expect(json['focusTimerAlertsEnabled'], isFalse);
+      expect(json['liveTimerNotificationEnabled'], isFalse);
 
       final recovered = AppState.fromJson(json);
       expect(recovered.dailyReminderEnabled, isFalse);
       expect(recovered.studyReminderTime, '07:30');
       expect(recovered.streakReminderEnabled, isTrue);
       expect(recovered.streakReminderTime, '21:15');
-      expect(recovered.moduleTasksReminderEnabled, isFalse);
-      expect(recovered.moduleTasksReminderTime, '08:45');
       expect(recovered.focusTimerAlertsEnabled, isFalse);
+      expect(recovered.liveTimerNotificationEnabled, isFalse);
     });
 
     test('AppState.fromJson handles legacy JSON payloads without new notification fields gracefully', () {
@@ -86,12 +85,11 @@ void main() {
 
       final state = AppState.fromJson(legacyJson);
       expect(state.doctorName, 'Dr. Legacy');
-      expect(state.studyReminderTime, '09:00');
+      expect(state.studyReminderTime, '08:30');
       expect(state.streakReminderEnabled, isTrue);
-      expect(state.streakReminderTime, '20:00');
-      expect(state.moduleTasksReminderEnabled, isTrue);
-      expect(state.moduleTasksReminderTime, '08:00');
+      expect(state.streakReminderTime, '20:30');
       expect(state.focusTimerAlertsEnabled, isTrue);
+      expect(state.liveTimerNotificationEnabled, isTrue);
     });
   });
 

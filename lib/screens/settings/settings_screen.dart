@@ -639,9 +639,9 @@ class _PreferencesGroup extends StatelessWidget {
               size: 20,
             ),
           ),
-          title: 'Notifications & Routine',
-          subtitle: 'Study reminders, streak & routine alerts',
-          onTap: () => context.push('/settings/notifications-preferences'),
+          title: 'Notifications',
+          subtitle: 'Reminders, streak guard & timer alerts',
+          onTap: () => context.push('/settings/notifications'),
         ),
         _groupDivider(context),
         _SettingsItemRow(

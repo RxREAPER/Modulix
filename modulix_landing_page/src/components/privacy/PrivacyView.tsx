@@ -112,18 +112,24 @@ export function PrivacyView({ navigate }: { navigate: (route: string) => void })
           <div className="flex items-center gap-2.5 mb-2.5">
             <Smartphone size={16} className="text-[var(--accent)]" />
             <h2 className="font-editorial text-xl sm:text-2xl font-bold text-[var(--ink-foreground)]">
-              4. Android Operating System Permissions Declared
+              4. Local Notifications & Operating System Permissions
             </h2>
           </div>
+          <p className="text-xs sm:text-sm text-[var(--muted-text)] mb-3 leading-relaxed">
+            All notifications and timer alerts in Modulix are generated <strong>100% locally on your hardware</strong> using the Android OS AlarmManager. Modulix does not transmit push notification tokens (APNs/FCM) or study schedules to any external servers:
+          </p>
           <div className="space-y-3 text-xs sm:text-sm text-[var(--muted-text)] leading-relaxed">
             <div>
-              <strong className="text-[var(--ink-foreground)] font-mono text-xs">SCHEDULE_EXACT_ALARM:</strong> Pierces Android 11–16 Deep Doze at the exact millisecond a focus session or countdown expires, displaying on the lock screen and Always-On Display.
+              <strong className="text-[var(--ink-foreground)] font-mono text-xs">POST_NOTIFICATIONS:</strong> The single runtime prompt requested on Android 13+ to display the ongoing study chronometer in the notification drawer and scheduled study reminders.
             </div>
             <div>
-              <strong className="text-[var(--ink-foreground)] font-mono text-xs">POST_NOTIFICATIONS:</strong> Displays the persistent ongoing study timer notification and scheduled 5:00 AM clinical rollover reminders.
+              <strong className="text-[var(--ink-foreground)] font-mono text-xs">USE_EXACT_ALARM & SCHEDULE_EXACT_ALARM:</strong> Pierces Android 11–16 Deep Doze at the exact millisecond a focus session or break interval expires so timer alarms ring on time without delay.
             </div>
             <div>
-              <strong className="text-[var(--ink-foreground)] font-mono text-xs">REQUEST_IGNORE_BATTERY_OPTIMIZATIONS:</strong> Guides users to disable aggressive OEM battery killers (e.g. OnePlus OxygenOS / Xiaomi HyperOS) so study countdowns are not prematurely terminated.
+              <strong className="text-[var(--ink-foreground)] font-mono text-xs">RECEIVE_BOOT_COMPLETED:</strong> Automatically restores scheduled morning kickoff and streak protection reminders when your device is restarted.
+            </div>
+            <div>
+              <strong className="text-[var(--ink-foreground)] font-mono text-xs">REQUEST_IGNORE_BATTERY_OPTIMIZATIONS:</strong> Optional diagnostic setting allowing OnePlus, Xiaomi, and Samsung users to exempt Modulix from aggressive OEM background task killers.
             </div>
           </div>
         </section>

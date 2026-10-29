@@ -21,13 +21,11 @@ class NotificationService {
   static const int idModuleTasksBriefing = 1003;
   static const int idFocusTimerRunning = 2000;
   static const int idFocusTimerEnd = 2001;
-  static const int idTaskCompleteInstant = 3001;
   static const int idTestNotification = 9999;
 
   // Channel IDs (bumped to _v2 to ensure max importance & vibration on updated devices)
   static const String channelStudyReminders = 'flowmd_study_reminders_v2';
   static const String channelStreakReminders = 'flowmd_streak_reminders_v2';
-  static const String channelModuleTasks = 'flowmd_module_tasks_v2';
   static const String channelFocusTimer = 'flowmd_focus_timer_v2';
   static const String channelFocusTimerLive = 'flowmd_focus_timer_live_v2';
 
@@ -78,11 +76,12 @@ class NotificationService {
         final androidImpl = _plugin.resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
         if (androidImpl != null) {
-          // Remove legacy v1 channels so system resets to new max priority and sound
+          // Remove legacy v1/v2 channels so system resets to new max priority and sound
           try {
             await androidImpl.deleteNotificationChannel('flowmd_study_reminders');
             await androidImpl.deleteNotificationChannel('flowmd_streak_reminders');
             await androidImpl.deleteNotificationChannel('flowmd_module_tasks');
+            await androidImpl.deleteNotificationChannel('flowmd_module_tasks_v2');
             await androidImpl.deleteNotificationChannel('flowmd_focus_timer');
           } catch (_) {}
 
@@ -101,16 +100,6 @@ class NotificationService {
               channelStreakReminders,
               'Streak at Risk Alerts',
               description: 'Evening warnings when your study streak is about to reset',
-              importance: Importance.max,
-              playSound: true,
-              enableVibration: true,
-            ),
-          );
-          await androidImpl.createNotificationChannel(
-            const AndroidNotificationChannel(
-              channelModuleTasks,
-              'Module Daily Tasks',
-              description: 'Morning curriculum task queue and milestone celebrations',
               importance: Importance.max,
               playSound: true,
               enableVibration: true,
@@ -328,82 +317,7 @@ class NotificationService {
     }
   }
 
-  /// Schedule Module Tasks Morning Briefing (e.g. 8:00 AM)
-  Future<void> scheduleModuleTasksBriefing({
-    required TimeOfDay time,
-    required int taskCount,
-    required String subjectName,
-  }) async {
-    if (!_initialized) await init();
-    try {
-      final scheduledDate = _nextInstanceOfTime(time.hour, time.minute);
-      final countTxt = taskCount > 0 ? '$taskCount topics' : 'new targets';
-      final subjTxt = subjectName.isNotEmpty ? ' in $subjectName' : '';
 
-      const details = NotificationDetails(
-        android: AndroidNotificationDetails(
-          channelModuleTasks,
-          'Module Daily Tasks',
-          channelDescription: 'Morning curriculum task queue and milestone celebrations',
-          importance: Importance.max,
-          priority: Priority.high,
-          playSound: true,
-          enableVibration: true,
-          icon: '@mipmap/ic_launcher',
-        ),
-        iOS: DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-        ),
-      );
-
-      await _safeZonedSchedule(
-        id: idModuleTasksBriefing,
-        title: 'Today\'s Study Queue is Ready',
-        body: 'You have $countTxt scheduled$subjTxt. Tap to review your desk.',
-        scheduledDate: scheduledDate,
-        details: details,
-        matchDateTimeComponents: DateTimeComponents.time,
-      );
-    } catch (e) {
-      debugPrint('[NotificationService] scheduleModuleTasksBriefing error: $e');
-    }
-  }
-
-  /// Instant notification when a daily task batch / quota is achieved
-  Future<void> showModuleTaskCompletedNotification({
-    required String subjectName,
-    required int count,
-  }) async {
-    if (!_initialized) await init();
-    try {
-      await _plugin.show(
-        idTaskCompleteInstant,
-        'Daily Goal Crushed!',
-        'You completed $count topics in $subjectName today. High-yield progress!',
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            channelModuleTasks,
-            'Module Daily Tasks',
-            channelDescription: 'Morning curriculum task queue and milestone celebrations',
-            importance: Importance.max,
-            priority: Priority.high,
-            playSound: true,
-            enableVibration: true,
-            icon: '@mipmap/ic_launcher',
-          ),
-          iOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          ),
-        ),
-      );
-    } catch (e) {
-      debugPrint('[NotificationService] showModuleTaskCompleted error: $e');
-    }
-  }
 
   /// Shows or updates the ongoing live real-time chronometer notification
   Future<void> showRealtimeTimerNotification({
@@ -664,29 +578,52 @@ class NotificationService {
     }
   }
 
-  /// Synchronize all scheduled reminders based on user AppState
-  Future<void> syncAllReminders(AppState state, {int remainingModules = 0}) async {
+  /// Determines whether the doctor has already logged study progress today.
+  static bool hasStudiedToday(AppState state) {
+    final now = DateTime.now();
+    final adjusted = now.hour < state.dayStartHour
+        ? now.subtract(const Duration(days: 1))
+        : now;
+    final todayKey =
+        '${adjusted.year}-${adjusted.month.toString().padLeft(2, '0')}-${adjusted.day.toString().padLeft(2, '0')}';
+    final count = state.currentEdition.dailyHistory[todayKey] ?? 0;
+    return count > 0;
+  }
+
+  Future<void> _safeCancel(int id) async {
+    try {
+      await _plugin.cancel(id);
+    } catch (e) {
+      debugPrint('[NotificationService] Cancel error for $id: $e');
+    }
+  }
+
+  /// Synchronize all scheduled reminders based on user AppState.
+  /// Features Smart Streak Suppression: if progress is logged today, streak warnings are cancelled.
+  Future<void> syncAllReminders(AppState state, {bool? hasStudiedToday, int remainingModules = 0}) async {
     if (!_initialized) await init();
 
-    // 1. Study reminder
+    // 1. Daily Study Reminder (Fixed 08:30 AM morning kickoff)
     if (state.dailyReminderEnabled) {
       final parts = state.studyReminderTime.split(':');
-      final hour = int.tryParse(parts.first) ?? 9;
-      final minute = parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
+      final hour = int.tryParse(parts.first) ?? 8;
+      final minute = parts.length > 1 ? (int.tryParse(parts[1]) ?? 30) : 30;
       await scheduleDailyStudyReminder(
         time: TimeOfDay(hour: hour, minute: minute),
         doctorName: state.doctorName,
         subjectName: state.currentEdition.plan.targetSubject,
       );
     } else {
-      await _plugin.cancel(idStudyReminder);
+      await _safeCancel(idStudyReminder);
     }
 
-    // 2. Streak reminder
-    if (state.streakReminderEnabled) {
+    // 2. Streak Protection Alert (Fixed 20:30 PM evening streak guard)
+    // Smart Suppression: If user has already completed topics today, suppress alert
+    final studied = hasStudiedToday ?? NotificationService.hasStudiedToday(state);
+    if (state.streakReminderEnabled && !studied) {
       final parts = state.streakReminderTime.split(':');
       final hour = int.tryParse(parts.first) ?? 20;
-      final minute = parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
+      final minute = parts.length > 1 ? (int.tryParse(parts[1]) ?? 30) : 30;
       final currentStreak = MetricsService.computeStreak(
         state.currentEdition.dailyHistory,
         dayStartHour: state.dayStartHour,
@@ -696,21 +633,10 @@ class NotificationService {
         currentStreak: currentStreak,
       );
     } else {
-      await _plugin.cancel(idStreakReminder);
+      await _safeCancel(idStreakReminder);
     }
 
-    // 3. Module tasks briefing
-    if (state.moduleTasksReminderEnabled) {
-      final parts = state.moduleTasksReminderTime.split(':');
-      final hour = int.tryParse(parts.first) ?? 8;
-      final minute = parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
-      await scheduleModuleTasksBriefing(
-        time: TimeOfDay(hour: hour, minute: minute),
-        taskCount: state.currentEdition.plan.videosPerDay ?? remainingModules,
-        subjectName: state.currentEdition.plan.targetSubject,
-      );
-    } else {
-      await _plugin.cancel(idModuleTasksBriefing);
-    }
+    // Cancel legacy module tasks briefing
+    await _safeCancel(idModuleTasksBriefing);
   }
 }

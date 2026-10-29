@@ -182,6 +182,7 @@ class AppState {
   final bool moduleTasksReminderEnabled;
   final String moduleTasksReminderTime; // e.g. '08:00'
   final bool focusTimerAlertsEnabled;
+  final bool liveTimerNotificationEnabled;
   final String? leaderboardDisplayName;
   final bool isLeaderboardAnonymous;
   final bool leaderboardVisible;
@@ -198,12 +199,13 @@ class AppState {
     this.avatarIconId = 'letter',
     this.dayStartHour = 5,
     this.dailyReminderEnabled = true,
-    this.studyReminderTime = '09:00',
+    this.studyReminderTime = '08:30',
     this.streakReminderEnabled = true,
-    this.streakReminderTime = '20:00',
+    this.streakReminderTime = '20:30',
     this.moduleTasksReminderEnabled = true,
     this.moduleTasksReminderTime = '08:00',
     this.focusTimerAlertsEnabled = true,
+    this.liveTimerNotificationEnabled = true,
     this.leaderboardDisplayName,
     this.isLeaderboardAnonymous = false,
     this.leaderboardVisible = true,
@@ -239,6 +241,7 @@ class AppState {
     bool? moduleTasksReminderEnabled,
     String? moduleTasksReminderTime,
     bool? focusTimerAlertsEnabled,
+    bool? liveTimerNotificationEnabled,
     String? leaderboardDisplayName,
     bool? isLeaderboardAnonymous,
     bool? leaderboardVisible,
@@ -264,6 +267,8 @@ class AppState {
           moduleTasksReminderTime ?? this.moduleTasksReminderTime,
       focusTimerAlertsEnabled:
           focusTimerAlertsEnabled ?? this.focusTimerAlertsEnabled,
+      liveTimerNotificationEnabled:
+          liveTimerNotificationEnabled ?? this.liveTimerNotificationEnabled,
       leaderboardDisplayName:
           leaderboardDisplayName ?? this.leaderboardDisplayName,
       isLeaderboardAnonymous:
@@ -299,6 +304,7 @@ class AppState {
         'moduleTasksReminderEnabled': moduleTasksReminderEnabled,
         'moduleTasksReminderTime': moduleTasksReminderTime,
         'focusTimerAlertsEnabled': focusTimerAlertsEnabled,
+        'liveTimerNotificationEnabled': liveTimerNotificationEnabled,
         'leaderboardDisplayName': leaderboardDisplayName,
         'isLeaderboardAnonymous': isLeaderboardAnonymous,
         'leaderboardVisible': leaderboardVisible,
@@ -319,15 +325,17 @@ class AppState {
         avatarIconId: json['avatarIconId']?.toString() ?? 'letter',
         dayStartHour: (json['dayStartHour'] as num?)?.toInt() ?? 5,
         dailyReminderEnabled: json['dailyReminderEnabled'] as bool? ?? true,
-        studyReminderTime: json['studyReminderTime']?.toString() ?? '09:00',
+        studyReminderTime: json['studyReminderTime']?.toString() ?? '08:30',
         streakReminderEnabled: json['streakReminderEnabled'] as bool? ?? true,
-        streakReminderTime: json['streakReminderTime']?.toString() ?? '20:00',
+        streakReminderTime: json['streakReminderTime']?.toString() ?? '20:30',
         moduleTasksReminderEnabled:
             json['moduleTasksReminderEnabled'] as bool? ?? true,
         moduleTasksReminderTime:
             json['moduleTasksReminderTime']?.toString() ?? '08:00',
         focusTimerAlertsEnabled:
             json['focusTimerAlertsEnabled'] as bool? ?? true,
+        liveTimerNotificationEnabled:
+            json['liveTimerNotificationEnabled'] as bool? ?? true,
         leaderboardDisplayName: json['leaderboardDisplayName']?.toString(),
         isLeaderboardAnonymous: json['isLeaderboardAnonymous'] as bool? ?? false,
         leaderboardVisible: json['leaderboardVisible'] as bool? ?? true,

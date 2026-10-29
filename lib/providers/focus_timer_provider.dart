@@ -1181,9 +1181,13 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
   }
 
   void _updateRealtimeNotification() {
-    final alertsEnabled =
-        _ref.read(appStateProvider).valueOrNull?.focusTimerAlertsEnabled ?? true;
-    if (!alertsEnabled || !state.isRunning) return;
+    final appState = _ref.read(appStateProvider).valueOrNull;
+    final alertsEnabled = appState?.focusTimerAlertsEnabled ?? true;
+    final liveEnabled = appState?.liveTimerNotificationEnabled ?? true;
+    if (!alertsEnabled || !liveEnabled || !state.isRunning) {
+      NotificationService.instance.cancelFocusTimerRunning();
+      return;
+    }
 
     final isBreak = state.phase == TimerPhase.onBreak;
     final nowMs = DateTime.now().millisecondsSinceEpoch;

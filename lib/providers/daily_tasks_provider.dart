@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/daily_desk_task.dart';
 import 'app_state_provider.dart';
-import '../services/notification_service.dart';
 import '../services/metrics_service.dart';
 import '../services/sync_service.dart';
 
@@ -246,10 +245,6 @@ class DailyTasksNotifier extends StateNotifier<DailyTasksState> {
       updated.add(taskId);
       if (updated.length == state.tasks.length && state.tasks.isNotEmpty) {
         justFinishedAll = true;
-        NotificationService.instance.showModuleTaskCompletedNotification(
-          subjectName: "Today's Desk",
-          count: updated.length,
-        );
       }
     }
 
