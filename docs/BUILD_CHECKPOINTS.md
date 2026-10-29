@@ -4,6 +4,25 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.36.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (276MB)
+- **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)
+- **Compilation Time:** 182.0s | **Static Analysis:** 0 Errors, 0 Warnings | **Test Suite:** 100% Green (35/35 Notification & Sync Tests Passed)
+- **Included Checkpoints:** `[CKPT-128]`, `[CKPT-129]` (✅ Included in Build)
+
+### Key Highlights & Releases in v1.36.0:
+1. **Notification System Overhaul, Smart Streak Suppression & Minimalist Sub-Page (`[CKPT-129]`):**
+   - **Streamlined Notification Architecture:** Removed noisy legacy channel (`flowmd_module_tasks_v2`) and removed intrusive instant notifications on in-app task/video completions.
+   - **Smart Streak Suppression:** The 8:30 PM evening streak guard automatically queries daily study history (`hasStudiedToday`). If the user has already studied today, streak reminder delivery is suppressed to prevent unnecessary interruptions.
+   - **Permission Strategy & Soft-Ask Flow:** Removed unconditional startup permission prompts. Android `POST_NOTIFICATIONS` is requested cleanly via an in-app soft-ask banner in the new Notifications sub-page.
+   - **Minimalist Notifications Screen (`/settings/notifications`):** 4 clean switches for Timer Alarms & Sound, Live Shade Stopwatch, Morning Kickoff (8:30 AM), and Evening Streak Guard (8:30 PM), plus instant notification delivery test button and battery optimization shortcut.
+   - **Landing Page Privacy Policy:** Documented 100% local on-device scheduling, exact alarm alarms, zero push tokens, and zero telemetry leakage.
+2. **Profile Edit Accent Palette Removal (`[CKPT-128]`):**
+   - Stripped the accent color picker and custom swatch list from `ProfileEditScreen`.
+   - Standardized avatar selection indicators and borders to match the active global theme with zero visual clash.
+
+---
+
 ## 🚀 Build Manifest v1.35.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk`
 - **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)
@@ -114,7 +133,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - Added direct test notification delivery button and battery optimization shortcut for OnePlus, Xiaomi, and Samsung devices.
   - Updated web Privacy Policy confirming 100% on-device local alarms with zero push tokens, zero tracking, and zero remote data ingress.
 - **Verification:** `flutter analyze` 0 issues (100% clean), unit tests passed (35/35 green), web build clean.
-- **Build Status:** Pending APK Build
+- **Build Status:** ✅ Included in Build v1.36.0 (Commit f122bba)
 
 ---
 
@@ -127,7 +146,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - Replaced custom profile avatar accent color tinting and glow borders on the live avatar preview with clean, subtle theme borders.
   - Standardized avatar character item selection indicators to `AppTheme.accentPrimary`.
 - **Verification:** `flutter analyze` 0 issues (100% clean).
-- **Build Status:** Pending APK Build
+- **Build Status:** ✅ Included in Build v1.36.0 (Commit f122bba)
 
 ---
 
