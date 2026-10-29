@@ -28,6 +28,25 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ---
 
+### 🔖 `[CKPT-133]` — Sync Reversion Fix (Profile/Completions/Tasks) & Clean Minimal About Screen
+- **Category:** `sync` / `state` / `settings` / `bugfix`
+- **Files Modified:**
+  - `lib/services/sync_service.dart` (added `enqueueProfileMutation` for durable profile updates; added local mutation timestamp check to prevent remote profile overwrite when local is newer; guarded `_handleRealtimeProfileUpdate` against echo reversion; fixed study editions merge to prevent resurrecting unchecked videos/qbanks/notes on dirtied editions; fixed daily tasks merge to prevent re-checking unchecked tasks; included all profile columns in leaderboard aggregate update)
+  - `lib/providers/app_state_provider.dart` (invoked `enqueueProfileMutation` on `_update` and `updateState`; updated `resetAllProgress` to durably enqueue mutations for cleared editions and profile)
+  - `lib/screens/settings/about_screen.dart` (removed Medical Disclaimer and Open Source Licenses to keep About screen strictly minimalist with hero emblem, Cloudflare website link, email support, and share action)
+  - `test/sync_service_test.dart` (added unit test verifying durable profile mutation enqueuing with theme and syllabus edition)
+- **Summary:**
+  - Diagnosed and completely eliminated the sync state reversion bug where local changes (theme, syllabus edition, doctor name, avatar, unchecked tasks/videos) were overwritten by old remote rows 1.5 seconds after editing.
+  - Implemented durable outbox synchronization for the `profiles` table and timestamp-based conflict resolution.
+  - Scrubbed legal disclaimer and open-source license clutter from About screen per user request.
+- **Verification:**
+  - `flutter analyze`: 0 issues found (22.5s).
+  - Unit tests: 25/25 green (`test/sync_service_test.dart`, `test/notification_service_test.dart`).
+  - Full APK built: `build/app/outputs/flutter-apk/app-debug.apk` (181.3s).
+- **Build Status:** ✅ Included in Build
+
+---
+
 ### 🔖 `[CKPT-132]` — Data & Privacy & About Modulix Modernization into Native Sub-Pages
 - **Category:** `settings` / `privacy` / `about` / `ui`
 - **Files Modified:**

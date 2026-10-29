@@ -32,6 +32,7 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
     state = AsyncData(updated);
     unawaited(StorageService.instance.save(updated));
     SyncService.instance.enqueueStateMutation(updated);
+    SyncService.instance.enqueueProfileMutation(updated);
     SyncService.instance.schedulePush(ref);
   }
 
@@ -39,6 +40,7 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
     state = AsyncData(updated);
     unawaited(StorageService.instance.save(updated));
     SyncService.instance.enqueueStateMutation(updated);
+    SyncService.instance.enqueueProfileMutation(updated);
     SyncService.instance.schedulePush(ref);
   }
 
@@ -190,6 +192,11 @@ class AppStateNotifier extends AsyncNotifier<AppState> {
     final updated = current.copyWith(editions: clearedEditions);
     state = AsyncData(updated);
     await StorageService.instance.save(updated);
+    for (final edId in updated.editions.keys) {
+      SyncService.instance.enqueueStateMutation(updated.copyWith(activeEdition: edId));
+    }
+    SyncService.instance.enqueueProfileMutation(updated);
+    SyncService.instance.schedulePush(ref);
   }
 
   // Plan

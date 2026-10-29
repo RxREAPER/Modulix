@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -340,6 +341,26 @@ void main() {
       final tables = pending.map((m) => m['table_name']).toList();
       expect(tables, contains('study_editions'));
       expect(tables, contains('daily_tasks'));
+    });
+
+    test('SyncService enqueues profile mutations durably with theme and edition', () async {
+      final dbService = DatabaseService.instance;
+      final syncService = SyncService.instance;
+
+      syncService.enqueueProfileMutation(
+        const AppState(
+          doctorName: 'Dr House',
+          activeEdition: 'marrow_6_5',
+          palettePresetId: 'obsidian',
+        ),
+      );
+
+      final pending = await dbService.getPendingOutboxMutations();
+      final profileMutation = pending.firstWhere((m) => m['table_name'] == 'profiles');
+      final payload = jsonDecode(profileMutation['payload'] as String) as Map<String, dynamic>;
+      expect(payload['doctor_name'], equals('Dr House'));
+      expect(payload['active_edition'], equals('marrow_6_5'));
+      expect(payload['palette_preset_id'], equals('obsidian'));
     });
 
     test('Delta Cursors preference key is stored and read correctly', () async {

@@ -60,6 +60,8 @@ class SyncService {
   DateTime? lastSyncedAt;
   Timer? _debounceTimer;
   bool _isSyncing = false;
+  int _lastLocalProfileMutationMs = 0;
+  final Set<String> _dirtiedEditions = <String>{};
 
   /// Probes roundtrip latency to Supabase in milliseconds
   Future<int?> probeLatency() async {
@@ -93,6 +95,7 @@ class SyncService {
   /// Enqueues a durable study edition mutation in the SQLite outbox
   void enqueueStateMutation(AppState updated) {
     try {
+      _dirtiedEditions.add(updated.activeEdition);
       final ed = updated.currentEdition;
       final payload = {
         'edition_id': updated.activeEdition,
@@ -107,6 +110,36 @@ class SyncService {
       };
       DatabaseService.instance.enqueueOutboxMutation(
         tableName: 'study_editions',
+        operation: 'UPSERT',
+        payload: payload,
+      );
+    } catch (_) {}
+  }
+
+  /// Enqueues a durable profile & preferences mutation in the SQLite outbox
+  void enqueueProfileMutation(AppState updated) {
+    try {
+      final nowMs = DateTime.now().toUtc().millisecondsSinceEpoch;
+      _lastLocalProfileMutationMs = nowMs;
+      unawaited(SharedPreferences.getInstance().then((prefs) {
+        prefs.setInt('modulix_local_profile_updated_at', nowMs);
+      }));
+
+      final payload = {
+        'doctor_name': updated.doctorName,
+        'display_name': updated.publicDisplayName,
+        'leaderboard_visible': updated.leaderboardVisible,
+        'avatar_icon_id': updated.avatarIconId,
+        'avatar_color_id': updated.avatarColorId,
+        'palette_preset_id': updated.palettePresetId,
+        'accent_color_id': updated.accentColorId,
+        'theme_pref': updated.themePref.name,
+        'active_edition': updated.activeEdition,
+        'day_start_hour': updated.dayStartHour,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      };
+      DatabaseService.instance.enqueueOutboxMutation(
+        tableName: 'profiles',
         operation: 'UPSERT',
         payload: payload,
       );
@@ -192,35 +225,64 @@ class SyncService {
         workingState = StorageService.instance.load();
       }
 
+      final localProfileUpdatedMs = prefs.getInt('modulix_local_profile_updated_at') ?? _lastLocalProfileMutationMs;
+
       if (profileRes != null) {
-        // Merge remote profile attributes if non-default
-        final docName = profileRes['doctor_name'] as String? ?? '';
-        final displayName = profileRes['display_name'] as String?;
-        final lbVisible = profileRes['leaderboard_visible'] as bool? ?? true;
-        final avatarIcon = profileRes['avatar_icon_id'] as String? ?? 'letter';
-        final avatarColor = profileRes['avatar_color_id'] as String? ?? 'indigo';
-        final palette = profileRes['palette_preset_id'] as String? ?? 'paper';
-        final accent = profileRes['accent_color_id'] as String? ?? 'cobalt';
-        final themeStr = profileRes['theme_pref'] as String? ?? 'system';
-        final activeEd = profileRes['active_edition'] as String? ?? 'marrow_8';
-        final startHour = profileRes['day_start_hour'] as int? ?? 5;
+        final remoteUpdatedStr = profileRes['updated_at']?.toString();
+        final remoteUpdatedMs = remoteUpdatedStr != null
+            ? (DateTime.tryParse(remoteUpdatedStr)?.millisecondsSinceEpoch ?? 0)
+            : 0;
 
-        ThemePref pref = ThemePref.system;
-        if (themeStr == 'light') pref = ThemePref.light;
-        if (themeStr == 'dark') pref = ThemePref.dark;
+        // If local preferences were modified more recently or equal, push local to Supabase
+        if (localProfileUpdatedMs > remoteUpdatedMs) {
+          await client.from('profiles').update({
+            'doctor_name': workingState.doctorName,
+            'display_name': workingState.publicDisplayName,
+            'leaderboard_visible': workingState.leaderboardVisible,
+            'avatar_icon_id': workingState.avatarIconId,
+            'avatar_color_id': workingState.avatarColorId,
+            'palette_preset_id': workingState.palettePresetId,
+            'accent_color_id': workingState.accentColorId,
+            'theme_pref': workingState.themePref.name,
+            'active_edition': workingState.activeEdition,
+            'day_start_hour': workingState.dayStartHour,
+            'updated_at': DateTime.now().toUtc().toIso8601String(),
+          }).eq('id', userId);
+        } else if (remoteUpdatedMs > localProfileUpdatedMs) {
+          // Remote is legitimately newer (e.g. from web portal or another device)
+          final docName = profileRes['doctor_name'] as String? ?? '';
+          final displayName = profileRes['display_name'] as String?;
+          final lbVisible = profileRes['leaderboard_visible'] as bool? ?? true;
+          final avatarIcon = profileRes['avatar_icon_id'] as String? ?? 'letter';
+          final avatarColor = profileRes['avatar_color_id'] as String? ?? 'indigo';
+          final palette = profileRes['palette_preset_id'] as String? ?? 'paper';
+          final accent = profileRes['accent_color_id'] as String? ?? 'cobalt';
+          final themeStr = profileRes['theme_pref'] as String? ?? 'system';
+          final activeEd = profileRes['active_edition'] as String? ?? 'marrow_8';
+          final startHour = profileRes['day_start_hour'] as int? ?? 5;
 
-        workingState = workingState.copyWith(
-          doctorName: docName.isNotEmpty ? docName : workingState.doctorName,
-          leaderboardDisplayName: displayName ?? workingState.leaderboardDisplayName,
-          leaderboardVisible: lbVisible,
-          avatarIconId: avatarIcon,
-          avatarColorId: avatarColor,
-          palettePresetId: palette,
-          accentColorId: accent,
-          themePref: pref,
-          activeEdition: activeEd,
-          dayStartHour: startHour,
-        );
+          ThemePref pref = ThemePref.system;
+          if (themeStr == 'light') pref = ThemePref.light;
+          if (themeStr == 'dark') pref = ThemePref.dark;
+
+          workingState = workingState.copyWith(
+            doctorName: docName.isNotEmpty ? docName : workingState.doctorName,
+            leaderboardDisplayName: displayName ?? workingState.leaderboardDisplayName,
+            leaderboardVisible: lbVisible,
+            avatarIconId: avatarIcon,
+            avatarColorId: avatarColor,
+            palettePresetId: palette,
+            accentColorId: accent,
+            themePref: pref,
+            activeEdition: activeEd,
+            dayStartHour: startHour,
+          );
+          await StorageService.instance.save(workingState);
+          try {
+            ref.read(appStateProvider.notifier).applySyncedState(workingState);
+          } catch (_) {}
+          await prefs.setInt('modulix_local_profile_updated_at', remoteUpdatedMs);
+        }
       } else {
         // First-time profile creation from local guest data
         await client.from('profiles').upsert({
@@ -281,13 +343,19 @@ class SyncService {
                     .toList() ??
                 <String>[];
 
+        final isLocallyDirtied = _dirtiedEditions.contains(edId);
+
         // Additive Union Merging for completions (Progress is NEVER lost)
-        final mergedVideos = Map<String, dynamic>.from(localEd.completedVideos)
-          ..addAll(remoteCompletedVideos);
-        final mergedQBanks = Map<String, dynamic>.from(localEd.completedQBanks)
-          ..addAll(remoteCompletedQBanks);
-        final mergedNotes = Map<String, dynamic>.from(localEd.completedNotes)
-          ..addAll(remoteCompletedNotes);
+        // If local edition was dirtied on this device, respect local state and do not resurrect
+        final mergedVideos = isLocallyDirtied
+            ? localEd.completedVideos
+            : (Map<String, dynamic>.from(localEd.completedVideos)..addAll(remoteCompletedVideos));
+        final mergedQBanks = isLocallyDirtied
+            ? localEd.completedQBanks
+            : (Map<String, dynamic>.from(localEd.completedQBanks)..addAll(remoteCompletedQBanks));
+        final mergedNotes = isLocallyDirtied
+            ? localEd.completedNotes
+            : (Map<String, dynamic>.from(localEd.completedNotes)..addAll(remoteCompletedNotes));
 
         final mergedHistory = Map<String, int>.from(localEd.dailyHistory);
         remoteDailyHist.forEach((k, v) {
@@ -295,9 +363,9 @@ class SyncService {
           if (v > cur) mergedHistory[k] = v;
         });
 
-        final mergedBulkChapters = (localEd.bulkCompletedChapters.toSet()
-              ..addAll(remoteBulkChapters))
-            .toList();
+        final mergedBulkChapters = isLocallyDirtied
+            ? localEd.bulkCompletedChapters
+            : (localEd.bulkCompletedChapters.toSet()..addAll(remoteBulkChapters)).toList();
 
         // Bidirectional merge of queued batch video IDs
         final mergedQueue = List<String>.from(localEd.queueBatchVideoIds);
@@ -390,6 +458,7 @@ class SyncService {
         }).toList();
 
         await client.from('study_editions').upsert(payloads);
+        _dirtiedEditions.clear();
       }
 
       // ── 3. SYNC TIME LOGS (FOCUS SESSIONS) ─────────────────────────────────
@@ -498,13 +567,20 @@ class SyncService {
         await client.from('profiles').update({
           'doctor_name': workingState.doctorName,
           'display_name': workingState.publicDisplayName,
+          'leaderboard_visible': workingState.leaderboardVisible,
+          'avatar_icon_id': workingState.avatarIconId,
+          'avatar_color_id': workingState.avatarColorId,
+          'palette_preset_id': workingState.palettePresetId,
+          'accent_color_id': workingState.accentColorId,
+          'theme_pref': workingState.themePref.name,
+          'active_edition': workingState.activeEdition,
+          'day_start_hour': workingState.dayStartHour,
           'total_study_secs': effectiveTotalSecs,
           'daily_study_secs': dailySecs,
           'weekly_study_secs': weeklySecs,
           'monthly_study_secs': monthlySecs,
           'last_study_day': dayKey,
           'last_study_month': monthKey,
-          'leaderboard_visible': workingState.leaderboardVisible,
           'updated_at': DateTime.now().toUtc().toIso8601String(),
         }).eq('id', userId);
       } catch (e) {
@@ -555,9 +631,15 @@ class SyncService {
         }
         taskMap.removeWhere((id, _) => mergedDeleted.contains(id));
 
-        // Union of completed task IDs, pruning tombstones
-        final mergedCompleted = (Set<String>.from(localCompleted)..addAll(remoteCompletedIds))
-          ..removeWhere((id) => mergedDeleted.contains(id));
+        // Union of completed task IDs defensively:
+        // Do NOT forcibly re-check tasks that exist in local desk but were unchecked locally!
+        final localTaskIds = localTasks.map((t) => t.id).toSet();
+        final newlyDiscoveredRemoteCompleted =
+            remoteCompletedIds.where((id) => !localTaskIds.contains(id));
+        final mergedCompleted = (Set<String>.from(localCompleted)
+              ..addAll(newlyDiscoveredRemoteCompleted))
+            .where((id) => !mergedDeleted.contains(id))
+            .toSet();
 
         // Merge history by max count
         final mergedDailyHist = Map<String, int>.from(dailyState.dateHistory);
@@ -677,6 +759,9 @@ class SyncService {
           final enrichedPayload = Map<String, dynamic>.from(payload);
           if (table != 'profiles' && !enrichedPayload.containsKey('user_id')) {
             enrichedPayload['user_id'] = userId;
+          }
+          if (table == 'profiles' && !enrichedPayload.containsKey('id')) {
+            enrichedPayload['id'] = userId;
           }
 
           if (op == 'UPSERT') {
@@ -800,6 +885,18 @@ class SyncService {
   void _handleRealtimeProfileUpdate(dynamic ref, Map<String, dynamic> row) {
     if (row.isEmpty) return;
     try {
+      final remoteUpdatedStr = row['updated_at']?.toString();
+      final remoteUpdatedMs = remoteUpdatedStr != null
+          ? (DateTime.tryParse(remoteUpdatedStr)?.millisecondsSinceEpoch ?? 0)
+          : 0;
+
+      // Guard against echo loops or stale updates:
+      // If local modifications occurred at or after remote timestamp, ignore remote update
+      if (_lastLocalProfileMutationMs >= remoteUpdatedMs) {
+        debugPrint('[SyncService] Realtime echo ignored (local mutation is newer or matching).');
+        return;
+      }
+
       final docName = row['doctor_name']?.toString();
       final displayName = row['display_name']?.toString();
       final lbVisible = row['leaderboard_visible'] as bool?;
