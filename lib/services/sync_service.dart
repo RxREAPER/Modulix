@@ -32,6 +32,19 @@ class SyncService {
 
   SyncService._() {
     _initAuthListener();
+    _loadPersistedState();
+  }
+
+  void _loadPersistedState() {
+    SharedPreferences.getInstance().then((prefs) {
+      final list = prefs.getStringList('modulix_dirtied_editions_v1');
+      if (list != null) {
+        _dirtiedEditions.addAll(list);
+      }
+      _lastLocalProfileMutationMs = prefs.getInt('modulix_local_profile_updated_at') ?? 0;
+      _lastLocalDailyTasksMutationMs = prefs.getInt('modulix_local_daily_tasks_updated_at') ?? 0;
+      _lastLocalEditionMutationMs = prefs.getInt('modulix_local_edition_updated_at') ?? 0;
+    }).catchError((_) {});
   }
 
   void _initAuthListener() {
@@ -39,6 +52,23 @@ class SyncService {
       AuthService.instance.authStateChanges.listen((data) {
         if (data.event == AuthChangeEvent.signedOut) {
           stopRealtimeSync();
+          _lastLocalProfileMutationMs = 0;
+          _lastLocalDailyTasksMutationMs = 0;
+          _lastLocalEditionMutationMs = 0;
+          _dirtiedEditions.clear();
+          lastSyncedAt = null;
+          lastSyncedAtNotifier.value = null;
+          pendingSyncCountNotifier.value = 0;
+          unawaited(SharedPreferences.getInstance().then((prefs) async {
+            await prefs.remove('modulix_last_synced_at_v1');
+            await prefs.remove('modulix_last_editions_synced_at_v1');
+            await prefs.remove('modulix_local_profile_updated_at');
+            await prefs.remove('modulix_local_daily_tasks_updated_at');
+            await prefs.remove('modulix_local_edition_updated_at');
+            await prefs.remove('modulix_dirtied_editions_v1');
+            await prefs.remove('modulix_time_logs_cleared_at_v1');
+          }));
+          unawaited(DatabaseService.instance.clearOutbox());
         }
       });
     } catch (_) {}
@@ -61,6 +91,8 @@ class SyncService {
   Timer? _debounceTimer;
   bool _isSyncing = false;
   int _lastLocalProfileMutationMs = 0;
+  int _lastLocalDailyTasksMutationMs = 0;
+  int _lastLocalEditionMutationMs = 0;
   final Set<String> _dirtiedEditions = <String>{};
 
   /// Probes roundtrip latency to Supabase in milliseconds
@@ -95,7 +127,13 @@ class SyncService {
   /// Enqueues a durable study edition mutation in the SQLite outbox
   void enqueueStateMutation(AppState updated) {
     try {
+      final nowMs = DateTime.now().toUtc().millisecondsSinceEpoch;
+      _lastLocalEditionMutationMs = nowMs;
       _dirtiedEditions.add(updated.activeEdition);
+      unawaited(SharedPreferences.getInstance().then((prefs) {
+        prefs.setStringList('modulix_dirtied_editions_v1', _dirtiedEditions.toList());
+        prefs.setInt('modulix_local_edition_updated_at', nowMs);
+      }));
       final ed = updated.currentEdition;
       final payload = {
         'edition_id': updated.activeEdition,
@@ -155,6 +193,12 @@ class SyncService {
     required String lastActiveDate,
   }) {
     try {
+      final nowMs = DateTime.now().toUtc().millisecondsSinceEpoch;
+      _lastLocalDailyTasksMutationMs = nowMs;
+      unawaited(SharedPreferences.getInstance().then((prefs) {
+        prefs.setInt('modulix_local_daily_tasks_updated_at', nowMs);
+      }));
+
       final payload = {
         'tasks_json': tasksJson,
         'completed_ids': completedIds,
@@ -458,7 +502,8 @@ class SyncService {
         }).toList();
 
         await client.from('study_editions').upsert(payloads);
-        _dirtiedEditions.clear();
+        _dirtiedEditions.removeAll(dirtyEditionIds);
+        await prefs.setStringList('modulix_dirtied_editions_v1', _dirtiedEditions.toList());
       }
 
       // ── 3. SYNC TIME LOGS (FOCUS SESSIONS) ─────────────────────────────────
@@ -560,9 +605,19 @@ class SyncService {
         final weeklySecs = breakdown['weekly'] ?? 0;
         final monthlySecs = breakdown['monthly'] ?? 0;
 
-        // Defensive retention: do not downgrade remote total study seconds if higher
+        // Defensive retention: do not downgrade remote total study seconds unless explicitly cleared locally
         final remoteTotalSecs = (profileRes?['total_study_secs'] as num?)?.toInt() ?? 0;
-        final effectiveTotalSecs = math.max(totalSecs, remoteTotalSecs);
+        final timeLogsClearedAtMs = prefs.getInt('modulix_time_logs_cleared_at_v1') ?? 0;
+        final remoteProfileUpdatedMs = profileRes?['updated_at'] != null
+            ? (DateTime.tryParse(profileRes!['updated_at'].toString())?.millisecondsSinceEpoch ?? 0)
+            : 0;
+
+        int effectiveTotalSecs;
+        if (totalSecs == 0 && timeLogsClearedAtMs > 0 && timeLogsClearedAtMs >= remoteProfileUpdatedMs) {
+          effectiveTotalSecs = 0;
+        } else {
+          effectiveTotalSecs = math.max(totalSecs, remoteTotalSecs);
+        }
 
         await client.from('profiles').update({
           'doctor_name': workingState.doctorName,
@@ -599,6 +654,12 @@ class SyncService {
       bool dailyTasksDirty = false;
 
       if (remoteDailyRes != null) {
+        final remoteUpdatedStr = remoteDailyRes['updated_at']?.toString();
+        final remoteUpdatedMs = remoteUpdatedStr != null
+            ? (DateTime.tryParse(remoteUpdatedStr)?.millisecondsSinceEpoch ?? 0)
+            : 0;
+        final localDailyTasksUpdatedMs = prefs.getInt('modulix_local_daily_tasks_updated_at') ?? _lastLocalDailyTasksMutationMs;
+
         final remoteTasksRaw = remoteDailyRes['tasks_json'] as List<dynamic>? ?? [];
         final remoteCompletedIds =
             (remoteDailyRes['completed_ids'] as List<dynamic>? ?? [])
@@ -631,15 +692,21 @@ class SyncService {
         }
         taskMap.removeWhere((id, _) => mergedDeleted.contains(id));
 
-        // Union of completed task IDs defensively:
-        // Do NOT forcibly re-check tasks that exist in local desk but were unchecked locally!
-        final localTaskIds = localTasks.map((t) => t.id).toSet();
-        final newlyDiscoveredRemoteCompleted =
-            remoteCompletedIds.where((id) => !localTaskIds.contains(id));
-        final mergedCompleted = (Set<String>.from(localCompleted)
-              ..addAll(newlyDiscoveredRemoteCompleted))
-            .where((id) => !mergedDeleted.contains(id))
-            .toSet();
+        // Timestamp-authoritative completed tasks:
+        // If remote is strictly newer (e.g. unchecked/completed on another device), remote completed takes authority!
+        // If local is newer or equal, local completed takes authority.
+        Set<String> mergedCompleted;
+        if (remoteUpdatedMs > localDailyTasksUpdatedMs) {
+          mergedCompleted = remoteCompletedIds.where((id) => !mergedDeleted.contains(id)).toSet();
+        } else {
+          final localTaskIds = localTasks.map((t) => t.id).toSet();
+          final newlyDiscoveredRemoteCompleted =
+              remoteCompletedIds.where((id) => !localTaskIds.contains(id));
+          mergedCompleted = (Set<String>.from(localCompleted)
+                ..addAll(newlyDiscoveredRemoteCompleted))
+              .where((id) => !mergedDeleted.contains(id))
+              .toSet();
+        }
 
         // Merge history by max count
         final mergedDailyHist = Map<String, int>.from(dailyState.dateHistory);
@@ -682,6 +749,10 @@ class SyncService {
         if (remoteLastDate.isNotEmpty) {
           await prefs.setString('modulix_tasks_last_date_v1', remoteLastDate);
           await prefs.setString('flowmd_tasks_last_date_v1', remoteLastDate);
+        }
+
+        if (remoteUpdatedMs > localDailyTasksUpdatedMs) {
+          await prefs.setInt('modulix_local_daily_tasks_updated_at', remoteUpdatedMs);
         }
 
         await ref.read(dailyTasksProvider.notifier).reload();
@@ -840,6 +911,14 @@ class SyncService {
         ),
         callback: (payload) {
           debugPrint('[SyncService] Realtime study_editions change: ${payload.eventType}');
+          final remoteUpdatedStr = payload.newRecord['updated_at']?.toString();
+          final remoteUpdatedMs = remoteUpdatedStr != null
+              ? (DateTime.tryParse(remoteUpdatedStr)?.millisecondsSinceEpoch ?? 0)
+              : 0;
+          if (_lastLocalEditionMutationMs >= remoteUpdatedMs) {
+            debugPrint('[SyncService] Realtime study_editions echo ignored (local mutation is newer or matching).');
+            return;
+          }
           _triggerDebouncedRealtimePull(ref);
         },
       );
@@ -855,6 +934,14 @@ class SyncService {
         ),
         callback: (payload) {
           debugPrint('[SyncService] Realtime daily_tasks change: ${payload.eventType}');
+          final remoteUpdatedStr = payload.newRecord['updated_at']?.toString();
+          final remoteUpdatedMs = remoteUpdatedStr != null
+              ? (DateTime.tryParse(remoteUpdatedStr)?.millisecondsSinceEpoch ?? 0)
+              : 0;
+          if (_lastLocalDailyTasksMutationMs >= remoteUpdatedMs) {
+            debugPrint('[SyncService] Realtime daily_tasks echo ignored (local mutation is newer or matching).');
+            return;
+          }
           _triggerDebouncedRealtimePull(ref);
         },
       );

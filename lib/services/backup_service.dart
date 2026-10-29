@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -7,15 +8,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/app_state.dart';
 import '../models/time_log.dart';
 import '../providers/app_state_provider.dart';
 import '../providers/daily_tasks_provider.dart';
+import '../providers/tasks_hub_provider.dart';
 import '../providers/time_log_provider.dart';
 import 'auth_service.dart';
 import 'database_service.dart';
 import 'storage_service.dart';
+import 'sync_service.dart';
 import 'analytics_service.dart';
 import 'metrics_service.dart';
 import '../widgets/feedback/modulix_toast.dart';
@@ -35,6 +39,14 @@ class BackupService {
     final lastActiveDate = prefs.getString('modulix_tasks_last_date_v1') ??
         prefs.getString('flowmd_tasks_last_date_v1');
 
+    List<Map<String, dynamic>> taskItems = [];
+    List<Map<String, dynamic>> taskProjects = [];
+    try {
+      final db = await DatabaseService.instance.database;
+      taskItems = await db.query('task_items');
+      taskProjects = await db.query('task_projects');
+    } catch (_) {}
+
     final payload = {
       'schema_version': currentSchemaVersion,
       'app_identifier': 'Modulix',
@@ -46,6 +58,10 @@ class BackupService {
         'completed_ids': dailyState.completedIds.toList(),
         'date_history': dailyState.dateHistory,
         'last_active_date': lastActiveDate,
+      },
+      'tasks_hub': {
+        'projects': taskProjects,
+        'items': taskItems,
       },
     };
 
@@ -151,11 +167,42 @@ class BackupService {
         await prefs.setString('flowmd_tasks_last_date_v1', lastActiveDate);
       }
 
+      // Restore tasks hub projects and items if present
+      final tasksHubMap = decoded['tasks_hub'] as Map<String, dynamic>?;
+      if (tasksHubMap != null) {
+        final db = await DatabaseService.instance.database;
+        final projectsList = tasksHubMap['projects'] as List<dynamic>? ?? [];
+        final itemsList = tasksHubMap['items'] as List<dynamic>? ?? [];
+        await DatabaseService.instance.clearAllTasksData();
+        final batch = db.batch();
+        for (final p in projectsList) {
+          if (p is Map<String, dynamic>) {
+            batch.insert('task_projects', p, conflictAlgorithm: ConflictAlgorithm.replace);
+          }
+        }
+        for (final i in itemsList) {
+          if (i is Map<String, dynamic>) {
+            batch.insert('task_items', i, conflictAlgorithm: ConflictAlgorithm.replace);
+          }
+        }
+        await batch.commit(noResult: true);
+        ref.invalidate(tasksHubProvider);
+      }
+
       // Refresh Riverpod providers
       ref.invalidate(appStateProvider);
       await ref.read(timeLogsProvider.notifier).reloadFromDatabase();
       ref.invalidate(dailyTasksProvider);
       await ref.read(dailyTasksProvider.notifier).reload();
+
+      // Enqueue durable mutations and trigger authoritative cloud sync to prevent overwrite
+      SyncService.instance.enqueueProfileMutation(restoredAppState);
+      for (final edId in restoredAppState.editions.keys) {
+        SyncService.instance.enqueueStateMutation(restoredAppState.copyWith(activeEdition: edId));
+      }
+      if (AuthService.instance.isAuthenticated) {
+        unawaited(SyncService.instance.syncFull(ref, forceFull: true));
+      }
 
       AnalyticsService.instance.logBackupRestored();
       return true;

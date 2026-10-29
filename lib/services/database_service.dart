@@ -393,6 +393,32 @@ class DatabaseService {
     await db.delete('time_logs');
   }
 
+  /// Clears all tasks and project groupings from Tasks Hub SQLite tables
+  Future<void> clearAllTasksData() async {
+    try {
+      final db = await database;
+      await db.delete('task_items');
+      await db.delete('task_projects');
+    } catch (_) {}
+  }
+
+  /// Atomically purges all user data tables in SQLite (used on complete account purge)
+  Future<void> resetAllDatabases() async {
+    final db = await database;
+    await db.transaction((txn) async {
+      await txn.delete('time_logs');
+      try {
+        await txn.delete('task_items');
+      } catch (_) {}
+      try {
+        await txn.delete('task_projects');
+      } catch (_) {}
+      try {
+        await txn.delete('sync_outbox');
+      } catch (_) {}
+    });
+  }
+
   Future<int> getDatabaseSizeBytes() async {
     try {
       final docsDir = await getApplicationDocumentsDirectory();
@@ -480,12 +506,13 @@ class DatabaseService {
   }
 
   /// Retrieves pending outbox mutations ordered chronologically (FIFO).
+  /// Excludes poison pills that have exceeded maximum retry attempts.
   Future<List<Map<String, dynamic>>> getPendingOutboxMutations({int limit = 50}) async {
     final db = await database;
     final rows = await db.query(
       'sync_outbox',
-      where: 'status = ?',
-      whereArgs: ['pending'],
+      where: 'status = ? AND retry_count < ?',
+      whereArgs: ['pending', 5],
       orderBy: 'created_at ASC',
       limit: limit,
     );
@@ -515,13 +542,21 @@ class DatabaseService {
     );
   }
 
-  /// Records mutation failure and resets status to pending for backoff retry.
+  /// Records mutation failure and marks poison pills as 'failed' (Dead Letter Queue) after 5 attempts.
   Future<void> failOutboxMutation(String id, String error) async {
     final db = await database;
     await db.rawUpdate(
-      'UPDATE sync_outbox SET status = ?, retry_count = retry_count + 1, last_error = ? WHERE id = ?',
-      ['pending', error, id],
+      "UPDATE sync_outbox SET status = CASE WHEN retry_count + 1 >= 5 THEN 'failed' ELSE 'pending' END, retry_count = retry_count + 1, last_error = ? WHERE id = ?",
+      [error, id],
     );
+  }
+
+  /// Clears all entries from the durable outbox (used on sign-out to prevent cross-account mutation leak).
+  Future<void> clearOutbox() async {
+    try {
+      final db = await database;
+      await db.delete('sync_outbox');
+    } catch (_) {}
   }
 
   /// High-performance count of pending outbox mutations.
@@ -529,7 +564,7 @@ class DatabaseService {
     try {
       final db = await database;
       final result = await db.rawQuery(
-        'SELECT COUNT(*) as count FROM sync_outbox WHERE status = ?',
+        'SELECT COUNT(*) as count FROM sync_outbox WHERE status = ? AND retry_count < 5',
         ['pending'],
       );
       return Sqflite.firstIntValue(result) ?? 0;
@@ -538,11 +573,11 @@ class DatabaseService {
     }
   }
 
-  /// Purges old completed outbox rows if any remain.
+  /// Purges old completed and dead-letter outbox rows if any remain.
   Future<void> purgeCompletedOutbox() async {
     try {
       final db = await database;
-      await db.delete('sync_outbox', where: 'status = ?', whereArgs: ['completed']);
+      await db.delete('sync_outbox', where: 'status IN (?, ?)', whereArgs: ['completed', 'failed']);
     } catch (_) {}
   }
 

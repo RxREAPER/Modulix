@@ -452,6 +452,8 @@ class DailyTasksNotifier extends StateNotifier<DailyTasksState> {
       final boundedDeleted = state.deletedIds.length > 100
           ? state.deletedIds.toList().sublist(state.deletedIds.length - 100).toSet()
           : state.deletedIds;
+      final nowMs = DateTime.now().toUtc().millisecondsSinceEpoch;
+      await prefs.setInt('modulix_local_daily_tasks_updated_at', nowMs);
       await prefs.setString(_kLastActiveDateKey, _todayKey());
       await prefs.setString(_kDailyTasksKey, jsonEncode(state.tasks.map((t) => t.toMap()).toList()));
       await prefs.setString(_kCompletedTasksKey, jsonEncode(state.completedIds.toList()));

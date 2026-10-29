@@ -28,6 +28,29 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 
 ---
 
+### 🔖 `[CKPT-134]` — Multi-Layered Sync Hardening, Outbox Dead-Letter Queue & Data Sovereignty
+- **Category:** `sync` / `hardening` / `backup` / `resilience`
+- **Files Modified:**
+  - `lib/services/database_service.dart` (added dead-letter queue transition for poison pills after 5 retries; filtered outbox queries to exclude failed mutations; added `clearOutbox()`, `clearAllTasksData()`, and atomic `resetAllDatabases()`; wrapped table drops/queries defensively)
+  - `lib/services/sync_service.dart` (persisted `_dirtiedEditions` and mutation timestamps to SharedPreferences; wiped sync cursors, mutation timestamps, and outbox on auth sign-out; prevented time log resurrection using cleared timestamp; resolved daily task remote conflicts via mutation timestamps; guarded Realtime echo events)
+  - `lib/app.dart` (added day boundary rollover check in `didChangeAppLifecycleState` upon app resume prior to background sync dispatch)
+  - `lib/providers/daily_tasks_provider.dart` (persisted local daily tasks mutation timestamp on task updates)
+  - `lib/providers/time_log_provider.dart` (persisted cleared timestamp and enqueued deletion mutation on `clearAll()`)
+  - `lib/services/backup_service.dart` (included Tasks Hub projects and items in JSON backup payloads; restored tasks and projects in batch during payload restore; enqueued state mutations and triggered authoritative full sync on restore)
+  - `lib/services/auth_service.dart` (invoked `DatabaseService.instance.resetAllDatabases()` and `StorageService.instance.clear()` on account purge for complete local and remote data eradication)
+  - `test/sync_service_test.dart` (added unit tests verifying poison pill DLQ transitions, clean database purge, durable dirty tracking, time log clear timestamping, and backup payload tasks structure)
+- **Summary:**
+  - Hardened data synchronization against 10 critical multi-device and offline edge cases.
+  - Eliminated data resurrection traps across time logs, daily desk tasks, and syllabus progress.
+  - Implemented Dead Letter Queue handling for corrupted mutations and zero cross-account outbox leakage.
+  - Preserved Tasks Hub state across JSON backup and restore lifecycles.
+- **Verification:**
+  - `flutter analyze`: 0 issues found (22.5s).
+  - Unit tests: 22/22 tests passing green in `test/sync_service_test.dart`.
+- **Build Status:** ⏳ Pending APK Build
+
+---
+
 ### 🔖 `[CKPT-133]` — Sync Reversion Fix (Profile/Completions/Tasks) & Clean Minimal About Screen
 - **Category:** `sync` / `state` / `settings` / `bugfix`
 - **Files Modified:**

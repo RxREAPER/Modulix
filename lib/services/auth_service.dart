@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/supabase_config.dart';
+import 'database_service.dart';
+import 'storage_service.dart';
 
 /// Service managing user authentication with Supabase and Google Sign-In.
 class AuthService {
@@ -222,7 +224,11 @@ class AuthService {
       await c.from('daily_tasks').delete().eq('user_id', uid);
       await c.from('profiles').delete().eq('id', uid);
 
-      // 3. Complete sign out
+      // 3. Atomically purge local SQLite user tables and local AppState
+      await DatabaseService.instance.resetAllDatabases();
+      await StorageService.instance.clear();
+
+      // 4. Complete sign out
       await signOut();
       return true;
     } catch (e) {

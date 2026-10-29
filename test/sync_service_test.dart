@@ -6,7 +6,9 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:modulix/models/app_state.dart';
 import 'package:modulix/models/daily_desk_task.dart';
 import 'package:modulix/providers/sync_provider.dart';
+import 'package:modulix/providers/time_log_provider.dart';
 import 'package:modulix/services/auth_service.dart';
+import 'package:modulix/services/backup_service.dart';
 import 'package:modulix/services/database_service.dart';
 import 'package:modulix/services/storage_service.dart';
 import 'package:modulix/services/sync_service.dart';
@@ -200,6 +202,43 @@ void main() {
               created_at INTEGER NOT NULL
             )
           ''');
+          await db.execute('''
+            CREATE TABLE task_projects (
+              id TEXT PRIMARY KEY,
+              name TEXT NOT NULL,
+              color_hex TEXT NOT NULL DEFAULT '#6B7280',
+              icon_name TEXT NOT NULL DEFAULT 'list',
+              sort_order INTEGER NOT NULL DEFAULT 0,
+              mode TEXT NOT NULL DEFAULT 'module',
+              subject_id TEXT,
+              subject_name TEXT,
+              unit_name TEXT,
+              deadline TEXT,
+              per_day_modules INTEGER,
+              is_archived INTEGER NOT NULL DEFAULT 0,
+              created_at TEXT NOT NULL
+            )
+          ''');
+          await db.execute('''
+            CREATE TABLE task_items (
+              id TEXT PRIMARY KEY,
+              title TEXT NOT NULL,
+              note TEXT,
+              due_date TEXT,
+              due_hour INTEGER,
+              due_minute INTEGER,
+              project_id TEXT,
+              priority INTEGER NOT NULL DEFAULT 4,
+              is_completed INTEGER NOT NULL DEFAULT 0,
+              completed_at TEXT,
+              sub_tasks TEXT NOT NULL DEFAULT '[]',
+              tags TEXT NOT NULL DEFAULT '[]',
+              estimated_minutes INTEGER,
+              module_id TEXT,
+              created_at TEXT NOT NULL,
+              updated_at TEXT NOT NULL
+            )
+          ''');
         },
       );
       DatabaseService.instance.setTestDatabase(testDb);
@@ -371,6 +410,90 @@ void main() {
       await prefs.setString('modulix_last_editions_synced_at_v1', timestamp);
 
       expect(prefs.getString('modulix_last_editions_synced_at_v1'), equals(timestamp));
+    });
+
+    test('Outbox poison pill transitions to failed after 5 retries and is omitted from pending', () async {
+      final dbService = DatabaseService.instance;
+      await dbService.enqueueOutboxMutation(
+        tableName: 'study_editions',
+        operation: 'UPSERT',
+        payload: {'edition_id': 'marrow_8'},
+        clientMutationId: 'poison_pill_1',
+      );
+
+      var pending = await dbService.getPendingOutboxMutations();
+      final id = pending.first['id'] as String;
+
+      for (var i = 0; i < 4; i++) {
+        await dbService.failOutboxMutation(id, 'Transient error');
+      }
+      pending = await dbService.getPendingOutboxMutations();
+      expect(pending.any((m) => m['id'] == id), isTrue);
+
+      // 5th failure -> poison pill dead lettered
+      await dbService.failOutboxMutation(id, 'Fatal error');
+      pending = await dbService.getPendingOutboxMutations();
+      expect(pending.any((m) => m['id'] == id), isFalse);
+
+      final db = await dbService.database;
+      final row = (await db.query('sync_outbox', where: 'id = ?', whereArgs: [id])).first;
+      expect(row['status'], equals('failed'));
+      expect(row['retry_count'], equals(5));
+    });
+
+    test('clearOutbox and resetAllDatabases purge SQLite state cleanly', () async {
+      final dbService = DatabaseService.instance;
+      await dbService.enqueueOutboxMutation(
+        tableName: 'study_editions',
+        operation: 'UPSERT',
+        payload: {'edition_id': 'marrow_8'},
+      );
+      expect(await dbService.getPendingOutboxCount(), greaterThan(0));
+
+      await dbService.clearOutbox();
+      expect(await dbService.getPendingOutboxCount(), equals(0));
+
+      await dbService.resetAllDatabases();
+      expect(await dbService.getPendingOutboxCount(), equals(0));
+      expect(await dbService.getAllTimeLogs(), isEmpty);
+    });
+
+    test('enqueueStateMutation persists dirtied editions in SharedPreferences', () async {
+      final syncService = SyncService.instance;
+      final prefs = await SharedPreferences.getInstance();
+
+      syncService.enqueueStateMutation(
+        const AppState(activeEdition: 'marrow_8'),
+      );
+
+      await Future.delayed(const Duration(milliseconds: 50));
+      final savedDirtied = prefs.getStringList('modulix_dirtied_editions_v1');
+      expect(savedDirtied, contains('marrow_8'));
+    });
+
+    test('TimeLogsNotifier clearAll sets cleared timestamp and enqueues DELETE mutation', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final prefs = await SharedPreferences.getInstance();
+
+      await container.read(timeLogsProvider.notifier).clearAll();
+
+      final clearedAt = prefs.getInt('modulix_time_logs_cleared_at_v1');
+      expect(clearedAt, isNotNull);
+      expect(clearedAt, greaterThan(0));
+      expect(container.read(timeLogsProvider), isEmpty);
+    });
+
+    test('BackupService createBackupPayload includes tasks_hub structure', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final payloadStr = await BackupService.createBackupPayload(container, formatted: false);
+      final payload = jsonDecode(payloadStr) as Map<String, dynamic>;
+
+      expect(payload.containsKey('tasks_hub'), isTrue);
+      expect((payload['tasks_hub'] as Map<String, dynamic>).containsKey('projects'), isTrue);
+      expect((payload['tasks_hub'] as Map<String, dynamic>).containsKey('items'), isTrue);
     });
   });
 }

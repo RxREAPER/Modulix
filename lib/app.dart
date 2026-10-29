@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'providers/app_state_provider.dart';
+import 'providers/daily_tasks_provider.dart';
 import 'providers/focus_timer_provider.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/home/home_screen.dart';
@@ -517,6 +518,9 @@ class _MainShellState extends ConsumerState<MainShell>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      // Check 5:00 AM study day boundary rollover before triggering sync
+      ref.read(dailyTasksProvider.notifier).checkDayRollover();
+
       // Trigger silent background sync when resuming to foreground
       if (AuthService.instance.isAuthenticated) {
         SyncService.instance.syncFull(ref);
