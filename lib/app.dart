@@ -27,6 +27,7 @@ import 'screens/settings/settings_screen.dart';
 import 'screens/settings/profile_edit_screen.dart';
 import 'screens/settings/account_settings_screen.dart';
 import 'screens/settings/theme_studio_screen.dart';
+import 'screens/settings/app_guide_screen.dart';
 import 'screens/timer/focus_timer_screen.dart';
 import 'services/auth_service.dart';
 import 'services/sync_service.dart';
@@ -292,6 +293,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'notifications-preferences',
                     redirect: (_, __) => '/settings/notifications',
+                  ),
+                  GoRoute(
+                    path: 'guide',
+                    pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+                      state: state,
+                      child: const AppGuideScreen(),
+                    ),
                   ),
                   GoRoute(
                     path: 'auth',

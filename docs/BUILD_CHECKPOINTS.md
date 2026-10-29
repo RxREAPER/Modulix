@@ -4,6 +4,54 @@ This ledger tracks every incremental change made during development. Every featu
 
 When an APK build is triggered, all pending checkpoints are synthesized into a **Build Manifest** (release notes), verified, and marked as `✅ Included in Build`.
 
+## 🚀 Build Manifest v1.37.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (278MB)
+- **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)
+- **Compilation Time:** 182.8s | **Static Analysis:** 0 Errors, 0 Warnings | **Test Suite:** 100% Green (24/24 Notification & Sync Tests Passed)
+- **Included Checkpoints:** `[CKPT-130]` (✅ Included in Build)
+
+### Key Highlights & Releases in v1.37.0:
+1. **Settings Screen Simplification & Solid Names (`[CKPT-130]`):**
+   - Eliminated verbose explanatory subtitles and multi-line descriptions beneath every card on the Profile Settings screen.
+   - Refined every card into a clean, confident, solid name paired with subtle trailing status chips/badges: `Account & Sync` (`Connected` / `Guest`), `Theme Studio` (3-circle swatch palette stack), `Syllabus Edition` (`Edition 8` / `Edition 6.5`), `Notifications`, `Battery Reliability`, `Feature Tour`, `App Guide & Reference`, `Data & Privacy`, and `About Modulix` (`v1.36.0`).
+2. **App Guide & Reference Overhaul (`/settings/guide`):**
+   - Promoted the former modal bottom sheet into a dedicated, first-class native sub-page (`AppGuideScreen`) structured strictly around Modulix's 6 major architectural pillars:
+     - **Focus Timer Suite:** Pomodoro intervals with customizable blocks, dynamic live wallpapers, ambient audio, task-linked clocks, and landscape flip clock desk mode.
+     - **Tasks & Projects Management:** Daily desk tasks with clinical modalities (MCQ, Revision, Notes, Video), project stream grouping, tactile haptic checkoff feedback, and 5:00 AM study day boundary.
+     - **Module Planner & Deadlines:** High-stakes exam target deadlines (NEET-PG, INI-CET, University finals), dynamic daily module quotas, home desk queue, and accurate ETA projections.
+     - **Syllabus & Curriculum Tracker:** Multi-track Edition 8 (848 modules) and Edition 6.5 (792 modules), 19 MBBS subjects, tri-modal completion (Videos, Q-Banks, Notes), and single-tap bulk completion.
+     - **Global Focus Leaderboard:** Real Doctor Name identity with deterministic fallback handles, verified focus rankings across Daily, Weekly, Monthly, and All-Time, and podium recognition.
+     - **Cloud Sync & Data Sovereignty:** 100% offline-first durability with SQLite, linear append-only outbox, instant multi-device Google account synchronization, and manual backup export/import.
+3. **High-Performance Authentic Visual Showcases (WebP Micro-Loops):**
+   - Generated and integrated 6 authentic, screen-recorded micro-loop WebP animations in `assets/gifs/` (under 850KB total across all 6 animations) with native hardware decoding, zero CPU overhead, and silky-smooth visual demonstration of real app workflows.
+   - Preserved strict aesthetic rules: strictly zero emojis, explanations limited to 3-4 concise lines of text, zero mentions of "Marrow", and full theme conformance.
+
+---
+
+### 🔖 `[CKPT-130]` — App Guide & Reference Overhaul, Authentic WebP Micro-Loops & Settings Solid Names
+- **Category:** `settings` / `guide` / `micro-loops` / `ui`
+- **Files Modified:**
+  - `lib/screens/settings/settings_screen.dart` (removed card subtitles, streamlined item rows, added status chips/pills)
+  - `lib/screens/settings/app_guide_screen.dart` (new native sub-page with 6 architectural pillar cards, authentic micro-loop WebP previews, concise bullets, and direct action triggers)
+  - `lib/app.dart` (registered `/settings/guide` route with horizontal slide transition)
+  - `assets/gifs/guide_timer.webp` (authentic looping focus timer preview)
+  - `assets/gifs/guide_tasks.webp` (authentic looping tasks & projects preview)
+  - `assets/gifs/guide_planner.webp` (authentic looping module planner preview)
+  - `assets/gifs/guide_curriculum.webp` (authentic looping syllabus & curriculum preview)
+  - `assets/gifs/guide_leaderboard.webp` (authentic looping global leaderboard podium preview)
+  - `assets/gifs/guide_sync.webp` (authentic looping cloud sync & account preview)
+- **Summary:**
+  - Revamped settings profile screen with solid names and no explanatory subtitles.
+  - Rebuilt App Guide into a full native screen structured around the 6 core pillars with authentic micro-loops and interactive tour launch button.
+- **Verification:**
+  - `flutter analyze`: 0 issues found across all modified files.
+  - `flutter test`: 100% green pass on all unit & sync tests (24/24 passed).
+  - `flutter build apk --debug`: Compiled successfully in 182.8s.
+  - Physical Device Verification: Installed on OnePlus 13R (`ba009d81`) and visually verified via screenshots (`verify_settings_top.png`, `verify_guide_1.png`, `verify_guide_screen.png`, `verify_guide_screen_2.png`).
+- **Build Status:** ✅ Included in Build
+
+---
+
 ## 🚀 Build Manifest v1.36.0
 - **Build Target:** `build/app/outputs/flutter-apk/app-debug.apk` (276MB)
 - **Target Device:** OnePlus 13R (`ba009d81`, Android 16 / API 36, Snapdragon 8 Gen 3 / Adreno 750)

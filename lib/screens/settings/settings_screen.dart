@@ -4,14 +4,12 @@ import 'package:go_router/go_router.dart';
 import '../../models/app_state.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/sync_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/modulix_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../widgets/profile/profile_customization.dart';
 import '../../widgets/timer/battery_optimization_sheet.dart';
 import 'data_privacy_sheet.dart';
-import 'learn_the_app_sheet.dart';
 import 'about_support_sheet.dart';
 
 /// Clean, minimalistic Modulix Settings & Profile Screen.
@@ -154,58 +152,45 @@ class _InsetGroupContainer extends StatelessWidget {
 class _SettingsItemRow extends StatelessWidget {
   final Widget leading;
   final String title;
-  final String subtitle;
+  final Widget? trailing;
   final VoidCallback? onTap;
 
   const _SettingsItemRow({
     required this.leading,
     required this.title,
-    required this.subtitle,
+    this.trailing,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final activeTheme = context.modulixTheme;
+
     return ApplePressable(
       onTap: onTap,
       pressedScale: onTap != null ? 0.98 : 1.0,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
             leading,
             const SizedBox(width: 14),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 15.0,
-                      fontWeight: FontWeight.w600,
-                      color: activeTheme.inkForeground,
-                    ),
-                  ),
-                  if (subtitle.isNotEmpty) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 12.0,
-                        fontWeight: FontWeight.w500,
-                        color: activeTheme.mutedText,
-                      ),
-                    ),
-                  ],
-                ],
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w600,
+                  color: activeTheme.inkForeground,
+                ),
               ),
             ),
-            if (onTap != null) ...[
+            if (trailing != null) ...[
               const SizedBox(width: 8),
+              trailing!,
+            ],
+            if (onTap != null) ...[
+              const SizedBox(width: 6),
               Icon(
                 Icons.chevron_right_rounded,
                 size: 20,
@@ -307,7 +292,7 @@ class _DoctorProfileHero extends ConsumerWidget {
   }
 }
 
-// ── 2. Account Sub-page Entry Card ───────────────────────────────────────────
+// ── 2. Account Sub-page Entry Card (Solid Name) ───────────────────────────────
 class _AccountCard extends ConsumerWidget {
   const _AccountCard();
 
@@ -316,25 +301,6 @@ class _AccountCard extends ConsumerWidget {
     final activeTheme = context.modulixTheme;
     final isAuthenticated = ref.watch(isAuthenticatedProvider);
     final user = ref.watch(currentUserProvider);
-    final lastSyncedAt = ref.watch(lastSyncedAtProvider);
-
-    String syncSubtitle = 'Tap to manage sync';
-    if (isAuthenticated && user != null) {
-      if (lastSyncedAt != null) {
-        final diff = DateTime.now().difference(lastSyncedAt);
-        if (diff.inSeconds < 45) {
-          syncSubtitle = 'Synced just now';
-        } else if (diff.inMinutes < 60) {
-          syncSubtitle = 'Synced ${diff.inMinutes}m ago';
-        } else {
-          syncSubtitle = 'Synced ${diff.inHours}h ago';
-        }
-      } else {
-        syncSubtitle = 'Connected · Tap to sync';
-      }
-    } else {
-      syncSubtitle = 'Local storage · Tap to sign in';
-    }
 
     return ApplePressable(
       onTap: () => context.push('/settings/account'),
@@ -375,33 +341,39 @@ class _AccountCard extends ConsumerWidget {
             ),
             const SizedBox(width: 14),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isAuthenticated && user?.email != null
-                        ? user!.email!
-                        : 'Cloud Sync & Account',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 15.0,
-                      fontWeight: FontWeight.w600,
-                      color: activeTheme.inkForeground,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    syncSubtitle,
-                    style: TextStyle(
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w500,
-                      color: activeTheme.mutedText,
-                    ),
-                  ),
-                ],
+              child: Text(
+                isAuthenticated && user?.email != null
+                    ? user!.email!
+                    : 'Account & Sync',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w600,
+                  color: activeTheme.inkForeground,
+                ),
               ),
             ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+              decoration: BoxDecoration(
+                color: isAuthenticated
+                    ? const Color(0xFF10B981).withValues(alpha: 0.12)
+                    : activeTheme.mutedText.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                isAuthenticated ? 'Connected' : 'Guest',
+                style: TextStyle(
+                  fontSize: 11.0,
+                  fontWeight: FontWeight.w700,
+                  color: isAuthenticated
+                      ? const Color(0xFF059669)
+                      : activeTheme.mutedText,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
             Icon(
               Icons.chevron_right_rounded,
               size: 20,
@@ -414,7 +386,7 @@ class _AccountCard extends ConsumerWidget {
   }
 }
 
-// ── 3. Theme Studio Preview Card ─────────────────────────────────────────────
+// ── 3. Theme Studio Preview Card (Solid Name) ─────────────────────────────────
 class _ThemeStudioPreviewCard extends ConsumerWidget {
   const _ThemeStudioPreviewCard();
 
@@ -447,6 +419,30 @@ class _ThemeStudioPreviewCard extends ConsumerWidget {
         ),
         child: Row(
           children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: preset.accent.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.palette_outlined,
+                color: preset.accent,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                'Theme Studio',
+                style: TextStyle(
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w600,
+                  color: activeTheme.inkForeground,
+                ),
+              ),
+            ),
             SizedBox(
               width: 44,
               height: 32,
@@ -456,8 +452,8 @@ class _ThemeStudioPreviewCard extends ConsumerWidget {
                   Positioned(
                     left: 0,
                     child: Container(
-                      width: 22,
-                      height: 22,
+                      width: 20,
+                      height: 20,
                       decoration: BoxDecoration(
                         color: preset.scaffoldBackground,
                         shape: BoxShape.circle,
@@ -468,8 +464,8 @@ class _ThemeStudioPreviewCard extends ConsumerWidget {
                   Positioned(
                     left: 11,
                     child: Container(
-                      width: 22,
-                      height: 22,
+                      width: 20,
+                      height: 20,
                       decoration: BoxDecoration(
                         color: preset.accent,
                         shape: BoxShape.circle,
@@ -480,8 +476,8 @@ class _ThemeStudioPreviewCard extends ConsumerWidget {
                   Positioned(
                     left: 22,
                     child: Container(
-                      width: 22,
-                      height: 22,
+                      width: 20,
+                      height: 20,
                       decoration: BoxDecoration(
                         color: preset.secondaryAccent,
                         shape: BoxShape.circle,
@@ -492,33 +488,7 @@ class _ThemeStudioPreviewCard extends ConsumerWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Theme Studio',
-                    style: TextStyle(
-                      fontSize: 15.0,
-                      fontWeight: FontWeight.w600,
-                      color: activeTheme.inkForeground,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${preset.label} · Active Atmosphere',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w500,
-                      color: activeTheme.mutedText,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            const SizedBox(width: 4),
             Icon(
               Icons.chevron_right_rounded,
               size: 20,
@@ -531,7 +501,7 @@ class _ThemeStudioPreviewCard extends ConsumerWidget {
   }
 }
 
-// ── 4. Syllabus Edition Card (NO "Marrow") ────────────────────────────────────
+// ── 4. Syllabus Edition Card (Solid Name, NO "Marrow") ────────────────────────
 class _SyllabusEditionCard extends ConsumerWidget {
   const _SyllabusEditionCard();
 
@@ -578,33 +548,31 @@ class _SyllabusEditionCard extends ConsumerWidget {
             ),
             const SizedBox(width: 14),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isEdition8 ? 'Edition 8' : 'Edition 6.5',
-                    style: TextStyle(
-                      fontSize: 15.0,
-                      fontWeight: FontWeight.w600,
-                      color: activeTheme.inkForeground,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    isEdition8
-                        ? 'Standard Curriculum · 19 Subjects · 848 Modules'
-                        : 'Classic Foundation · 19 Subjects · 792 Modules',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w500,
-                      color: activeTheme.mutedText,
-                    ),
-                  ),
-                ],
+              child: Text(
+                'Syllabus Edition',
+                style: TextStyle(
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w600,
+                  color: activeTheme.inkForeground,
+                ),
               ),
             ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+              decoration: BoxDecoration(
+                color: AppTheme.accentPrimary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                isEdition8 ? 'Edition 8' : 'Edition 6.5',
+                style: TextStyle(
+                  fontSize: 11.0,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.accentPrimary,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
             Icon(
               Icons.chevron_right_rounded,
               size: 20,
@@ -617,7 +585,7 @@ class _SyllabusEditionCard extends ConsumerWidget {
   }
 }
 
-// ── 5. Preferences Group ──────────────────────────────────────────────────────
+// ── 5. Preferences Group (Solid Names) ────────────────────────────────────────
 class _PreferencesGroup extends StatelessWidget {
   const _PreferencesGroup();
 
@@ -640,7 +608,6 @@ class _PreferencesGroup extends StatelessWidget {
             ),
           ),
           title: 'Notifications',
-          subtitle: 'Reminders, streak guard & timer alerts',
           onTap: () => context.push('/settings/notifications'),
         ),
         _groupDivider(context),
@@ -658,8 +625,7 @@ class _PreferencesGroup extends StatelessWidget {
               size: 20,
             ),
           ),
-          title: 'Background Reliability & Battery',
-          subtitle: 'Prevent timer halts & manage Doze mode',
+          title: 'Battery Reliability',
           onTap: () => BatteryOptimizationSheet.show(context),
         ),
       ],
@@ -667,12 +633,14 @@ class _PreferencesGroup extends StatelessWidget {
   }
 }
 
-// ── 6. Resources & About Group ────────────────────────────────────────────────
+// ── 6. Resources & About Group (Solid Names) ──────────────────────────────────
 class _ResourcesGroup extends StatelessWidget {
   const _ResourcesGroup();
 
   @override
   Widget build(BuildContext context) {
+    final activeTheme = context.modulixTheme;
+
     return _InsetGroupContainer(
       children: [
         _SettingsItemRow(
@@ -689,8 +657,7 @@ class _ResourcesGroup extends StatelessWidget {
               size: 20,
             ),
           ),
-          title: 'Welcome Tour',
-          subtitle: 'Replay feature walkthrough',
+          title: 'Feature Tour',
           onTap: () => context.push('/onboarding?replay=true'),
         ),
         _groupDivider(context),
@@ -709,8 +676,7 @@ class _ResourcesGroup extends StatelessWidget {
             ),
           ),
           title: 'App Guide & Reference',
-          subtitle: 'Timer tips, pacing engine & shortcuts',
-          onTap: () => LearnTheAppSheet.show(context),
+          onTap: () => context.push('/settings/guide'),
         ),
         _groupDivider(context),
         _SettingsItemRow(
@@ -728,7 +694,6 @@ class _ResourcesGroup extends StatelessWidget {
             ),
           ),
           title: 'Data & Privacy',
-          subtitle: 'Export/import JSON backups & privacy policy',
           onTap: () => DataPrivacySheet.show(context),
         ),
         _groupDivider(context),
@@ -747,7 +712,21 @@ class _ResourcesGroup extends StatelessWidget {
             ),
           ),
           title: 'About Modulix',
-          subtitle: 'v1.19.0 · Medical disclaimer & support',
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: activeTheme.mutedText.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              'v1.36.0',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: activeTheme.mutedText,
+              ),
+            ),
+          ),
           onTap: () => AboutSupportSheet.show(context),
         ),
       ],
