@@ -1,17 +1,10 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { User } from "@supabase/supabase-js"
 import { ApplePressable } from "../primitives/ApplePressable"
 import { HairlineDivider } from "../primitives/HairlineDivider"
 import { AccountDeletionDialog } from "./AccountDeletionDialog"
-import {
-  ProfileRecord,
-  fetchUserProfile,
-  updateUserProfile,
-  exportAllUserData,
-  signOut,
-  supabase,
-} from "../../lib/supabase"
-import { Download, Trash2, LogOut, Save, Check } from "lucide-react"
+import { exportAllUserData, signOut } from "../../lib/supabase"
+import { Download, Trash2, LogOut, ShieldAlert } from "lucide-react"
 
 interface ProfileDashboardProps {
   user: User
@@ -19,87 +12,9 @@ interface ProfileDashboardProps {
 }
 
 export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
-  const [profile, setProfile] = useState<ProfileRecord | null>(null)
-  const [doctorName, setDoctorName] = useState("")
-  const [realtimeConnected, setRealtimeConnected] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [saveSuccess, setSaveSuccess] = useState(false)
-  const [saveError, setSaveError] = useState<string | null>(null)
   const [exporting, setExporting] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-
-  useEffect(() => {
-    let channel: ReturnType<typeof supabase.channel> | null = null
-
-    async function load() {
-      const data = await fetchUserProfile(user.id)
-      if (data) {
-        setProfile(data)
-        setDoctorName(data.doctor_name || "")
-      } else {
-        setDoctorName(user.user_metadata?.full_name || "Doctor")
-      }
-    }
-    load()
-
-    channel = supabase
-      .channel(`web_profile_realtime_${user.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "profiles",
-          filter: `id=eq.${user.id}`,
-        },
-        (payload) => {
-          if (payload.new && typeof payload.new === "object") {
-            const updated = payload.new as ProfileRecord
-            setProfile(updated)
-            if (updated.doctor_name !== undefined) {
-              setDoctorName(updated.doctor_name || "")
-            }
-          }
-        }
-      )
-      .subscribe((status) => {
-        if (status === "SUBSCRIBED") {
-          setRealtimeConnected(true)
-        } else if (status === "CLOSED" || status === "CHANNEL_ERROR") {
-          setRealtimeConnected(false)
-        }
-      })
-
-    return () => {
-      if (channel) {
-        supabase.removeChannel(channel)
-      }
-    }
-  }, [user.id, user.user_metadata?.full_name])
-
-  const handleSaveProfile = async () => {
-    setSaving(true)
-    setSaveError(null)
-    try {
-      const cleanName = doctorName.trim()
-      const fallbackDisplayName = cleanName || `User ${user.id.slice(-4)}`
-      const { error } = await updateUserProfile(user.id, {
-        doctor_name: cleanName,
-        display_name: fallbackDisplayName,
-        leaderboard_visible: true,
-      })
-      if (error) throw error
-      setSaveSuccess(true)
-      setTimeout(() => setSaveSuccess(false), 2500)
-    } catch (err: unknown) {
-      console.error(err)
-      const msg = err instanceof Error ? err.message : "Failed to update profile changes."
-      setSaveError(msg)
-    } finally {
-      setSaving(false)
-    }
-  }
 
   const handleExportData = async () => {
     setExporting(true)
@@ -124,25 +39,15 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
     }
   }
 
-  const formatHours = (secs: number) => {
-    const hours = (secs / 3600).toFixed(1)
-    return `${hours} hrs`
-  }
-
   return (
-    <div className="space-y-8 select-none">
-      {/* ── Header with Doctor Profile Alias & Sign Out ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[var(--border-subtle)]">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-[var(--surface-subtle)] border border-[var(--border-subtle)] text-[var(--accent)] flex items-center justify-center font-editorial font-bold text-xl shadow-sm">
-            Dr
+    <div className="space-y-6 select-none">
+      {/* ── User Header & Sign Out ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[var(--border-subtle)]">
+        <div>
+          <div className="font-editorial text-lg sm:text-xl font-bold text-[var(--ink-foreground)]">
+            Authenticated Account
           </div>
-          <div>
-            <div className="font-editorial text-xl font-bold text-[var(--ink-foreground)]">
-              {doctorName ? `Dr. ${doctorName}` : user.email}
-            </div>
-            <div className="text-xs text-[var(--muted-text)] font-mono">{user.email}</div>
-          </div>
+          <div className="text-xs text-[var(--muted-text)] font-mono mt-0.5">{user.email}</div>
         </div>
 
         <ApplePressable
@@ -157,100 +62,14 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
         </ApplePressable>
       </div>
 
-      {/* ── Profile Configuration Form ── */}
-      <div className="space-y-5">
-        <div className="flex items-center justify-between gap-2">
-          <span className="font-mono text-[10px] font-bold tracking-widest text-[var(--accent)] uppercase">
-            PROFILE ALIASES & IDENTITY
-          </span>
-          <div
-            className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium border ${
-              realtimeConnected
-                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                : "bg-neutral-500/10 text-neutral-500 border-neutral-500/20"
-            }`}
-          >
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                realtimeConnected ? "bg-emerald-500 animate-pulse" : "bg-neutral-400"
-              }`}
-            />
-            <span>{realtimeConnected ? "Realtime Interlinked" : "Connecting Realtime..."}</span>
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-[var(--ink-foreground)] mb-1.5">
-            Doctor Name / Title
-          </label>
-          <input
-            type="text"
-            value={doctorName}
-            onChange={(e) => setDoctorName(e.target.value)}
-            placeholder="e.g. Safi or Dr. House"
-            className="w-full px-4 py-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-subtle)] focus:bg-[var(--card-bg)] text-xs sm:text-sm text-[var(--ink-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)] transition-all"
-          />
-          <p className="text-[11px] text-[var(--muted-text)] mt-1.5">
-            Your name showcased across your study desk and the community focus leaderboard.
-          </p>
-        </div>
-
-        {saveError && (
-          <div className="p-3 rounded-xl text-xs bg-rose-500/10 border border-rose-500/20 text-rose-600 leading-relaxed">
-            {saveError}
-          </div>
-        )}
-
-        <div className="flex justify-end pt-1">
-          <ApplePressable
-            onClick={handleSaveProfile}
-            disabled={saving}
-            className="px-5 py-2.5 rounded-xl bg-[var(--accent)] text-white text-xs font-semibold flex items-center gap-2 shadow-sm"
-          >
-            {saveSuccess ? <Check size={14} /> : <Save size={14} />}
-            <span>{saving ? "Saving..." : saveSuccess ? "Saved Successfully" : "Save Changes"}</span>
-          </ApplePressable>
-        </div>
-      </div>
-
-      <HairlineDivider />
-
-      {/* ── Cloud Study Aggregates (Editorial Stat Chips) ── */}
-      {profile && (
-        <div className="space-y-4">
-          <span className="font-mono text-[10px] font-bold tracking-widest text-[var(--accent)] uppercase">
-            CLOUD STUDY METRICS
-          </span>
-          <div className="grid grid-cols-3 gap-3 sm:gap-4">
-            <div className="p-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--card-bg)] text-center shadow-sm">
-              <div className="font-mono text-[10px] uppercase tracking-wider text-[var(--muted-text)]">Today</div>
-              <div className="font-editorial text-2xl sm:text-3xl font-bold text-[var(--ink-foreground)] mt-1">
-                {formatHours(profile.daily_study_secs || 0)}
-              </div>
-            </div>
-            <div className="p-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--card-bg)] text-center shadow-sm">
-              <div className="font-mono text-[10px] uppercase tracking-wider text-[var(--muted-text)]">This Week</div>
-              <div className="font-editorial text-2xl sm:text-3xl font-bold text-[var(--ink-foreground)] mt-1">
-                {formatHours(profile.weekly_study_secs || 0)}
-              </div>
-            </div>
-            <div className="p-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--card-bg)] text-center shadow-sm">
-              <div className="font-mono text-[10px] uppercase tracking-wider text-[var(--muted-text)]">All-Time</div>
-              <div className="font-editorial text-2xl sm:text-3xl font-bold text-[var(--ink-foreground)] mt-1">
-                {formatHours(profile.total_study_secs || 0)}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <HairlineDivider />
-
-      {/* ── GDPR Data Portability & Account Erasure ── */}
+      {/* ── Deletion Notice & Action ── */}
       <div className="space-y-4">
-        <span className="font-mono text-[10px] font-bold tracking-widest text-[var(--muted-text)] uppercase">
-          DATA MANAGEMENT & PRIVACY
-        </span>
+        <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 text-amber-800 dark:text-amber-300 text-xs leading-relaxed flex items-start gap-3">
+          <ShieldAlert size={18} className="shrink-0 mt-0.5 text-amber-600" />
+          <div>
+            Account deletion is irreversible. Purging your account will immediately remove all cloud-synchronized syllabus completions, desk tasks, focus session logs, and leaderboard profile records from our servers.
+          </div>
+        </div>
 
         {exportError && (
           <div className="p-3 rounded-xl text-xs bg-rose-500/10 border border-rose-500/20 text-rose-600">
@@ -258,13 +77,14 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
           </div>
         )}
 
+        {/* Export Data Archive */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--card-bg)] shadow-sm">
           <div>
             <div className="text-xs sm:text-sm font-semibold text-[var(--ink-foreground)]">
-              Export Study Archive (GDPR Portability)
+              Download Personal Data Archive
             </div>
             <div className="text-xs text-[var(--muted-text)] mt-0.5">
-              Download complete JSON archive of all cloud study milestones and logs.
+              Export a complete JSON archive of all your cloud milestones before deletion.
             </div>
           </div>
           <ApplePressable
@@ -273,17 +93,20 @@ export function ProfileDashboard({ user, onSignedOut }: ProfileDashboardProps) {
             className="px-4 py-2.5 rounded-xl border border-[var(--border-subtle)] text-xs font-semibold text-[var(--ink-foreground)] flex items-center justify-center gap-1.5 shadow-sm"
           >
             <Download size={14} />
-            <span>{exporting ? "Generating JSON..." : "Download Archive"}</span>
+            <span>{exporting ? "Generating..." : "Download JSON"}</span>
           </ApplePressable>
         </div>
 
+        <HairlineDivider />
+
+        {/* Permanent Account Deletion Action */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-5 rounded-2xl border border-rose-500/20 bg-rose-500/5">
           <div>
             <div className="text-xs sm:text-sm font-semibold text-rose-600">
-              Permanently Delete Modulix Account
+              Permanently Erase Cloud Account & Records
             </div>
             <div className="text-xs text-[var(--muted-text)] mt-0.5">
-              Permanently purges profile, syllabus milestones, and focus records from cloud.
+              Fulfills Google Play Store & Apple App Store account and cloud data deletion mandates.
             </div>
           </div>
           <ApplePressable

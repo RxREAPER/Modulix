@@ -47,7 +47,7 @@ export function AccountPortalView({ navigate }: { navigate: (route: string) => v
           <div className="flex items-center gap-2">
             <Shield size={16} className="text-[var(--accent)]" />
             <span className="font-mono text-[10px] font-bold tracking-widest text-[var(--accent)] uppercase">
-              PRIVACY & CLOUD SYNC PORTAL
+              ACCOUNT & DATA ERASURE
             </span>
           </div>
 
@@ -69,10 +69,10 @@ export function AccountPortalView({ navigate }: { navigate: (route: string) => v
           )}
         </div>
         <h1 className="font-editorial text-3xl sm:text-5xl font-bold tracking-tight text-[var(--ink-foreground)]">
-          Account & Cloud Data
+          Account & Data Deletion
         </h1>
         <p className="text-xs sm:text-sm text-[var(--muted-text)] mt-2 leading-relaxed max-w-lg">
-          Manage your cloud-synchronized study milestones, clinical profile aliases, or execute account records erasure.
+          Permanently delete your cloud study records and profile identity in compliance with Google Play Store and Apple App Store mandates.
         </p>
       </div>
 
