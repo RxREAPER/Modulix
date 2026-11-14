@@ -24,6 +24,25 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 4. **Minimal Native Settings & About Sub-Pages (`[CKPT-132]`, `[CKPT-133]`):**
    - Promoted Data & Privacy and About screens to native GoRouter routes with clean, minimalist design and zero emojis.
    - Linked official Cloudflare Pages production domain `https://modulix.pages.dev`.
+### 🔖 `[CKPT-140]` — GitHub Production Release v1.38.0 & Cloudflare Landing Page APK Distribution
+- **Category:** `release` / `web` / `distribution`
+- **Files Modified:**
+  - `.gitignore` (added `*.apk` and `*.aab` binaries to root gitignore)
+  - `modulix_landing_page/.gitignore` (added `.wrangler` and `.wrangler/` to landing page gitignore)
+  - `modulix_landing_page/src/lib/constants.ts` (updated version to `1.38.0`, checkpoint to `CKPT-139`, added `githubReleaseUrl`, configured direct `apkDownloadUrl`)
+  - `modulix_landing_page/src/components/sections/HeroSection.tsx` (promoted "Download for Android (.apk)" to primary accent CTA with direct download link; added "GitHub Release" secondary CTA)
+  - `modulix_landing_page/src/components/updates/ChangelogView.tsx` (registered `v1.38.0` production release notes with upload keystore signing, R8 optimizations, single-active-device sync, and hardware resilience)
+- **Summary:**
+  - Published official signed production release `v1.38.0` on GitHub Releases (`https://github.com/RxREAPER/Modulix/releases/tag/v1.38.0`) attaching `modulix-v1.38.0.apk` (66.3MB, V2 signed).
+  - Configured repository visibility to public with `gh repo edit` so unauthenticated users can download release assets directly without login prompts or 404 errors.
+  - Rebuilt landing page via `tsc -b && vite build` (2,504 modules, 0 errors).
+  - Deployed live updates to Cloudflare Pages project `modulix` at `https://modulix.pages.dev` via Wrangler.
+  - Verified public download redirect with `curl -sI -L`: returns `HTTP/2 302` -> `HTTP/2 200 OK` from `release-assets.githubusercontent.com`.
+- **Verification:**
+  - GitHub release: `https://github.com/RxREAPER/Modulix/releases/tag/v1.38.0` (Active).
+  - Direct APK download: `https://github.com/RxREAPER/Modulix/releases/download/v1.38.0/modulix-v1.38.0.apk` (Verified 200 OK).
+  - Live landing page: `https://modulix.pages.dev` (Verified live with `index-DsSakOox.js`).
+
 ### 🔖 `[CKPT-139]` — Official Upload Keystore, Release Hardening, R8 Shrinking & Signed Release Build
 - **Category:** `release` / `security` / `build`
 - **Files Modified:**

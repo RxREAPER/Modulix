@@ -6,9 +6,22 @@ import { SupportSection } from "./SupportSection"
 export function ChangelogView({ navigate }: { navigate: (route: string) => void }) {
   const releases = [
     {
+      version: "v1.38.0",
+      date: "November 2026",
+      tag: "Latest Release",
+      title: "Hardened Production Release & Upload Keystore Signing",
+      changes: [
+        "Official signed release: Compiled and signed with dedicated production upload keystore (v2 scheme) and verified against Android SDK 36 build tools.",
+        "ProGuard / R8 optimization: Enabled code shrinking and aggressive optimizations for a lean memory footprint.",
+        "Single-active-device cloud sync: Integrated Supabase cloud synchronization with outbox dead-letter queues and zero resurrection traps.",
+        "Curriculum dataset optimizations: Complete syllabus fidelity and strict workspace isolation between Edition 8 and Edition 6.5.",
+        "Study timer & hardware resilience: Live subject timer tracking, earbud disconnect protection, and doze alarm piercing.",
+      ],
+    },
+    {
       version: "v1.32.0",
       date: "October 2026",
-      tag: "Latest Release",
+      tag: "UI & Layout",
       title: "Editorial Luxury & Zero Box-Fatigue",
       changes: [
         "Eliminated box fatigue: Replaced repetitive boxed task cards with an airy, minimal list layout featuring 0.6px hairline dividers and generous whitespace.",

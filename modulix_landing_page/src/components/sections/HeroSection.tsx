@@ -1,5 +1,6 @@
 import { Download } from "lucide-react"
 import { ApplePressable } from "../primitives/ApplePressable"
+import { GithubIcon } from "../primitives/GithubIcon"
 import { MedicalHeroIllustration } from "./MedicalHeroIllustration"
 import { APP_CONSTANTS } from "../../lib/constants"
 
@@ -23,34 +24,36 @@ export function HeroSection({ navigate }: { navigate: (route: string) => void })
 
       {/* ── BOTTOM: Call-to-Action Buttons ── */}
       <div className="max-w-md mx-auto flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2">
-        {/* Get it on Playstore */}
+        {/* Primary CTA: Download APK for Android */}
         <a
-          href={APP_CONSTANTS.playStoreUrl}
-          target="_blank"
-          rel="noreferrer"
+          href={APP_CONSTANTS.apkDownloadUrl}
           className="w-full sm:w-auto"
         >
-          <ApplePressable className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-[var(--accent)] text-white font-semibold text-xs sm:text-sm shadow-sm flex items-center justify-center gap-2.5">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M3.609 1.814L13.792 12 3.61 22.186a1.503 1.503 0 01-.61-.954V2.768c0-.38.225-.72.609-.954zm11.603 11.604l2.585 2.586-12.274 7.087 9.689-9.673zm0-2.836L5.524.909l12.273 7.087-2.585 2.586zm1.414 1.414l3.18 1.836c1.077.622 1.077 1.636 0 2.258l-3.18 1.836-2.185-2.185 2.185-2.185z" />
-            </svg>
-            <span>Get it on Playstore</span>
+          <ApplePressable className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-[var(--accent)] text-white font-semibold text-xs sm:text-sm shadow-md flex items-center justify-center gap-2.5 hover:opacity-95 transition-opacity">
+            <Download size={17} />
+            <span>Download for Android (.apk)</span>
+            <span className="text-[11px] opacity-80 font-normal ml-0.5">v{APP_CONSTANTS.version}</span>
           </ApplePressable>
         </a>
 
-        {/* Download APK */}
+        {/* Secondary CTA: GitHub Release */}
         <a
-          href={APP_CONSTANTS.apkDownloadUrl}
+          href={APP_CONSTANTS.githubReleaseUrl}
           target="_blank"
           rel="noreferrer"
           className="w-full sm:w-auto"
         >
-          <ApplePressable className="w-full sm:w-auto px-6 py-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--card-bg)] text-[var(--ink-foreground)] font-semibold text-xs sm:text-sm flex items-center justify-center gap-2">
-            <Download size={16} />
-            <span>Download</span>
-            <span className="text-[11px] text-[var(--muted-text)] font-normal ml-0.5">v{APP_CONSTANTS.version}</span>
+          <ApplePressable className="w-full sm:w-auto px-5 py-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--card-bg)] text-[var(--ink-foreground)] font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 hover:bg-[var(--surface-subtle)] transition-colors">
+            <GithubIcon size={16} />
+            <span>GitHub Release</span>
           </ApplePressable>
         </a>
+      </div>
+
+      <div className="mt-3.5 text-center">
+        <p className="text-[11px] text-[var(--muted-text)] tracking-wide">
+          Signed production build (ARM64) · Direct install · Google Play launch pending review
+        </p>
       </div>
 
       <div className="mt-5 text-center">
