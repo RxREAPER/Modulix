@@ -332,7 +332,9 @@ class _SyncDiagnosticsSheetState extends ConsumerState<SyncDiagnosticsSheet> {
                             ? const Color(0xFF059669)
                             : (syncStatus == SyncStatus.syncing
                                 ? AppTheme.accentPrimary
-                                : activeTheme.mutedText),
+                                : (syncStatus == SyncStatus.pausedStandby
+                                    ? const Color(0xFFF59E0B)
+                                    : activeTheme.mutedText)),
                         theme: activeTheme,
                       ),
                       if (lastSyncedAt != null) ...[

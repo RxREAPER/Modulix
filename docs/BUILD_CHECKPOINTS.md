@@ -25,6 +25,29 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Promoted Data & Privacy and About screens to native GoRouter routes with clean, minimalist design and zero emojis.
    - Linked official Cloudflare Pages production domain `https://modulix.pages.dev`.
 
+### 🔖 `[CKPT-135]` — Single-Active-Device Sync Architecture & Minimalist Account Deletion Portal
+- **Category:** `sync` / `backend` / `settings` / `web` / `data-sovereignty`
+- **Files Modified:**
+  - `supabase/migrations/012_single_active_device.sql` (added `active_device_id`, `active_device_name`, `device_registered_at`, and index `idx_profiles_active_device` to `public.profiles`)
+  - `modulix_landing_page/src/components/account/ProfileDashboard.tsx` (streamlined web dashboard into dedicated Account & Data Erasure view; removed Doctor Name, theme preferences, and real-time polling to eliminate unnecessary cloud reads/writes; retained JSON archive export and two-step modal deletion)
+  - `modulix_landing_page/src/components/account/AccountPortalView.tsx` (refined portal heading to Account & Data Erasure Portal with Google Play and App Store compliance context)
+  - `modulix_landing_page/src/lib/supabase.ts` (pruned unused preference update mutations to minimize client bundle)
+  - `lib/services/sync_service.dart` (implemented single active device check in Section 1: if another device is active, halts push and transitions to `pausedStandby`; implemented `claimActiveDevice(ref)` for one-tap device switching; adopted remote completions directly when edition is not locally dirtied to permanently prevent zombie resurrections; updated time logs query with `or(timestamp.gt,created_at.gt)` for offline past sessions; isolated leaderboard study metrics from profile attribute updates; added account switch detection to wipe local SQLite and preferences when a different user ID signs into the device)
+  - `lib/providers/sync_provider.dart` (exposed `isCurrentDeviceActiveProvider` and `activeDeviceNameProvider`)
+  - `lib/screens/settings/account_settings_screen.dart` (added active device indicator badge "Active (This Phone)", standby alert card "Synced to Another Device" with one-tap "Make This Device Active" button, and standby status state for the primary Sync button)
+  - `lib/widgets/sync_status_badge.dart` (added exhaustive pattern matching for `SyncStatus.pausedStandby` with amber color and Standby badge)
+  - `lib/screens/settings/sync_diagnostics_sheet.dart` (added amber highlight for `SyncStatus.pausedStandby`)
+  - `test/sync_service_test.dart` (added comprehensive unit tests verifying device UUID persistence, device name derivation, notifier state transitions, claimActiveDevice unauthenticated safety, clean state adoption without zombie resurrect, and cross-account data isolation)
+- **Summary:**
+  - Architected and enforced a single-active-device cloud synchronization model that mathematically eliminates multi-device write collisions, state reversion traps, and zombie checkmark resurrection while keeping the Global Focus Leaderboard live and accurate.
+  - Stripped the web portal down to a pure, compliant Account & Data Deletion Portal, removing all preference editing to conserve database bandwidth and minimize cloud attack surface.
+  - Provided transparent in-app UI for standby devices with one-tap transfer of active device ownership.
+- **Verification:**
+  - `npm run build` in `modulix_landing_page`: clean build (0 TypeScript/Vite errors).
+  - `flutter analyze`: 0 issues found across entire mobile codebase.
+  - Unit tests: 28/28 tests passing green in `test/sync_service_test.dart`.
+- **Build Status:** Pending APK Build
+
 ---
 
 ### 🔖 `[CKPT-134]` — Multi-Layered Sync Hardening, Outbox Dead-Letter Queue & Data Sovereignty

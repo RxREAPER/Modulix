@@ -82,6 +82,11 @@ class SyncStatusBadge extends ConsumerWidget {
         badgeIcon = Icons.cloud_off_rounded;
         badgeLabel = 'Offline';
         break;
+      case SyncStatus.pausedStandby:
+        badgeColor = const Color(0xFFF59E0B);
+        badgeIcon = Icons.devices_other_rounded;
+        badgeLabel = 'Standby';
+        break;
       case SyncStatus.idle:
         badgeColor = ext.accent;
         badgeIcon = Icons.cloud_outlined;

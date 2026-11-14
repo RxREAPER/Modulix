@@ -18,12 +18,15 @@ import 'metrics_service.dart';
 import 'network_resilience_service.dart';
 import 'storage_service.dart';
 
+import 'dart:io' show Platform;
+
 enum SyncStatus {
   idle,
   syncing,
   synced,
   offline,
   error,
+  pausedStandby,
 }
 
 class SyncService {
@@ -50,12 +53,29 @@ class SyncService {
   void _initAuthListener() {
     try {
       AuthService.instance.authStateChanges.listen((data) {
-        if (data.event == AuthChangeEvent.signedOut) {
+        if (data.event == AuthChangeEvent.signedIn) {
+          final newUserId = data.session?.user.id;
+          if (newUserId != null && newUserId.isNotEmpty) {
+            unawaited(SharedPreferences.getInstance().then((prefs) async {
+              final lastAuthUid = prefs.getString('modulix_last_authenticated_user_id');
+              if (lastAuthUid != null && lastAuthUid != newUserId) {
+                // Different account detected on shared device: purge local storage to prevent data leakage
+                await DatabaseService.instance.resetAllDatabases();
+                await StorageService.instance.clear();
+              }
+              await prefs.setString('modulix_last_authenticated_user_id', newUserId);
+            }));
+          }
+        } else if (data.event == AuthChangeEvent.signedOut) {
           stopRealtimeSync();
           _lastLocalProfileMutationMs = 0;
           _lastLocalDailyTasksMutationMs = 0;
           _lastLocalEditionMutationMs = 0;
           _dirtiedEditions.clear();
+          isCurrentDeviceActive = true;
+          isCurrentDeviceActiveNotifier.value = true;
+          activeDeviceName = null;
+          activeDeviceNameNotifier.value = null;
           lastSyncedAt = null;
           lastSyncedAtNotifier.value = null;
           pendingSyncCountNotifier.value = 0;
@@ -87,6 +107,14 @@ class SyncService {
   final ValueNotifier<bool> realtimeStatusNotifier =
       ValueNotifier<bool>(false);
 
+  final ValueNotifier<bool> isCurrentDeviceActiveNotifier =
+      ValueNotifier<bool>(true);
+  bool isCurrentDeviceActive = true;
+
+  final ValueNotifier<String?> activeDeviceNameNotifier =
+      ValueNotifier<String?>(null);
+  String? activeDeviceName;
+
   DateTime? lastSyncedAt;
   Timer? _debounceTimer;
   bool _isSyncing = false;
@@ -94,6 +122,34 @@ class SyncService {
   int _lastLocalDailyTasksMutationMs = 0;
   int _lastLocalEditionMutationMs = 0;
   final Set<String> _dirtiedEditions = <String>{};
+
+  /// Retrieves or assigns a stable unique installation identifier for this device
+  Future<String> getDeviceId() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? id = prefs.getString('modulix_device_id_v1');
+    if (id == null || id.isEmpty) {
+      id = 'dev_${DateTime.now().millisecondsSinceEpoch}_${math.Random().nextInt(999999)}';
+      await prefs.setString('modulix_device_id_v1', id);
+    }
+    return id;
+  }
+
+  /// Retrieves a human-readable device description for display
+  Future<String> getDeviceName() async {
+    final prefs = await SharedPreferences.getInstance();
+    final custom = prefs.getString('modulix_device_name_v1');
+    if (custom != null && custom.isNotEmpty) return custom;
+
+    if (kIsWeb) return 'Web Client';
+    try {
+      if (Platform.isAndroid) return 'Android Device';
+      if (Platform.isIOS) return 'iOS Device';
+      if (Platform.isLinux) return 'Linux Desk';
+      if (Platform.isMacOS) return 'macOS Desk';
+      if (Platform.isWindows) return 'Windows Desk';
+    } catch (_) {}
+    return 'Mobile Device';
+  }
 
   /// Probes roundtrip latency to Supabase in milliseconds
   Future<int?> probeLatency() async {
@@ -215,8 +271,41 @@ class SyncService {
     } catch (_) {}
   }
 
+  /// Claims active sync device ownership for this device and triggers a full hydration sync
+  Future<bool> claimActiveDevice(dynamic ref) async {
+    final auth = AuthService.instance;
+    if (!auth.isAuthenticated || auth.client == null) return false;
+    try {
+      final client = auth.client!;
+      final userId = auth.currentUserId!;
+      final localDeviceId = await getDeviceId();
+      final localDeviceName = await getDeviceName();
+
+      await client.from('profiles').update({
+        'active_device_id': localDeviceId,
+        'active_device_name': localDeviceName,
+        'device_registered_at': DateTime.now().toUtc().toIso8601String(),
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      }).eq('id', userId);
+
+      isCurrentDeviceActive = true;
+      isCurrentDeviceActiveNotifier.value = true;
+      activeDeviceName = localDeviceName;
+      activeDeviceNameNotifier.value = localDeviceName;
+
+      return await syncFull(ref, forceFull: true);
+    } catch (e) {
+      debugPrint('[SyncService] Failed to claim active device: $e');
+      return false;
+    }
+  }
+
   /// Trigger debounced sync to push local changes to cloud
   void schedulePush(dynamic ref) {
+    if (!isCurrentDeviceActive) {
+      statusNotifier.value = SyncStatus.pausedStandby;
+      return;
+    }
     refreshPendingCount();
     if (!AuthService.instance.isAuthenticated) return;
     _debounceTimer?.cancel();
@@ -251,15 +340,57 @@ class SyncService {
       final userId = auth.currentUserId!;
       final prefs = await SharedPreferences.getInstance();
 
-      // ── 0. FLUSH DURABLE SQLITE OUTBOX MUTATIONS (LINEAR-STYLE) ─────────
-      await _flushOutbox(client, userId);
+      final localDeviceId = await getDeviceId();
+      final localDeviceName = await getDeviceName();
 
-      // ── 1. SYNC PROFILE & PREFERENCES ─────────────────────────────────────
+      // ── 1. SYNC PROFILE & PREFERENCES (FETCH & ACTIVE DEVICE CHECK) ─────
       final profileRes = await client
           .from('profiles')
           .select()
           .eq('id', userId)
           .maybeSingle();
+
+      if (profileRes != null) {
+        final remoteActiveDeviceId = profileRes['active_device_id']?.toString();
+        final remoteActiveDeviceName = profileRes['active_device_name']?.toString();
+
+        if (remoteActiveDeviceId != null &&
+            remoteActiveDeviceId.isNotEmpty &&
+            remoteActiveDeviceId != localDeviceId) {
+          // Another device is actively registered as the single cloud writer
+          isCurrentDeviceActive = false;
+          isCurrentDeviceActiveNotifier.value = false;
+          activeDeviceName = remoteActiveDeviceName ?? 'Another Device';
+          activeDeviceNameNotifier.value = activeDeviceName;
+          statusNotifier.value = SyncStatus.pausedStandby;
+          debugPrint('[SyncService] Device standby: Account active on $activeDeviceName ($remoteActiveDeviceId). Push paused.');
+          return false;
+        }
+
+        // Current device is active (or no device was registered yet)
+        isCurrentDeviceActive = true;
+        isCurrentDeviceActiveNotifier.value = true;
+        activeDeviceName = localDeviceName;
+        activeDeviceNameNotifier.value = localDeviceName;
+
+        if (remoteActiveDeviceId != localDeviceId) {
+          // Register this device as active
+          await client.from('profiles').update({
+            'active_device_id': localDeviceId,
+            'active_device_name': localDeviceName,
+            'device_registered_at': DateTime.now().toUtc().toIso8601String(),
+          }).eq('id', userId);
+        }
+      } else {
+        isCurrentDeviceActive = true;
+        isCurrentDeviceActiveNotifier.value = true;
+        activeDeviceName = localDeviceName;
+        activeDeviceNameNotifier.value = localDeviceName;
+      }
+
+      // ── 0. FLUSH DURABLE SQLITE OUTBOX MUTATIONS (LINEAR-STYLE) ─────────
+      // Safe to flush because this device is verified active writer
+      await _flushOutbox(client, userId);
 
       AppState workingState;
       try {
@@ -341,6 +472,9 @@ class SyncService {
           'theme_pref': workingState.themePref.name,
           'active_edition': workingState.activeEdition,
           'day_start_hour': workingState.dayStartHour,
+          'active_device_id': localDeviceId,
+          'active_device_name': localDeviceName,
+          'device_registered_at': DateTime.now().toUtc().toIso8601String(),
           'updated_at': DateTime.now().toUtc().toIso8601String(),
         });
       }
@@ -389,27 +523,38 @@ class SyncService {
 
         final isLocallyDirtied = _dirtiedEditions.contains(edId);
 
-        // Additive Union Merging for completions (Progress is NEVER lost)
-        // If local edition was dirtied on this device, respect local state and do not resurrect
-        final mergedVideos = isLocallyDirtied
-            ? localEd.completedVideos
-            : (Map<String, dynamic>.from(localEd.completedVideos)..addAll(remoteCompletedVideos));
-        final mergedQBanks = isLocallyDirtied
-            ? localEd.completedQBanks
-            : (Map<String, dynamic>.from(localEd.completedQBanks)..addAll(remoteCompletedQBanks));
-        final mergedNotes = isLocallyDirtied
-            ? localEd.completedNotes
-            : (Map<String, dynamic>.from(localEd.completedNotes)..addAll(remoteCompletedNotes));
+        // If local edition was dirtied on this device, respect local unpushed state
+        // On initial sync, union local guest progress with remote state
+        // Otherwise, directly adopt remote state to permanently prevent zombie resurrected completions
+        final Map<String, dynamic> mergedVideos;
+        final Map<String, dynamic> mergedQBanks;
+        final Map<String, dynamic> mergedNotes;
+        final List<String> mergedBulkChapters;
+
+        if (isLocallyDirtied) {
+          mergedVideos = localEd.completedVideos;
+          mergedQBanks = localEd.completedQBanks;
+          mergedNotes = localEd.completedNotes;
+          mergedBulkChapters = localEd.bulkCompletedChapters;
+        } else if (lastEditionsSync == null || lastEditionsSync.isEmpty) {
+          // Initial hydration: union guest state with remote cloud state
+          mergedVideos = Map<String, dynamic>.from(localEd.completedVideos)..addAll(remoteCompletedVideos);
+          mergedQBanks = Map<String, dynamic>.from(localEd.completedQBanks)..addAll(remoteCompletedQBanks);
+          mergedNotes = Map<String, dynamic>.from(localEd.completedNotes)..addAll(remoteCompletedNotes);
+          mergedBulkChapters = (localEd.bulkCompletedChapters.toSet()..addAll(remoteBulkChapters)).toList();
+        } else {
+          // Steady-state clean adoption: remote is authoritative single-writer source of truth
+          mergedVideos = remoteCompletedVideos;
+          mergedQBanks = remoteCompletedQBanks;
+          mergedNotes = remoteCompletedNotes;
+          mergedBulkChapters = remoteBulkChapters.toList();
+        }
 
         final mergedHistory = Map<String, int>.from(localEd.dailyHistory);
         remoteDailyHist.forEach((k, v) {
           final cur = mergedHistory[k] ?? 0;
           if (v > cur) mergedHistory[k] = v;
         });
-
-        final mergedBulkChapters = isLocallyDirtied
-            ? localEd.bulkCompletedChapters
-            : (localEd.bulkCompletedChapters.toSet()..addAll(remoteBulkChapters)).toList();
 
         // Bidirectional merge of queued batch video IDs
         final mergedQueue = List<String>.from(localEd.queueBatchVideoIds);
@@ -521,7 +666,8 @@ class SyncService {
       var remoteLogsQuery = client.from('time_logs').select().eq('user_id', userId);
       if (lastSyncMillis > 0) {
         // Incremental sync: pull only records within or newer than last sync window
-        remoteLogsQuery = remoteLogsQuery.gt('timestamp', fetchSinceMs);
+        final fetchSinceIso = DateTime.fromMillisecondsSinceEpoch(fetchSinceMs).toUtc().toIso8601String();
+        remoteLogsQuery = remoteLogsQuery.or('timestamp.gt.$fetchSinceMs,created_at.gt.$fetchSinceIso');
       }
       final remoteLogsRes = await remoteLogsQuery;
 
@@ -620,16 +766,6 @@ class SyncService {
         }
 
         await client.from('profiles').update({
-          'doctor_name': workingState.doctorName,
-          'display_name': workingState.publicDisplayName,
-          'leaderboard_visible': workingState.leaderboardVisible,
-          'avatar_icon_id': workingState.avatarIconId,
-          'avatar_color_id': workingState.avatarColorId,
-          'palette_preset_id': workingState.palettePresetId,
-          'accent_color_id': workingState.accentColorId,
-          'theme_pref': workingState.themePref.name,
-          'active_edition': workingState.activeEdition,
-          'day_start_hour': workingState.dayStartHour,
           'total_study_secs': effectiveTotalSecs,
           'daily_study_secs': dailySecs,
           'weekly_study_secs': weeklySecs,
@@ -972,6 +1108,21 @@ class SyncService {
   void _handleRealtimeProfileUpdate(dynamic ref, Map<String, dynamic> row) {
     if (row.isEmpty) return;
     try {
+      final activeDevId = row['active_device_id']?.toString();
+      final activeDevName = row['active_device_name']?.toString();
+      if (activeDevId != null && activeDevId.isNotEmpty) {
+        unawaited(getDeviceId().then((localId) {
+          final isActive = (activeDevId == localId);
+          isCurrentDeviceActive = isActive;
+          isCurrentDeviceActiveNotifier.value = isActive;
+          activeDeviceName = activeDevName ?? (isActive ? 'This Device' : 'Another Device');
+          activeDeviceNameNotifier.value = activeDeviceName;
+          if (!isActive) {
+            statusNotifier.value = SyncStatus.pausedStandby;
+          }
+        }));
+      }
+
       final remoteUpdatedStr = row['updated_at']?.toString();
       final remoteUpdatedMs = remoteUpdatedStr != null
           ? (DateTime.tryParse(remoteUpdatedStr)?.millisecondsSinceEpoch ?? 0)

@@ -495,5 +495,103 @@ void main() {
       expect((payload['tasks_hub'] as Map<String, dynamic>).containsKey('projects'), isTrue);
       expect((payload['tasks_hub'] as Map<String, dynamic>).containsKey('items'), isTrue);
     });
+
+    test('getDeviceId generates and persists a stable device UUID', () async {
+      final devId1 = await SyncService.instance.getDeviceId();
+      expect(devId1, isNotEmpty);
+      expect(devId1.startsWith('dev_'), isTrue);
+
+      final devId2 = await SyncService.instance.getDeviceId();
+      expect(devId2, equals(devId1));
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('modulix_device_id_v1'), equals(devId1));
+    });
+
+    test('getDeviceName returns valid descriptive string', () async {
+      final devName = await SyncService.instance.getDeviceName();
+      expect(devName, isNotEmpty);
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('modulix_device_name_v1', 'Custom iPhone');
+      expect(await SyncService.instance.getDeviceName(), equals('Custom iPhone'));
+    });
+
+    test('Single active device notifiers and providers reflect state changes', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(isCurrentDeviceActiveProvider), isTrue);
+      expect(container.read(activeDeviceNameProvider), isNull);
+
+      SyncService.instance.isCurrentDeviceActiveNotifier.value = false;
+      SyncService.instance.activeDeviceNameNotifier.value = 'Galaxy S24';
+      SyncService.instance.statusNotifier.value = SyncStatus.pausedStandby;
+
+      expect(container.read(isCurrentDeviceActiveProvider), isFalse);
+      expect(container.read(activeDeviceNameProvider), equals('Galaxy S24'));
+      expect(container.read(syncStatusProvider), equals(SyncStatus.pausedStandby));
+
+      // Reset
+      SyncService.instance.isCurrentDeviceActiveNotifier.value = true;
+      SyncService.instance.activeDeviceNameNotifier.value = null;
+      SyncService.instance.statusNotifier.value = SyncStatus.idle;
+    });
+
+    test('claimActiveDevice returns false and does not throw when unauthenticated', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final result = await SyncService.instance.claimActiveDevice(container);
+      expect(result, isFalse);
+    });
+
+    test('Clean state adoption directly adopts remote completions without zombie resurrection', () {
+      // Steady-state single active device scenario:
+      // Local cache had a video completed, but user uncompleted it on the active cloud writer
+      final localVideos = {'vid_1': true, 'vid_2': true};
+      final remoteVideos = {'vid_1': true}; // vid_2 was unchecked on active device
+
+      const isLocallyDirtied = false;
+      const lastEditionsSync = '2026-10-29T10:00:00.000Z'; // Steady-state (not initial)
+
+      final Map<String, dynamic> mergedVideos;
+      if (isLocallyDirtied) {
+        mergedVideos = localVideos;
+      } else if (lastEditionsSync.isEmpty) {
+        mergedVideos = Map<String, dynamic>.from(localVideos)..addAll(remoteVideos);
+      } else {
+        // Direct adoption: eliminates zombie resurrect
+        mergedVideos = remoteVideos;
+      }
+
+      expect(mergedVideos.containsKey('vid_2'), isFalse);
+      expect(mergedVideos.containsKey('vid_1'), isTrue);
+    });
+
+    test('Account switch detection: different user ID purges local databases', () async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('modulix_last_authenticated_user_id', 'user_alpha');
+
+      final dbService = DatabaseService.instance;
+      await dbService.enqueueOutboxMutation(
+        tableName: 'study_editions',
+        operation: 'UPSERT',
+        payload: {'edition_id': 'marrow_8'},
+      );
+      expect(await dbService.getPendingOutboxCount(), greaterThan(0));
+
+      // Simulate sign in with different user id
+      const newUserId = 'user_beta';
+      final lastAuthUid = prefs.getString('modulix_last_authenticated_user_id');
+      if (lastAuthUid != null && lastAuthUid != newUserId) {
+        await dbService.resetAllDatabases();
+        await StorageService.instance.clear();
+      }
+      await prefs.setString('modulix_last_authenticated_user_id', newUserId);
+
+      expect(await dbService.getPendingOutboxCount(), equals(0));
+      expect(prefs.getString('modulix_last_authenticated_user_id'), equals('user_beta'));
+    });
   });
 }

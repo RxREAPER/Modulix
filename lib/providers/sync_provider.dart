@@ -87,3 +87,48 @@ class IsRealtimeActiveNotifier extends StateNotifier<bool> {
   }
 }
 
+final isCurrentDeviceActiveProvider =
+    StateNotifierProvider<IsCurrentDeviceActiveNotifier, bool>((ref) {
+  return IsCurrentDeviceActiveNotifier();
+});
+
+class IsCurrentDeviceActiveNotifier extends StateNotifier<bool> {
+  IsCurrentDeviceActiveNotifier()
+      : super(SyncService.instance.isCurrentDeviceActiveNotifier.value) {
+    SyncService.instance.isCurrentDeviceActiveNotifier.addListener(_onChanged);
+  }
+
+  void _onChanged() {
+    state = SyncService.instance.isCurrentDeviceActiveNotifier.value;
+  }
+
+  @override
+  void dispose() {
+    SyncService.instance.isCurrentDeviceActiveNotifier.removeListener(_onChanged);
+    super.dispose();
+  }
+}
+
+final activeDeviceNameProvider =
+    StateNotifierProvider<ActiveDeviceNameNotifier, String?>((ref) {
+  return ActiveDeviceNameNotifier();
+});
+
+class ActiveDeviceNameNotifier extends StateNotifier<String?> {
+  ActiveDeviceNameNotifier()
+      : super(SyncService.instance.activeDeviceNameNotifier.value) {
+    SyncService.instance.activeDeviceNameNotifier.addListener(_onChanged);
+  }
+
+  void _onChanged() {
+    state = SyncService.instance.activeDeviceNameNotifier.value;
+  }
+
+  @override
+  void dispose() {
+    SyncService.instance.activeDeviceNameNotifier.removeListener(_onChanged);
+    super.dispose();
+  }
+}
+
+

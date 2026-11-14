@@ -24,9 +24,51 @@ class AccountSettingsScreen extends ConsumerStatefulWidget {
 
 class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
   bool _isManualSyncing = false;
+  bool _isClaimingDevice = false;
+
+  Future<void> _handleClaimDevice() async {
+    if (_isClaimingDevice) return;
+    setState(() => _isClaimingDevice = true);
+    HapticFeedback.mediumImpact();
+
+    try {
+      final success = await SyncService.instance.claimActiveDevice(ref);
+      if (mounted) {
+        if (success) {
+          ModulixToast.showSuccess(
+            context,
+            message: 'This device is now active for cloud sync',
+          );
+        } else {
+          ModulixToast.showError(
+            context,
+            message: 'Failed to claim active device',
+          );
+        }
+      }
+    } catch (_) {
+      if (mounted) {
+        ModulixToast.showError(
+          context,
+          message: 'Failed to claim active device',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isClaimingDevice = false);
+      }
+    }
+  }
 
   Future<void> _handleSyncNow() async {
     if (_isManualSyncing) return;
+    if (!SyncService.instance.isCurrentDeviceActive) {
+      ModulixToast.showInfo(
+        context,
+        message: 'Device in standby. Tap "Make This Device Active" below to sync.',
+      );
+      return;
+    }
     setState(() => _isManualSyncing = true);
     HapticFeedback.lightImpact();
 
@@ -239,6 +281,8 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
     final syncStatus = ref.watch(syncStatusProvider);
     final lastSyncedAt = ref.watch(lastSyncedAtProvider);
     final appState = ref.watch(appStateProvider).valueOrNull;
+    final isDeviceActive = ref.watch(isCurrentDeviceActiveProvider);
+    final activeDeviceName = ref.watch(activeDeviceNameProvider);
 
     final isSyncing = _isManualSyncing || syncStatus == SyncStatus.syncing;
 
@@ -368,9 +412,140 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                       ),
                     ],
                   ),
+                  if (isDeviceActive) ...[
+                    const SizedBox(height: 14),
+                    Divider(
+                      height: 1,
+                      thickness: 0.8,
+                      color: activeTheme.borderSubtle,
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF10B981),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Sync Device',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: activeTheme.mutedText,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFF10B981).withValues(alpha: 0.25),
+                              width: 1,
+                            ),
+                          ),
+                          child: const Text(
+                            'Active (This Phone)',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF10B981),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
+            if (!isDeviceActive) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
+                    width: 1.2,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.devices_other_rounded,
+                          color: Color(0xFFF59E0B),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Synced to Another Device',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: activeTheme.inkForeground,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Account active on ${activeDeviceName ?? "another device"}. To prevent progress overwrites, cloud pushing is paused on this device.',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: activeTheme.mutedText,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ApplePressable(
+                      onTap: _isClaimingDevice ? null : _handleClaimDevice,
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF59E0B),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(
+                          child: _isClaimingDevice
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                )
+                              : const Text(
+                                  'Make This Device Active',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 24),
 
             // Primary Sync Now Action Button
@@ -380,15 +555,17 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  color: AppTheme.accentPrimary,
+                  color: isDeviceActive ? AppTheme.accentPrimary : activeTheme.borderSubtle,
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.accentPrimary.withValues(alpha: 0.25),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+                  boxShadow: isDeviceActive
+                      ? [
+                          BoxShadow(
+                            color: AppTheme.accentPrimary.withValues(alpha: 0.25),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -412,14 +589,18 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                         ),
                       ),
                     ] else ...[
-                      const Icon(Icons.sync_rounded, color: Colors.white, size: 18),
+                      Icon(
+                        isDeviceActive ? Icons.sync_rounded : Icons.pause_circle_outline_rounded,
+                        color: isDeviceActive ? Colors.white : activeTheme.mutedText,
+                        size: 18,
+                      ),
                       const SizedBox(width: 8),
-                      const Text(
-                        'Sync Now',
+                      Text(
+                        isDeviceActive ? 'Sync Now' : 'Sync Standby (Paused)',
                         style: TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: isDeviceActive ? Colors.white : activeTheme.mutedText,
                         ),
                       ),
                     ],
