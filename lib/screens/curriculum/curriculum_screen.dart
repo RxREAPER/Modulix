@@ -4,13 +4,11 @@ import 'package:go_router/go_router.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/syllabus_provider.dart';
 import '../../providers/curriculum_sort_provider.dart';
-import 'package:animations/animations.dart';
 import '../../models/syllabus.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/curriculum/curriculum_search_bar.dart';
 import '../../widgets/curriculum/study_plan_banner.dart';
 import '../../widgets/curriculum/modern_subject_folder_card.dart';
-import 'subject_screen.dart';
 import '../../widgets/profile/profile_customization.dart';
 import '../../widgets/animations/apple_pressable.dart';
 import '../../services/tour/app_tour_controller.dart';
@@ -243,30 +241,13 @@ class CurriculumScreen extends ConsumerWidget {
                         final completion =
                             completionMap?[subject.id] ?? 0.0;
 
-                        final card = OpenContainer(
-                          transitionType: ContainerTransitionType.fadeThrough,
-                          transitionDuration: const Duration(milliseconds: 380),
-                          closedElevation: 0,
-                          openElevation: 0,
-                          closedColor: Colors.transparent,
-                          openColor: AppTheme.paperBackground,
-                          middleColor: AppTheme.paperBackground,
-                          closedShape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          closedBuilder: (context, openContainer) {
-                            return ModernSubjectFolderCard(
-                              subject: subject,
-                              completion: completion,
-                              onTap: () {
-                                FocusScope.of(context).unfocus();
-                                FocusManager.instance.primaryFocus?.unfocus();
-                                openContainer();
-                              },
-                            );
-                          },
-                          openBuilder: (context, closeContainer) {
-                            return SubjectScreen(subjectId: subject.id);
+                        final card = ModernSubjectFolderCard(
+                          subject: subject,
+                          completion: completion,
+                          onTap: () {
+                            FocusScope.of(context).unfocus();
+                            FocusManager.instance.primaryFocus?.unfocus();
+                            context.push('/curriculum/${subject.id}');
                           },
                         );
 
@@ -317,30 +298,13 @@ class CurriculumScreen extends ConsumerWidget {
                       final subject = sortedSubjects[index];
                       final completion = completionMap?[subject.id] ?? 0.0;
 
-                      final card = OpenContainer(
-                        transitionType: ContainerTransitionType.fadeThrough,
-                        transitionDuration: const Duration(milliseconds: 380),
-                        closedElevation: 0,
-                        openElevation: 0,
-                        closedColor: Colors.transparent,
-                        openColor: AppTheme.paperBackground,
-                        middleColor: AppTheme.paperBackground,
-                        closedShape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        closedBuilder: (context, openContainer) {
-                          return ModernSubjectFolderCard(
-                            subject: subject,
-                            completion: completion,
-                            onTap: () {
-                              FocusScope.of(context).unfocus();
-                              FocusManager.instance.primaryFocus?.unfocus();
-                              openContainer();
-                            },
-                          );
-                        },
-                        openBuilder: (context, closeContainer) {
-                          return SubjectScreen(subjectId: subject.id);
+                      final card = ModernSubjectFolderCard(
+                        subject: subject,
+                        completion: completion,
+                        onTap: () {
+                          FocusScope.of(context).unfocus();
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          context.push('/curriculum/${subject.id}');
                         },
                       );
 

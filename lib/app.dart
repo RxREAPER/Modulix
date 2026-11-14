@@ -436,13 +436,37 @@ CustomTransitionPage<void> _buildSlideUpTransitionPage({
   );
 }
 
-Page<void> _buildSlideHorizontalTransitionPage({
+CustomTransitionPage<void> _buildSlideHorizontalTransitionPage({
   required GoRouterState state,
   required Widget child,
 }) {
-  return MaterialPage<void>(
+  return CustomTransitionPage<void>(
     key: state.pageKey,
     child: RepaintBoundary(child: child),
+    transitionDuration: const Duration(milliseconds: 180),
+    reverseTransitionDuration: const Duration(milliseconds: 150),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
+      final fadeCurved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOut,
+        reverseCurve: Curves.easeIn,
+      );
+      return SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0.06, 0.0),
+          end: Offset.zero,
+        ).animate(curved),
+        child: FadeTransition(
+          opacity: fadeCurved,
+          child: child,
+        ),
+      );
+    },
   );
 }
 

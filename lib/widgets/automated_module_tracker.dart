@@ -1,4 +1,3 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,8 +7,6 @@ import '../models/app_state.dart';
 import '../models/syllabus.dart';
 import '../providers/app_state_provider.dart';
 import '../theme/app_theme.dart';
-import 'package:animations/animations.dart';
-import '../screens/curriculum/module_tasks_screen.dart';
 import 'curriculum/subject_sketch_icon.dart';
 import 'animations/apple_pressable.dart';
 
@@ -148,17 +145,13 @@ class AutomatedModuleTracker extends ConsumerWidget {
   Widget _buildEmptyModuleState(BuildContext context) {
     final isDark = AppTheme.current.isDark;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
-      child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: ApplePressable(
-          pressedScale: 0.98,
-          pressedOpacity: 0.94,
-          hapticStyle: HapticStyle.light,
-          onTap: () => context.push('/plan'),
-          borderRadius: BorderRadius.circular(22),
-          child: Container(
+    return ApplePressable(
+        pressedScale: 0.98,
+        pressedOpacity: 0.94,
+        hapticStyle: HapticStyle.light,
+        onTap: () => context.push('/plan'),
+        borderRadius: BorderRadius.circular(22),
+        child: Container(
             width: double.infinity,
             decoration: BoxDecoration(
               color: isDark
@@ -316,9 +309,7 @@ class AutomatedModuleTracker extends ConsumerWidget {
               ],
             ),
           ),
-        ),
-      ),
-    );
+        );
   }
 
   Widget _buildConfiguredModuleCard({
@@ -338,31 +329,13 @@ class AutomatedModuleTracker extends ConsumerWidget {
         .where((v) => !editionState.completedVideos.containsKey(v.id))
         .firstOrNull;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
-      child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: OpenContainer(
-          transitionType: ContainerTransitionType.fadeThrough,
-          transitionDuration: const Duration(milliseconds: 360),
-          closedElevation: 0,
-          openElevation: 0,
-          closedColor: Colors.transparent,
-          openColor: AppTheme.paperBackground,
-          middleColor: isDark ? const Color(0xFF0F172A) : AppTheme.cardWhite,
-          closedShape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
-          ),
-          openShape: const RoundedRectangleBorder(),
-          openBuilder: (context, _) => const ModuleTasksScreen(),
-          closedBuilder: (context, openContainer) {
-            return ApplePressable(
-              pressedScale: 0.98,
-              pressedOpacity: 0.94,
-              hapticStyle: HapticStyle.light,
-              onTap: openContainer,
-              borderRadius: BorderRadius.circular(22),
-              child: Container(
+    return ApplePressable(
+        pressedScale: 0.98,
+        pressedOpacity: 0.94,
+        hapticStyle: HapticStyle.light,
+        onTap: () => context.push('/module-tasks'),
+        borderRadius: BorderRadius.circular(22),
+        child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: isDark
@@ -671,10 +644,6 @@ class AutomatedModuleTracker extends ConsumerWidget {
                 ),
               ),
             );
-          },
-        ),
-      ),
-    );
   }
 
   /// Rollover check: 2 stale + 2 fresh = 4 total capped at user quota

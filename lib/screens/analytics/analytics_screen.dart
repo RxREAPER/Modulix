@@ -1,4 +1,3 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -921,31 +920,27 @@ class _TodayFocusTasksSection extends ConsumerWidget {
     final int displayDone = doneTasks;
     final int displayPending = pendingTasks;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
-      child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: Container(
-          decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF0F172A).withValues(alpha: 0.50)
-                : Colors.white.withValues(alpha: 0.70),
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.07)
-                  : Colors.black.withValues(alpha: 0.05),
-              width: 0.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.03),
-                blurRadius: 28,
-                offset: const Offset(0, 10),
-              ),
-            ],
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark
+            ? const Color(0xFF1E293B)
+            : AppTheme.cardWhite,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.05),
+          width: 0.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.03),
+            blurRadius: 28,
+            offset: const Offset(0, 10),
           ),
-          child: ApplePressable(
+        ],
+      ),
+      child: ApplePressable(
             onTap: onOpenDailyTasks,
             pressedScale: 0.99,
             borderRadius: BorderRadius.circular(22),
@@ -1052,9 +1047,7 @@ class _TodayFocusTasksSection extends ConsumerWidget {
               ),
             ),
           ),
-        ),
-      ),
-    );
+        );
   }
 }
 

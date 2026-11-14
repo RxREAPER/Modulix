@@ -10,13 +10,13 @@ class AppMetadata {
   static const String currentVersion = '1.39.0';
 
   /// Incremental integer build number.
-  static const int buildNumber = 143;
+  static const int buildNumber = 144;
 
-  /// Full formatted version string (e.g. 'v1.39.0 (Build 143)').
+  /// Full formatted version string (e.g. 'v1.39.0 (Build 144)').
   static const String fullVersionString = 'v$currentVersion (Build $buildNumber)';
 
   /// Active build checkpoint ledger ID.
-  static const String checkpoint = 'CKPT-143';
+  static const String checkpoint = 'CKPT-144';
 
   /// Official landing page & account portal URL.
   static const String websiteUrl = 'https://modulix.pages.dev';

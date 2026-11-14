@@ -3,7 +3,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:animations/animations.dart';
 import '../../models/syllabus.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/syllabus_provider.dart';
@@ -14,7 +13,6 @@ import '../../widgets/curriculum/subject_header_card.dart';
 import '../../widgets/curriculum/unit_card.dart';
 import '../../widgets/errors/app_error_state_view.dart';
 import '../../widgets/loading/app_shimmer.dart';
-import 'chapter_screen.dart';
 
 
 class SubjectScrollHelper {
@@ -598,30 +596,14 @@ class _SubjectScreenState extends ConsumerState<SubjectScreen> {
                       return KeyedSubtree(
                         key: _unitKeys[index],
                         child: RepaintBoundary(
-                          child: OpenContainer(
-                            closedElevation: 0,
-                            openElevation: 0,
-                            closedColor: Colors.transparent,
-                            openColor: AppTheme.paperBackground,
-                            middleColor: AppTheme.paperBackground,
-                            transitionType: ContainerTransitionType.fadeThrough,
-                            transitionDuration: const Duration(milliseconds: 360),
-                            closedShape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            openBuilder: (context, _) => ChapterScreen(
-                              subjectId: subject.id,
-                              chapterIndex: index,
-                            ),
-                            closedBuilder: (context, openContainer) => UnitCard(
-                              subject: subject,
-                              chapter: chapter,
-                              unitIndex: index,
-                              completedVideos: completedVideos,
-                              completedQBanks: completedQBanks,
-                              completedNotes: completedNotes,
-                              onTap: openContainer,
-                            ),
+                          child: UnitCard(
+                            subject: subject,
+                            chapter: chapter,
+                            unitIndex: index,
+                            completedVideos: completedVideos,
+                            completedQBanks: completedQBanks,
+                            completedNotes: completedNotes,
+                            onTap: () => context.push('/curriculum/${subject.id}/$index'),
                           ),
                         ),
                       );

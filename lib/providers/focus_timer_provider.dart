@@ -405,7 +405,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
           );
 
           _ticker?.cancel();
-          _ticker = Timer.periodic(const Duration(milliseconds: 200), (_) => _tick());
+          _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
           AmbientAudioService.instance.onTimerStartOrResume();
           _updateRealtimeNotification();
           if (_sessionTargetEndTime != null) {
@@ -452,7 +452,7 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
         );
 
         _ticker?.cancel();
-        _ticker = Timer.periodic(const Duration(milliseconds: 200), (_) => _tick());
+        _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
         AmbientAudioService.instance.onTimerStartOrResume();
         _updateRealtimeNotification();
       }
@@ -760,7 +760,8 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
           }
         }
       }
-      _ticker = Timer.periodic(const Duration(milliseconds: 200), (_) => _tick());
+      _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+      _tick();
       AmbientAudioService.instance.onTimerStartOrResume();
       if (newPhase == TimerPhase.focusing) {
         StudyPresenceService.instance.startFocusSession(

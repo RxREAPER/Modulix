@@ -824,28 +824,30 @@ class _HeroFocusTimerItem extends StatelessWidget {
             clipBehavior: Clip.none,
             alignment: Alignment.center,
             children: [
-              // 1. Breathing Holographic Halo Ring when session is active
+              // 1. Breathing Holographic Halo Ring when session is active (isolated in RepaintBoundary)
               if (isSessionActive)
-                AnimatedBuilder(
-                  animation: haloAnimation,
-                  builder: (context, child) {
-                    final scale = 1.0 + (haloAnimation.value * 0.32);
-                    final opacity = (1.0 - haloAnimation.value) * 0.45;
-                    return Transform.scale(
-                      scale: scale,
-                      child: Container(
-                        width: heroSize,
-                        height: heroSize,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: activeColor.withValues(alpha: opacity),
-                            width: 1.8,
+                RepaintBoundary(
+                  child: AnimatedBuilder(
+                    animation: haloAnimation,
+                    builder: (context, child) {
+                      final scale = 1.0 + (haloAnimation.value * 0.32);
+                      final opacity = (1.0 - haloAnimation.value) * 0.45;
+                      return Transform.scale(
+                        scale: scale,
+                        child: Container(
+                          width: heroSize,
+                          height: heroSize,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: activeColor.withValues(alpha: opacity),
+                              width: 1.8,
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
 
               // 2. Elevated Hero Disk

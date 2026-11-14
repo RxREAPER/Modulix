@@ -1,4 +1,3 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -196,32 +195,28 @@ class _HomeTasksSection extends ConsumerWidget {
     final completedCount = completedTasks.length;
     final isAllDone = totalCount > 0 && completedCount == totalCount;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
-      child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF0F172A).withValues(alpha: 0.38)
-                : Colors.white.withValues(alpha: 0.55),
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.07)
-                  : Colors.black.withValues(alpha: 0.05),
-              width: 0.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.04),
-                blurRadius: 18,
-                offset: const Offset(0, 4),
-              ),
-            ],
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: isDark
+            ? const Color(0xFF1E293B)
+            : AppTheme.cardWhite,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.05),
+          width: 0.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 4),
           ),
-          padding: const EdgeInsets.all(18),
+        ],
+      ),
+      padding: const EdgeInsets.all(18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -448,9 +443,7 @@ class _HomeTasksSection extends ConsumerWidget {
               ],
             ],
           ),
-        ),
-      ),
-    );
+        );
   }
 
   Widget _buildHomeTaskRow({
@@ -465,35 +458,31 @@ class _HomeTasksSection extends ConsumerWidget {
     final isDone = task.isCompleted;
     final isFocusActive = timerState.isRunning && timerState.boundTaskId == task.id;
 
-    final rowContent = ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
-          decoration: BoxDecoration(
-            color: isDark
-                ? (isDone
-                    ? const Color(0xFF0F172A).withValues(alpha: 0.30)
-                    : const Color(0xFF0F172A).withValues(alpha: 0.50))
-                : (isDone
-                    ? Colors.white.withValues(alpha: 0.45)
-                    : Colors.white.withValues(alpha: 0.70)),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isDark
-                  ? (isDone ? Colors.white.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.12))
-                  : (isDone ? Colors.white.withValues(alpha: 0.50) : Colors.white.withValues(alpha: 0.85)),
-              width: 0.75,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.03),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
-              ),
-            ],
+    final rowContent = Container(
+      decoration: BoxDecoration(
+        color: isDark
+            ? (isDone
+                ? const Color(0xFF0F172A).withValues(alpha: 0.35)
+                : const Color(0xFF0F172A).withValues(alpha: 0.65))
+            : (isDone
+                ? const Color(0xFFF1F5F9).withValues(alpha: 0.70)
+                : Colors.white),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark
+              ? (isDone ? Colors.white.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.12))
+              : (isDone ? Colors.black.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.08)),
+          width: 0.75,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.03),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -598,9 +587,7 @@ class _HomeTasksSection extends ConsumerWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
+        );
 
     final dismissibleRow = Padding(
       padding: const EdgeInsets.only(bottom: 8),

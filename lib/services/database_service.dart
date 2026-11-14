@@ -55,6 +55,17 @@ class DatabaseService {
         if (dbPath != legacyDbFile.path) {
           dbPath = newDbFile.path;
         }
+
+        // Clean up legacy database files once newDbFile exists to eliminate 30-40MB duplicate disk usage
+        if (newDbFile.existsSync() && legacyDbFile.existsSync()) {
+          try {
+            await legacyDbFile.delete();
+            final legacyWal = File('${legacyDbFile.path}-wal');
+            if (legacyWal.existsSync()) await legacyWal.delete();
+            final legacyShm = File('${legacyDbFile.path}-shm');
+            if (legacyShm.existsSync()) await legacyShm.delete();
+          } catch (_) {}
+        }
       } catch (_) {
         dbPath = inMemoryDatabasePath;
       }
@@ -69,7 +80,9 @@ class DatabaseService {
           await db.execute('PRAGMA journal_mode = WAL;');
           await db.execute('PRAGMA synchronous = NORMAL;');
           await db.execute('PRAGMA temp_store = MEMORY;');
-          await db.execute('PRAGMA cache_size = -64000;');
+          await db.execute('PRAGMA cache_size = -2000;');
+          await db.execute('PRAGMA wal_autocheckpoint = 100;');
+          await db.execute('PRAGMA auto_vacuum = INCREMENTAL;');
         } catch (_) {}
       },
       onCreate: (db, version) async {
@@ -144,6 +157,12 @@ class DatabaseService {
 
     // Run legacy migration if needed
     await _migrateLegacyPreferences(db);
+
+    // Compact storage and truncate WAL on startup to keep footprint minimal (< 1MB)
+    try {
+      await db.execute('PRAGMA wal_checkpoint(TRUNCATE);');
+      await db.execute('PRAGMA incremental_vacuum;');
+    } catch (_) {}
 
     return db;
   }
@@ -593,6 +612,15 @@ class DatabaseService {
     try {
       final db = await database;
       await db.delete('sync_outbox', where: 'status IN (?, ?)', whereArgs: ['completed', 'failed']);
+    } catch (_) {}
+  }
+
+  /// Compresses database on disk, checkpoints WAL to 0 bytes, and runs incremental vacuum.
+  Future<void> optimizeStorage() async {
+    try {
+      final db = await database;
+      await db.execute('PRAGMA wal_checkpoint(TRUNCATE);');
+      await db.execute('PRAGMA incremental_vacuum;');
     } catch (_) {}
   }
 
