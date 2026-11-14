@@ -84,8 +84,9 @@ void main() {
       findsNothing,
     );
 
-    // Requirement B: Section header is renamed to "2. Deadline Date" and card has "DEADLINE DATE"
-    expect(find.text('2. Deadline Date'), findsOneWidget);
+    // Swapped Step order: Step 2 is Unit Scope, Step 3 is Deadline Date
+    expect(find.text('2. Unit Scope'), findsOneWidget);
+    expect(find.text('3. Deadline Date'), findsOneWidget);
     expect(find.text('DEADLINE DATE'), findsOneWidget);
     expect(find.text('Target Exam Date & Pace'), findsNothing);
 

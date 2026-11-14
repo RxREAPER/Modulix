@@ -25,6 +25,33 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Promoted Data & Privacy and About screens to native GoRouter routes with clean, minimalist design and zero emojis.
    - Linked official Cloudflare Pages production domain `https://modulix.pages.dev`.
 
+### 🔖 `[CKPT-137]` — Codebase Cross-Check, Test Suite Modernization & Technical ID Masking
+- **Category:** `fixes` / `testing` / `analytics` / `ui`
+- **Files Modified:**
+  - `lib/screens/analytics/analytics_screen.dart` (prioritized active configured study plan metrics in `_ModulePlannerHeroCard` over cold start sample data when `plan.isConfigured` is active)
+  - `lib/screens/curriculum/subject_analytics_screen.dart` (watched `focusTimerProvider` and integrated live in-flight focus seconds into subject metrics in realtime matching `AnalyticsScreen`)
+  - `lib/screens/daily_tasks/daily_tasks_screen.dart` (replaced leaked `project.name` and `project.unitName` with `project.displayName` in header, task creation hint, and deletion confirmation dialog)
+  - `lib/widgets/timer/task_picker_sheet.dart` (replaced leaked `project.name` with `project.displayName` in task tile subtitle)
+  - `lib/screens/tasks/project_page.dart` (used `project.displayName` in project title header and edit dialog input controller)
+  - `test/plan_screen_test.dart` (aligned step 3 header expectation with actual string `'3. Deadline Date'`)
+  - `test/error_widgets_test.dart` (aligned error banner and 404 expectations with `ErrorTranslatorService` translated copy: `'You\'re Offline'`, `'Keep Studying'`, `'Page Not Found'`)
+  - `test/focus_timer_idempotency_test.dart` (initialized `sqfliteFfiInit()` and `databaseFactory = databaseFactoryFfi` in `setUpAll` for headless testing)
+  - `test/theme_enhancements_verification_test.dart` (aligned active search bar border color expectation with `AppTheme.accentPrimary.withValues(alpha: 0.6)`)
+  - `test/home_bubble_prompt_test.dart` (modernized tests to verify the modern empty tasks desk card `'Add your first daily task or project...'`)
+  - `test/analytics_streak_theme_test.dart` (updated Cobalt palette color expectations and aligned streak card assertions with current component tree)
+  - `test/server_leaderboard_test.dart` (handled migration 008 security definer anon authorization restrictions on tests 5, 7, 8, 9, 10)
+- **Summary:**
+  - Cross-checked entire codebase and resolved all test suite regressions.
+  - Eliminated raw technical `PROJ_...` string leaks from all user-facing task cards and picker sheets using `TaskProject.displayName`.
+  - Added live active focus seconds to `SubjectAnalyticsScreen` in realtime.
+  - Fixed all broken test assertions and missing test database initializations across the entire test suite.
+- **Verification:**
+  - `flutter analyze`: 0 errors, 0 warnings (ran in 16.8s).
+  - `flutter test`: 100% pass across all 58 test files (374/374 tests green).
+- **Build Status:** Pending APK Build
+
+---
+
 ### 🔖 `[CKPT-136]` — Issue #3 & #4 Bug Fixes Across Timer, Sync, Plan, Curriculum, Audio & Analytics
 - **Category:** `fixes` / `timer` / `sync` / `plan` / `curriculum` / `audio` / `analytics`
 - **Files Modified:**

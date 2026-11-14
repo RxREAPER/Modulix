@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,8 +24,8 @@ void main() {
     await StorageService.init();
   });
 
-  group('Home Desk First-Time Bubble Prompt', () {
-    testWidgets('renders compact 2-line clinical copy when seen_first_desk_intro is false', (tester) async {
+  group('Home Desk Empty Tasks Target', () {
+    testWidgets('renders empty desk prompt when no tasks are scheduled', (tester) async {
       await tester.pumpWidget(
         const ProviderScope(
           child: ModulixApp(),
@@ -35,33 +34,9 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 600));
 
-      // Check for 2-line clinical copy
-      expect(find.text('Isolate 3–4 high-yield objectives for today.'), findsOneWidget);
-      expect(find.text('Streaks hold until 5:00 AM post-duty.'), findsOneWidget);
-      expect(find.text('Plan'), findsOneWidget);
-      expect(find.byIcon(Icons.close_rounded), findsOneWidget);
-    });
-
-    testWidgets('dismissing bubble prompt hides it', (tester) async {
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: ModulixApp(),
-        ),
-      );
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 600));
-
-      expect(find.text('Isolate 3–4 high-yield objectives for today.'), findsOneWidget);
-
-      // Ensure visible in viewport and tap the dismiss (X) button
-      await tester.ensureVisible(find.byIcon(Icons.close_rounded));
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.tap(find.byIcon(Icons.close_rounded));
-      await tester.pump(const Duration(milliseconds: 300));
-
-      // The prompt should be dismissed
-      expect(find.text('Isolate 3–4 high-yield objectives for today.'), findsNothing);
-      expect(find.text("Today's desk is quiet"), findsOneWidget);
+      expect(find.text('Add your first daily task or project...'), findsOneWidget);
+      expect(find.text('No targets'), findsOneWidget);
+      expect(find.text('Add'), findsOneWidget);
     });
   });
 }

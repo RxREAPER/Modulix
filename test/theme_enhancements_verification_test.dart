@@ -77,7 +77,7 @@ void main() {
       final focusedDecoration = focusedContainer.decoration as BoxDecoration;
 
       // Active border illuminates in active secondary accent (Medical Teal)
-      expect(focusedDecoration.border?.top.color, equals(AppTheme.accentPrimary));
+      expect(focusedDecoration.border?.top.color, equals(AppTheme.accentPrimary.withValues(alpha: 0.6)));
     });
   });
 

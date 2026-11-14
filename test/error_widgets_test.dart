@@ -36,10 +36,10 @@ void main() {
         ),
       );
 
-      expect(find.text('Offline Mode Active'), findsOneWidget);
-      expect(find.text('Got It'), findsOneWidget);
+      expect(find.text("You're Offline"), findsOneWidget);
+      expect(find.text('Keep Studying'), findsOneWidget);
 
-      await tester.tap(find.text('Got It'));
+      await tester.tap(find.text('Keep Studying'));
       await tester.pump();
 
       expect(retried, isTrue);
@@ -82,7 +82,7 @@ void main() {
         ),
       );
 
-      expect(find.text('Destination Not in Syllabus'), findsOneWidget);
+      expect(find.text('Page Not Found'), findsOneWidget);
       expect(find.text('Return to Home Desk'), findsOneWidget);
     });
   });

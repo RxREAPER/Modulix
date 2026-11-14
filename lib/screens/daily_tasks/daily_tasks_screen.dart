@@ -692,7 +692,7 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      project.unitName ?? project.name,
+                      project.displayName,
                       style: TextStyle(
                         fontSize: 16.5,
                         fontWeight: FontWeight.w700,
@@ -835,7 +835,7 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                         color: AppTheme.inkForeground,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Add task to ${project.unitName ?? project.name}...',
+                        hintText: 'Add task to ${project.displayName}...',
                         hintStyle: TextStyle(
                           fontSize: 13.5,
                           color: AppTheme.mutedText.withValues(alpha: 0.6),
@@ -909,7 +909,7 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.inkForeground),
         ),
         content: Text(
-          'Remove "${project.name}" and its tasks?',
+          'Remove "${project.displayName}" and its tasks?',
           style: TextStyle(fontSize: 14, color: AppTheme.mutedText),
         ),
         actions: [

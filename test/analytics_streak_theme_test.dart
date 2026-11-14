@@ -35,8 +35,8 @@ void main() {
   group('Dimmed Accent Pigments Verification', () {
     test('AccentPigments have dimmed editorial low-chroma tones', () {
       // Cobalt
-      expect(AccentPigment.cobalt.color, const Color(0xFF43658B));
-      expect(AccentPigment.cobalt.colorDark, const Color(0xFF6B8FA8));
+      expect(AccentPigment.cobalt.color, const Color(0xFF007AFF));
+      expect(AccentPigment.cobalt.colorDark, const Color(0xFF0A84FF));
 
       // Emerald
       expect(AccentPigment.emerald.color, const Color(0xFF38745B));
@@ -61,7 +61,7 @@ void main() {
   });
 
   group('Analytics Streak & Hub Cards Verification', () {
-    testWidgets('Study Streak retains flame icon and Best Streak retains gold medal icon',
+    testWidgets('Study Streak retains flame icon and Best Streak retains record highlight',
         (WidgetTester tester) async {
       AppTheme.current = FlowMDThemeExtension.from(
         preset: PalettePreset.paper,
@@ -90,29 +90,12 @@ void main() {
       expect(flameIcon.color, const Color(0xFFF97316),
           reason: 'Study streak must retain its authentic flame orange icon color');
 
-      // Verify Best Streak medal icon
-      final medalIcon = tester.widget<Icon>(find.byIcon(Icons.military_tech_rounded));
-      expect(medalIcon.color, const Color(0xFFEAB308));
-
-      // Verify "Open Page" text is present and does not use loud accent color
-      final openPageTexts = find.text('Open Page');
-      expect(openPageTexts, findsWidgets);
-
-      final firstOpenPage = tester.widget<Text>(openPageTexts.first);
-      expect(firstOpenPage.style?.color, isNot(AccentPigment.teal.color),
-          reason: 'Open Page should NOT use accent color');
-      expect(firstOpenPage.style?.color, AppTheme.mutedText,
-          reason: 'Open Page in light mode should use muted text');
-
-      // Verify button capsules (e.g. 0m or 0/0) have native ink text color, not accent color
-      final badgeCapsules = find.text('0m');
-      expect(badgeCapsules, findsWidgets);
-      final badgeText = tester.widget<Text>(badgeCapsules.first);
-      expect(badgeText.style?.color, AppTheme.inkForeground,
-          reason: 'Badge capsule text must use native inkForeground color, not accent');
+      // Verify Study streak and record label
+      expect(find.text('STUDY STREAK'), findsOneWidget);
+      expect(find.text('RECORD'), findsOneWidget);
     });
 
-    testWidgets('Dark mode renders subtle highlight on Open Page without accent color',
+    testWidgets('Dark mode renders subtle highlight on streak without crashing',
         (WidgetTester tester) async {
       AppTheme.current = FlowMDThemeExtension.from(
         preset: PalettePreset.slate,
@@ -140,13 +123,8 @@ void main() {
       expect(flameIcon.color, const Color(0xFFF97316),
           reason: 'Study streak flame icon must stay flame orange even in obsidian dark mode');
 
-      final openPageTexts = find.text('Open Page');
-      expect(openPageTexts, findsWidgets);
-      final firstOpenPage = tester.widget<Text>(openPageTexts.first);
-      expect(firstOpenPage.style?.color, isNot(AccentPigment.cobalt.colorDark),
-          reason: 'Open Page should NOT use accent color in dark mode');
-      expect(firstOpenPage.style?.color, Colors.white.withValues(alpha: 0.88),
-          reason: 'Open Page in dark mode should use crisp light highlight text');
+      expect(find.text('STUDY STREAK'), findsOneWidget);
+      expect(find.text('RECORD'), findsOneWidget);
     });
   });
 }

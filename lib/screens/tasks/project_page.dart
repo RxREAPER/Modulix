@@ -41,7 +41,7 @@ class _ProjectPageState extends ConsumerState<ProjectPage> {
   }
 
   void _showEditProjectDialog(TaskProject project) {
-    final titleController = TextEditingController(text: project.name);
+    final titleController = TextEditingController(text: project.displayName);
     DateTime? deadline = project.deadline;
     int pace = project.perDayModules ?? 2;
 
@@ -351,7 +351,7 @@ class _ProjectPageState extends ConsumerState<ProjectPage> {
 
                           // Project Title
                           Text(
-                            project.name,
+                            project.displayName,
                             style: const TextStyle(
                               fontSize: 26,
                               fontWeight: FontWeight.w700,

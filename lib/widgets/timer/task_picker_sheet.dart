@@ -350,7 +350,7 @@ class _TaskPickerSheetState extends ConsumerState<TaskPickerSheet>
                             if (project != null) ...[
                               const SizedBox(height: 3),
                               Text(
-                                project.name,
+                                project.displayName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:modulix/providers/app_state_provider.dart';
 import 'package:modulix/providers/focus_timer_provider.dart';
 import 'package:modulix/services/storage_service.dart';
@@ -8,6 +9,11 @@ import 'package:modulix/services/metrics_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  });
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});

@@ -309,17 +309,25 @@ class AnalyticsScreen extends ConsumerWidget {
             // 1. Module Planner Hero Card (Reference Image 2 & 3 style)
             _ModulePlannerHeroCard(
               key: TourTargetRegistry.keyFor(TourTargetId.analyticsModuleHub),
-              subjectName: isColdStart ? 'Anatomy' : planSubjectName,
-              progress: isColdStart ? 0.45 : planProgress,
-              completedVideos: isColdStart ? 36 : planCompletedVideos,
-              totalVideos: isColdStart ? 80 : planTotalVideos,
-              dailyTarget: isColdStart ? '4 vids' : (plan.isConfigured ? '${plan.videosPerDay ?? 4} vids' : '--'),
-              deadline: isColdStart
-                  ? '30 Nov'
-                  : (plan.isConfigured
-                      ? DateFormat('d MMM').format(DateTime.tryParse(plan.targetDate) ?? DateTime.now())
-                      : '--'),
-              isConfigured: isColdStart || plan.isConfigured,
+              subjectName: plan.isConfigured
+                  ? planSubjectName
+                  : (isColdStart ? 'Anatomy' : planSubjectName),
+              progress: plan.isConfigured
+                  ? planProgress
+                  : (isColdStart ? 0.45 : planProgress),
+              completedVideos: plan.isConfigured
+                  ? planCompletedVideos
+                  : (isColdStart ? 36 : planCompletedVideos),
+              totalVideos: plan.isConfigured
+                  ? planTotalVideos
+                  : (isColdStart ? 80 : planTotalVideos),
+              dailyTarget: plan.isConfigured
+                  ? '${plan.videosPerDay ?? 4} vids'
+                  : (isColdStart ? '4 vids' : '--'),
+              deadline: plan.isConfigured
+                  ? DateFormat('d MMM').format(DateTime.tryParse(plan.targetDate) ?? DateTime.now())
+                  : (isColdStart ? '30 Nov' : '--'),
+              isConfigured: plan.isConfigured || isColdStart,
               onTap: () => context.push('/analytics/plan-insights'),
             ),
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../providers/focus_timer_provider.dart';
 import '../../providers/syllabus_provider.dart';
 import '../../providers/time_log_provider.dart';
 import '../../theme/app_theme.dart';
@@ -22,6 +23,7 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final subjectAsync = ref.watch(subjectProvider(subjectId));
     final timeLogs = ref.watch(timeLogsProvider);
+    final activeTimer = ref.watch(focusTimerProvider);
     final subjectLogs = timeLogs.where((l) => l.subjectId == subjectId).toList();
 
     return subjectAsync.when(
@@ -79,6 +81,27 @@ class SubjectAnalyticsScreen extends ConsumerWidget {
               break;
             default:
               standaloneSecs += l.durationSecs;
+          }
+        }
+
+        // Include active in-flight focus session realtime progress if matching this subject
+        final matchesSubject = activeTimer.focusSecondsElapsed > 0 &&
+            !activeTimer.isBreak &&
+            (activeTimer.subjectId == subjectId ||
+                activeTimer.subjectName.trim().toLowerCase() ==
+                    subject.displayName.trim().toLowerCase());
+        if (matchesSubject) {
+          final activeSecs = activeTimer.focusSecondsElapsed;
+          final lowerTitle = activeTimer.topicTitle.toLowerCase();
+          final lowerType = activeTimer.topicType.toLowerCase();
+          if (lowerType.contains('qbank') || lowerTitle.contains('mcq')) {
+            qbankSecs += activeSecs;
+          } else if (lowerType.contains('note') || lowerTitle.contains('read')) {
+            notesSecs += activeSecs;
+          } else if (lowerType.contains('video') || lowerTitle.contains('vid')) {
+            videoSecs += activeSecs;
+          } else {
+            standaloneSecs += activeSecs;
           }
         }
 
