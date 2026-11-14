@@ -61,6 +61,10 @@ class LovableNavBar extends StatefulWidget {
     this.isVisible = true,
   });
 
+  /// Debounce flag visible for test harnesses to avoid wall-clock race conditions in simulated environments
+  @visibleForTesting
+  static bool enableDebounce = true;
+
   @override
   State<LovableNavBar> createState() => _LovableNavBarState();
 }
@@ -260,7 +264,7 @@ class _LovableNavBarState extends State<LovableNavBar>
 
   void _onSlotTapped(int slotIndex, double slotWidth, double totalWidth, bool hasTasksTab) {
     final now = DateTime.now().millisecondsSinceEpoch;
-    if (now - _lastTapTimestamp < 70) return;
+    if (LovableNavBar.enableDebounce && now - _lastTapTimestamp < 70) return;
     _lastTapTimestamp = now;
 
     _glideToSlot(slotIndex, slotWidth, totalWidth);

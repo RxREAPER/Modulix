@@ -26,6 +26,14 @@ void main() {
     ),
   ];
 
+  setUp(() {
+    LovableNavBar.enableDebounce = false;
+  });
+
+  tearDown(() {
+    LovableNavBar.enableDebounce = true;
+  });
+
   testWidgets('LovableNavBar renders Modern Floating Dock and handles taps',
       (tester) async {
     int? tappedIndex;

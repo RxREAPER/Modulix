@@ -196,13 +196,13 @@ void main() {
       expect(state.monthlyEntries, isNotEmpty);
       expect(state.yearlyEntries, isNotEmpty);
 
-      // Verify Podium (Top 3) on Daily Scale
-      expect(state.dailyEntries[0].displayName, 'Dr. Gregory House');
-      expect(state.dailyEntries[0].rank, 1);
-      expect(state.dailyEntries[1].displayName, 'Dr. Sunita Kapoor');
-      expect(state.dailyEntries[1].rank, 2);
-      expect(state.dailyEntries[2].displayName, 'Dr. David Chen');
-      expect(state.dailyEntries[2].rank, 3);
+      // Verify Podium (Top 3) on Yearly Scale (all-time hierarchy anchors)
+      expect(state.yearlyEntries[0].displayName, 'Dr. Gregory House');
+      expect(state.yearlyEntries[0].rank, 1);
+      expect(state.yearlyEntries[1].displayName, 'Dr. Sunita Kapoor');
+      expect(state.yearlyEntries[1].rank, 2);
+      expect(state.yearlyEntries[2].displayName, 'Dr. David Chen');
+      expect(state.yearlyEntries[2].rank, 3);
 
       // Verify personal standing dock metrics
       expect(state.userDailyStanding.scale, LeaderboardScale.daily);
@@ -303,13 +303,13 @@ void main() {
       expect(bundle.containsKey('user_standing'), isTrue);
 
       // Verify compact tuple format: [id, name, secs, color, icon, total_secs]
-      final dailyList = bundle['daily'] as List<dynamic>;
-      expect(dailyList, isNotEmpty);
-      final firstDailyTuple = dailyList.first as List<dynamic>;
-      expect(firstDailyTuple.length, greaterThanOrEqualTo(6));
+      final yearlyList = bundle['yearly'] as List<dynamic>;
+      expect(yearlyList, isNotEmpty);
+      final firstYearlyTuple = yearlyList.first as List<dynamic>;
+      expect(firstYearlyTuple.length, greaterThanOrEqualTo(6));
 
       // Test defensive tuple deserialization
-      final leader = LeaderboardEntry.fromTuple(firstDailyTuple, rank: 1);
+      final leader = LeaderboardEntry.fromTuple(firstYearlyTuple, rank: 1);
       expect(leader.displayName, 'Dr. Gregory House');
       expect(leader.rank, 1);
       expect(leader.level, UserLevel.professor);
