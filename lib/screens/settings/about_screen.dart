@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../config/app_metadata.dart';
+import '../../services/update_service.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/modulix_theme.dart';
 import '../../widgets/animations/apple_pressable.dart';
@@ -15,9 +17,9 @@ import '../../widgets/feedback/modulix_toast.dart';
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
-  static const String appVersion = 'v1.36.0 (Build 36)';
-  static const String websiteUrl = 'https://modulix.pages.dev';
-  static const String supportEmail = 'support@modulix.app';
+  static const String appVersion = AppMetadata.fullVersionString;
+  static const String websiteUrl = AppMetadata.websiteUrl;
+  static const String supportEmail = AppMetadata.supportEmail;
 
   Future<void> _openWebsite(BuildContext context) async {
     HapticFeedback.lightImpact();
@@ -73,6 +75,16 @@ class AboutScreen extends StatelessWidget {
       'Track your NEET-PG clinical prep with Modulix: $websiteUrl',
       subject: 'Modulix NEET-PG Study Companion',
     );
+  }
+
+  Future<void> _openChangelog(BuildContext context) async {
+    HapticFeedback.lightImpact();
+    final uri = Uri.parse('$websiteUrl/#/updates');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {}
   }
 
   @override
@@ -197,6 +209,40 @@ class AboutScreen extends StatelessWidget {
                   title: 'Contact Support',
                   subtitle: supportEmail,
                   onTap: () => _openEmailSupport(context),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // ── Updates & Release ──────────────────────────────────────────────
+          _sectionHeader(context, 'UPDATES & RELEASE'),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: activeTheme.cardBackground,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: activeTheme.borderSubtle, width: 1.2),
+            ),
+            child: Column(
+              children: [
+                _actionRow(
+                  context: context,
+                  icon: Icons.system_update_alt_rounded,
+                  iconColor: const Color(0xFF3B82F6),
+                  title: 'Check for Updates',
+                  subtitle: 'Discover releases & website downloads',
+                  onTap: () => UpdateService.checkForUpdatesManual(context),
+                ),
+                _rowDivider(context),
+                _actionRow(
+                  context: context,
+                  icon: Icons.history_rounded,
+                  iconColor: const Color(0xFF8B5CF6),
+                  title: 'Changelog',
+                  subtitle: '${AppMetadata.checkpoint} release notes',
+                  onTap: () => _openChangelog(context),
                 ),
               ],
             ),

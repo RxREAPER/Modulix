@@ -47,7 +47,22 @@ Decide how much testing to do based on the size of the request:
 
 ### D. Defensive Model & State Deserialization
 - Never perform unsafe casts like `json['field'] as int` or `json['field'] as String`.
-- For numbers: use `(json['field'] as num?)?.toInt()` or `(json['field'] as num?)?.toDouble()`.
-- For strings: use `json['field']?.toString() ?? 'fallback'`.
-- For lists and maps: safely fold or map elements with `.toString()` / null checks to prevent unhandled runtime `TypeError` crashes.
+## 5. Ecosystem & Lifecycle Invariants
+
+### A. Master Reference
+- Read `docs/ECOSYSTEM.md` whenever working across multi-repo, backend, sync, or release boundaries.
+
+### B. Version Single Source of Truth
+- Never hardcode version strings in UI widgets or screens. Always consume `AppMetadata` (`lib/config/app_metadata.dart`) or `constants.ts`.
+
+### C. Strict No In-App Downloads Policy
+- All app update notifications MUST redirect to `AppMetadata.websiteUrl` (`https://modulix.pages.dev`) via external browser launch.
+- Never implement in-app APK downloads or internal package installers.
+
+### D. Unified Release Tool
+- Use `./tool/release.sh <version> "<summary>"` for compiling, signing, publishing GitHub releases, and deploying to Cloudflare Pages in one automated step.
+
+### E. SQLite Database & Sync Integrity
+- Never drop production SQLite columns or alter schema without an incremental version migration in `DatabaseService.dart`.
+- Always preserve the single-active-device lock and outbox DLQ mechanisms in `SyncService.dart`.
 

@@ -24,6 +24,27 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 4. **Minimal Native Settings & About Sub-Pages (`[CKPT-132]`, `[CKPT-133]`):**
    - Promoted Data & Privacy and About screens to native GoRouter routes with clean, minimalist design and zero emojis.
    - Linked official Cloudflare Pages production domain `https://modulix.pages.dev`.
+### 🔖 `[CKPT-141]` — Ecosystem Architecture, Remote In-App Update Engine & 1-Command Release CLI
+- **Category:** `architecture` / `ecosystem` / `release` / `dx`
+- **Files Modified:**
+  - `lib/config/app_metadata.dart` (created single source of truth for app metadata, version `1.38.0`, build `140`, release tag `v1.38.0`, checkpoint `CKPT-140`, and official endpoints)
+  - `lib/services/update_service.dart` (engineered remote version discovery against GitHub Releases API with 24h throttling, zero in-app downloads, and external web redirect to `https://modulix.pages.dev`)
+  - `lib/screens/settings/about_screen.dart` (bound version metadata dynamically to `AppMetadata.fullVersionString`, added interactive "Check for Updates" and "Changelog" action rows)
+  - `test/update_service_test.dart` (created comprehensive unit tests validating semantic version comparison, metadata consistency, and edge case safety - 8/8 tests passing)
+  - `tool/release.sh` (built unified release CLI orchestrating static analysis, testing, version synchronization across Flutter and Web, signed production compilation, apksigner verification, GitHub release publishing, Cloudflare Pages deployment, and checkpoint tracking)
+  - `.github/workflows/ci.yml` (pinned Flutter SDK to 3.47.4, added `--no-fatal-infos` to prevent false-positive deprecation breaks)
+  - `.github/workflows/build_apk.yml` (pinned Flutter SDK to 3.47.4, added `--android-skip-build-dependency-validation`)
+  - `docs/ECOSYSTEM.md` (authored comprehensive master architectural manual detailing topology, offline SQLite schemas, cloud sync protocols, keystore security, and AI agent operating protocols)
+  - `AGENTS.md` (incorporated Section 5 Ecosystem & Lifecycle Invariants across root and Flutter workspaces)
+- **Summary:**
+  - Standardized the entire Modulix multi-platform ecosystem for future releases, automated deployments, and persistent AI pair-programming context.
+  - Users on installed APKs can now discover new releases directly from the About screen and receive non-intrusive update notifications that redirect to the official website.
+  - Releases can now be compiled, verified, tagged, and published to GitHub and Cloudflare in one single command (`./tool/release.sh <version> "<summary>"`).
+- **Verification:**
+  - `flutter analyze --no-fatal-infos`: 0 issues found across entire codebase (ran in 25.5s).
+  - `flutter test test/update_service_test.dart`: 100% pass (8/8 unit tests).
+  - `./tool/release.sh 1.38.0 "Test dry run execution" --dry-run`: Verified all 7 pipeline steps.
+
 ### 🔖 `[CKPT-140]` — GitHub Production Release v1.38.0 & Cloudflare Landing Page APK Distribution
 - **Category:** `release` / `web` / `distribution`
 - **Files Modified:**
