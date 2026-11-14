@@ -18,6 +18,7 @@ class Video {
   final int durationSecs;
   final int serialNumber;
   final int? assignedNumber;
+  final String editionId;
 
   const Video({
     required this.id,
@@ -28,9 +29,10 @@ class Video {
     this.durationSecs = 0,
     required this.serialNumber,
     this.assignedNumber,
+    this.editionId = 'marrow_8',
   });
 
-  factory Video.fromMap(Map<String, dynamic> map, String subjectId, [String? fallbackChapterName]) {
+  factory Video.fromMap(Map<String, dynamic> map, String subjectId, [String? fallbackChapterName, String editionId = 'marrow_8']) {
     final assignedNo = map['assignedNumber'] != null ? _safeInt(map['assignedNumber']) : null;
     final rawVideoNumber = map['videoNumber']?.toString() ?? '';
     int parsedNumber = 0;
@@ -50,18 +52,21 @@ class Video {
       }
     }
 
-    final rawChapter = map['chapterName']?.toString() ?? '';
-    final resolvedChapter = rawChapter.isNotEmpty ? rawChapter : (fallbackChapterName ?? '');
+    final rawChapter = map['chapterName']?.toString().trim() ?? '';
+    final resolvedChapter = rawChapter.isNotEmpty ? rawChapter : (fallbackChapterName?.trim() ?? '');
+    final rawTitle = map['title']?.toString().trim() ?? '';
+    final rawId = map['id']?.toString().trim() ?? '';
 
     return Video(
-      id: map['id']?.toString() ?? '',
-      title: map['title']?.toString() ?? '',
-      subjectId: subjectId,
+      id: rawId,
+      title: rawTitle,
+      subjectId: subjectId.trim(),
       chapterName: resolvedChapter,
       durationMins: _safeInt(map['durationMins']),
       durationSecs: _safeInt(map['durationSecs']),
-      serialNumber: assignedNo ?? parsedNumber,
+      serialNumber: assignedNo ?? (parsedNumber > 0 ? parsedNumber : 1),
       assignedNumber: assignedNo,
+      editionId: editionId,
     );
   }
 
@@ -83,6 +88,7 @@ class QBankTopic {
   final int totalMcqs;
   final int serialNumber;
   final int? assignedNumber;
+  final String editionId;
 
   const QBankTopic({
     required this.id,
@@ -92,19 +98,26 @@ class QBankTopic {
     required this.totalMcqs,
     required this.serialNumber,
     this.assignedNumber,
+    this.editionId = 'qbank',
   });
 
-  factory QBankTopic.fromMap(Map<String, dynamic> map, String subjectId, [String? fallbackChapterName]) {
+  factory QBankTopic.fromMap(Map<String, dynamic> map, String subjectId, [String? fallbackChapterName, String editionId = 'qbank']) {
     final assignedNo = map['assignedNumber'] != null ? _safeInt(map['assignedNumber']) : null;
-    final sNo = _safeInt(map['serialNumber'], assignedNo ?? 0);
+    final sNo = _safeInt(map['serialNumber'], assignedNo ?? 1);
+    final rawTitle = map['title']?.toString().trim() ?? '';
+    final rawId = map['id']?.toString().trim() ?? '';
+    final rawChapter = map['chapterName']?.toString().trim() ?? '';
+    final resolvedChapter = rawChapter.isNotEmpty ? rawChapter : (fallbackChapterName?.trim() ?? '');
+
     return QBankTopic(
-      id: map['id']?.toString() ?? '',
-      title: map['title']?.toString() ?? '',
-      subjectId: subjectId,
-      chapterName: (map['chapterName']?.toString()) ?? (fallbackChapterName ?? ''),
+      id: rawId,
+      title: rawTitle,
+      subjectId: subjectId.trim(),
+      chapterName: resolvedChapter,
       totalMcqs: _safeInt(map['totalMcqs']),
-      serialNumber: sNo,
+      serialNumber: sNo > 0 ? sNo : (assignedNo ?? 1),
       assignedNumber: assignedNo ?? sNo,
+      editionId: editionId,
     );
   }
 }
@@ -224,6 +237,7 @@ class Subject {
   final List<Chapter> chapters;
   final List<Chapter> qbankChapters;
   final Color accent;
+  final String editionId;
 
   const Subject({
     required this.id,
@@ -232,6 +246,7 @@ class Subject {
     required this.chapters,
     this.qbankChapters = const [],
     required this.accent,
+    this.editionId = 'marrow_8',
   });
 
   Color get accentColor => accent;

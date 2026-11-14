@@ -24,6 +24,7 @@ const Map<String, String> kSubjectYearMap = {
   'community_medicine': '3rd Year',
   'ophthalmology': '3rd Year',
   'otorhinolaryngology__ent_': '3rd Year',
+  'ent': '3rd Year',
 
   // Final Year
   'medicine': 'Final Year',
@@ -38,6 +39,7 @@ const Map<String, String> kSubjectYearMap = {
 
   // Revision
   'revision_videos': 'Revision',
+  'e6_5_revision_videos': 'Revision',
 };
 
 const List<String> kCurriculumYears = [

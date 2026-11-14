@@ -3,7 +3,7 @@
 > **Official Verified NEET-PG Q-Bank Directory**
 > * **19 Subjects** · **835 Topics** · **16,155 MCQs**
 > * **100% Verified Gapless** against original Marrow App screenshots.
-> * **Permanent Assigned Numbers**: In accordance with Modulix Q-Bank architecture, topic serial numbers (`#`) are permanent assigned IDs and remain strictly immutable.
+> * **Permanent Assigned Numbers**: In accordance with FlowMD Q-Bank architecture, topic serial numbers (`#`) are permanent assigned IDs and remain strictly immutable.
 
 ---
 

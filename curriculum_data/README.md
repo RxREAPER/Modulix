@@ -1,6 +1,6 @@
-# Modulix NEET-PG Curriculum & Q-Bank Master Archive
+# FlowMD NEET-PG Curriculum & Q-Bank Master Archive
 
-This directory serves as the **single source of truth** for all video curriculum and Q-Bank datasets used across Modulix (both the Flutter mobile application and the Web platform).
+This directory serves as the **single source of truth** for all video curriculum and Q-Bank datasets used across FlowMD (both the Flutter mobile application and the Web platform).
 
 It automates and standardizes curriculum compilation, eliminating manual compilation errors, broken numbering sequences, or divergent data files between platforms.
 
@@ -120,9 +120,9 @@ This single command automatically updates:
    - `lib/data/syllabus_marrow65.dart`
    - `lib/data/syllabus_qbank.dart`
 2. **Web Application**:
-   - `Modulix_web/data.js`
-   - `Modulix_web/data_marrow_6_5.js`
-   - `Modulix_web/data_qbank.js`
+   - `FlowMD_web/data.js`
+   - `FlowMD_web/data_marrow_6_5.js`
+   - `FlowMD_web/data_qbank.js`
 3. **Markdown Documentation**:
    - `curriculum_data/EDITION_8_CURRICULUM.md`
    - `curriculum_data/EDITION_6_5_CURRICULUM.md`

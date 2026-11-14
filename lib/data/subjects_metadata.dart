@@ -164,6 +164,21 @@ const _subjectMetaMap = <String, SubjectMeta>{
     icon: Icons.replay_rounded,
     displayName: 'Revision Videos',
   ),
+  // Edition 6.5 aliases
+  'ent': SubjectMeta(
+    accent: Color(0xFF84CC16),
+    bgLight: Color(0xFFF7FEE7),
+    bgDark: Color(0xFF1A2E05),
+    icon: Icons.hearing_rounded,
+    displayName: 'ENT',
+  ),
+  'e6_5_revision_videos': SubjectMeta(
+    accent: Color(0xFF6C3BAA),
+    bgLight: Color(0xFFF5F3FF),
+    bgDark: Color(0xFF2E1065),
+    icon: Icons.replay_rounded,
+    displayName: 'Revision Videos',
+  ),
 };
 
 SubjectMeta subjectMeta(String subjectId) {
@@ -235,8 +250,8 @@ final Map<String, List<Chapter>> _qbankChaptersMap = () {
 
 // ─── Loaders ─────────────────────────────────────────────────────────────
 
-List<Subject> loadMarrow8Syllabus() => _buildSubjectsFromRaw(marrow8Raw);
-List<Subject> loadMarrow65Syllabus() => _buildSubjectsFromRaw(marrow65Raw);
+List<Subject> loadMarrow8Syllabus() => _buildSubjectsFromRaw(marrow8Raw, 'marrow_8');
+List<Subject> loadMarrow65Syllabus() => _buildSubjectsFromRaw(marrow65Raw, 'marrow_6_5');
 
 String _canonicalChapterKey(String name) {
   final clean = name.toLowerCase().replaceAll(RegExp(r'^(the|a|an)\s+'), '').trim();
@@ -305,7 +320,7 @@ const _clinicalSystemSynonyms = <String, List<String>>{
   'generalgynaecology': ['instruments'],
 };
 
-List<Subject> _buildSubjectsFromRaw(List<Map<String, dynamic>> raw) {
+List<Subject> _buildSubjectsFromRaw(List<Map<String, dynamic>> raw, [String editionId = 'marrow_8']) {
   return raw.map((subjectMap) {
     final id = subjectMap['id'] as String;
     final name = subjectMap['subject'] as String? ?? id;
@@ -313,7 +328,8 @@ List<Subject> _buildSubjectsFromRaw(List<Map<String, dynamic>> raw) {
     final chaptersRaw =
         (subjectMap['chapters'] as List<dynamic>?) ?? [];
 
-    final qbankChapters = _qbankChaptersMap[id] ?? const <Chapter>[];
+    final qbSubjectId = id == 'ent' ? 'otorhinolaryngology__ent_' : id;
+    final qbankChapters = _qbankChaptersMap[qbSubjectId] ?? const <Chapter>[];
     final matchedQBankNames = <String>{};
 
     final videoChapters = chaptersRaw.asMap().entries.map((chEntry) {
@@ -323,7 +339,7 @@ List<Subject> _buildSubjectsFromRaw(List<Map<String, dynamic>> raw) {
       final videosRaw =
           (chapterMap['videos'] as List<dynamic>?) ?? [];
       final videos = videosRaw
-          .map((vMap) => Video.fromMap(vMap as Map<String, dynamic>, id, chapterName))
+          .map((vMap) => Video.fromMap(vMap as Map<String, dynamic>, id, chapterName, editionId))
           .toList();
 
       // Find matching Q-Bank topics for this chapter
@@ -412,6 +428,7 @@ List<Subject> _buildSubjectsFromRaw(List<Map<String, dynamic>> raw) {
       chapters: allChapters,
       qbankChapters: qbankChapters,
       accent: meta.accent,
+      editionId: editionId,
     );
   }).toList();
 }

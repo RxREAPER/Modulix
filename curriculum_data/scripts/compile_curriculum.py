@@ -2,6 +2,7 @@
 """
 compile_curriculum.py
 Single source of truth compilation script:
+- Enforces strict prerequisite verification via verify_curriculum.verify_all()
 - Reads raw/edition_8.json, raw/edition_6_5.json, and raw/qbank.json
 - Exports to Flutter Dart data files (syllabus_marrow8.dart, syllabus_marrow65.dart, syllabus_qbank.dart)
 - Exports to Web JavaScript files (data.js, data_marrow_6_5.js, data_qbank.js)
@@ -18,17 +19,24 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(SCRIPT_DIR)
 RAW_DIR = os.path.join(BASE_DIR, 'raw')
 
+# Ensure script dir is on sys.path to import verify_curriculum
+if SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, SCRIPT_DIR)
+import verify_curriculum
+
 FLUTTER_DATA_DIRS = [
-    os.path.join(os.path.dirname(BASE_DIR), 'lib', 'data'),
-    '/home/safi/Documents/flowmd_flutter/lib/data'
+    '/home/safi/Downloads/antigravity/flowmd_flutter/lib/data',
+    '/home/safi/Documents/flowmd_flutter/lib/data',
 ]
+
 WEB_DATA_DIRS = [
-    os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'Modulix_web'),
-    '/home/safi/SAFI/Modulix_web'
+    '/home/safi/SAFI/FlowMD_web',
+    '/home/safi/SAFI/Modulix_web',
 ]
+
 FLUTTER_CURRICULUM_DIRS = [
-    BASE_DIR,
-    '/home/safi/Documents/flowmd_flutter/curriculum_data'
+    '/home/safi/Downloads/antigravity/flowmd_flutter/curriculum_data',
+    '/home/safi/Documents/flowmd_flutter/curriculum_data',
 ]
 
 def load_json(name):
@@ -161,7 +169,7 @@ def generate_dart(data, output_path, var_name):
 def generate_js(data, output_path, var_name, title):
     json_str = json.dumps(data, indent=2, ensure_ascii=False)
     header = f"""/* ============================================================
-   MODULIX V2 — NEET-PG SYLLABUS DATASET ({title})
+   FLOWMD V2 — NEET-PG SYLLABUS DATASET ({title})
    Generated from canonical JSON curriculum dataset.
    ============================================================ */
 
@@ -176,7 +184,19 @@ if (typeof module !== 'undefined' && module.exports) {{
     print(f"[OK] Generated Web JS: {output_path}")
 
 def main():
-    print("Compiling Marrow Curriculum & Q-Bank Data...")
+    print("=" * 60)
+    print("Marrow Curriculum Pipeline — Pre-Compilation Validation Gate")
+    print("=" * 60)
+
+    # 0. STRICT VERIFICATION GATE
+    # Aborts immediately if ANY dataset fails sequence, fake topic, or edition isolation checks
+    if not verify_curriculum.verify_all():
+        print("\n[FATAL] Curriculum verification failed. Compilation aborted to protect data integrity.")
+        sys.exit(1)
+
+    print("\n[VERIFIED] All datasets passed integrity checks. Proceeding to compilation...")
+    print("=" * 60)
+
     e8 = load_json('edition_8')
     e65 = load_json('edition_6_5')
     qb = load_json('qbank')
@@ -186,42 +206,42 @@ def main():
     generate_video_markdown(e65, os.path.join(BASE_DIR, 'EDITION_6_5_CURRICULUM.md'), 'Marrow Edition 6.5')
     generate_qbank_markdown(qb, os.path.join(BASE_DIR, 'QBANK_CURRICULUM.md'))
 
-    # 2. Generate Flutter Dart files
+    # 2. Generate Flutter Dart files across active Flutter paths
     for f_dir in FLUTTER_DATA_DIRS:
         if os.path.exists(f_dir):
             generate_dart(e8, os.path.join(f_dir, 'syllabus_marrow8.dart'), 'marrow8Raw')
             generate_dart(e65, os.path.join(f_dir, 'syllabus_marrow65.dart'), 'marrow65Raw')
             generate_dart(qb, os.path.join(f_dir, 'syllabus_qbank.dart'), 'marrowQBankRaw')
 
-    # 3. Generate Web JS files
+    # 3. Generate Web JS files across active Web paths
     for w_dir in WEB_DATA_DIRS:
         if os.path.exists(w_dir):
             generate_js(e8, os.path.join(w_dir, 'data.js'), 'syllabusData', 'EDITION 8 STRUCTURE')
             generate_js(e65, os.path.join(w_dir, 'data_marrow_6_5.js'), 'syllabusData65', 'EDITION 6.5 STRUCTURE')
             generate_js(qb, os.path.join(w_dir, 'data_qbank.js'), 'qbankData', 'OFFICIAL Q-BANK DATASET')
 
-    # 4. Mirror to Flutter repository directory
-    if os.path.exists(os.path.dirname(FLUTTER_CURRICULUM_DIRS[1])):
-        target_curriculum = FLUTTER_CURRICULUM_DIRS[1]
-        os.makedirs(target_curriculum, exist_ok=True)
-        os.makedirs(os.path.join(target_curriculum, 'raw'), exist_ok=True)
-        os.makedirs(os.path.join(target_curriculum, 'scripts'), exist_ok=True)
-        
-        for item in ['EDITION_8_CURRICULUM.md', 'EDITION_6_5_CURRICULUM.md', 'QBANK_CURRICULUM.md', 'SUBJECT_SUMMARY.md', 'MARROW-QBANK-INDEX.md', 'README.md']:
-            src = os.path.join(BASE_DIR, item)
-            if os.path.exists(src):
-                shutil.copy2(src, os.path.join(target_curriculum, item))
-        for item in ['edition_8.json', 'edition_6_5.json', 'qbank.json']:
-            src = os.path.join(RAW_DIR, item)
-            if os.path.exists(src):
-                shutil.copy2(src, os.path.join(target_curriculum, 'raw', item))
-        for item in ['compile_curriculum.py', 'verify_curriculum.py']:
-            src = os.path.join(SCRIPT_DIR, item)
-            if os.path.exists(src):
-                shutil.copy2(src, os.path.join(target_curriculum, 'scripts', item))
-        print(f"[OK] Mirrored curriculum_data to {target_curriculum}")
+    # 4. Mirror to Flutter repository curriculum_data directories
+    for target_curriculum in FLUTTER_CURRICULUM_DIRS:
+        if os.path.exists(os.path.dirname(target_curriculum)):
+            os.makedirs(target_curriculum, exist_ok=True)
+            os.makedirs(os.path.join(target_curriculum, 'raw'), exist_ok=True)
+            os.makedirs(os.path.join(target_curriculum, 'scripts'), exist_ok=True)
 
-    print("\nCompilation completed successfully!")
+            for item in ['EDITION_8_CURRICULUM.md', 'EDITION_6_5_CURRICULUM.md', 'QBANK_CURRICULUM.md', 'SUBJECT_SUMMARY.md', 'MARROW-QBANK-INDEX.md', 'README.md']:
+                src = os.path.join(BASE_DIR, item)
+                if os.path.exists(src):
+                    shutil.copy2(src, os.path.join(target_curriculum, item))
+            for item in ['edition_8.json', 'edition_6_5.json', 'qbank.json']:
+                src = os.path.join(RAW_DIR, item)
+                if os.path.exists(src):
+                    shutil.copy2(src, os.path.join(target_curriculum, 'raw', item))
+            for item in ['compile_curriculum.py', 'verify_curriculum.py']:
+                src = os.path.join(SCRIPT_DIR, item)
+                if os.path.exists(src):
+                    shutil.copy2(src, os.path.join(target_curriculum, 'scripts', item))
+            print(f"[OK] Mirrored curriculum_data to {target_curriculum}")
+
+    print("\nCompilation completed successfully with 100% verified integrity!")
 
 if __name__ == '__main__':
     main()

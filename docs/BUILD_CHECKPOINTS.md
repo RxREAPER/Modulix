@@ -25,6 +25,28 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Promoted Data & Privacy and About screens to native GoRouter routes with clean, minimalist design and zero emojis.
    - Linked official Cloudflare Pages production domain `https://modulix.pages.dev`.
 
+### 🔖 `[CKPT-138]` — Curriculum Data Optimization, Fake Topic Guards & Strict Edition Separation
+- **Category:** `curriculum` / `data` / `security` / `testing`
+- **Files Modified:**
+  - `curriculum_data/scripts/verify_curriculum.py` (added canonical NEET-PG subject registry validation, regex-based fake/placeholder topic guards, intra-subject duplicate title & ID prevention, strict sequential numbering 1..N continuity, duration and MCQ sanity limits, and strict edition isolation audits)
+  - `curriculum_data/scripts/compile_curriculum.py` (integrated mandatory `verify_curriculum.verify_all()` pre-compilation gate to abort builds upon detecting anomalies, synchronized outputs across Flutter and Web datasets)
+  - `lib/models/syllabus.dart` (added `editionId` field to `Video`, `QBankTopic`, and `Subject` for explicit in-memory namespace separation, added defensive `.trim()` sanitization to titles and IDs)
+  - `lib/data/subjects_metadata.dart` (added Edition 6.5 subject aliases `'ent'` and `'e6_5_revision_videos'` to `_subjectMetaMap`, attached Q-Bank chapters to Edition 6.5 ENT via canonical alias `otorhinolaryngology__ent_`, passed `editionId` through loaders)
+  - `lib/providers/curriculum_sort_provider.dart` (added `'ent': '3rd Year'` and `'e6_5_revision_videos': 'Revision'` to `kSubjectYearMap`)
+  - `test/curriculum_integrity_test.dart` (created comprehensive automated test suite verifying Edition 8, Edition 6.5, and Q-Bank integrity, strict contiguous numbering 1..N, zero duplicate IDs, zero duplicate titles within subject, zero fake topics, zero Q-Bank vs video collisions, explicit `editionId` tagging, and AppState partition isolation)
+- **Summary:**
+  - Implemented multi-layered automated verification across the curriculum pipeline so that wrong numberings, extra topics, duplicate entries, or fake topics are blocked at verification, compilation, and test time.
+  - Enforced strong separation and isolation between Edition 8 (1,558 videos) and Edition 6.5 (1,593 videos) with explicit `editionId` tagging and partitioned state.
+  - Aligned Edition 6.5 ENT and Revision subject aliases to guarantee full feature parity across Year-Wise sorting, Q-Bank integration, and UI styling.
+- **Verification:**
+  - `python3 curriculum_data/scripts/verify_curriculum.py`: All 4 datasets passed 100% cleanly.
+  - `python3 curriculum_data/scripts/compile_curriculum.py`: Pre-compilation gate passed, generated Dart and JS files cleanly.
+  - `flutter analyze`: 0 errors, 0 warnings (ran in 23.2s).
+  - `flutter test`: 100% pass across all 59 test files (379/379 tests green).
+- **Build Status:** Pending APK Build
+
+---
+
 ### 🔖 `[CKPT-137]` — Codebase Cross-Check, Test Suite Modernization & Technical ID Masking
 - **Category:** `fixes` / `testing` / `analytics` / `ui`
 - **Files Modified:**
