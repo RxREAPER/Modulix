@@ -502,7 +502,7 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0),
-          width: 0.6,
+          width: 0.8,
         ),
         boxShadow: [
           BoxShadow(
@@ -515,73 +515,120 @@ class DailyTasksAnalyticsPage extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            (project.subjectName ?? 'Subject').toUpperCase(),
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.8,
-              color: AppTheme.mutedText,
-            ),
+          // Header: Subject Tag & Completion Badge
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  (project.subjectName != null &&
+                          project.subjectName!.isNotEmpty &&
+                          !project.subjectName!.toUpperCase().startsWith('PROJ_'))
+                      ? project.subjectName!.toUpperCase()
+                      : 'STUDY PROJECT',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                    color: AppTheme.mutedText,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: progressPercent == 100
+                      ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                      : (isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  progressPercent == 100 ? 'Completed' : '$progressPercent%',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    color: progressPercent == 100
+                        ? const Color(0xFF10B981)
+                        : AppTheme.inkForeground,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 8),
+
+          // Project Title (Masks technical PROJ_ IDs)
           Text(
-            project.unitName ?? project.name,
+            project.displayName,
             style: TextStyle(
-              fontSize: 15.5,
+              fontSize: 16,
               fontWeight: FontWeight.w700,
               color: AppTheme.inkForeground,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
-          // Continuous 5px rounded gradient progress track
-          ClipRRect(
-            borderRadius: BorderRadius.circular(2.5),
-            child: Container(
-              height: 5,
-              width: double.infinity,
-              color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
-              child: FractionallySizedBox(
-                alignment: Alignment.centerLeft,
-                widthFactor: progressRatio.clamp(0.0, 1.0),
-                child: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF10B981), Color(0xFF06B6D4)],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-
-          // Analytics metrics
+          // Progress Ratio Header
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '$completedCount / $totalCount tasks · $progressPercent%',
+                '$completedCount of $totalCount tasks completed',
                 style: TextStyle(
-                  fontSize: 11.5,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.inkForeground,
                 ),
               ),
+              const Spacer(),
               Text(
-                remainingCount > 0 ? '$remainingCount remaining' : 'Complete',
+                remainingCount > 0 ? '$remainingCount remaining' : 'All done',
                 style: TextStyle(
-                  fontSize: 11.5,
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: AppTheme.mutedText,
                 ),
               ),
             ],
           ),
+          const SizedBox(height: 8),
+
+          // Continuous 6px rounded gradient progress track
+          ClipRRect(
+            borderRadius: BorderRadius.circular(3),
+            child: Container(
+              height: 6,
+              width: double.infinity,
+              color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: progressRatio.clamp(0.0, 1.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: progressPercent == 100
+                          ? [const Color(0xFF10B981), const Color(0xFF059669)]
+                          : [const Color(0xFF10B981), const Color(0xFF06B6D4)],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
 
           if (tasks.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
+            Divider(
+              height: 1,
+              thickness: 0.6,
+              color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0),
+            ),
+            const SizedBox(height: 8),
             for (final task in tasks)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),

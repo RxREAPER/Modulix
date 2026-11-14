@@ -852,15 +852,14 @@ class FocusTimerNotifier extends StateNotifier<FocusTimerState>
       return null;
     }
 
-    final isGeneral = !state.hasTarget ||
-        state.subjectId.isEmpty ||
-        state.topicType == 'standalone' ||
-        state.topicType == 'general';
-
-    final effectiveSubjectId = isGeneral ? 'general' : state.subjectId;
-    final effectiveTopicType = isGeneral ? 'general' : state.topicType;
-    final effectiveTopicTitle =
-        state.hasTarget && state.topicTitle.isNotEmpty ? state.topicTitle : 'General Focus';
+    final hasExplicitSubject = state.subjectId.isNotEmpty && state.subjectId != 'general';
+    final effectiveSubjectId = hasExplicitSubject ? state.subjectId : 'general';
+    final effectiveTopicType = state.topicType.isNotEmpty ? state.topicType : 'general';
+    final effectiveTopicTitle = state.hasTarget && state.topicTitle.isNotEmpty
+        ? state.topicTitle
+        : (hasExplicitSubject
+            ? '${state.subjectName.isNotEmpty ? state.subjectName : state.subjectId} Focus'
+            : 'General Focus');
 
     final log = TimeLog(
       id: 'log_${DateTime.now().millisecondsSinceEpoch}',

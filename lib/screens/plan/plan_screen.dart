@@ -323,339 +323,28 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
 
               const SizedBox(height: 24),
 
-              // ── STEP 2: Deadline Date (Task B) ───────────────────────────
+              // ── STEP 2: Unit Scope (All & Multiple toggle) ────────
               _sectionHeader(
-                '2. Deadline Date',
-                Icons.event_available_rounded,
+                '2. Unit Scope',
+                Icons.filter_list_rounded,
               ),
               const SizedBox(height: 10),
-              RepaintBoundary(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.08)
-                          : const Color(0xFFE2E8F0),
-                      width: 0.6,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Task B: Title renamed to DEADLINE DATE
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'DEADLINE DATE',
-                                style: AppTypography.sectionMicroHeader(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.8,
-                                  color: Colors.grey.shade500,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                _targetDate != null
-                                    ? DateFormat('EEE, d MMM yyyy')
-                                        .format(_targetDate!)
-                                    : 'Awaiting Date',
-                                style: AppTypography.metricValue(
-                                  fontSize: 15.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: _targetDate != null
-                                      ? AppTheme.inkForeground
-                                      : Colors.grey.shade400,
-                                  letterSpacing: -0.2,
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              if (_targetDate != null)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.primaryBlue
-                                        .withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    '$daysRemaining days remaining',
-                                    style: AppTypography.microBadge(
-                                      fontSize: 10.5,
-                                      color: AppTheme.primaryBlue,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                )
-                              else
-                                Text(
-                                  'Select deadline to calculate pace',
-                                  style: AppTypography.cardSubtitle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.grey.shade500,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        ElevatedButton.icon(
-                          onPressed: () async {
-                            final initial = _targetDate ??
-                                DateTime.now().add(const Duration(days: 90));
-                            final picked = await showDatePicker(
-                              context: context,
-                              initialDate: initial,
-                              firstDate: DateTime.now()
-                                  .add(const Duration(days: 1)),
-                              lastDate: DateTime.now()
-                                  .add(const Duration(days: 1200)),
-                            );
-                            if (picked != null) {
-                              HapticFeedback.lightImpact();
-                              setState(() => _targetDate = picked);
-                            }
-                          },
-                          icon: const Icon(Icons.calendar_month_rounded,
-                              size: 16),
-                          label: Text(_targetDate != null ? 'Change' : 'Pick Date'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.paperBackground,
-                            foregroundColor: AppTheme.inkForeground,
-                            elevation: 0,
-                            side: BorderSide(
-                                color: AppTheme.sketchBorderColor,
-                                width: 1.5),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 9),
-                            textStyle: AppTypography.compactAction(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const Divider(
-                        height: 28, thickness: 1, color: Color(0xFFF0F0F0)),
-
-                    // Task C: Stepper centered horizontally, presets removed!
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Center(
-                          child: Text(
-                            'Daily Module Target',
-                            style: AppTypography.cardTitle(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.inkForeground,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Center(
-                          child: Text(
-                            'Video lectures to complete per day',
-                            style: AppTypography.cardSubtitle(
-                              fontSize: 11,
-                              color: AppTheme.mutedText,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Center(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                  color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0),
-                                  width: 0.6),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                _stepperButton(
-                                  icon: Icons.remove_rounded,
-                                  enabled: _videosPerDay != null && _videosPerDay! > 1,
-                                  onTap: () {
-                                    if (_videosPerDay != null && _videosPerDay! > 1) {
-                                      HapticFeedback.lightImpact();
-                                      setState(() => _videosPerDay = _videosPerDay! - 1);
-                                    }
-                                  },
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 20),
-                                  child: _videosPerDay != null
-                                      ? RollingDigitText.count(
-                                          count: _videosPerDay!,
-                                          style: AppTypography.metricValue(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.w700,
-                                            color: AppTheme.inkForeground,
-                                          ),
-                                        )
-                                      : Text(
-                                          '--',
-                                          style: AppTypography.metricValue(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.w700,
-                                            color: AppTheme.inkForeground,
-                                          ),
-                                        ),
-                                ),
-                                _stepperButton(
-                                  icon: Icons.add_rounded,
-                                  enabled: _videosPerDay == null || _videosPerDay! < 35,
-                                  onTap: () {
-                                    HapticFeedback.lightImpact();
-                                    setState(() {
-                                      if (_videosPerDay == null) {
-                                        _videosPerDay = 5;
-                                      } else if (_videosPerDay! < 35) {
-                                        _videosPerDay = _videosPerDay! + 1;
-                                      }
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-              // Task D: Dedicated On-Track / Pace Insight Card (isolated crossfade)
-              RepaintBoundary(
-                child: AnimatedCrossFade(
-                  duration: const Duration(milliseconds: 200),
-                  crossFadeState: (_targetDate != null && _videosPerDay != null && _selectedSubject != null)
-                      ? CrossFadeState.showFirst
-                      : CrossFadeState.showSecond,
-                  firstChild: Padding(
-                    padding: const EdgeInsets.only(top: 14),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: (_videosPerDay ?? 0) >= neededPerDay
-                              ? const Color(0xFF10B981).withValues(alpha: 0.35)
-                              : const Color(0xFFD97706).withValues(alpha: 0.35),
-                          width: 0.6,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: ((_videosPerDay ?? 0) >= neededPerDay
-                                      ? const Color(0xFF10B981)
-                                      : const Color(0xFFD97706))
-                                  .withValues(alpha: 0.12),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              (_videosPerDay ?? 0) >= neededPerDay
-                                  ? Icons.check_circle_rounded
-                                  : Icons.speed_rounded,
-                              size: 18,
-                              color: (_videosPerDay ?? 0) >= neededPerDay
-                                  ? const Color(0xFF10B981)
-                                  : const Color(0xFFD97706),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Target: $_videosPerDay/day  ·  Needed: ~$neededPerDay/day',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppTheme.inkForeground,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  (_videosPerDay ?? 0) >= neededPerDay
-                                      ? '$daysRemaining days remaining · On track for deadline'
-                                      : '$daysRemaining days remaining · Increase daily target to meet target date',
-                                  style: TextStyle(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w400,
-                                    color: AppTheme.mutedText,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  secondChild: const SizedBox.shrink(),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // ── STEP 3: Unit Scope (Task E: All & Multiple toggle) ────────
               if (selectedSub != null) ...[
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Expanded(
-                      child: _sectionHeader(
-                        '3. Unit Scope',
-                        Icons.filter_list_rounded,
+                    Text(
+                      'CHAPTER COVERAGE',
+                      style: AppTypography.sectionMicroHeader(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                        color: Colors.grey.shade500,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    // Task E: All / Multiple toggle component with ElasticInkPill
+                    // All / Multiple toggle component with ElasticInkPill
                     Container(
                       width: 132,
                       height: 34,
@@ -924,6 +613,323 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                   ),
                 ),
               ],
+
+              const SizedBox(height: 24),
+
+              // ── STEP 3: Deadline Date ───────────────────────────
+              _sectionHeader(
+                '3. Deadline Date',
+                Icons.event_available_rounded,
+              ),
+              const SizedBox(height: 10),
+              RepaintBoundary(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : const Color(0xFFE2E8F0),
+                      width: 0.6,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'DEADLINE DATE',
+                                style: AppTypography.sectionMicroHeader(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.8,
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _targetDate != null
+                                    ? DateFormat('EEE, d MMM yyyy')
+                                        .format(_targetDate!)
+                                    : 'Awaiting Date',
+                                style: AppTypography.metricValue(
+                                  fontSize: 15.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: _targetDate != null
+                                      ? AppTheme.inkForeground
+                                      : Colors.grey.shade400,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              if (_targetDate != null)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.primaryBlue
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    '$daysRemaining days remaining',
+                                    style: AppTypography.microBadge(
+                                      fontSize: 10.5,
+                                      color: AppTheme.primaryBlue,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                )
+                              else
+                                Text(
+                                  'Select deadline to calculate pace',
+                                  style: AppTypography.cardSubtitle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            final initial = _targetDate ??
+                                DateTime.now().add(const Duration(days: 90));
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: initial,
+                              firstDate: DateTime.now()
+                                   .add(const Duration(days: 1)),
+                              lastDate: DateTime.now()
+                                  .add(const Duration(days: 1200)),
+                            );
+                            if (picked != null) {
+                              HapticFeedback.lightImpact();
+                              setState(() => _targetDate = picked);
+                            }
+                          },
+                          icon: const Icon(Icons.calendar_month_rounded,
+                              size: 16),
+                          label: Text(_targetDate != null ? 'Change' : 'Pick Date'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.paperBackground,
+                            foregroundColor: AppTheme.inkForeground,
+                            elevation: 0,
+                            side: BorderSide(
+                                color: AppTheme.sketchBorderColor,
+                                width: 1.5),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 9),
+                            textStyle: AppTypography.compactAction(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const Divider(
+                        height: 28, thickness: 1, color: Color(0xFFF0F0F0)),
+
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Center(
+                          child: Text(
+                            'Daily Module Target',
+                            style: AppTypography.cardTitle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.inkForeground,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Center(
+                          child: Text(
+                            'Video lectures to complete per day',
+                            style: AppTypography.cardSubtitle(
+                              fontSize: 11,
+                              color: AppTheme.mutedText,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                  color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0),
+                                  width: 0.6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _stepperButton(
+                                  icon: Icons.remove_rounded,
+                                  enabled: _videosPerDay != null && _videosPerDay! > 1,
+                                  onTap: () {
+                                    if (_videosPerDay != null && _videosPerDay! > 1) {
+                                      HapticFeedback.lightImpact();
+                                      setState(() => _videosPerDay = _videosPerDay! - 1);
+                                    }
+                                  },
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20),
+                                  child: _videosPerDay != null
+                                      ? RollingDigitText.count(
+                                          count: _videosPerDay!,
+                                          style: AppTypography.metricValue(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppTheme.inkForeground,
+                                          ),
+                                        )
+                                      : Text(
+                                          '--',
+                                          style: AppTypography.metricValue(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppTheme.inkForeground,
+                                          ),
+                                        ),
+                                ),
+                                _stepperButton(
+                                  icon: Icons.add_rounded,
+                                  enabled: _videosPerDay == null || _videosPerDay! < 35,
+                                  onTap: () {
+                                    HapticFeedback.lightImpact();
+                                    setState(() {
+                                      if (_videosPerDay == null) {
+                                        _videosPerDay = 5;
+                                      } else if (_videosPerDay! < 35) {
+                                        _videosPerDay = _videosPerDay! + 1;
+                                      }
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+              // Dedicated On-Track / Pace Insight Card
+              RepaintBoundary(
+                child: AnimatedCrossFade(
+                  duration: const Duration(milliseconds: 200),
+                  crossFadeState: (_targetDate != null && _videosPerDay != null && _selectedSubject != null)
+                      ? CrossFadeState.showFirst
+                      : CrossFadeState.showSecond,
+                  firstChild: Padding(
+                    padding: const EdgeInsets.only(top: 14),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: (_videosPerDay ?? 0) >= neededPerDay
+                              ? const Color(0xFF10B981).withValues(alpha: 0.35)
+                              : const Color(0xFFD97706).withValues(alpha: 0.35),
+                          width: 0.6,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: ((_videosPerDay ?? 0) >= neededPerDay
+                                      ? const Color(0xFF10B981)
+                                      : const Color(0xFFD97706))
+                                  .withValues(alpha: 0.12),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              (_videosPerDay ?? 0) >= neededPerDay
+                                  ? Icons.check_circle_rounded
+                                  : Icons.speed_rounded,
+                              size: 18,
+                              color: (_videosPerDay ?? 0) >= neededPerDay
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFFD97706),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Target: $_videosPerDay/day  ·  Needed: ~$neededPerDay/day',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.inkForeground,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  (_videosPerDay ?? 0) >= neededPerDay
+                                      ? '$daysRemaining days remaining · On track for deadline'
+                                      : '$daysRemaining days remaining · Increase daily target to meet target date',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppTheme.mutedText,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  secondChild: const SizedBox.shrink(),
+                ),
+              ),
 
               const SizedBox(height: 32),
 

@@ -140,7 +140,7 @@ void main() {
   });
 
   group('AmbientSoundSheet Widget Tests', () {
-    testWidgets('renders Multi-Track Mixer header, presets, and category chips', (tester) async {
+    testWidgets('renders Multi-Track Mixer header, presets, and sound tracks', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -152,10 +152,7 @@ void main() {
 
       expect(find.text('Multi-Track Desk Mixer'), findsOneWidget);
       expect(find.text('Master'), findsOneWidget);
-      expect(find.text('All'), findsOneWidget);
-      expect(find.text('Weather'), findsOneWidget);
-      expect(find.text('Nature'), findsOneWidget);
-      expect(find.text('Deep Focus'), findsOneWidget);
+      expect(find.text('Rain on Window'), findsOneWidget);
 
       // Verify preset buttons exist
       expect(find.text('Rainy Library'), findsOneWidget);

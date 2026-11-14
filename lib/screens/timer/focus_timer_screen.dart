@@ -789,8 +789,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                                 context,
                                 activeSoundId: timer.activeSoundId,
                                 onSelectSound: (id) {
-                                  notifier.setSound(id);
-                                  AmbientAudioService.instance.playSound(id);
+                                  notifier.setSound(AmbientAudioService.instance.activeId);
                                 },
                               ),
                             ),
@@ -1882,146 +1881,115 @@ class _BoundTaskHeaderCard extends ConsumerWidget {
       ),
     );
 
-    final bgColor = isLight
-        ? (isDone ? AppTheme.parchmentSurface : AppTheme.cardWhite)
-        : const Color(0xFF1E1E24);
-    final borderColor = isLight
-        ? (isDone ? AppTheme.borderLight : AppTheme.sketchBorderColor)
-        : const Color(0xFF33333F);
+    final displaySubject = (timer.subjectName.isNotEmpty
+            ? timer.subjectName
+            : task.subject.label)
+        .toUpperCase();
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: AppTheme.sketchDecoration(
-        backgroundColor: bgColor,
-        borderRadius: 16,
-        shadowOffset: 2,
-        borderColor: isDone ? borderColor : theme.accentColor.withValues(alpha: 0.8),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      child: Row(
-        children: [
-          // Square Sketch Checkbox (instant completion in timer)
-          ApplePressable(
-            onTap: () {
-              HapticFeedback.heavyImpact();
-              ref.read(focusTimerProvider.notifier).toggleBoundTaskCompleted();
-            },
-            pressedScale: 0.9,
-            child: Container(
-              width: 26,
-              height: 26,
-              decoration: BoxDecoration(
-                color: isDone ? AppTheme.accentPrimary : Colors.transparent,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: isDone ? AppTheme.accentPrimary : (isLight ? AppTheme.sketchBorderColor : Colors.white54),
-                  width: 1.8,
-                ),
-              ),
-              child: Center(
-                child: AnimatedCheckStroke(
-                  checked: isDone,
-                  size: 16,
-                  color: AppTheme.onAccent,
-                  strokeWidth: 2.2,
-                ),
-              ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // 1. Subject Header (Exact same typography as standard timer)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Text(
+            displaySubject,
+            textAlign: TextAlign.center,
+            style: AppTheme.headingStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+              color: isLight ? theme.accentColor : Colors.white,
             ),
           ),
+        ),
+        const SizedBox(height: 4),
 
-          const SizedBox(width: 12),
-
-          // Title & Details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppTheme.parchmentSurface,
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: AppTheme.borderLight),
-                      ),
-                      child: Text(
-                        task.subject.shortCode,
-                        style: TextStyle(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.inkForeground,
-                        ),
-                      ),
+        // 2. Bound Task Topic & Controls (Exact same body text styling)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 28),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Inline check toggle
+              ApplePressable(
+                onTap: () {
+                  HapticFeedback.heavyImpact();
+                  ref.read(focusTimerProvider.notifier).toggleBoundTaskCompleted();
+                },
+                pressedScale: 0.9,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    color: isDone ? AppTheme.accentPrimary : Colors.transparent,
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(
+                      color: isDone
+                          ? AppTheme.accentPrimary
+                          : (isLight ? AppTheme.sketchBorderColor : Colors.white54),
+                      width: 1.6,
                     ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: AnimatedStrikeText(
-                        text: task.title,
-                        isStruck: isDone,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: isLight ? AppTheme.inkForeground : Colors.white,
-                        ),
-                        strikeColor: isLight ? AppTheme.mutedText : Colors.white60,
-                        strikeThickness: 2.0,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                  ),
+                  child: Center(
+                    child: AnimatedCheckStroke(
+                      checked: isDone,
+                      size: 13,
+                      color: AppTheme.onAccent,
+                      strokeWidth: 2.0,
                     ),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.hourglass_bottom_rounded,
-                      size: 11,
-                      color: isLight ? AppTheme.mutedText : Colors.white70,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      task.completedBlocks > 0
-                          ? 'Block ${task.completedBlocks} of ${task.effectiveEstimatedBlocks}'
-                          : '${task.effectiveEstimatedBlocks} Focus Blocks',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                        color: isLight ? AppTheme.mutedText : Colors.white70,
-                      ),
-                    ),
-                  ],
+              ),
+
+              // Title with optional strikethrough
+              Flexible(
+                child: AnimatedStrikeText(
+                  text: task.title,
+                  isStruck: isDone,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: isLight
+                        ? const Color(0xFF64748B)
+                        : Colors.white.withValues(alpha: 0.85),
+                  ),
+                  strikeColor: isLight ? AppTheme.mutedText : Colors.white60,
+                  strikeThickness: 2.0,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
                 ),
-              ],
-            ),
-          ),
-
-          const SizedBox(width: 8),
-
-          // Detach/Unbind Button
-          ApplePressable(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              ref.read(focusTimerProvider.notifier).unbindTask();
-            },
-            pressedScale: 0.9,
-            child: Container(
-              padding: const EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                color: isLight ? AppTheme.parchmentSurface : Colors.white10,
-                shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.close_rounded,
-                size: 16,
-                color: isLight ? AppTheme.mutedText : Colors.white70,
+
+              // Unbind / detach button
+              const SizedBox(width: 8),
+              ApplePressable(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  ref.read(focusTimerProvider.notifier).unbindTask();
+                },
+                pressedScale: 0.85,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: isLight ? Colors.black.withValues(alpha: 0.05) : Colors.white10,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.close_rounded,
+                    size: 13,
+                    color: isLight ? AppTheme.mutedText : Colors.white70,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

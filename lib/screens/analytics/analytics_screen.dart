@@ -10,6 +10,7 @@ import '../../providers/daily_tasks_provider.dart';
 import '../../providers/tasks_hub_provider.dart';
 import '../../providers/syllabus_provider.dart';
 import '../../providers/time_log_provider.dart';
+import '../../providers/focus_timer_provider.dart';
 import '../../providers/leaderboard_provider.dart';
 import '../../services/metrics_service.dart';
 import '../../theme/app_theme.dart';
@@ -34,7 +35,13 @@ class AnalyticsScreen extends ConsumerWidget {
     if (h > 0) {
       return '${h}h ${m}m';
     }
-    return '${m}m';
+    if (m > 0) {
+      return '${m}m';
+    }
+    if (totalSecs > 0) {
+      return '${totalSecs}s';
+    }
+    return '0m';
   }
 
   static Map<String, int> _aggregateDailyCompleted(Map<String, dynamic> completedItems) {
@@ -166,6 +173,23 @@ class AnalyticsScreen extends ConsumerWidget {
         notesFocusSecs += log.durationSecs;
       } else {
         videoFocusSecs += log.durationSecs;
+      }
+    }
+
+    // Include active in-flight focus session realtime progress
+    final activeTimer = ref.watch(focusTimerProvider);
+    if (activeTimer.focusSecondsElapsed > 0 && !activeTimer.isBreak) {
+      final activeSecs = activeTimer.focusSecondsElapsed;
+      todayFocusSecs += activeSecs;
+      totalFocusSecs += activeSecs;
+      final lowerTitle = activeTimer.topicTitle.toLowerCase();
+      final lowerType = activeTimer.topicType.toLowerCase();
+      if (lowerType.contains('qbank') || lowerTitle.contains('mcq')) {
+        qbankFocusSecs += activeSecs;
+      } else if (lowerType.contains('note') || lowerTitle.contains('read')) {
+        notesFocusSecs += activeSecs;
+      } else {
+        videoFocusSecs += activeSecs;
       }
     }
 

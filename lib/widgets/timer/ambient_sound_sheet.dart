@@ -114,7 +114,6 @@ class AmbientSoundSheet extends StatefulWidget {
 
 class _AmbientSoundSheetState extends State<AmbientSoundSheet> {
   final AmbientAudioService _service = AmbientAudioService.instance;
-  AmbientCategory? _selectedCategory;
 
   @override
   void initState() {
@@ -147,9 +146,7 @@ class _AmbientSoundSheetState extends State<AmbientSoundSheet> {
     final masterVol = _service.masterVolume;
     final activePresetId = _service.activePresetId;
 
-    final filteredSounds = _selectedCategory == null
-        ? kAmbientSounds
-        : kAmbientSounds.where((s) => s.category == _selectedCategory).toList();
+    const filteredSounds = kAmbientSounds;
 
     return Container(
       constraints: BoxConstraints(
@@ -371,21 +368,6 @@ class _AmbientSoundSheetState extends State<AmbientSoundSheet> {
 
           const SizedBox(height: 14),
 
-          // Category Filter Chips
-          Row(
-            children: [
-              _buildFilterChip('All', null, accent),
-              const SizedBox(width: 6),
-              _buildFilterChip('Weather', AmbientCategory.weather, accent),
-              const SizedBox(width: 6),
-              _buildFilterChip('Nature', AmbientCategory.nature, accent),
-              const SizedBox(width: 6),
-              _buildFilterChip('Deep Focus', AmbientCategory.focus, accent),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
           // Sound Channels Scrollable Grid
           Expanded(
             child: ListView.separated(
@@ -415,7 +397,7 @@ class _AmbientSoundSheetState extends State<AmbientSoundSheet> {
                       InkWell(
                         onTap: () {
                           _service.toggleTrack(snd.id);
-                          widget.onSelectSound?.call(snd.id);
+                          widget.onSelectSound?.call(_service.activeId);
                         },
                         borderRadius: BorderRadius.circular(12),
                         child: Row(
@@ -466,7 +448,7 @@ class _AmbientSoundSheetState extends State<AmbientSoundSheet> {
                                 activeTrackColor: accent,
                                 onChanged: (_) {
                                   _service.toggleTrack(snd.id);
-                                  widget.onSelectSound?.call(snd.id);
+                                  widget.onSelectSound?.call(_service.activeId);
                                 },
                               ),
                             ),
@@ -546,33 +528,6 @@ class _AmbientSoundSheetState extends State<AmbientSoundSheet> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(String label, AmbientCategory? cat, Color accent) {
-    final isSelected = _selectedCategory == cat;
-    return ApplePressable(
-      pressedScale: 0.94,
-      onTap: () => setState(() => _selectedCategory = cat),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: isSelected ? accent : AppTheme.cardWhite,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected ? accent : AppTheme.borderLight,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-            color: isSelected ? Colors.white : AppTheme.inkForeground,
-          ),
-        ),
       ),
     );
   }

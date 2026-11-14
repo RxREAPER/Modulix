@@ -33,6 +33,24 @@ class TaskProject {
   bool get isModuleBased => mode == 'module';
   bool get isSelfStudy => mode == 'self_study';
 
+  /// Human-readable display title, masking technical IDs (e.g. 'PROJ_...')
+  String get displayName {
+    if (unitName != null &&
+        unitName!.trim().isNotEmpty &&
+        !unitName!.toUpperCase().startsWith('PROJ_')) {
+      return unitName!.trim();
+    }
+    if (name.trim().isNotEmpty && !name.toUpperCase().startsWith('PROJ_')) {
+      return name.trim();
+    }
+    if (subjectName != null &&
+        subjectName!.trim().isNotEmpty &&
+        !subjectName!.toUpperCase().startsWith('PROJ_')) {
+      return '$subjectName Study Plan';
+    }
+    return 'Study Project';
+  }
+
   TaskProject copyWith({
     String? id,
     String? name,

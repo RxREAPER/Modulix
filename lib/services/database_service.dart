@@ -573,6 +573,21 @@ class DatabaseService {
     }
   }
 
+  /// Checks whether there are pending or in-flight mutations for a specific table.
+  Future<bool> hasPendingOutboxForTable(String tableName) async {
+    try {
+      final db = await database;
+      final result = await db.rawQuery(
+        'SELECT COUNT(*) as count FROM sync_outbox WHERE table_name = ? AND status IN (?, ?) AND retry_count < 5',
+        [tableName, 'pending', 'in_flight'],
+      );
+      final count = Sqflite.firstIntValue(result) ?? 0;
+      return count > 0;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Purges old completed and dead-letter outbox rows if any remain.
   Future<void> purgeCompletedOutbox() async {
     try {

@@ -1832,28 +1832,28 @@
 |:---:|:---:|:---|:---:|:---|
 | **#153** | `#153` | Introduction to Endocrinology | 14m | `medicine__v97` |
 | **#154** | `#154` | Overview of Hormones | 52m | `medicine__v98` |
-| **#155** | `#155` | Physiology of Adrenal Cortex | 23m | `medicine__v99` |
-| **#156** | `#156` | Conn's Syndrome | 31m | `medicine__v100` |
-| **#157** | `#157` | Antidiuretic Hormone | 30m | `medicine__v101` |
-| **#158** | `#158` | Hyponatremia | 37m | `medicine__v102` |
-| **#159** | `#159` | Polyuria | 23m | `medicine__v103` |
-| **#160** | `#160` | Potassium Metabolism | 58m | `medicine__v104` |
-| **#161** | `#161` | Management of Hypertension: 2023 Guidelines | 42m | `medicine__v105` |
+| **#155** | `#155` | Basics of Pituitary Gland | 36m | `medicine__v113` |
+| **#156** | `#156` | Prolactin | 34m | `medicine__v114` |
+| **#157** | `#157` | Growth Hormone | 40m | `medicine__v115` |
+| **#158** | `#158` | Acquired Hypopituitarism | 43m | `medicine__v116` |
+| **#159** | `#159` | Antidiuretic Hormone | 30m | `medicine__v101` |
+| **#160** | `#160` | Hyponatremia | 37m | `medicine__v102` |
+| **#161** | `#161` | Polyuria | 23m | `medicine__v103` |
 | **#162** | `#162` | Basics of Thyroid Gland | 29m | `medicine__v106` |
 | **#163** | `#163` | Thyroid Function Tests | 28m | `medicine__v107` |
 | **#164** | `#164` | Hypothyroidism | 38m | `medicine__v108` |
 | **#165** | `#165` | Thyrotoxicosis and Thyroiditis | 48m | `medicine__v109` |
-| **#166** | `#166` | Introduction to Diabetes Mellitus and Classification | 68m | `medicine__v110` |
-| **#167** | `#167` | Insulin Physiology and Acute Complications of Diabetes Mellitus | 36m | `medicine__v111` |
-| **#168** | `#168` | Management of Diabetes Mellitus: 2024 Guidelines | 19m | `medicine__v112` |
-| **#169** | `#169` | Basics of Pituitary Gland | 36m | `medicine__v113` |
-| **#170** | `#170` | Prolactin | 34m | `medicine__v114` |
-| **#171** | `#171` | Growth Hormone | 40m | `medicine__v115` |
-| **#172** | `#172` | Acquired Hypopituitarism | 43m | `medicine__v116` |
-| **#173** | `#173` | Cushing's Syndrome | 50m | `medicine__v117` |
-| **#174** | `#174` | Addison's Disease | 27m | `medicine__v118` |
-| **#175** | `#175` | Adrenal Medulla: Part 1 | 43m | `medicine__v119` |
-| **#176** | `#176` | Adrenal Medulla: Part 2 | 37m | `medicine__v120` |
+| **#166** | `#166` | Physiology of Adrenal Cortex | 23m | `medicine__v99` |
+| **#167** | `#167` | Cushing's Syndrome | 50m | `medicine__v117` |
+| **#168** | `#168` | Addison's Disease | 27m | `medicine__v118` |
+| **#169** | `#169` | Conn's Syndrome | 31m | `medicine__v100` |
+| **#170** | `#170` | Potassium Metabolism | 58m | `medicine__v104` |
+| **#171** | `#171` | Management of Hypertension: 2023 Guidelines | 42m | `medicine__v105` |
+| **#172** | `#172` | Adrenal Medulla: Part 1 | 43m | `medicine__v119` |
+| **#173** | `#173` | Adrenal Medulla: Part 2 | 37m | `medicine__v120` |
+| **#174** | `#174` | Introduction to Diabetes Mellitus and Classification | 68m | `medicine__v110` |
+| **#175** | `#175` | Insulin Physiology and Acute Complications of Diabetes Mellitus | 36m | `medicine__v111` |
+| **#176** | `#176` | Management of Diabetes Mellitus: 2024 Guidelines | 19m | `medicine__v112` |
 | **#177** | `#177` | Basics of Bone and Mineral Metabolism | 57m | `medicine__v121` |
 | **#178** | `#178` | Calcium Metabolism | 20m | `medicine__v122` |
 | **#179** | `#179` | Hypercalcemia | 37m | `medicine__v123` |

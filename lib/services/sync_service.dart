@@ -400,7 +400,11 @@ class SyncService {
         workingState = StorageService.instance.load();
       }
 
-      final localProfileUpdatedMs = prefs.getInt('modulix_local_profile_updated_at') ?? _lastLocalProfileMutationMs;
+      final hasLocalProfileOutbox = await DatabaseService.instance.hasPendingOutboxForTable('profiles');
+      final localProfileUpdatedMs = math.max(
+        prefs.getInt('modulix_local_profile_updated_at') ?? 0,
+        _lastLocalProfileMutationMs,
+      );
 
       if (profileRes != null) {
         final remoteUpdatedStr = profileRes['updated_at']?.toString();
@@ -408,8 +412,8 @@ class SyncService {
             ? (DateTime.tryParse(remoteUpdatedStr)?.millisecondsSinceEpoch ?? 0)
             : 0;
 
-        // If local preferences were modified more recently or equal, push local to Supabase
-        if (localProfileUpdatedMs > remoteUpdatedMs) {
+        // If local preferences were modified more recently or equal, OR if we have pending profile mutations in outbox, push local to Supabase
+        if (hasLocalProfileOutbox || localProfileUpdatedMs >= remoteUpdatedMs) {
           await client.from('profiles').update({
             'doctor_name': workingState.doctorName,
             'display_name': workingState.publicDisplayName,
@@ -423,6 +427,7 @@ class SyncService {
             'day_start_hour': workingState.dayStartHour,
             'updated_at': DateTime.now().toUtc().toIso8601String(),
           }).eq('id', userId);
+          await prefs.setInt('modulix_local_profile_updated_at', DateTime.now().toUtc().millisecondsSinceEpoch);
         } else if (remoteUpdatedMs > localProfileUpdatedMs) {
           // Remote is legitimately newer (e.g. from web portal or another device)
           final docName = profileRes['doctor_name'] as String? ?? '';

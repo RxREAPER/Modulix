@@ -115,18 +115,15 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
       canPop: true,
       child: Scaffold(
         backgroundColor: const Color(0xFF000000),
-        body: Stack(
-          children: [
-            // Background tap anywhere to wake up controls or double-tap to exit
-            Positioned.fill(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: _resetControlsSleepTimer,
-                onDoubleTap: () => Navigator.pop(context),
-              ),
-            ),
-
-            SafeArea(
+        body: Listener(
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: (_) => _resetControlsSleepTimer(),
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onDoubleTap: () => Navigator.pop(context),
+            child: Stack(
+              children: [
+                SafeArea(
               child: Column(
                 children: [
                   // ── Top Bar: Cross sign of exit & rotation toggle ──
@@ -194,7 +191,9 @@ class _FullscreenTimerScreenState extends ConsumerState<FullscreenTimerScreen> {
           ],
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildTopBar(FocusTimerState t, bool isLandscape) {

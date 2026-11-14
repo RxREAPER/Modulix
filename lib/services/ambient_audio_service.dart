@@ -364,7 +364,11 @@ class AmbientAudioService extends ChangeNotifier {
       if (player != null) {
         await player.setVolume(_effectiveVolume(soundId));
         await player.setReleaseMode(ReleaseMode.loop);
-        await player.play(AssetSource('audio/${match.assetFileName}'));
+        if (player.state == PlayerState.paused) {
+          await player.resume();
+        } else if (player.state != PlayerState.playing) {
+          await player.play(AssetSource('audio/${match.assetFileName}'));
+        }
       }
     } catch (_) {}
   }

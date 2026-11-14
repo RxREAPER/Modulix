@@ -25,6 +25,38 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
    - Promoted Data & Privacy and About screens to native GoRouter routes with clean, minimalist design and zero emojis.
    - Linked official Cloudflare Pages production domain `https://modulix.pages.dev`.
 
+### 🔖 `[CKPT-136]` — Issue #3 & #4 Bug Fixes Across Timer, Sync, Plan, Curriculum, Audio & Analytics
+- **Category:** `fixes` / `timer` / `sync` / `plan` / `curriculum` / `audio` / `analytics`
+- **Files Modified:**
+  - `lib/providers/focus_timer_provider.dart` (preserved `subjectId` and `subjectName` for standalone timers in `_recordCompletedSession()`, fixing subject progress and analytics logging [Issue #4])
+  - `lib/screens/analytics/analytics_screen.dart` (added active in-flight focus seconds to progress page "Focus & Pomodoro Log" card and formatted short durations as `${s}s` instead of freezing at `0m` [Issue #3])
+  - `lib/services/database_service.dart` (added `hasPendingOutboxForTable(String tableName)` to detect pending local profile mutations)
+  - `lib/services/sync_service.dart` (protected local profile state, theme preferences, and active syllabus edition `marrow_6_5` from being overwritten by remote sync when local outbox mutations are pending or local timestamp >= remote timestamp [Issue #3])
+  - `lib/screens/plan/plan_screen.dart` (swapped Step 2 and Step 3 order in module-based study plan setup: Step 2 is now Unit Scope and Step 3 is Target Deadline Date [Issue #3])
+  - `curriculum_data/raw/edition_8.json` (reorganized Medicine > Endocrinology videos into clean, contiguous physiological groups: Intro -> Pituitary -> ADH/Water -> Thyroid -> Adrenal Cortex & Medulla -> Diabetes -> Bone & Mineral Metabolism, resequencing continuous assigned numbers #153 to #183 [Issue #3])
+  - `curriculum_data/scripts/compile_curriculum.py` (updated compilation script to output to active workspace `lib/data` and mirrored datasets)
+  - `curriculum_data/EDITION_8_CURRICULUM.md` (recompiled human-readable curriculum index)
+  - `lib/data/syllabus_marrow8.dart` (recompiled Flutter Dart dataset with verified module order)
+  - `lib/models/task_project.dart` (added `displayName` getter to sanitize and mask raw technical database IDs such as `PROJ_...` with human-readable subject and unit titles [Issue #3])
+  - `lib/screens/analytics/daily_tasks_analytics_page.dart` (redesigned project analytics card with clean modern typography, subject pill tag, percentage badge, smooth 6px gradient track, and masked project titles [Issue #3])
+  - `lib/screens/timer/fullscreen_timer_screen.dart` (wrapped screen with `Listener(behavior: HitTestBehavior.translucent)` so tapping anywhere on the screen including flip card digits wakes up controls and restarts 3.5s auto-hide timer [Issue #3])
+  - `lib/screens/timer/focus_timer_screen.dart` (refactored `_BoundTaskHeaderCard` to match the exact centered typography and hierarchy of standard timer topics with 24px heading, 14px body text, inline completion toggle, and unbind button; updated ambient sound callback to preserve multi-track mix [Issue #3])
+  - `lib/widgets/timer/ambient_sound_sheet.dart` (removed category filter chips `All / Weather / Nature / Deep Focus` and enabled direct multi-track mixer without single-track overrides [Issue #3])
+  - `lib/services/ambient_audio_service.dart` (enhanced audio playback to resume paused players instead of reloading asset files, eliminating audio looping gaps [Issue #3])
+  - `test/ambient_audio_service_test.dart` (updated widget test to verify direct multi-track mixer channels)
+- **Summary:**
+  - Resolved all 10 reported items in GitHub **RxREAPER/Modulix#3** and sub-issue **RxREAPER/Modulix#4**.
+  - Synchronized and verified curriculum data integrity across Dart, JavaScript, and Markdown tables.
+  - Eliminated remote sync overwrite of local user preferences and syllabus edition choices.
+  - Modernized analytics card and timer header components for optimal tactile interaction and elegance.
+- **Verification:**
+  - `python3 curriculum_data/scripts/verify_curriculum.py`: 100% valid (0 errors, 20 subjects, 1558 videos).
+  - `flutter analyze`: 0 errors, 0 warnings (ran in 37.4s).
+  - Unit tests: 42/42 tests passing green (`sync_service_test.dart`, `ambient_audio_service_test.dart`, `all_screens_animation_theme_test.dart`).
+- **Build Status:** Pending APK Build
+
+---
+
 ### 🔖 `[CKPT-135]` — Single-Active-Device Sync Architecture & Minimalist Account Deletion Portal
 - **Category:** `sync` / `backend` / `settings` / `web` / `data-sovereignty`
 - **Files Modified:**
