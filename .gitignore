@@ -53,6 +53,8 @@ PFP icons/
 *.jks
 *.keystore
 key.properties
+*.apk
+*.aab
 *.p12
 *.mobileprovision
 *.cer
