@@ -547,23 +547,32 @@ void main() {
     });
 
     test('Clean state adoption directly adopts remote completions without zombie resurrection', () {
+      Map<String, dynamic> resolveAdoptedCompletions({
+        required Map<String, dynamic> local,
+        required Map<String, dynamic> remote,
+        required bool isDirtied,
+        required String? lastSync,
+      }) {
+        if (isDirtied) {
+          return local;
+        } else if (lastSync == null || lastSync.isEmpty) {
+          return Map<String, dynamic>.from(local)..addAll(remote);
+        } else {
+          return remote;
+        }
+      }
+
       // Steady-state single active device scenario:
       // Local cache had a video completed, but user uncompleted it on the active cloud writer
       final localVideos = {'vid_1': true, 'vid_2': true};
       final remoteVideos = {'vid_1': true}; // vid_2 was unchecked on active device
 
-      const isLocallyDirtied = false;
-      const lastEditionsSync = '2026-10-29T10:00:00.000Z'; // Steady-state (not initial)
-
-      final Map<String, dynamic> mergedVideos;
-      if (isLocallyDirtied) {
-        mergedVideos = localVideos;
-      } else if (lastEditionsSync.isEmpty) {
-        mergedVideos = Map<String, dynamic>.from(localVideos)..addAll(remoteVideos);
-      } else {
-        // Direct adoption: eliminates zombie resurrect
-        mergedVideos = remoteVideos;
-      }
+      final mergedVideos = resolveAdoptedCompletions(
+        local: localVideos,
+        remote: remoteVideos,
+        isDirtied: false,
+        lastSync: '2026-10-29T10:00:00.000Z',
+      );
 
       expect(mergedVideos.containsKey('vid_2'), isFalse);
       expect(mergedVideos.containsKey('vid_1'), isTrue);
