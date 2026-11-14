@@ -483,8 +483,9 @@ class _TaskPickerSheetState extends ConsumerState<TaskPickerSheet>
                   const SizedBox(height: 16),
                   ApplePressable(
                     onPressed: () {
-                      Navigator.pop(context);
-                      context.push('/plan');
+                      final router = GoRouter.of(context);
+                      Navigator.of(context).pop();
+                      router.push('/plan');
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

@@ -148,13 +148,60 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ── 3. Editorial Top 3 Podium ────────────────────────
-                        EditorialPodium(
-                          first: first,
-                          second: second,
-                          third: third,
-                        ),
-                        const SizedBox(height: 16),
+                        if (entries.isEmpty) ...[
+                          const SizedBox(height: 32),
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.accentSubtle,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.military_tech_outlined,
+                                      size: 36,
+                                      color: AppTheme.accentPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 14),
+                                  Text(
+                                    'No Standings Recorded Yet',
+                                    style: AppTheme.headingStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppTheme.inkForeground,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Complete focus sessions to log study time and appear in the community rankings.',
+                                    style: TextStyle(
+                                      fontSize: 12.5,
+                                      color: AppTheme.mutedText,
+                                      height: 1.4,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                        ] else ...[
+                          // ── 3. Editorial Top 3 Podium ────────────────────────
+                          EditorialPodium(
+                            first: first,
+                            second: second,
+                            third: third,
+                          ),
+                          const SizedBox(height: 16),
+                        ],
 
                         // ── 4. Ranks 4 to 20 Section Header ──────────────────
                         if (listEntries.isNotEmpty) ...[

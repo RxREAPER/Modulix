@@ -166,9 +166,34 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
   void _handleFinish(BuildContext ctx) async {
     final notifier = ref.read(focusTimerProvider.notifier);
     final timerState = ref.read(focusTimerProvider);
-    await notifier.finishSession();
+
+    if (!timerState.sessionActive || timerState.focusSecondsElapsed == 0) {
+      if (timerState.focusSecondsElapsed == 0 && timerState.sessionActive) {
+        notifier.reset();
+        ModulixToast.showInfo(
+          ctx,
+          message: 'No focus time elapsed to record',
+        );
+      } else {
+        ModulixToast.showInfo(
+          ctx,
+          message: 'Start a focus session before finishing',
+        );
+      }
+      return;
+    }
+
+    final log = await notifier.finishSession();
 
     if (!mounted || !ctx.mounted) return;
+
+    if (log == null) {
+      ModulixToast.showInfo(
+        ctx,
+        message: 'No focus time elapsed to record',
+      );
+      return;
+    }
 
     // Show session summary dialog
     await showDialog(
@@ -989,12 +1014,12 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                           icon: Icons.check_rounded,
                           label: 'Finish',
                           isLight: isLight,
-                          color: timer.sessionActive
+                          color: (timer.sessionActive || timer.focusSecondsElapsed > 0)
                               ? theme.accentColor
                               : (isLight ? const Color(0xFF94A3B8) : Colors.white.withValues(alpha: 0.4)),
                           bg: isLight ? Colors.white : Colors.white.withValues(alpha: 0.12),
                           borderColor: isLight ? const Color(0xFFE2E8F0) : Colors.white.withValues(alpha: 0.30),
-                          onTap: timer.sessionActive ? () => _handleFinish(context) : null,
+                          onTap: () => _handleFinish(context),
                         ),
                       ],
                     ),

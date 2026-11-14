@@ -7,16 +7,16 @@ class AppMetadata {
   static const String appName = 'Modulix';
 
   /// Semantic version of the client application.
-  static const String currentVersion = '1.38.0';
+  static const String currentVersion = '1.39.0';
 
   /// Incremental integer build number.
-  static const int buildNumber = 140;
+  static const int buildNumber = 143;
 
-  /// Full formatted version string (e.g. 'v1.38.0 (Build 140)').
+  /// Full formatted version string (e.g. 'v1.39.0 (Build 143)').
   static const String fullVersionString = 'v$currentVersion (Build $buildNumber)';
 
   /// Active build checkpoint ledger ID.
-  static const String checkpoint = 'CKPT-142';
+  static const String checkpoint = 'CKPT-143';
 
   /// Official landing page & account portal URL.
   static const String websiteUrl = 'https://modulix.pages.dev';

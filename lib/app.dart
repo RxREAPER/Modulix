@@ -106,20 +106,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                 ),
                 routes: [
                   GoRoute(
-                    path: 'module-tasks',
-                    pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
-                      state: state,
-                      child: const ModuleTasksScreen(),
-                    ),
-                  ),
-                  GoRoute(
-                    path: 'plan',
-                    pageBuilder: (context, state) => _buildFadeTransitionPage(
-                      state: state,
-                      child: const PlanScreen(),
-                    ),
-                  ),
-                  GoRoute(
                     path: 'planner',
                     pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
                       state: state,
@@ -353,6 +339,22 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           );
         },
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/plan',
+        pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+          state: state,
+          child: const PlanScreen(),
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/module-tasks',
+        pageBuilder: (context, state) => _buildSlideHorizontalTransitionPage(
+          state: state,
+          child: const ModuleTasksScreen(),
+        ),
       ),
       GoRoute(
         path: '/auth',

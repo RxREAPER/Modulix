@@ -331,8 +331,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('Day 1 Preview'), findsOneWidget);
-      expect(find.text('Sample Data'), findsOneWidget);
+      expect(find.text('Welcome to Progress'), findsOneWidget);
       expect(find.text('Ready for your first session?'), findsOneWidget);
       expect(find.text('Start First Focus Session'), findsOneWidget);
 

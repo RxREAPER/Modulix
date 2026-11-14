@@ -24,6 +24,25 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 4. **Minimal Native Settings & About Sub-Pages (`[CKPT-132]`, `[CKPT-133]`):**
    - Promoted Data & Privacy and About screens to native GoRouter routes with clean, minimalist design and zero emojis.
    - Linked official Cloudflare Pages production domain `https://modulix.pages.dev`.
+### 🔖 `[CKPT-143]` — Focus Timer Finish Reactivity, Root Navigation Decoupling & Cold-Start Empty States
+- **Category:** `bugfix` / `navigation` / `ui`
+- **Files Modified:**
+  - `lib/screens/timer/focus_timer_screen.dart` (hardened finish button reactivity with active tap handling, guard against 0-second finishes, and helpful toast feedback)
+  - `lib/app.dart` (promoted `/plan` and `/module-tasks` to root routes so they can be pushed from any shell branch, modal sheet, or root modal without crashing GoRouter or locking navigation)
+  - `lib/widgets/timer/task_picker_sheet.dart` (captured GoRouter instance safely prior to bottom sheet pop to prevent deactivated context navigation crashes)
+  - `lib/screens/plan/plan_screen.dart` (hardened back button and PopScope navigation to check `canPop()` safely before popping or going home)
+  - `lib/screens/analytics/analytics_screen.dart` (completely purged synthetic 14-week test history, fake 12-day streaks, fake 83% velocity, and fake 3h 45m focus stats; bound directly to genuine user data with clean "Welcome to Progress" cold-start banner)
+  - `lib/screens/analytics/study_plan_analytics_page.dart` (added clean empty-state prompt card when no study plan is configured)
+  - `lib/screens/analytics/leaderboard_screen.dart` (added clean empty-state placeholder when standings are empty)
+  - `lib/config/app_metadata.dart` (bumped version to `1.39.0`, build `143`, checkpoint `CKPT-143`)
+- **Summary:**
+  - Fixed focus timer finish button unresponsiveness by always providing an active tap callback and providing intuitive feedback when no timer is active or 0 seconds elapsed.
+  - Resolved fatal shell freeze and bottom bar unresponsiveness caused by pushing branch-scoped routes (`/plan`, `/module-tasks`) from root-scoped sheets/modals by promoting them to top-level root routes.
+  - Strictly eliminated all synthetic/test/mock data across the application for newly downloaded fresh installs, ensuring every screen and analytics metric cleanly displays genuine zero states awaiting real user input.
+- **Verification:**
+  - `flutter analyze --no-fatal-infos`: 0 issues found across entire codebase.
+  - `flutter test`: 100% pass across all 387 unit and widget tests.
+
 ### 🔖 `[CKPT-142]` — Test Suite Hardening & Automated CI Pipeline Resilience
 - **Category:** `test` / `ci` / `bugfix`
 - **Files Modified:**

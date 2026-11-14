@@ -62,19 +62,6 @@ class AnalyticsScreen extends ConsumerWidget {
     return map;
   }
 
-  static Map<String, int> _generateSampleHistory(int daysCount) {
-    final map = <String, int>{};
-    final now = DateTime.now();
-    for (int i = 0; i < daysCount; i++) {
-      final date = now.subtract(Duration(days: i));
-      final dateKey = DateFormat('yyyy-MM-dd').format(date);
-      if (i % 7 != 5) {
-        map[dateKey] = (i % 3 == 0) ? 4 : ((i % 2 == 0) ? 3 : 2);
-      }
-    }
-    return map;
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(appThemeDataProvider);
@@ -241,8 +228,6 @@ class AnalyticsScreen extends ConsumerWidget {
         streak.current == 0 &&
         edition.dailyHistory.isEmpty;
 
-    final sampleHistory = _generateSampleHistory(14 * 7);
-
     return Scaffold(
       backgroundColor: AppTheme.paperBackground,
       appBar: AppBar(
@@ -286,12 +271,11 @@ class AnalyticsScreen extends ConsumerWidget {
 
             // ── ZONE 1: Editorial Momentum Header (Non-card, breathless) ───
             _HeroMomentumHeader(
-              streakCurrent: isColdStart ? 12 : streak.current,
-              streakBest: isColdStart ? 24 : streak.best,
-              todayFocusSecs: isColdStart ? 13500 : todayFocusSecs,
-              todaySessions: isColdStart ? 4 : todayFocusSessions,
-              topSubject: isColdStart ? 'Anatomy' : topFocusSubject,
-              isColdStart: isColdStart,
+              streakCurrent: streak.current,
+              streakBest: streak.best,
+              todayFocusSecs: todayFocusSecs,
+              todaySessions: todayFocusSessions,
+              topSubject: topFocusSubject,
               onTapFocus: () => context.push('/analytics/focus-analytics'),
             ),
 
@@ -311,23 +295,17 @@ class AnalyticsScreen extends ConsumerWidget {
               key: TourTargetRegistry.keyFor(TourTargetId.analyticsModuleHub),
               subjectName: plan.isConfigured
                   ? planSubjectName
-                  : (isColdStart ? 'Anatomy' : planSubjectName),
-              progress: plan.isConfigured
-                  ? planProgress
-                  : (isColdStart ? 0.45 : planProgress),
-              completedVideos: plan.isConfigured
-                  ? planCompletedVideos
-                  : (isColdStart ? 36 : planCompletedVideos),
-              totalVideos: plan.isConfigured
-                  ? planTotalVideos
-                  : (isColdStart ? 80 : planTotalVideos),
+                  : 'No Plan Configured',
+              progress: plan.isConfigured ? planProgress : 0.0,
+              completedVideos: plan.isConfigured ? planCompletedVideos : 0,
+              totalVideos: plan.isConfigured ? planTotalVideos : 0,
               dailyTarget: plan.isConfigured
-                  ? '${plan.videosPerDay ?? 4} vids'
-                  : (isColdStart ? '4 vids' : '--'),
+                  ? '${plan.videosPerDay ?? 0} vids'
+                  : '--',
               deadline: plan.isConfigured
                   ? DateFormat('d MMM').format(DateTime.tryParse(plan.targetDate) ?? DateTime.now())
-                  : (isColdStart ? '30 Nov' : '--'),
-              isConfigured: plan.isConfigured || isColdStart,
+                  : '--',
+              isConfigured: plan.isConfigured,
               onTap: () => context.push('/analytics/plan-insights'),
             ),
 
@@ -338,7 +316,6 @@ class AnalyticsScreen extends ConsumerWidget {
               key: TourTargetRegistry.keyFor(TourTargetId.analyticsTasksHub),
               todayTasks: todayTasks,
               todayCompleted: todayCompleted,
-              isColdStart: isColdStart,
               tasksProgress: tasksProgress,
               totalTasks: totalTasks,
               doneTasks: doneTasks,
@@ -352,14 +329,13 @@ class AnalyticsScreen extends ConsumerWidget {
             // 3. Focus & Deep Work Quick Stats Card
             _FocusDeepWorkCard(
               key: TourTargetRegistry.keyFor(TourTargetId.analyticsFocusHub),
-              isColdStart: isColdStart,
               todayFocusSecs: todayFocusSecs,
               todaySessions: todayFocusSessions,
               totalFocusSecs: totalFocusSecs,
               videoFocusSecs: videoFocusSecs,
               qbankFocusSecs: qbankFocusSecs,
               notesFocusSecs: notesFocusSecs,
-              topSubject: isColdStart ? 'Anatomy' : topFocusSubject,
+              topSubject: topFocusSubject,
               onTap: () => context.push('/analytics/focus-analytics'),
             ),
 
@@ -367,13 +343,9 @@ class AnalyticsScreen extends ConsumerWidget {
 
             // ── Consistency Matrix Section ─────────────────────────────────
             NeetConsistencyMatrix(
-              dailyVideos: isColdStart ? sampleHistory : edition.dailyHistory,
-              dailyQBanks: isColdStart
-                  ? sampleHistory
-                  : _aggregateDailyCompleted(edition.completedQBanks),
-              dailyNotes: isColdStart
-                  ? sampleHistory
-                  : _aggregateDailyCompleted(edition.completedNotes),
+              dailyVideos: edition.dailyHistory,
+              dailyQBanks: _aggregateDailyCompleted(edition.completedQBanks),
+              dailyNotes: _aggregateDailyCompleted(edition.completedNotes),
               accentColor: AppTheme.accentPrimary,
               weeksCount: 14,
             ),
@@ -423,13 +395,13 @@ class _AnalyticsColdStartBanner extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      Icons.auto_awesome_rounded,
+                      Icons.insights_rounded,
                       size: 13,
                       color: AppTheme.accentPrimary,
                     ),
                     const SizedBox(width: 5),
                     Text(
-                      'Day 1 Preview',
+                      'Welcome to Progress',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -437,15 +409,6 @@ class _AnalyticsColdStartBanner extends StatelessWidget {
                       ),
                     ),
                   ],
-                ),
-              ),
-              const Spacer(),
-              Text(
-                'Sample Data',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.mutedText,
                 ),
               ),
             ],
@@ -462,10 +425,10 @@ class _AnalyticsColdStartBanner extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Start a timer today to see your daily study streak, charts, and milestones come alive right here.',
+            'Start a focus timer or configure your study plan to track real-time study streaks, daily pace, and syllabus completion.',
             style: TextStyle(
-              fontSize: 13.5,
-              fontWeight: FontWeight.w500,
+              fontSize: 13.0,
+              fontWeight: FontWeight.w400,
               color: AppTheme.mutedText,
               height: 1.4,
             ),
@@ -523,7 +486,6 @@ class _HeroMomentumHeader extends StatelessWidget {
   final int todayFocusSecs;
   final int todaySessions;
   final String topSubject;
-  final bool isColdStart;
   final VoidCallback onTapFocus;
 
   const _HeroMomentumHeader({
@@ -532,7 +494,6 @@ class _HeroMomentumHeader extends StatelessWidget {
     required this.todayFocusSecs,
     required this.todaySessions,
     required this.topSubject,
-    required this.isColdStart,
     required this.onTapFocus,
   });
 
@@ -612,7 +573,7 @@ class _HeroMomentumHeader extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      isColdStart ? ': 24 DAYS' : ': $streakBest DAYS',
+                      ': $streakBest DAYS',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTypography.cardSubtitle(
@@ -931,7 +892,6 @@ class _ModulePlannerHeroCard extends StatelessWidget {
 class _TodayFocusTasksSection extends ConsumerWidget {
   final List<dynamic> todayTasks;
   final List<dynamic> todayCompleted;
-  final bool isColdStart;
   final double tasksProgress;
   final int totalTasks;
   final int doneTasks;
@@ -943,7 +903,6 @@ class _TodayFocusTasksSection extends ConsumerWidget {
     super.key,
     required this.todayTasks,
     required this.todayCompleted,
-    required this.isColdStart,
     required this.tasksProgress,
     required this.totalTasks,
     required this.doneTasks,
@@ -955,13 +914,12 @@ class _TodayFocusTasksSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = AppTheme.current.isDark;
-    final int velocityPercent = isColdStart
-        ? 83
-        : (totalTasks > 0 ? ((doneTasks / totalTasks) * 100).round() : 0);
+    final int velocityPercent =
+        totalTasks > 0 ? ((doneTasks / totalTasks) * 100).round() : 0;
 
-    final int displayTotal = isColdStart ? 6 : totalTasks;
-    final int displayDone = isColdStart ? 5 : doneTasks;
-    final int displayPending = isColdStart ? 1 : pendingTasks;
+    final int displayTotal = totalTasks;
+    final int displayDone = doneTasks;
+    final int displayPending = pendingTasks;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(22),
@@ -1102,7 +1060,6 @@ class _TodayFocusTasksSection extends ConsumerWidget {
 
 // ── Focus & Deep Work Quick Stats Card ───────────────────────────────────────
 class _FocusDeepWorkCard extends StatelessWidget {
-  final bool isColdStart;
   final int todayFocusSecs;
   final int todaySessions;
   final int totalFocusSecs;
@@ -1114,7 +1071,6 @@ class _FocusDeepWorkCard extends StatelessWidget {
 
   const _FocusDeepWorkCard({
     super.key,
-    required this.isColdStart,
     required this.todayFocusSecs,
     required this.todaySessions,
     required this.totalFocusSecs,
@@ -1128,11 +1084,9 @@ class _FocusDeepWorkCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = AppTheme.current.isDark;
-    final displayDuration = isColdStart
-        ? '3h 45m'
-        : (todayFocusSecs > 0
-            ? AnalyticsScreen._formatDuration(todayFocusSecs)
-            : '0m');
+    final displayDuration = todayFocusSecs > 0
+        ? AnalyticsScreen._formatDuration(todayFocusSecs)
+        : '0m';
 
     return ApplePressable(
       onTap: onTap,
@@ -1201,9 +1155,9 @@ class _FocusDeepWorkCard extends StatelessWidget {
                   ],
                 ),
                 ConcentricDonutIndicator(
-                  progress1: isColdStart ? 0.50 : (totalFocusSecs > 0 ? (videoFocusSecs / totalFocusSecs) : 0.0),
-                  progress2: isColdStart ? 0.30 : (totalFocusSecs > 0 ? (qbankFocusSecs / totalFocusSecs) : 0.0),
-                  progress3: isColdStart ? 0.20 : (totalFocusSecs > 0 ? (notesFocusSecs / totalFocusSecs) : 0.0),
+                  progress1: totalFocusSecs > 0 ? (videoFocusSecs / totalFocusSecs) : 0.0,
+                  progress2: totalFocusSecs > 0 ? (qbankFocusSecs / totalFocusSecs) : 0.0,
+                  progress3: totalFocusSecs > 0 ? (notesFocusSecs / totalFocusSecs) : 0.0,
                   size: 44,
                   ringWidth: 3.5,
                   ringSpacing: 2.0,
@@ -1233,11 +1187,9 @@ class _FocusDeepWorkCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  isColdStart
-                      ? '4 sessions'
-                      : (todaySessions > 0
-                          ? '$todaySessions session${todaySessions == 1 ? '' : 's'}'
-                          : 'logged today'),
+                  todaySessions > 0
+                      ? '$todaySessions session${todaySessions == 1 ? '' : 's'}'
+                      : '0 sessions today',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,

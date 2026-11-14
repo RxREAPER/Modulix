@@ -108,9 +108,13 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
       canPop: canPop,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
-        try {
-          context.go('/');
-        } catch (_) {}
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        } else {
+          try {
+            context.go('/');
+          } catch (_) {}
+        }
       },
       child: Scaffold(
         backgroundColor: AppTheme.paperBackground,

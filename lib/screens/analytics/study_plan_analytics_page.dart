@@ -197,6 +197,81 @@ class _StudyPlanAnalyticsPageState
           physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
           children: [
+            if (!plan.isConfigured) ...[
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: AppTheme.accentSubtle,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: AppTheme.accentPrimary.withValues(alpha: 0.3),
+                    width: 0.8,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentPrimary.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.track_changes_rounded,
+                        color: AppTheme.accentPrimary,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'No Study Plan Configured',
+                            style: AppTheme.headingStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.inkForeground,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'Set your target subject and completion deadline to unlock intelligent pacing and ETA forecasts.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.mutedText,
+                              height: 1.35,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ApplePressable(
+                      onTap: () => context.push('/plan'),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.accentPrimary,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          'Configure',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             // ── 1. Hero Radial Progress Card ───────────────────────────────
             Container(
               padding: const EdgeInsets.all(20),
