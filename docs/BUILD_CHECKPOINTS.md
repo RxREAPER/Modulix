@@ -24,6 +24,31 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 4. **Minimal Native Settings & About Sub-Pages (`[CKPT-132]`, `[CKPT-133]`):**
    - Promoted Data & Privacy and About screens to native GoRouter routes with clean, minimalist design and zero emojis.
    - Linked official Cloudflare Pages production domain `https://modulix.pages.dev`.
+## 🚀 Build Manifest v1.39.0
+- **Build Target:** `build/app/outputs/flutter-apk/app-release.apk` -> `modulix-v1.39.0.apk` (109MB)
+- **Target Architecture:** Universal Multi-ABI (`arm64-v8a`, `armeabi-v7a`, `x86_64`) | Android 7.0–16 (API 24–36)
+- **Compilation Time:** 670.3s (R8 Code Shrinking Enabled, 2GB Gradle Heap) | **Static Analysis:** 0 Errors, 0 Warnings | **Test Suite:** 100% Green (387/387 Tests Passed)
+- **Signing Scheme:** APK Signature Scheme v2 & v3 (Permanent RSA 2048-bit Upload Keystore verified via `apksigner`)
+- **Included Checkpoints:** `[CKPT-143]`, `[CKPT-144]` (✅ Included in Build)
+
+### Key Highlights & Releases in v1.39.0:
+1. **Snappy 180ms Page Transitions (`[CKPT-144]`):**
+   - Replaced sluggish 360-380ms `OpenContainer` transforms in Curriculum and Module Tracker with hardware-accelerated horizontal slide transitions (180ms forward, 150ms reverse) powered by `Curves.easeOutCubic`.
+   - Isolated navigation layers with `RepaintBoundary` for silky 60Hz and 120Hz display performance.
+2. **Ultra-Low Power 1Hz Focus Timer Heartbeat (`[CKPT-144]`):**
+   - Slashed periodic background timer ticker from 200ms (5Hz) to 1.0s (1Hz) with immediate first-frame trigger.
+   - Isolated navigation bar halo pulsing ring with `RepaintBoundary` to prevent dock repainting cascades.
+   - Slashed idle CPU wakeups by > 80%, protecting student battery life during multi-hour study sessions.
+3. **Compacting SQLite Engine & Storage Cleanup (`[CKPT-144]`):**
+   - Reduced SQLite RAM cache from 64MB down to 2MB (`PRAGMA cache_size = -2000 KiB`).
+   - Added automatic WAL autocheckpoints (100 pages), incremental auto-vacuum, startup WAL truncation, and duplicate legacy DB cleanup, reducing initial database size to < 1MB.
+4. **Cold-Start Zero Data Enforcement (`[CKPT-143]`):**
+   - Strictly purged all synthetic test histories, fake streaks, fake velocities, and sample tasks. Fresh installs display authentic zero states awaiting genuine user progress.
+5. **Focus Timer Finish Reactivity & Navigation Decoupling (`[CKPT-143]`):**
+   - Hardened Focus Timer Finish button tap reactivity with active feedback and 0-second guards.
+   - Promoted `/plan` and `/module-tasks` to root routes to prevent GoRouter deactivation freezes from bottom sheets.
+
+---
 
 ### 🔖 `[CKPT-144]` — Snappy Transitions, Ultra-Low RAM & SQLite Storage Compaction
 - **Category:** `perf` / `ui` / `database`
@@ -42,6 +67,11 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
   - Replaced sluggish 360-380ms OpenContainer animations with lightweight 180ms GPU-accelerated transitions suitable for 60Hz and budget displays.
   - Slashed CPU wakeup frequency from 5Hz to 1Hz in the focus timer and isolated nav bar repaints, protecting battery life across multi-hour study sessions.
   - Reduced SQLite RAM footprint by over 60MB and eliminated 30-40MB duplicate legacy database storage on disk via WAL truncation and compaction.
+- **Verification:**
+  - `flutter analyze --no-fatal-infos`: 0 issues found across entire codebase.
+  - `flutter test`: 100% pass across all 387 unit and widget tests.
+  - Built official `modulix-v1.39.0.apk` (109MB) with APK Signature Scheme v2 & v3 verified.
+- **Build Status:** ✅ Included in Build
 
 ### 🔖 `[CKPT-143]` — Focus Timer Finish Reactivity, Root Navigation Decoupling & Cold-Start Empty States
 - **Category:** `bugfix` / `navigation` / `ui`
@@ -61,6 +91,7 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Verification:**
   - `flutter analyze --no-fatal-infos`: 0 issues found across entire codebase.
   - `flutter test`: 100% pass across all 387 unit and widget tests.
+- **Build Status:** ✅ Included in Build
 
 ### 🔖 `[CKPT-142]` — Test Suite Hardening & Automated CI Pipeline Resilience
 - **Category:** `test` / `ci` / `bugfix`
