@@ -52,7 +52,7 @@ export function HeroSection({ navigate }: { navigate: (route: string) => void })
 
       <div className="mt-3.5 text-center">
         <p className="text-[11px] text-[var(--muted-text)] tracking-wide">
-          Signed production build (ARM64) · Direct install · Google Play launch pending review
+          Signed production build (Universal APK · All Phones & Tablets) · Direct install · Google Play launch pending review
         </p>
       </div>
 
