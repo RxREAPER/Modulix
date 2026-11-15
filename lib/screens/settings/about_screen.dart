@@ -175,6 +175,15 @@ class AboutScreen extends StatelessWidget {
                       color: activeTheme.mutedText,
                     ),
                   ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Independent Personal Project · RxREAPER',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: activeTheme.mutedText.withValues(alpha: 0.75),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -245,6 +254,27 @@ class AboutScreen extends StatelessWidget {
                   onTap: () => _openChangelog(context),
                 ),
               ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // ── Legal & Policies ───────────────────────────────────────────────
+          _sectionHeader(context, 'LEGAL & POLICIES'),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: activeTheme.cardBackground,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: activeTheme.borderSubtle, width: 1.2),
+            ),
+            child: _actionRow(
+              context: context,
+              icon: Icons.shield_outlined,
+              iconColor: const Color(0xFF0D9488),
+              title: 'Data & Privacy, Terms & Copyright',
+              subtitle: 'Fair use disclaimers & IP protection',
+              onTap: () => context.push('/settings/privacy'),
             ),
           ),
 

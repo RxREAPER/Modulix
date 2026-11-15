@@ -43,6 +43,12 @@ export function Footer({ navigate }: FooterProps) {
             Terms of Service
           </button>
           <button
+            onClick={() => navigate("#/copyright")}
+            className="hover:text-[var(--accent)] cursor-pointer"
+          >
+            Copyright & IP
+          </button>
+          <button
             onClick={() => navigate("#/account")}
             className="hover:text-[var(--accent)] cursor-pointer"
           >
@@ -67,7 +73,7 @@ export function Footer({ navigate }: FooterProps) {
 
       <div className="mt-8 pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-[11px] text-[var(--muted-text)] opacity-80">
         <div>
-          © {new Date().getFullYear()} Modulix Companion. Open Source under the MIT License.
+          © {new Date().getFullYear()} Modulix (RxREAPER). All rights reserved. Independent personal study companion.
         </div>
         <div className="flex items-center gap-3">
           <span className="inline-flex items-center gap-1.5">

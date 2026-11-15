@@ -9,6 +9,7 @@ import { StudyJourneySection } from "./components/sections/study-journey/StudyJo
 import { EcosystemSection } from "./components/sections/EcosystemSection"
 import { PrivacyView } from "./components/privacy/PrivacyView"
 import { TermsView } from "./components/privacy/TermsView"
+import { CopyrightView } from "./components/privacy/CopyrightView"
 import { AccountPortalView } from "./components/account/AccountPortalView"
 import { ChangelogView } from "./components/updates/ChangelogView"
 
@@ -53,6 +54,8 @@ export default function App() {
         return <PrivacyView navigate={navigate} />
       case "#/terms":
         return <TermsView navigate={navigate} />
+      case "#/copyright":
+        return <CopyrightView navigate={navigate} />
       case "#/account":
         return <AccountPortalView navigate={navigate} />
       case "#/updates":

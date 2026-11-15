@@ -16,7 +16,7 @@ class AppMetadata {
   static const String fullVersionString = 'v$currentVersion (Build $buildNumber)';
 
   /// Active build checkpoint ledger ID.
-  static const String checkpoint = 'CKPT-144';
+  static const String checkpoint = 'CKPT-145';
 
   /// Official landing page & account portal URL.
   static const String websiteUrl = 'https://modulix.pages.dev';
