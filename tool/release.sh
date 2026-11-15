@@ -99,8 +99,9 @@ success "Code quality verified."
 # ── Step 2: Synchronize Version Across Ecosystem ──
 log "Step 2/7: Synchronizing version $VERSION across Flutter & Web..."
 
-# 2a. Flutter AppMetadata
+# 2a. Flutter AppMetadata & pubspec.yaml
 sed -i "s/static const String currentVersion = '[^']*';/static const String currentVersion = '$VERSION';/" lib/config/app_metadata.dart
+sed -i "s/^version: .*/version: $VERSION+144/" pubspec.yaml
 
 # 2b. Web Portal Constants
 sed -i "s/version: \"[^\"]*\"/version: \"$VERSION\"/" modulix_landing_page/src/lib/constants.ts
@@ -110,9 +111,9 @@ sed -i "s|githubReleaseUrl: \"[^\"]*\"|githubReleaseUrl: \"https://github.com/Rx
 success "Version synchronized to $VERSION."
 
 # ── Step 3: Compile Signed Production APK ──
-log "Step 3/7: Compiling signed production release APK (ARM64)..."
+log "Step 3/7: Compiling signed production universal release APK (all architectures)..."
 if [ "$DRY_RUN" = false ]; then
-  flutter build apk --release --target-platform android-arm64 --no-tree-shake-icons
+  flutter build apk --release --no-tree-shake-icons
   cp build/app/outputs/flutter-apk/app-release.apk "$APK_NAME"
   success "Compiled $APK_NAME ($(du -h "$APK_NAME" | cut -f1))."
 else
@@ -128,13 +129,13 @@ fi
 
 # ── Step 5: Publish GitHub Release ──
 log "Step 5/7: Publishing GitHub Release $TAG..."
-RELEASE_NOTES="## Modulix $TAG (Android Production Release)
+RELEASE_NOTES="## Modulix $TAG (Universal Android Production Release)
 
 $SUMMARY
 
 ### Artifact
 - **File:** \`$APK_NAME\`
-- **Architecture:** \`android-arm64\` (64-bit Android 8.0+)
+- **Architecture:** \`Universal\` (arm64-v8a, armeabi-v7a, x86_64 - phones, tablets, Android 8.0+)
 - **Signature:** Official upload keystore (v2 scheme verified)
 
 ### Installation
