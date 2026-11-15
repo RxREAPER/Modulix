@@ -764,12 +764,12 @@ Depending on your jurisdiction, you may have the right to:
 - Restriction: Request that we limit processing of your data
 - Objection: Object to certain processing activities
 
-To exercise any of these rights, contact us at: privacy@modulix.app
+To exercise any of these rights, contact us at: modulix.support@gmail.com
 
 ─────────────────────────────────────
 8. CHILDREN'S PRIVACY
 
-The App is not intended for use by individuals under the age of 13. We do not knowingly collect personal information from children under 13. If you become aware that a child under 13 has provided us with personal information, please contact us immediately at privacy@modulix.app and we will take steps to delete such information.
+The App is not intended for use by individuals under the age of 13. We do not knowingly collect personal information from children under 13. If you become aware that a child under 13 has provided us with personal information, please contact us immediately at modulix.support@gmail.com and we will take steps to delete such information.
 
 ─────────────────────────────────────
 9. DEVICE PERMISSIONS
@@ -793,7 +793,7 @@ We may update this Privacy Policy from time to time to reflect changes in our pr
 12. CONTACT
 
 For privacy inquiries, data requests, or concerns, contact:
-Email: privacy@modulix.app
+Email: modulix.support@gmail.com
 Website: https://modulix.pages.dev
 
 Modulix — All rights reserved.''';
@@ -925,7 +925,7 @@ These Terms, together with our Privacy Policy and Copyright & IP Notice, constit
 15. CONTACT
 
 For Terms of Use inquiries:
-Email: support@modulix.app
+Email: modulix.support@gmail.com
 Website: https://modulix.pages.dev
 
 Modulix — All rights reserved.''';
@@ -1020,7 +1020,7 @@ Modulix is built using open-source libraries that remain subject to their respec
 
 If you believe that any content within Modulix infringes upon your intellectual property rights, please submit a detailed written notice to:
 
-Email: privacy@modulix.app
+Email: modulix.support@gmail.com
 
 Your notice must include:
 (i) Identification of the copyrighted work claimed to be infringed
@@ -1040,7 +1040,7 @@ Modulix reserves the right to enforce its intellectual property rights to the fu
 10. CONTACT
 
 For licensing enquiries, authorisation requests, or IP matters:
-Email: support@modulix.app
+Email: modulix.support@gmail.com
 Website: https://modulix.pages.dev
 
 Copyright © 2024–2026 Modulix (RxREAPER). All rights reserved.

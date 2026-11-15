@@ -130,6 +130,19 @@ export function TermsView({ navigate }: { navigate: (route: string) => void }) {
             These Terms shall be governed by the laws of the Republic of India. Any controversy or dispute that cannot be resolved amicably within 30 days shall be resolved through arbitration under the Arbitration and Conciliation Act 1996 in New Delhi, India.
           </p>
         </section>
+
+        {/* Section 6: Contact */}
+        <section>
+          <h2 className="font-editorial text-xl sm:text-2xl font-bold text-[var(--ink-foreground)] mb-2.5">
+            6. Contact & Inquiries
+          </h2>
+          <p className="text-xs sm:text-sm text-[var(--muted-text)] leading-relaxed">
+            For questions regarding these Terms or the Modulix companion, contact:{" "}
+            <a href="mailto:modulix.support@gmail.com" className="text-[var(--accent)] font-mono hover:underline">
+              modulix.support@gmail.com
+            </a>
+          </p>
+        </section>
       </div>
     </div>
   )

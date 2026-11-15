@@ -126,7 +126,7 @@ export function CopyrightView({ navigate }: { navigate: (route: string) => void 
             If you are a copyright owner or authorized representative who believes in good faith that any content or index inside Modulix infringes your rights, please submit a notice to our dedicated inbox:
           </p>
           <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--scaffold-bg)] border border-[var(--border-subtle)] text-xs font-mono font-medium text-[var(--accent)]">
-            privacy@modulix.app
+            modulix.support@gmail.com
           </div>
           <p className="text-xs text-[var(--muted-text)] mt-2">
             All legitimate notices are addressed promptly and amicably in accordance with applicable copyright laws.

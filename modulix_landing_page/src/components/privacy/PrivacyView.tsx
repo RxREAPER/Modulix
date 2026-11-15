@@ -153,6 +153,19 @@ export function PrivacyView({ navigate }: { navigate: (route: string) => void })
             <span>Launch Account & Data Erasure Portal</span>
           </ApplePressable>
         </section>
+
+        {/* Section 6 */}
+        <section className="pt-6 border-t border-[var(--border-subtle)]">
+          <h2 className="font-editorial text-xl sm:text-2xl font-bold text-[var(--ink-foreground)] mb-2.5">
+            6. Privacy Inquiries & Data Rights
+          </h2>
+          <p className="text-xs sm:text-sm text-[var(--muted-text)] leading-relaxed">
+            For questions regarding this policy, data portability requests, or exercising statutory rights, contact the developer at:{" "}
+            <a href="mailto:modulix.support@gmail.com" className="text-[var(--accent)] font-mono hover:underline">
+              modulix.support@gmail.com
+            </a>
+          </p>
+        </section>
       </div>
     </div>
   )

@@ -35,8 +35,8 @@ class AppMetadata {
       'https://api.github.com/repos/$githubRepo/releases/latest';
 
   /// Official support inquiries email.
-  static const String supportEmail = 'support@modulix.app';
+  static const String supportEmail = 'modulix.support@gmail.com';
 
   /// Official privacy & data inquiries email.
-  static const String privacyEmail = 'privacy@modulix.app';
+  static const String privacyEmail = 'modulix.support@gmail.com';
 }

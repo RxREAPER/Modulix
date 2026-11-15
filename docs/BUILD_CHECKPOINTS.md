@@ -55,18 +55,21 @@ When an APK build is triggered, all pending checkpoints are synthesized into a *
 - **Files Modified:**
   - `lib/screens/settings/data_privacy_screen.dart` (implemented comprehensive GDPR/DPDPA-compliant Privacy Policy, Terms of Use with solo developer asset shielding, medical advice and exam outcome disclaimers, and added a dedicated Copyright & IP Notice modal with nominative fair use protections)
   - `lib/screens/settings/about_screen.dart` (added 'Legal & Policies' quick-access action row and solo developer attribution: 'Independent Personal Project · RxREAPER')
-  - `lib/config/app_metadata.dart` (updated active checkpoint to CKPT-145)
-  - `modulix_landing_page/src/components/privacy/TermsView.tsx` (overhauled web terms to match comprehensive legal protections, solo developer liability shield, and nominative fair use clause; removed obsolete MIT license claim)
-  - `modulix_landing_page/src/components/privacy/CopyrightView.tsx` (created dedicated web Copyright & IP Notice panel with scope of protected works, zero-piracy guarantee, and DMCA inquiry contact)
+  - `lib/config/app_metadata.dart` (updated active checkpoint to CKPT-145, unified official support and privacy contact endpoints to `modulix.support@gmail.com`)
+  - `modulix_landing_page/src/lib/constants.ts` (updated checkpoint to CKPT-145 and unified contact/privacy endpoints to `modulix.support@gmail.com`)
+  - `modulix_landing_page/src/components/privacy/TermsView.tsx` (overhauled web terms to match comprehensive legal protections, solo developer liability shield, and nominative fair use clause; removed obsolete MIT license claim; added direct `modulix.support@gmail.com` contact)
+  - `modulix_landing_page/src/components/privacy/CopyrightView.tsx` (created dedicated web Copyright & IP Notice panel with scope of protected works, zero-piracy guarantee, and DMCA inquiry contact directed to `modulix.support@gmail.com`)
+  - `modulix_landing_page/src/components/privacy/PrivacyView.tsx` (added dedicated Privacy Inquiries & Data Rights section directing statutory requests to `modulix.support@gmail.com`)
   - `modulix_landing_page/src/components/layout/Footer.tsx` (linked Copyright & IP route and updated footer copyright string to '© 2024–2026 Modulix (RxREAPER). All rights reserved.')
   - `modulix_landing_page/src/App.tsx` (registered `#/copyright` route with animated page transitions)
 - **Summary:**
   - Established complete, ecosystem-wide legal protection across the Android app and web portal tailored specifically for a solo developer personal project.
   - Insulated the solo developer against personal asset liability, third-party syllabus claims, medical malpractice allegations, and exam outcome disputes.
   - Declared full intellectual property protection over original Flutter/web source code, algorithms, custom UI layouts, and branding with clear nominative fair use definitions.
+  - Unified all public support, privacy, DMCA, and legal inquiries across the client app, website, and metadata to your active mailbox `modulix.support@gmail.com`, while strictly isolating your personal contact email.
 - **Verification:**
-  - `flutter analyze --no-fatal-infos`: 0 issues found across entire codebase (ran in 36.6s).
-  - `npm run build` (Landing Page): TypeScript compiled and bundled in 32.79s with 0 errors across 2,505 modules.
+  - `flutter analyze --no-fatal-infos`: 0 issues found across entire codebase (ran in 46.7s).
+  - `npm run build` (Landing Page): TypeScript compiled and bundled in 33.05s with 0 errors across 2,505 modules.
 
 ### 🔖 `[CKPT-144]` — Snappy Transitions, Ultra-Low RAM & SQLite Storage Compaction
 - **Category:** `perf` / `ui` / `database`
